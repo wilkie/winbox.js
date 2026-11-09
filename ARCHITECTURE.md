@@ -1,9 +1,9 @@
 # Architecture
 
 WinBox is a **high-level emulator**. It does not emulate a PC. It emulates
-enough of a 286/386 to run a Win16 program's own machine code, and it takes
-control the moment that program calls into the Windows API, where a JavaScript
-implementation runs instead.
+enough of a 386 to run a Win16 program's own machine code, and it takes
+control the moment that program calls into the Windows API, where WinBox's
+own implementation, in Rust, runs instead.
 
 That split is the whole design:
 
@@ -12,151 +12,248 @@ That split is the whole design:
         |
         |  far call into KERNEL/USER/GDI
         v
-   Synthesized thunk segment  ......................  emulated x86
+   Stub segment of the module  ......................  emulated x86 (winbox-cpu)
         |
-        |  INT 0x80  -> trap
+        |  INT 80h -> the core stops, Exit::Unimplemented(CDh)
         v
-   Win16 HLE layer (JavaScript)  ...................  native
+   The run loop (winbox-win16 run.rs)  ..............  native or wasm
         |
-        |  argument marshalling off the guest stack
+        |  arguments read off the guest stack (call.rs, Args)
         v
-   API implementation (JavaScript, often async)
+   The export's function: at once (Sync), or a future (Async)
         |
-        |  may call back into guest code
+        |  may call back into guest code (Engine::call_with)
         v
-   Callback thunk -> CALLF -> guest WndProc -> INT 0x81
+   Callback thunk -> CALLF -> guest WndProc -> INT 81h
 ```
+
+The engine is a set of crates:
+
+| Crate            | What it holds                                                                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `winbox-cpu`     | The x86 core: real and protected mode, 16- and 32-bit operands, the x87; held to hardware vectors                                   |
+| `winbox-machine` | Memory, the descriptor tables and the selectors given out of them, the global and local heaps' blocks, the clock, the drives' files |
+| `winbox-ne`      | New Executable files read: headers, segments and relocations, entry points, names and resources                                     |
+| `winbox-raster`  | Windows' pixels: palettes, device bitmaps, blits and raster operations, lines and curves, bitmap fonts, the TrueType scaler         |
+| `winbox-opl`     | The Ad Lib's OPL2, DOSBox 0.74-3's `dbopl` ported                                                                                   |
+| `winbox-win16`   | Windows itself: the loader and linker, the tasks, DOS and DPMI, and the modules -- KERNEL, USER, GDI, MMSYSTEM and the rest         |
+| `winbox-web`     | The engine built for WebAssembly, run a step at a time by the page                                                                  |
+| `winbox-native`  | The engine in a window of the host's (winit and softbuffer), with sound through cpal                                                |
 
 ## Taking control
 
-`ModuleManager` gives each Win16 module (KERNEL, USER, GDI, …) a real segment
-of synthesized 16-bit code. Every exported ordinal gets an eight byte slot:
+Each module WinBox keeps (KERNEL, USER, GDI, …) is given a real segment of
+16-bit code, its stubs (`System::stubs`, `crates/winbox-win16/src/system.rs`).
+Every exported ordinal gets an eight-byte slot:
 
 ```asm
-INT 0x80          ; CS identifies the module, IP identifies the ordinal
+INT 80h           ; CS names the module, IP the ordinal (IP / 8 - 1)
 RETF imm16        ; pop the callee-cleaned arguments
 ```
 
-A guest far-calls those slots believing they are the real libraries. Nothing
-about the call is special from its point of view: it pushes arguments, does a
-far call, and gets a result in AX/DX.
+The export table is `crates/winbox-win16/src/kept.rs`: by ordinal, each
+export's name, the bytes of arguments it pops, the bytes it answers in, and
+whether only a stub answers it. The linker (`linker.rs`) points a program's
+imports of those modules at the stubs, so a guest far-calls them believing
+they are the real libraries: it pushes arguments, does a far call, and gets a
+result in AX and DX. A module WinBox keeps beside its own file (COMMDLG, VER,
+LZEXPAND, DDEML, OLECLI, OLESVR) links each export WinBox answers to its stub
+and the rest to the file (`own_modules.rs`).
 
-Offset 0 of the same segment is the callback thunk, used in the other
-direction — when the host needs to run guest code (a window procedure, a dialog
-procedure, an enumeration callback) and regain control when it returns:
+Offset 0 of USER's stub segment is the callback thunk, used in the other
+direction -- when Windows calls guest code (a window procedure, a dialog
+procedure, an enumeration callback) and takes control back when it returns:
 
 ```asm
-CALLF seg:off     ; immediate patched by Scheduler#call before each use
-INT 0x81          ; the callback returned
+CALLF seg:off     ; the immediate written before each use (Engine::call_with)
+INT 81h           ; the callback returned
 ```
+
+USER's own window procedures, whose addresses a program can be handed, are
+`MOV AX, n; INT 84h; RETF 10`: the token in AX names the procedure
+(`call.rs`, `user_procedure_call`).
 
 ## The trap protocol
 
-Interrupt dispatch is CPU behaviour: an interrupt pushes FLAGS, CS and IP and
-vectors through the interrupt table, and guest code handles it. The exception
-is the vectors the emulator claims for itself, which have to reach the host
-instead. So the rule is: **a claimed vector latches for the host, everything
-else dispatches in the guest.**
+The core (`winbox_cpu::Cpu::run`) runs up to a budget of instructions and says
+why it stopped (`Exit`): the budget spent, `HLT`, a fault, memory or a segment
+load only the host can answer for (`Exit::Host`), or an opcode it leaves to
+the host (`Exit::Unimplemented`). An instruction that stops the run is not
+counted and changes nothing -- registers, flags and segments as they were, IP
+at its start -- so the host can run it whole; a repeated string instruction
+keeps the elements it got through.
 
-`CpuCoreHost#claimsInterrupt` answers which is which, backed by whatever has
-been registered on `Machine#interrupts`. Today that is `0x1A`, `0x21` and
-`0x31` for the DOS layer and `0x80` and `0x81` for the Win16 thunks.
+In protected mode, which is where Windows runs a program, every `INT` stops
+the run as `Exit::Unimplemented(CDh)`, and the run loop
+(`System::run_until_event`, `crates/winbox-win16/src/run.rs`) answers it by
+vector:
 
-For a claimed vector:
+- `80h`, a call: `System::api_call` (`call.rs`) finds the module by CS and
+  the export by IP, charges the clock, logs the call, and runs its function;
+- `81h`, a callback returned, ending the call into the guest that made it;
+- `84h`, a USER procedure called through its address;
+- `21h`, `2Fh`, `31h`, `1Ah`, `25h`/`26h`, `12h`: DOS, the multiplex
+  interrupt, DPMI, the clock, absolute disk reads and writes and the memory
+  size, answered by the engine; a vector a program hooked through DPMI goes
+  to its own handler first (`dpmi.rs`);
+- any other stops the run, named (`Stop::Interrupt`).
 
-1. The guest executes `INT n`.
-2. The core latches the vector on the CPU wrapper (`cpu.interrupt = n`) and
-   returns. It does **not** vector through the IVT or IDT. CS:IP is left on the
-   instruction after the `INT`, which is the `RETF` in the thunk.
-3. `Scheduler#run` checks the latch after each `cpu.step()`, halts the task and
-   breaks out of the frame loop.
-4. It clears the latch and calls `machine.interrupts.dispatch(vector)`.
-5. The handler returns `true` to resume immediately, a `Promise` to resume when
-   it settles, or anything else to stay halted and resume itself later.
+A program's `IN` and `OUT` stop the run too, and are run by the engine
+(`ports.rs`). A fault goes to KERNEL's handling of it (`fault.rs`, from
+`KRNL386.EXE` seg1 `5e1b`) or to a handler the program set through DPMI. In
+real mode, given an interrupt table, the core dispatches interrupts itself,
+as the part does: FLAGS, CS and IP pushed, IF and TF cleared, CS:IP from the
+four-byte entry (`winbox-cpu/src/interrupt.rs`).
 
-`Win16#syscallInvoke` takes the last option: it returns `false`, and
-`Scheduler#interpretReturnValue` resumes the task once the API implementation
-has produced a value for AX/DX.
-
-An unclaimed vector instead dispatches the way the part would: push FLAGS, push
-CS, push the return address, clear IF and TF, and load CS:IP from the four-byte
-real-mode entry. Faults push the address of the offending instruction so it can
-be restarted; traps such as `INT`, `INT3` and `INTO` push the address of the
-instruction after. Protected-mode dispatch through IDT gates is not implemented
--- those vectors still latch -- because there are no protected-mode vectors
-published to verify it against.
+A few calls a program polls with -- `GetTickCount`, the rectangle functions,
+a `PeekMessage` that finds nothing -- are answered inside the core, which
+reads their arguments, charges the clock and logs them as the engine would
+(`winbox-cpu/src/quick.rs`), so a polling loop does not leave the core on
+every call.
 
 ## Argument marshalling
 
-There is no ABI helper. `Win16#syscallInvoke` reads arguments directly out of
-the guest stack at `ss:sp`, using the export table's declared types to decide
-how to interpret each slot: 16-bit values inline, `LPCSTR` read as a C string
-through `translateAddress`, structures loaded via `Struct#loadFromMemory`,
-variadics as a far pointer to the remaining stack.
+There is no ABI layer. A function is given `Args` (`call.rs`), a cursor over
+the guest stack above the far return address, and reads its arguments in the
+order it declares them, as Pascal-convention code pushed them: first
+deepest, each `word`, `signed` or `dword` (a far pointer is a doubleword, the
+selector pushed first). The bytes popped come from `kept.rs`, so a function
+reads exactly the arguments its stub's `RETF` will remove. Pointers are read
+and written through the machine's memory by selector and offset
+(`pointers.rs`); structures are laid out field by field from their bytes.
 
-This is why the CPU's registers and memory have to stay cheap to reach from
-JavaScript, and why guest memory should live somewhere a JavaScript view can
-address directly.
+A function answers `Answer::Nothing`, `Word` or `Dword`, put in AX, or DX:AX.
+It is either `Sync`, run at once with the system borrowed, or `Async`, a
+future on the `Engine`.
 
-## The core boundary
+## The engine and its tasks
 
-Everything above the emulator is written against `src/emulator/cpu-core.ts`:
+`Engine` (`crates/winbox-win16/src/engine.rs`) holds the `System` -- the
+processor, memory, the modules' state -- and runs the program as a future, on
+one thread, in the browser as natively. A call that must call back into the
+guest, or wait for a message while time passes, is an `Async` function: it
+awaits `Engine::call_with`, which saves the processor, lays the arguments
+below the stack, writes the thunk's `CALLF` and runs the guest until its
+`INT 81h`, then puts the processor back. Host and guest frames interleave to
+any depth.
 
-| Interface     | Meaning                                                    |
-| ------------- | ---------------------------------------------------------- |
-| `CpuCore16`   | The 286 surface. Implemented by `core/i286.ts`.            |
-| `CpuCore`     | Adds 386 enhanced mode. Implemented by `core/i386.ts`.     |
-| `CpuCoreHost` | What a core needs from its environment. Provided by `CPU`. |
+Tasks take turns as Windows gives them the processor (`scheduler.rs`): one
+runs at a time and gives it up only where it waits -- for a message, in
+`Yield`, or for another task to answer what it sent. Procedures due at
+interrupt time, MMSYSTEM's timer events, come between two slices of the
+task's instructions (`interrupts.rs`).
 
-`Machine#cpu` is typed, so the compiler checks both sides of the seam: a core
-that fails to implement the contract, and host code that reaches for something
-the contract does not promise.
+Time is the machine's clock (`winbox-machine/src/clock.rs`). Virtual, it is
+the instructions run at a fixed rate, with instructions charged for each call
+the program's processor did not run, so a run does the same whatever the
+host's speed: the replay and the corpus run on it. Real, it is the host's
+milliseconds. The engine's `Pace` says how it waits: `Blocking` sleeps, as
+the native front end may; `Yielding` hands the thread back to its caller
+until the host's time comes, as a browser's page must.
 
-### The four invariants
+## Memory and the core boundary
 
-A replacement core must honour all four. They are documented in full in
-`cpu-core.ts` and are tested in `test/emulator/cpu_core_conformance_test.ts`,
-which any core must pass unchanged.
+The core reaches memory through a `Bus` (`winbox-cpu/src/lib.rs`): byte and
+word reads and writes by linear address, any of which may answer that only
+the host can say (`Exit::Host`). `winbox_machine::Memory` is the machine's:
+four GiB of linear addresses, made a mebibyte at a time as each is first
+written. Segments are mapped one to one: a descriptor index names the 64 KiB
+from the index times 64 KiB, and a task's segments are in the local
+descriptor table, as Windows puts them, their selectors ending in 7
+(`winbox-machine/src/descriptors.rs`). GDI's data segment is made byte by
+byte as a program reads it (`Exit::Host`, `gdi/heap.rs`).
 
-1. **Traps suspend at an instruction boundary.** The vector is latched and
-   drained by the host between instructions; CS:IP, the stack and the segment
-   registers are untouched.
-2. **A trap may suspend the guest indefinitely.** API implementations are
-   frequently async. A core that must run to completion, or cannot be re-entered
-   exactly where it stopped, will not work.
-3. **Execution re-enters from the host.** Host and guest frames interleave to
-   arbitrary depth. There is no single linear instruction stream.
-4. **Guest code is modified while it runs.** The callback thunk's `CALLF`
-   immediate is patched before every use. A core that caches decoded
-   instructions or compiles basic blocks must invalidate on writes to guest
-   code — this is the constraint most likely to be missed by a recompiling
-   core, and it fails as callbacks dispatching to the wrong procedure.
+The core decodes every instruction each time it runs it and computes flags
+eagerly; it caches nothing decoded, so code written while it runs -- the
+callback thunk's `CALLF`, patched before each use -- is read afresh. It
+reports the selectors loaded since the host last asked (`Exit::Loads`), for a
+host that keeps copies of their descriptors.
+
+## CPU accuracy
+
+Accuracy is measured, not estimated. `pnpm test:conformance`
+(`crates/winbox-cpu/tests/conformance.rs`) runs the core against instruction
+tests captured from real parts, the
+[SingleStepTests](https://github.com/SingleStepTests) 80286 and 80386 suites,
+and holds each file's count of vectors passed to a baseline
+(`baseline286.json`, `baseline386.json`); see the README for fetching the
+vectors.
+
+On the 80286's 326 files, 250 vectors of each, 77,239 of the
+79,507 compared pass (97.1%), and 298 files pass whole. Most of the rest is
+instructions the core leaves to its host: the port instructions (`IN`, `OUT`,
+`INS`, `OUTS`), which a Windows program's engine runs, and `HLT`, which stops
+the run. On the 80386's 941 files, 100 of each, 91,537 of 91,600 pass
+(99.9%), and 913 pass whole; the rest are a few vectors each of the multiply
+and divide group (`F6`, `F7`), `AAM` and `FF /0`, `/1`.
+
+Where the two parts differ, the vectors decide which is which; the core takes
+the 80286's answer in real mode where its suite pins it -- `POPF` and `IRET`
+clear FLAGS bits 12 to 15 in real mode, and load every flag in protected mode
+(`load_flags`, `interrupt.rs`). The flags the manuals call undefined are the
+parts' as the vectors record them (after `MUL`, `IMUL`, `DIV` and `IDIV`, SF,
+ZF and PF follow the high half and AF is set, for instance), and so are the
+faults: an access whose bytes run past the end of its segment raises `#GP`,
+checked per access rather than per operand.
+
+Known gaps, each kept as an ignored test with its evidence
+(`kb/guides/retire-typescript.md`, "Not yet done"): an expand-down segment
+read above or below its limit, and an instruction fetched past CS's limit,
+stop the core where the 80386 reads or raises `#GP`; WIN87EM's emulator is
+not there, so a program with the coprocessor switched off stops at its first
+floating-point interrupt.
 
 ## Presentation
 
 The whole screen is one raster, as it is on Windows: USER draws every window's
 frame, caption, menus and controls itself, pixel for pixel, on USER's raster
-desktop (`src/win16/user/desktop.ts`), from the installation's own display
-driver and fonts, and each can be held to what Windows drew. A screen reader
-is not given the pixels: beside the canvas is a mirror of USER's window tree
-(`src/win16/user/accessible-tree.ts`, `src/run/aria-mirror.ts`), each window
-named by its caption and each control by its role, following what has the
-keyboard. The Rust engine makes the same tree, to the character
-(`crates/winbox-win16/src/accessible_tree.rs`), held to the TypeScript
-engine's at the same places of the same runs (`test/raster/accessible-trees`).
+desktop (`crates/winbox-win16/src/desktop.rs`, `desktop_paint.rs`), from the
+installation's own display driver and fonts, and each can be held to what
+Windows drew. A screen reader is not given the pixels: beside the canvas is a
+mirror of USER's window tree (`accessible_tree.rs`, mirrored by the page's
+`src/run/aria-mirror.ts`), each window named by its caption and each control
+by its role, following what has the keyboard.
 
-A GDI surface's pixels are not the canvas. Every device context -- a program's
-window, a memory device context, the screen -- draws into a `DeviceBitmap` of
-palette indices, one byte a pixel, and the screen is shown on its canvas by a
-`Presenter` once a frame, only the rectangle written since the last one. See the oracle's README, "Comparing what gets drawn".
+A GDI surface's pixels are not the canvas. Every device context -- a
+program's window, a memory device context, the screen -- draws into a
+`DeviceBitmap` of palette indices, one byte a pixel
+(`crates/winbox-raster/src/device_bitmap.rs`; where each context's drawing
+lands, `surface.rs`), and the screen is turned into colours for its host,
+with the cursor drawn over a copy, by `present.rs`. See the oracle's README,
+"Comparing what gets drawn".
+
+## The engine in a page
+
+`crates/winbox-web` is the engine built for WebAssembly (`pnpm build:web`,
+wasm-bindgen's glue in `target/winbox-web`). Its `Machine` (`lib.rs`; the work
+is in `session.rs`, Rust alone, so it is tested natively) takes the page's
+drives, filled in memory before the program starts, starts a program, a
+group's item or an installer, and runs a step at a time between the page's
+frames, on the host's own clock, never blocking (`step`, `Pace::Yielding`). It
+hands over the screen as the RGBA bytes a canvas takes, the sound card's
+events, the calls made, the window tree, and the changes to each drive, and
+takes the mouse and keyboard. The page loads it at run time
+(`src/run/engines/rust.ts`); `pnpm build` copies it into `dist/web` beside
+the page.
+
+## The native front end
+
+`crates/winbox-native` runs the engine in a window of the host's: winit for
+the window and input, softbuffer for the pixels, cpal for WinBox's sound card.
+Desktop mode shows the whole screen in one window; `--seamless` shows each
+top-level window as a host window of its own (`seamless_host.rs`,
+`kb/guides/seamless-windows.md`). Its drives are host folders laid over an
+installation or the asset bundle's base, programs kept as layers
+(`programs.rs`), and images mounted (`mounts.rs`). The README lists its
+switches.
 
 ## The run page
 
-`run.html`, served by `pnpm dev`, runs programs in the browser on either
-engine. It is not part of the library bundle: `pnpm build` (`src/shim.ts` to
-`dist/winbox.js`) reaches nothing under `src/run/page/` or `src/run/ui/`, and
-holds no React or MUI. Everything around the Windows screen is React and MUI;
-the screen itself is the engine's.
+`run.html`, served by `pnpm dev` and built by `pnpm build` into `dist/web`,
+runs programs in the browser on the engine in a page (above). Everything
+around the Windows screen is React and MUI; the screen itself is the
+engine's. `src/run/engines/rust.ts` is the page's side of the engine
+(`Engine`, `engine.ts`).
 
 **State and actions** (`src/run/page/`, plain TypeScript, no React):
 
@@ -176,7 +273,7 @@ the screen itself is the engine's.
 - `view.ts` makes each panel's rows and words from the state, changing
   nothing (`windowsText`, `driveRows`, `installView`, `keptRows`, ...): what
   `test/run/page_view_test.ts` tests from jest.
-- The actions, by concern: `machine.ts` (the engine chosen, a machine made
+- The actions, by concern: `machine.ts` (a machine made
   with the `Page` its engine is given, shown and closed -- `addMachine`,
   `select`, `closeMachine` -- its trace, keeping what its programs write,
   `rebuild`), each taking the machine it acts on, `accept.ts` (files
@@ -207,9 +304,9 @@ but reachable, its reason in its words -- each run by `actions.launch`.
 Where an item's working directory is not there it first asks, with
 `confirm.tsx`, Program Manager's own question ("Invalid Path", "The working
 directory is invalid."), OK not shown as destructive. It is added beside
-Kept programs and the Programs list, which stay. The engines take an item's
-command line, current directory and show command (`Engine.run`'s `item`:
-`Win16.run`'s, `Session::start_item`). JSX is compiled by the bundler's own transform
+Kept programs and the Programs list, which stay. The engine takes an item's
+command line, current directory and show command (`Engine.run`'s `item`,
+`Session::start_item`). JSX is compiled by the bundler's own transform
 (`"jsx": "react-jsx"` in `tsconfig.json`, which Vite's transform reads): no
 plugin, nothing added to `vite.config.ts`.
 
@@ -236,11 +333,11 @@ side's "Browse files…" (where "Files on C:" was) and each drive's card
 folder's path as breadcrumbs, Up, Read again, and the folder as a grid: name,
 size and date as DOS's `DIR` shows them (8.3 names, upper case, `<DIR>`,
 `03-10-92  3:10a`), and a Changes column. C: is read from what the page has,
-the same on either engine: the plan's folders, files and stamps, then the
+the plan's folders, files and stamps, then the
 engine's changes against it (`Engine.changes`), each marked "Kept" where it is
 the change put back as C: was made (`session.given`), "Changed" where written
-since; the folders on the way to a file the volume's own stamp, as both
-engines' drives make them. A drive of images is read from its disk's image as
+since; the folders on the way to a file the volume's own stamp, as the
+engine's drives make them. A drive of images is read from its disk's image as
 programs have written it (`Engine.diskImage`), with the page's readers
 (`volumeOf`), each entry "Changed" where the disk as it was put in has none of
 its name, size and stamp. Nothing is written to any drive. The grid follows
@@ -257,7 +354,7 @@ in the dialog's own status line, the page's being hidden while it is open.
 hands it to `start`; each machine puts an element of its own in it, which
 its engine fills (`makeScreen`, `screenNote`), the shown machine's alone not
 `hidden`. React never renders into it, so the canvas, its host and the ARIA
-mirror (`aria-mirror.ts`) are the engines' alone. Above it, the machines'
+mirror (`aria-mirror.ts`) are the engine's alone. Above it, the machines'
 tabs (the WAI-ARIA tabs pattern: a tablist "Machines", a tab for each named
 by its install, the arrows among them, the selection following; the section
 the tab panel), and beside the tablist, outside it, the Close of the
@@ -271,7 +368,7 @@ canvas holds the display's own pixels; the page draws it larger or smaller
 with CSS. The section is as wide as its column and as tall as the display's
 shape makes it, up to the window's height less the page's chrome; a
 `ResizeObserver` on it, and an observer of the canvas's `width` and `height`
-(the Rust engine sizes its canvas afresh), set the canvas's CSS size within it,
+(the engine sizes its canvas afresh), set the canvas's CSS size within it,
 centred, the bands beside it black -- never per frame. Each display is shown as
 a 4:3 monitor of its day showed it, DOSBox's way (`vga_draw.cpp`): 640x480 and
 larger 4:3, square pixels; EGA 640x350 and CGA 640x200 stretched to 4:3, pixels
@@ -325,7 +422,7 @@ red takes dark text on it, as white on it is under AA. With
   Windows. **Meta+Escape** (the Windows logo key, Command on a Mac, with
   Esc) leaves it, to the line beneath it, which says so and describes the
   desktop (`aria-describedby`). Windows 3.1's keyboard has no Meta key and
-  neither engine gives it a virtual key, so Windows sees nothing of it; the
+  the engine gives it no virtual key, so Windows sees nothing of it; the
   Escape is taken before the desktop has it (`page/leave.ts`).
 - A skip link, first, goes to the desktop.
 
@@ -340,245 +437,10 @@ C: and on the disc, with the screen on the whole screen, with a program kept
 and running, with the launcher's menu open, a group's items open and an item
 that cannot run focused, with the confirmation open and with an installer
 offered, each in both colour schemes, and tries the skip link and the way out
-of the desktop. Two installs on two machines, each a tab, are run on both
-engines (`keepPmitem`, `keepStrings`), with axe on the two tabs. The
+of the desktop. Two installs on two machines, each a tab, are run
+(`keepPmitem`, `keepStrings`), with axe on the two tabs. The
 launcher's own test runs `pmitem`'s child from a kept
-group (`keepPmitem`) on both engines, by the keyboard and the mouse, each
+group (`keepPmitem`), by the keyboard and the mouse, each
 line it writes held to the probe's records. The components are linted with
 `eslint-plugin-jsx-a11y` and `eslint-plugin-react-hooks`, each as it
 recommends.
-
-## Known gaps
-
-Found while formalizing the boundary; recorded here rather than fixed silently.
-
-**Where the 286 and the 386 differ.** The emulator is a 386, and for the HLE it
-can be assumed to be a 386 already in protected mode. The conformance corpus is
-an 80286 in real mode, so it is an oracle for the instruction semantics the two
-parts share and for nothing else. The audit found four places that are
-part-specific, and only one of them is a behaviour the two parts disagree on:
-
-| Behaviour                                            | Status                                                                                    |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `POPF`/`IRET` clearing FLAGS bits 12-15 in real mode | Diverges. The 386 is understood to permit IOPL and NT. Left as the measured 286 behaviour |
-| Shift counts masked to five bits                     | Shared by both parts; the comment naming the 286 is about provenance, not divergence      |
-| Undefined flags for the multiplies and divides       | Measured on a 286. Unverifiable for the 386 without a corpus                              |
-| The `IDIV` quotient of -128 the part lets through    | Described as a bug in the reference. Unknown on a 386                                     |
-
-The `POPF` divergence is deliberately not "corrected" to the 386 answer. The
-branch is real-mode only and the HLE never reaches it, nothing published can
-verify the 386 behaviour, and changing it would trade a measured behaviour for
-an assumed one across five hundred passing vectors. It is marked in the source.
-
-**What being a 386 in protected mode actually implies** is a different and
-larger list, none of it reachable by the corpus. Protected mode is the only
-mode the Win16 layer ever runs in, and no published corpus covers it, so
-`test/emulator/protected_mode_test.ts` builds descriptor tables by hand and
-serves as the oracle instead. Writing it turned up five decoding bugs at once,
-all of which it now pins:
-
-- **DPL was read out of the wrong byte.** `(flags >> 13) & 3` lands on byte 6,
-  where the granularity bits are; DPL is bits 5-6 of the access byte.
-- **The granularity bit was decoded and discarded.** A segment declared in 4 KiB
-  units had a limit 4,096 times too small, which mattered not at all while no
-  limit was enforced and would have been fatal the moment one was.
-- **Segment limits were not enforced at all.** The `#GP` rule was real-mode only,
-  where the limit is always 64 KiB; a descriptor's limit can be anything up to
-  four gigabytes, and expand-down segments invert the comparison entirely.
-- **A null selector loaded as present**, so using one addressed real memory at
-  zero rather than faulting.
-- **A selector past the end of the table threw the string `'F'`.** The bounds
-  test was also off by one, rejecting the last descriptor that fits.
-
-The limit check hangs off `requireWithinDescriptorLimit`, which the 386 core
-overrides and the 286 core leaves empty -- a 286 in protected mode is a dead end
-this project has no reason to emulate, so `I286#retrieveDescriptor` now decodes
-real-mode selectors only and the 386 core owns the tables.
-
-### Where the limit check lives
-
-It began in the operand helpers, which was the wrong place: they cover the
-ModRM forms and nothing else, so the `moffs` forms, the string operations,
-pushes and pops, and instruction fetch itself all reached memory without being
-checked. The check now sits in `translateAddress`, which every access goes
-through, so those paths are covered by construction rather than by having been
-remembered.
-
-The two modes turned out to want the same comparison. A real-mode segment is
-64 KiB, so the rule the corpus pins -- an access crossing the end of a segment
-faults, where the 8086 wrapped -- is a limit check against 0xFFFF, and a
-descriptor limit is that same check against a different number. Each descriptor
-carries the bounds worked out once when it was loaded, including the inversion
-for expand-down segments and an impossible pair for a segment that is not
-present, so the check on the hot path is two integer comparisons and every
-decision about which fault to raise happens in the slow path.
-
-**It cost nothing.** Measured with `pnpm bench` over four workloads in both
-modes, three alternating runs each, every change landed inside the ±6%
-run-to-run spread, with medians between -0.5% and +3.5%. The check paid for
-itself because it replaced a worse path: `translateAddress` used to call
-`computeBase`, which did the same descriptor-cache lookup and then threw the
-descriptor away to return one field, after which the operand helpers looked it
-up a second time to check the limit. One lookup and two comparisons is less work
-than that, and `computeBase` is gone.
-
-Every descriptor is built with the same keys in the same order -- the real-mode
-one, the null selector, and the decoded one all carry `nullSelector` and the
-precomputed bounds whether they need them or not -- so the property reads on the
-hot path stay monomorphic. That is worth 5.6% on fetch-heavy code in protected
-mode and nothing anywhere else, which is about what a hidden-class miss is worth.
-
-The benchmark also says protected mode runs fetch-heavy code about 30% slower
-than real mode, and has since before any of this: the gap was 38% at the
-baseline. It is not the limit check -- the memory-heavy workloads show no gap at
-all -- and it has not been chased down yet.
-
-Correctness moved the right way too: 96.4% to **96.5%** of the corpus, with all
-326 forms still passing the no-regression gate. Widening the check exposed one
-real bug behind it -- a fault raised from inside a memory access reported the
-restart address from the core's own instruction object rather than the one in
-flight, so it pushed a CS of zero. `decode` now records the instruction it is
-given, which is what the corpus had been quietly failing on.
-
-What is still missing:
-
-- `cpl` is hard-wired to zero on the 386 core, so no DPL or RPL check can ever
-  fire, and neither can a stack switch on a privilege change.
-- A not-present segment faults when it is used rather than when its selector is
-  loaded, which is where the part raises `#NP`.
-- Offsets are masked to sixteen bits in `translateAddress`, so a 32-bit
-  addressing mode cannot reach past 64 KiB into a larger segment. Nothing the
-  Win16 layer does needs it yet.
-- Faults latch rather than dispatch, because protected-mode dispatch reads a
-  gate out of the IDT and none of that is written.
-- The descriptor cache is loaded when a selector is loaded and is never
-  invalidated otherwise, which matches the hardware. What it means is that the
-  Win16 allocator must reload selectors after moving a segment, and that has
-  not been checked. The cache is keyed by selector value rather than by segment
-  register, so two registers holding the same selector share one entry.
-
-The emulator unit suite passes in full. It spent a long time not doing so --
-3,787 of its 3,823 tests failed -- because it had been written against an
-earlier shape of the emulator: a segmented `Memory`, registers on the `CPU`
-wrapper, and register index constants the wrapper never exposed. All of that
-had since moved into the execution core. The suite now addresses memory
-through the core, so tests and instructions translate addresses identically in
-whatever mode the core is in.
-
-- **`CpuState` omits FLAGS.** `Scheduler#call` snapshots state before entering
-  a callback and restores it afterwards, so a callback's flag results leak back
-  into the interrupted code. Survivable because flags are caller-saved by
-  convention. Covered by a `.failing` conformance test.
-- **`SIDT` reads a field that is never assigned.** `core/i286.ts` writes
-  `this.idt` for `SIDT`, but nothing sets it, and the protected-mode table
-  lives in `idtBase`/`idtLimit`. `SIDT` should also store six bytes (limit word
-  plus base), not a single 16-bit operand.
-- **The real-mode interrupt path in `raiseInterrupt` is unreachable.** Everything
-  after the latch is dead code. If real-mode vectoring is ever needed, it needs
-  writing rather than enabling.
-
-## CPU accuracy
-
-Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
-against instruction tests captured from a real 80286 and reports a per-opcode
-pass rate; see the Testing section of the README for how to fetch the vectors.
-
-Across all **326** instruction forms the suite publishes, **96.4%** of vectors
-pass and 284 forms pass completely.
-
-The target is a 386 with a 286 mode, so where the two parts differ the 386
-behaviour is the correct one and the 80286 corpus is only an oracle where they
-agree. That distinction has not yet been audited; see the known gaps.
-
-Of what remains, the great majority is instructions never decoded at all:
-
-| Family                     | Forms | Vectors |
-| -------------------------- | ----- | ------- |
-| Port I/O (`IN`, `OUT`)     | 4     | 1000    |
-| String I/O (`INS`, `OUTS`) | 4     | 967     |
-| `HLT`, `SALC`              | 2     | 500     |
-| `BOUND`                    | 1     | 250     |
-
-The rest is around 140 vectors spread thinly over the string, stack and
-segment-register moves, all of it the segment-limit rule below reaching paths
-that do not go through the operand helpers.
-
-### Faults
-
-A memory operand whose bytes run past the end of its segment raises `#GP`.
-Real-mode segments are 64 KiB, and the parts from the 286 onwards fault where
-the 8086 wrapped the offset silently.
-
-Two details of that are easy to get wrong and are worth stating, because both
-read the same in prose and differ by thousands of vectors:
-
-- It is `#GP` even for an operand addressed through SS. `#SS` belongs to the
-  stack operations proper, not to data that merely defaults to the stack
-  segment, which is what `[bp+si]` is.
-- The check is per access, not per operand. A far pointer read at offset
-  0xFFFE does **not** fault: the offset word is read at 0xFFFE and the segment
-  word comes from offset 0, wrapping inside the segment. Only an individual
-  16-bit access that straddles the end faults, so 0xFFFD faults on its second
-  word and 0xFFFE does not.
-
-### Flag behaviour the manuals call undefined
-
-Compatibility means matching the part, including where Intel documents nothing.
-These rules were measured against the hardware vectors -- each holds for 100% of
-the tests for the instructions listed -- and are why the flag failure count went
-from 11,841 to 323:
-
-| Instruction                  | Flag           | Behaviour                                                                    |
-| ---------------------------- | -------------- | ---------------------------------------------------------------------------- |
-| `AND`, `OR`, `XOR`, `TEST`   | AF             | Always cleared                                                               |
-| `SHL`/`SAL`                  | AF             | Bit 4 of the result                                                          |
-| `SHR`, `SAR`                 | AF             | Always set                                                                   |
-| `SHR`                        | OF             | Only meaningful for a count of 1; cleared beyond                             |
-| `MUL`, `IMUL`, `DIV`, `IDIV` | SF, ZF, PF     | Describe the _high_ half of the result: AH for byte forms, DX for word forms |
-| `MUL`, `IMUL`, `DIV`, `IDIV` | AF             | Always set                                                                   |
-| `ROL`, `ROR`, `RCL`, `RCR`   | SF, ZF, PF, AF | Untouched                                                                    |
-
-### Bugs the vectors caught that a reading would not
-
-Several of these were invisible to inspection and to the unit suite, and only
-appeared as a handful of failures out of thousands:
-
-- `instruction.segment || this.ds` treated a segment override of **zero** as no
-  override at all, silently falling back to the default segment. Segment 0 is
-  perfectly legal, so any string operation or memory access under an override
-  in a zero segment read from the wrong place. Twenty-five sites, now `??`.
-- `CALL SP` pushed the return address before reading its target, so it jumped
-  to the stack pointer as the push had left it, two bytes low.
-- `JMP FAR m16:16` rejected the instruction outright unless a segment override
-  was present, rather than defaulting to DS.
-- `SUB` and `SBB` computed OF, like AF before it, from the negated operand.
-- `DAS` dropped the borrow out of its first adjustment, which belongs in CF.
-- `83 /r` sign-extended its immediate into a negative JavaScript number rather
-  than the 16-bit operand it represents, so CF was computed against the wrong
-  range for every negative immediate. `ADD`/`SUB`/`CMP` on a word with a byte
-  immediate is about as common as instructions get, and 42% of its vectors
-  failed.
-- `ENTER` decremented `this.instruction.level`, which is an undeclared field
-  rather than the decoded instruction, so every nested-level `ENTER` threw.
-  Behind that, it never allocated the frame: `ENTER imm16, imm8` ends with
-  `SP = SP - imm16`, and the immediate was decoded and then unused.
-- `IMUL` with an immediate recomputed CF and OF after the ALU had already set
-  them, comparing a 32-bit product against a 16-bit sign extension of itself.
-  The right answer was there and was being discarded.
-- `0x82` was not decoded at all. It is an undocumented alias of `0x80`, the
-  byte-operand ALU group with a byte immediate, and assemblers of the era
-  emitted it. Two case labels, 2,000 vectors.
-- `POPF` and `IRET` let the popped word set IOPL and NT. On the 286 in real
-  mode the top four bits of FLAGS are always clear after a pop -- a divergence
-  from the 8086, where they read as one -- and the existing ring-0 guard never
-  fired because real mode reports CPL 0. Both now share a `loadFlags` path.
-  The protected-mode half of that path is unverified: the published corpus is
-  real mode only.
-- FLAGS bit 1 is reserved and reads as one; the packed word omitted it, so
-  `PUSHF` stored and `LAHF` loaded a value two low. Flag comparisons were
-  unaffected, which is why it survived so long -- the oracle masks that bit out
-  deliberately, since the core does not model it. Only instructions that
-  _store_ the word rather than test it could see the difference.
-
-The `DIV`/`IDIV` and `AAD` flag rules, and the `CALL SP` ordering, came from
-the `machinery` reference implementation, which passes the same suite.
