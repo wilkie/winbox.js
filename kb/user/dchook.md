@@ -22,4 +22,4 @@ topics: [visible-regions, device-context-internals]
 
 ## Implementation
 
-`src/win16/user/dc-entries.ts` (`dcHook`, `DCHook`) and the Rust engine's `crates/winbox-win16/src/dc_entries.rs`. WinBox runs it itself where a context's hook is USER's: GDI's calls run it first where the flag is set, and so does reading the visible region. Called through the processor, at the address `GetProcAddress` gives, it finds the entry by the data, the context's handle here, and does the same.
+`crates/winbox-win16/src/dc_entries.rs`. WinBox runs it itself where a context's hook is USER's: GDI's calls run it first where the flag is set, and so does reading the visible region. Called through the processor, at the address `GetProcAddress` gives, it finds the entry by the data, the context's handle here, and does the same.

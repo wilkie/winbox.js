@@ -146,4 +146,4 @@ Both engines had made a window put after `#32771` topmost, made only the window 
 
 ## In winbox.js
 
-`crates/winbox-win16/src/z_order.rs` work out a window at the top's list (`planZOrder`, `plan_z_order`), whether each lies in place (`liesWhere`, `stayRun`) and link it (`placePlan`, `Desktop.linkAfter`). `positionChanging` and `positionChanged` in `window-state.ts` (`crates/winbox-win16/src/position.rs`) ask, place and tell by it; `activateWindow` brings a window up with `positionRaster`. `CreateWindow` links a window with `Desktop.linkMade` after `WM_NCCREATE`.
+`crates/winbox-win16/src/z_order.rs` work out a window at the top's list (`planZOrder`, `plan_z_order`), whether each lies in place (`liesWhere`, `stayRun`) and link it (`placePlan`, `Desktop.linkAfter`). `position_changing` and `position_changed` in `crates/winbox-win16/src/position.rs` ask, place and tell by it; `activateWindow` brings a window up with `positionRaster`. `CreateWindow` links a window with `Desktop.linkMade` after `WM_NCCREATE`.

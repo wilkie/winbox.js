@@ -45,4 +45,4 @@ winbox.js agrees with all of them on all four displays.
 
 ## In winbox.js
 
-`crates/winbox-win16/src/gdi/mapping.rs` holds each device context's mapping and the rounding. The Ex forms, which answer in a `POINT` or `SIZE`, wrap the plain ones in `src/win16/gdi/ex-forms.ts`, as [[probe:exfuncs]] records them: see [[fn:GDI.MoveToEx]]. A drawing call maps its coordinates as it starts, and only when the mapping moves or scales something, so every call made in `MM_TEXT` with no origin moved does exactly what it did before.
+`crates/winbox-win16/src/gdi/mapping.rs` holds each device context's mapping and the rounding. The Ex forms, which answer in a `POINT` or `SIZE`, wrap the plain ones, as [[probe:exfuncs]] records them: see [[fn:GDI.MoveToEx]]. A drawing call maps its coordinates as it starts, and only when the mapping moves or scales something, so every call made in `MM_TEXT` with no origin moved does exactly what it did before.

@@ -19,4 +19,4 @@ An extra with a count of nought, which divides by nought in GDI; GDI keeping eve
 
 ## In winbox.js
 
-`src/win16/gdi/justify.ts`. `TextOut` and `ExtTextOut` draw justified text through the per-character spacing `ExtTextOut` already had; `GetTextExtent` adds what the breaks add.
+`crates/winbox-win16/src/gdi/text.rs`. `TextOut` and `ExtTextOut` draw justified text through the per-character spacing `ExtTextOut` already had; `GetTextExtent` adds what the breaks add.

@@ -107,10 +107,9 @@ What the card plays is handed to the host with its rate, channels and bits: winb
 ## Not yet done
 
 - The command tables' contents: `mciSendString` here parses its commands itself, and does not load the core table as it first looks a command up (seg5 `3095`).
-- A sound card in the TypeScript engine: it installs only drivers from files, and the installation it runs names none.
 
 ## In winbox.js
 
-The device layer is `crates/winbox-win16/src/mmsystem/devices.rs`: the drivers installed and numbered, the handles, the messages. What MMSYSTEM checks first is `crates/winbox-win16/src/mmsystem/checks.rs`; the waveform, MIDI and auxiliary calls `wave`, `midi` and `auxiliary`; `DriverCallback` `callback`. The TypeScript engine has no driver of its own and installs only drivers from files, which run on the processor; the Rust engine has its own sound card as well (`wbsound`).
+The device layer is `crates/winbox-win16/src/mmsystem/devices.rs`: the drivers installed and numbered, the handles, the messages. What MMSYSTEM checks first is `crates/winbox-win16/src/mmsystem/checks.rs`; the waveform, MIDI and auxiliary calls `wave`, `midi` and `auxiliary`; `DriverCallback` `callback`. The Rust engine installs drivers from files, which run on the processor, and has its own sound card as well (`wbsound`).
 
 MCI is `crates/winbox-win16/src/mmsystem/mci.rs`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `crates/winbox-win16/src/mmsystem/mci_drivers.rs`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.

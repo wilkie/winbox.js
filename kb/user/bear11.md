@@ -27,4 +27,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/SetTimer.ts` over `crates/winbox-win16/src/queue.rs` (`set_timer_as`). A timer's key is its window, identifier and message, so a system timer and a timer of one identifier are two; USER's own system timers -- the caret's, the scroll bars', the screen saver's -- are set the same way. A timer of no window and identifier nought is kept as 1, the identifier answered. WinBox's identifiers for a timer of no window are not entry addresses.
+`crates/winbox-win16/src/queue.rs` (`set_timer_as`). A timer's key is its window, identifier and message, so a system timer and a timer of one identifier are two; USER's own system timers -- the caret's, the scroll bars', the screen saver's -- are set the same way. A timer of no window and identifier nought is kept as 1, the identifier answered. WinBox's identifiers for a timer of no window are not entry addresses.

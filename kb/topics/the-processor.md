@@ -64,7 +64,7 @@ node scripts/fetch-cpu-tests.mjs --cpu 386 --all # the 386's, ~600 MiB
 pnpm test:conformance                            # both, against their baselines
 ```
 
-`test/conformance/oracle.ts` and `oracle386.ts` run them; `moo.ts` reads the suites' MOO files; the reports go to `test/conformance/report.md` and `report386.md`. A pass rate below its baseline fails the run.
+`crates/winbox-cpu/tests/conformance.rs` runs them, reading the 80386's MOO files. A pass rate below its baseline fails the run.
 
 ## Speed
 

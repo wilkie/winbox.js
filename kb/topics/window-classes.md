@@ -51,4 +51,4 @@ A window class is registered by an instance and found by its name. [[probe:class
 
 ## In winbox.js
 
-`src/win16/user/GetClassInfo.ts` has the call; it writes the ten fields itself, since USER's procedures are functions here and a menu's name is kept as a string. `RegisterClass` answers the class's handle, which is the known gap in [[probe:classinf]]'s conformance. USER's classes other than the controls and dialogs are not answered.
+`crates/winbox-win16/src/classes.rs` has the call; it writes the ten fields itself, since USER's procedures are functions here and a menu's name is kept as a string. `RegisterClass` answers the class's handle, which is the known gap in [[probe:classinf]]'s conformance. USER's classes other than the controls and dialogs are not answered.

@@ -62,7 +62,7 @@ A program started by another, and how the programs share the processor, are in [
 
 ## In winbox.js
 
-`taskEnvironment` in `crates/winbox-win16/src/task.rs` builds the environment. winbox.js has no DOS shell under Windows to lend it variables, so `windir` is the only one. The kernel's path is `C:\WINDOWS\SYSTEM\KRNL386.EXE`, as recorded. `RegisterWindowMessage` counts up from `0xC000` by one, which is the known gap in its conformance. The environment's other records depend on the DOS host and have no replay. `test/win16/task_test.ts` holds the layout, the local heap's growth ([[topic:global-and-local-memory]]) and the message rules.
+`taskEnvironment` in `crates/winbox-win16/src/task.rs` builds the environment. winbox.js has no DOS shell under Windows to lend it variables, so `windir` is the only one. The kernel's path is `C:\WINDOWS\SYSTEM\KRNL386.EXE`, as recorded. `RegisterWindowMessage` counts up from `0xC000` by one, which is the known gap in its conformance. The environment's other records depend on the DOS host and have no replay. The tests hold the layout, the local heap's growth ([[topic:global-and-local-memory]]) and the message rules.
 
 `initTask` in `crates/winbox-win16/src/kernel.rs` hands `WinMain` its data segment's selector less one as the instance, and both selectors resolve to the task.
 
