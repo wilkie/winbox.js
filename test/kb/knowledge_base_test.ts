@@ -132,9 +132,7 @@ describe('the knowledge base', () => {
           : {
               ...module,
               exports: module.exports.map((entry) =>
-                entry.name === 'EMSCopy'
-                  ? { ...entry, implemented: false, implementation: null }
-                  : entry
+                entry.name === 'EMSCopy' ? { ...entry, implemented: false } : entry
               ),
             }
       );

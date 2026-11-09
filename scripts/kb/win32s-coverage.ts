@@ -7,7 +7,8 @@
  * modules Win32s installs ("runtime") and the ones its setup runs ("setup"),
  * each function imported from a module Windows 3.1 carries, with its ordinal
  * (an import by name is turned into one through `kb/data/exports-3.1.json`)
- * and whether WinBox implements it (`scripts/kb/exports.ts`, the same flag the
+ * and whether WinBox implements it (`scripts/kb/exports.ts`, which reads
+ * `kb/data/winbox-exports.json`, the same flag the
  * kb's pages show). An import from a module one of Win32s' own files is
  * (W32SYS, WIN32S16, OLECLI, WINMM16...) is looked for in that file's exports.
  *

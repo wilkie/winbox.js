@@ -561,6 +561,35 @@ pub(crate) async fn call_named(
     Ok((answer?, structures))
 }
 
+/// What answers an export of a kept module, as the knowledge base's tables
+/// tell them apart (`tests/exports.rs`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Answered {
+    /// A function here (`implementation`).
+    Function,
+    /// A number the linker writes where a program's relocation puts it, as
+    /// KERNEL's `__AHINCR` and `__A000H` are (`linker::kernel_constant`).
+    Constant,
+    /// A place in the module's data a program reads, as `THHOOK` is
+    /// (`exported_data.rs`).
+    Data,
+    /// The module's stub, as `kept.rs` marks it: nought.
+    Stub,
+}
+
+/// What answers the export at an ordinal of a kept module.
+pub fn answered(module: &str, ordinal: u16, name: &str) -> Answered {
+    if module == "KERNEL" && crate::linker::kernel_constant(ordinal, 0).is_some() {
+        Answered::Constant
+    } else if crate::exported_data::exported_data(module, ordinal).is_some() {
+        Answered::Data
+    } else if implementation(module, name).is_some() {
+        Answered::Function
+    } else {
+        Answered::Stub
+    }
+}
+
 /// The function that answers a module's export, if one does here.
 pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation> {
     match module {

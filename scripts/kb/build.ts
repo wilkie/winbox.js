@@ -32,7 +32,7 @@ import {
 } from './evidence.js';
 import { collectExports } from './exports.js';
 import { type Status, VERSIONS } from './frontmatter.js';
-import { readSignature } from './jsdoc.js';
+import { readSignatures } from './signatures.js';
 import { readTimings, type Timing } from './timings.js';
 import { render, type Targets } from './markup.js';
 import {
@@ -55,6 +55,7 @@ const ROOT = process.cwd();
 
 /** How long each call took Windows, as recorded (`timings.ts`). */
 const TIMINGS = readTimings(ROOT);
+const SIGNATURES = readSignatures(ROOT);
 const OUT = join(ROOT, process.env.KB_OUT ?? 'dist/kb');
 /**
  * Where a page links for a file's source: the repository's own `origin`,
@@ -520,18 +521,17 @@ function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
     : '';
 
   const signature =
-    page.entry?.implemented && !constant
-      ? readSignature(ROOT, page.source, page.entry.implementation ?? page.name)
-      : null;
+    page.entry?.implemented && !constant ? SIGNATURES.get(`${module.name}.${page.name}`) : null;
   /* Only what is factual about the signature: the parameters' names and types
-   * and the return type. The descriptions in the source's JSDoc follow the
-   * SDK reference's wording, which the site does not republish; the page's
-   * own summary stands in for them. See the Boundaries in the spec. */
-  const typeName = (type: string) => type.replace(/^(?:Types|Gdi|Kernel|User)\./, '');
+   * and the return type, as `kb/data/signatures.json` keeps them. A summary,
+   * the Rust function's doc comment or one frozen there, is not shown: some
+   * follow the SDK reference's wording, which the site does not republish;
+   * the page's own summary stands in for them. See the Boundaries in the
+   * spec. */
   const signatureHtml = signature
     ? `<h2>Signature</h2>
-<p><code>${escape(typeName(signature.returns?.type ?? 'void'))} ${escape(page.name)}(${signature.parameters
-        .map((parameter) => `${escape(typeName(parameter.type))} ${escape(parameter.name)}`)
+<p><code>${escape(signature.returns)} ${escape(page.name)}(${signature.parameters
+        .map((parameter) => `${escape(parameter.type)} ${escape(parameter.name)}`)
         .join(', ')})</code></p>`
     : '';
 

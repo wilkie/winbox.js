@@ -19,6 +19,7 @@ import { join, relative } from 'node:path';
 
 import { type ExportEntry, type ModuleEntry } from './exports.js';
 import { type FrontMatter, parsePage, type Status, type Version, VERSIONS } from './frontmatter.js';
+import { type RustArm, scanRust } from './rustdoc.js';
 import { probeSource } from './evidence.js';
 import { fontsSections, type Targets } from './markup.js';
 
@@ -151,12 +152,31 @@ export function articles(pages: Page[], kind: ArticleKind) {
     .sort((a, b) => a.page.front.name.localeCompare(b.page.front.name));
 }
 
+let scanned: Map<string, RustArm> | null = null;
+
+/** Where the Rust engine answers each export (`rustdoc.ts`), scanned once. */
+export function rustArms(): Map<string, RustArm> {
+  scanned ??= scanRust(ROOT);
+  return scanned;
+}
+
+/** An export's arm, by its module's and its own name. */
+export const armOf = (arms: Map<string, RustArm>, module: string, name: string) =>
+  arms.get(`${module}.${name}`);
+
 /**
  * Joins the survey, our tables and the pages, and refuses a page that does not
  * match: an export Windows does not have, an ordinal that disagrees, a status
  * that contradicts our table, a probe or a source file that is not there.
+ * A page that names no source of its own links the Rust file of its
+ * function's arm.
  */
-export function assemble(survey: Survey, tables: ModuleEntry[], pages: Page[]): ModulePage[] {
+export function assemble(
+  survey: Survey,
+  tables: ModuleEntry[],
+  pages: Page[],
+  arms: Map<string, RustArm> = rustArms()
+): ModulePage[] {
   const modules: ModulePage[] = [];
 
   for (const surveyed of survey.modules) {
@@ -322,11 +342,12 @@ export function assemble(survey: Survey, tables: ModuleEntry[], pages: Page[]): 
   for (const module of modules) {
     for (const page of module.exports) {
       const implemented = !!page.entry?.implemented;
-      const file = page.entry?.implementation
-        ? `src/win16/${module.name.toLowerCase()}/${page.entry.implementation}.ts`
-        : null;
+      const file =
+        implemented && page.entry?.kind === 'function'
+          ? (armOf(arms, module.name, page.entry.name)?.file ?? null)
+          : null;
 
-      page.source = page.page?.front.source ?? (file && existsSync(join(ROOT, file)) ? file : null);
+      page.source = page.page?.front.source ?? file;
 
       for (const version of VERSIONS) {
         page.versions[version] =

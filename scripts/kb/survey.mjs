@@ -3,7 +3,7 @@
  * Surveys what a Windows installation's libraries actually export, for the
  * knowledge base.
  *
- * The export tables in `src/win16` say what winbox.js declares. They are not
+ * The export tables in `kept.rs` say what WinBox declares. They are not
  * an authority on what Windows exports: they carry placeholder entries for
  * unused ordinals, names a later or earlier Windows used, and they leave out
  * whole libraries. So the knowledge base takes the list of exports from the
