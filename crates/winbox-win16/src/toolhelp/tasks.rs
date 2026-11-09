@@ -133,9 +133,9 @@ pub fn task_get_csip(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     })))
 }
 
-/// Where a task will go on from changed (seg1 `0d68`-`0d94`): nought for
-/// the running task; else the old place, IP in AX and CS in DX. As
-/// `toolhelp/tasks.ts`. **Recorded** by `thswch`.
+/// Where a task will go on from changed (seg1 `0d68`-`0d94`): nought for the
+/// running task; else the old place, IP in AX and CS in DX. **Recorded** by
+/// `thswch`.
 pub fn task_set_csip(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let task = args.word(system);
     let cs = args.word(system);
@@ -173,9 +173,9 @@ fn set_csip(system: &mut System, task: u16, cs: u16, ip: u16) -> u32 {
     u32::from(frame.cs) << 16 | u32::from(frame.ip)
 }
 
-/// A task sent somewhere else and run there at once (seg1 `0dc0`-`0e62`):
-/// one, or nought for the running task or one that is no task. As
-/// `toolhelp/tasks.ts`. **Recorded** by `thswch`.
+/// A task sent somewhere else and run there at once (seg1 `0dc0`-`0e62`): one,
+/// or nought for the running task or one that is no task. **Recorded** by
+/// `thswch`.
 pub fn task_switch(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let task = {

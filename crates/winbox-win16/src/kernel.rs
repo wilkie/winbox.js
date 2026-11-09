@@ -313,13 +313,11 @@ fn get_version(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Dword(0x0616_0a03))
 }
 
-/// The Windows version the module of a handle or instance was made for,
-/// as `CreateWindow` asks it (`KRNL386.EXE` seg1 `4f02`-`4f27`):
-/// `GetExePtr`'s module, its word 3Eh in AX
-/// (`System::expected_windows_version`) and its flag 2000h in DX
-/// (`System::module_flag_2000`). For a handle of no module, nought in AX
-/// and DX as it was. **Recorded** by `lbmark` and `modnum`. As
-/// `GetExpWinVer.ts`.
+/// The Windows version the module of a handle or instance was made for, as
+/// `CreateWindow` asks it (`KRNL386.EXE` seg1 `4f02`-`4f27`): `GetExePtr`'s
+/// module, its word 3Eh in AX (`System::expected_windows_version`) and its flag
+/// 2000h in DX (`System::module_flag_2000`). For a handle of no module, nought
+/// in AX and DX as it was. **Recorded** by `lbmark` and `modnum`.
 fn get_exp_win_ver(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let instance = args.word(system);
 
@@ -710,8 +708,7 @@ fn set_error_mode(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     )))
 }
 
-/// `OutputDebugString`, which goes to no debugger here: it shows nothing,
-/// as the TypeScript engine answers it.
+/// `OutputDebugString`, which goes to no debugger here: it shows nothing.
 fn nothing_shown(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Nothing)
 }
@@ -724,10 +721,9 @@ fn is_dbcs_lead_byte(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Word(0))
 }
 
-/// `FatalExit`: `FatalAppExit(0, "Application requested abnormal
-/// termination")` in the retail build (`KRNL386.EXE` seg1 `93ce`-`93e4`),
-/// the code shown nowhere; the procedure `FatalExitHook` keeps is never
-/// called. As `FatalExit.ts`.
+/// `FatalExit`: `FatalAppExit(0, "Application requested abnormal termination")`
+/// in the retail build (`KRNL386.EXE` seg1 `93ce`-`93e4`), the code shown
+/// nowhere; the procedure `FatalExitHook` keeps is never called.
 fn fatal_exit(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         args.word(&engine.system());
@@ -735,10 +731,10 @@ fn fatal_exit(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
-/// USER's system error box, "Application Error" and the text given (or
-/// KERNEL's "Closing current application." for none), its one button
-/// Close; then the task ended through DOS with code `FFh` (seg1
-/// `5cdf`-`5d09`, `5c80`-`5cdc`, `5e01`-`5e19`). As `FatalAppExit.ts`.
+/// USER's system error box, "Application Error" and the text given (or KERNEL's
+/// "Closing current application." for none), its one button Close; then the
+/// task ended through DOS with code `FFh` (seg1 `5cdf`-`5d09`, `5c80`-`5cdc`,
+/// `5e01`-`5e19`).
 fn fatal_app_exit(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let text = {
@@ -759,7 +755,7 @@ fn fatal_app_exit(engine: &Engine, mut args: Args) -> Later<'_> {
 
 /// Where KERNEL's loader binds an import it cannot find: `FatalAppExit`'s
 /// routine with nought and KERNEL's text at 9BAh of its data (seg1
-/// `72d4`-`72eb`). As `kernel/internals.ts`; **recorded** by `undefdl`.
+/// `72d4`-`72eb`). **Recorded** by `undefdl`.
 fn undef_dynlink(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move { ended_in_box(engine, b"Call to Undefined Dynalink").await })
 }

@@ -666,7 +666,7 @@ fn win_old_app_hackomatic(system: &mut System, args: &mut Args) -> Result<Answer
 }
 
 /// Whether the mouse, pressed at a point, is dragged (`USER.EXE` seg14
-/// `035e`-`03ec`); see `DragDetect` in `small-calls.ts`.
+/// `035e`-`03ec`).
 fn drag_detect(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hwnd, x, y) = {

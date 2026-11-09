@@ -263,9 +263,9 @@ pub(crate) fn find_typed(
     find_in(system, instance, &name, &Wanted::Number(kind))
 }
 
-/// A resource loaded into a block of its own: its block's handle. Loaded
-/// again, the same handle, its uses counted. Through a handler a program
-/// set for its type, as `resource-handlers.ts`'s `loadThroughHandler`.
+/// A resource loaded into a block of its own: its block's handle. Loaded again,
+/// the same handle, its uses counted. Through a handler a program set for its
+/// type.
 pub fn load_resource(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (instance, handle) = {
@@ -342,10 +342,9 @@ fn load_resource_here(system: &mut System, handle: u16) -> Result<Answer, Stop> 
     Ok(Answer::Word(block))
 }
 
-/// A resource's block locked, as `GlobalLock` locks one: KERNEL's own
-/// counts it as a program's lock is (`KRNL386.EXE` seg1 `8768`); a
-/// discarded resource's block loaded by its type's handler, as
-/// `resource-handlers.ts`'s `lockThroughHandler`.
+/// A resource's block locked, as `GlobalLock` locks one: KERNEL's own counts it
+/// as a program's lock is (`KRNL386.EXE` seg1 `8768`); a discarded resource's
+/// block loaded by its type's handler.
 pub fn lock_resource(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let block = args.word(&engine.system());

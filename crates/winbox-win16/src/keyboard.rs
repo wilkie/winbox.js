@@ -571,8 +571,7 @@ fn get_table_seg(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(system.keyboard_tables))
 }
 
-/// The character a key types (seg10 `0430`-`06c5`); see `driver.ts`'s
-/// `ToAscii`.
+/// The character a key types (seg10 `0430`-`06c5`).
 fn to_ascii(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let vk = args.word(system);
     let scan = args.word(system);
@@ -744,7 +743,7 @@ fn alt_digit(
 }
 
 /// The scan code and shift state that type an OEM character (seg4
-/// `000c`-`00b6`); see `driver.ts`'s `OemKeyScan`.
+/// `000c`-`00b6`).
 fn oem_key_scan(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let mut character = args.word(system) as u8;
     let mut shifts = 0u8;
@@ -799,7 +798,7 @@ fn partner(from: &[u8], to: &[u8], byte: u8) -> Option<u8> {
     from.iter().position(|&each| each == byte).map(|at| to[at])
 }
 
-/// A key's name (seg9 `0311`-`040c`); see `driver.ts`'s `GetKeyNameText`.
+/// A key's name (seg9 `0311`-`040c`).
 fn get_key_name_text(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     use crate::keyboard_tables::{
         DEAD_NAME_CHARACTERS, DEAD_NAME_INDEX, DONT_CARE_FROM, DONT_CARE_TO, EXTENDED_NAME_INDEX,
@@ -883,8 +882,8 @@ fn get_key_name_text(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Word(size as u16))
 }
 
-/// The driver enabled (`KEYBOARD.DRV` seg10 `09d0`-`0a65`), as
-/// `keyboard/driver.ts`'s `Enable`. **Recorded** by `kbenable`.
+/// The driver enabled (`KEYBOARD.DRV` seg10 `09d0`-`0a65`). **Recorded** by
+/// `kbenable`.
 fn enable(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let procedure = args.dword(system);
     let state = args.dword(system);
@@ -932,8 +931,8 @@ fn enable(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Nothing)
 }
 
-/// The driver disabled (`KEYBOARD.DRV` seg10 `0aac`-`0afb`), as
-/// `keyboard/driver.ts`'s `Disable`. **Recorded** by `kbenable`.
+/// The driver disabled (`KEYBOARD.DRV` seg10 `0aac`-`0afb`). **Recorded** by
+/// `kbenable`.
 fn disable(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     system.keyboard_started();
 

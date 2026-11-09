@@ -18,8 +18,7 @@ const ENGINE_FONTINFO: u32 = 0x96;
 const FONT_HEADER: u32 = 0x76;
 
 /// A printer's context answers the block its driver's `FONTINFO` is in; a
-/// display's, a block kept for its font object the first time it is asked
-/// for. As `GetPhysicalFontHandle` in `physical-font.ts`.
+/// display's, a block kept for its font object the first time it is asked for.
 fn get_physical_font_handle_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let Some(dc) = dc_of(system, hdc) else {

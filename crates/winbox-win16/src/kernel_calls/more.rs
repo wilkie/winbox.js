@@ -504,10 +504,9 @@ pub fn delete_path_name(engine: &Engine, mut args: Args) -> Later<'_> {
     open_path(engine, path, 0x4100)
 }
 
-/// Every block an owner has freed (seg1 `0e39`-`0e87`): the owner a
-/// task's prefix, nought for the running task's; `GMEM_SHARE` blocks are
-/// the module's and stay. `FFFFh`. As `more-calls.ts`. **Recorded** by
-/// `gfreeal`.
+/// Every block an owner has freed (seg1 `0e39`-`0e87`): the owner a task's
+/// prefix, nought for the running task's; `GMEM_SHARE` blocks are the module's
+/// and stay. `FFFFh`. **Recorded** by `gfreeal`.
 pub fn global_free_all(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let owner = args.word(system);
     let task = if owner == 0 {

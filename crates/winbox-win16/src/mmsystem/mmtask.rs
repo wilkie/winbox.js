@@ -295,8 +295,7 @@ fn word(system: &System, selector: u16, at: u16) -> u16 {
     u16::from_le_bytes([bytes[0], bytes[1]])
 }
 
-/// What `MMTASK` does once started (`MMTASK.TSK` seg1 `0000`-`007a`), as
-/// `mmtask.ts`'s `mmTaskMain`.
+/// What `MMTASK` does once started (`MMTASK.TSK` seg1 `0000`-`007a`).
 pub fn mm_task_main(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let instance = args.word(&engine.system());

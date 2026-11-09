@@ -246,8 +246,7 @@ const SM_CXCURSOR: i16 = 13;
 const SM_CYCURSOR: i16 = 14;
 
 /// The member of an icon or cursor group that fits the display: its
-/// identifier (`USER.EXE` seg12 `052b`-`05b6`), as the TypeScript engine's
-/// `cursor-make.ts` says more of. **Recorded** by `iconid`.
+/// identifier (`USER.EXE` seg12 `052b`-`05b6`). **Recorded** by `iconid`.
 fn get_icon_id(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let type_name = args.dword(system);

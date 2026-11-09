@@ -250,7 +250,7 @@ fn create_polygon_rgn(system: &mut System, args: &mut Args) -> Result<Answer, St
 /// hands its polygon builder the count of polygons where the count of
 /// points goes, so **recorded**, one polygon or two make no region. Not
 /// followed: what it makes of three or more, which is not their union; here
-/// it is, as in the TypeScript engine.
+/// it is.
 fn create_poly_polygon_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let counts = args.dword(system);
@@ -791,9 +791,8 @@ fn offset_clip_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 }
 
 /// The smallest rectangle around what can be drawn on, in logical terms, in
-/// order: the kind of region, or nought for no device context. The
-/// TypeScript engine writes through a null pointer's sides, and throws, and
-/// the program stops, as it does here.
+/// order: the kind of region, or nought for no device context. A null
+/// pointer for the rectangle stops the program as its sides are written.
 fn get_clip_box(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);

@@ -688,15 +688,14 @@ fn ds_word(system: &System, offset: u16) -> u16 {
     system.read_word(u32::from(ds) << 16 | u32::from(offset))
 }
 
-/// A local heap's notify procedure replaced, the caller's heap's: KERNEL
-/// swaps the far pointer at offset 1Eh of the heap's information, which
-/// DS:6 points at, and answers the one that was there (`KRNL386.EXE` seg2
-/// `0278`, `28a0`-`28b4`). KERNEL's own is `8de2` in its first code
-/// segment, which `LocalInit` puts there; WinBox has no such segment, and
-/// its offset is there with the segment nought (`LocalHeap::init`).
-/// **Recorded** by `locinfo`. WinBox's heap tells KERNEL's own procedure,
-/// as its routines do, whatever is there: a program's own is not called.
-/// As `LocalNotify.ts`.
+/// A local heap's notify procedure replaced, the caller's heap's: KERNEL swaps
+/// the far pointer at offset 1Eh of the heap's information, which DS:6 points
+/// at, and answers the one that was there (`KRNL386.EXE` seg2 `0278`,
+/// `28a0`-`28b4`). KERNEL's own is `8de2` in its first code segment, which
+/// `LocalInit` puts there; WinBox has no such segment, and its offset is there
+/// with the segment nought (`LocalHeap::init`). **Recorded** by `locinfo`.
+/// WinBox's heap tells KERNEL's own procedure, as its routines do, whatever is
+/// there: a program's own is not called.
 pub fn local_notify(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let procedure = args.dword(system);
     let ds = u32::from(system.cpu.segments[DS].selector) << 16;
@@ -710,11 +709,11 @@ pub fn local_notify(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     ])))
 }
 
-/// The bytes free in the caller's local heap: each free block's size less
-/// the ten of its arena, walking the free list from the first arena to the
-/// last (`KRNL386.EXE` seg2 `29c9`-`2a00`). Nought where the heap's
-/// information cannot be read through DS, by its limit (seg1 `2a55`), or
-/// has no `LH` at 28h. **Recorded** by `locinfo`. As `LocalNotify.ts`.
+/// The bytes free in the caller's local heap: each free block's size less the
+/// ten of its arena, walking the free list from the first arena to the last
+/// (`KRNL386.EXE` seg2 `29c9`-`2a00`). Nought where the heap's information
+/// cannot be read through DS, by its limit (seg1 `2a55`), or has no `LH` at
+/// 28h. **Recorded** by `locinfo`.
 pub fn local_count_free(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     let ds = system.cpu.segments[DS].selector;
     let info = ds_word(system, 6);
@@ -745,10 +744,9 @@ pub fn local_count_free(system: &mut System, _: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Word(free))
 }
 
-/// The caller's local heap's size: its last arena's address less its
-/// first's (`KRNL386.EXE` seg2 `2a01`-`2a0b`), read from the heap's
-/// information, which DS:6 points at, with nothing checked. **Recorded**
-/// by `locinfo`. As `LocalNotify.ts`.
+/// The caller's local heap's size: its last arena's address less its first's
+/// (`KRNL386.EXE` seg2 `2a01`-`2a0b`), read from the heap's information, which
+/// DS:6 points at, with nothing checked. **Recorded** by `locinfo`.
 pub fn local_heap_size(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     let info = ds_word(system, 6);
 
@@ -757,14 +755,13 @@ pub fn local_heap_size(system: &mut System, _: &mut Args) -> Result<Answer, Stop
     ))
 }
 
-/// Bytes of another instance's data copied into the caller's, from and to
-/// the same offset (`KRNL386.EXE` seg2 `08a9`-`08d6`): the instance's data
-/// segment, as `GlobalHandle` finds it from the handle, read at the offset
-/// and the caller's DS written there. The count; nought for a handle of no
-/// segment. **Recorded** by `locinfo`, a second instance asking of the
-/// first. WinBox finds a program's or a library's data segment from its
-/// instance; a module it keeps has none here, and answers nought. As
-/// `GetInstanceData.ts`.
+/// Bytes of another instance's data copied into the caller's, from and to the
+/// same offset (`KRNL386.EXE` seg2 `08a9`-`08d6`): the instance's data segment,
+/// as `GlobalHandle` finds it from the handle, read at the offset and the
+/// caller's DS written there. The count; nought for a handle of no segment.
+/// **Recorded** by `locinfo`, a second instance asking of the first. WinBox
+/// finds a program's or a library's data segment from its instance; a module it
+/// keeps has none here, and answers nought.
 pub fn get_instance_data(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let instance = args.word(system);
     let offset = args.word(system);

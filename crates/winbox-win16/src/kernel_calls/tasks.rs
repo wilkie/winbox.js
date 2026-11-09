@@ -90,9 +90,8 @@ pub fn post_event(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     Ok(Answer::Word(task))
 }
 
-/// A task's event taken (seg1 `7ca8`-`7cfc`): nought where it has one,
-/// else the processor given up until `PostEvent` gives it one, then `FFh`.
-/// As `task-calls.ts`.
+/// A task's event taken (seg1 `7ca8`-`7cfc`): nought where it has one, else the
+/// processor given up until `PostEvent` gives it one, then `FFh`.
 pub fn wait_event(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let task = {

@@ -1593,7 +1593,7 @@ impl Run<'_> {
 /// `TrackPopupMenu`: a pop-up menu shown with its top left at a point of
 /// the screen, run until it closes, and the command chosen sent to the
 /// window given, as `WM_COMMAND`. Only `TPM_LEFTALIGN` is placed as asked;
-/// the other alignments are not done yet, as in the TypeScript engine.
+/// the other alignments are not done yet.
 /// Whether the menu was shown.
 pub fn track_popup_menu(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {

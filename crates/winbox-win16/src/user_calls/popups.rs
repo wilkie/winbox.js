@@ -11,8 +11,7 @@ const HELP_QUIT: u16 = 0x0002;
 /// Whether a pop-up shows: a visible top-level window that has an owner. A
 /// program's own unowned overlapped window does not count, and an owned
 /// pop-up does (`queries`); an unowned pop-up is not recorded. Nought with
-/// no raster desktop. Asking makes the desktop, as asking the TypeScript
-/// engine for its desktop makes it.
+/// no raster desktop. Asking makes the desktop.
 pub(super) fn any_popup(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     if !system.raster() {
         return Ok(Answer::Word(0));

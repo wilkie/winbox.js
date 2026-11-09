@@ -450,9 +450,8 @@ async fn hide_item(engine: &Engine, dialog: u16, id: u16) -> Result<(), Stop> {
 
 /// The About box's procedure as SHELL exports it (`SHELL.DLL` seg9
 /// `0136`-`0725`), for a box made with it: `WM_INITDIALOG` reads the block
-/// `ShellAbout` hands `DialogBoxParam` (seg9 `0000`-`004d`) -- the icon at
-/// 0, the program's name at 2, the other text at 6. As `about.ts`'s
-/// `AboutDlgProc`. **Recorded** by `aboutdp`.
+/// `ShellAbout` hands `DialogBoxParam` (seg9 `0000`-`004d`) -- the icon at 0,
+/// the program's name at 2, the other text at 6. **Recorded** by `aboutdp`.
 pub fn about_dlg_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hwnd, message, about) = {

@@ -299,8 +299,8 @@ pub(super) fn exclude_update_rgn(system: &mut System, args: &mut Args) -> Result
     )))
 }
 
-/// `RedrawWindow` (`USER.EXE` seg1 `aabf`, `3e1e`, `3ed7`; `rdwwalk`). The
-/// TypeScript engine's `RedrawWindow`. **Read out**:
+/// `RedrawWindow` (`USER.EXE` seg1 `aabf`, `3e1e`, `3ed7`; `rdwwalk`).
+/// **Read out**:
 ///
 /// * A handle that is no window, or a region that is no region, answers
 ///   nought (`aac8`, `aadd`-`aaec`, KERNEL's `HandleParamError`); flags

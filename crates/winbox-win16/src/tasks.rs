@@ -774,9 +774,8 @@ pub fn yield_call(engine: &Engine, _: Args) -> Later<'_> {
     })
 }
 
-/// The processor given up as KERNEL gives it up itself, with no look at
-/// USER's queue (`KRNL386.EXE` seg1 `7d3e`-`7d6f`): `FFFFh`. As
-/// `WinExec.ts`'s `OldYield`.
+/// The processor given up as KERNEL gives it up itself, with no look at USER's
+/// queue (`KRNL386.EXE` seg1 `7d3e`-`7d6f`): `FFFFh`.
 pub fn old_yield(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
         engine.yield_turn(None).await?;

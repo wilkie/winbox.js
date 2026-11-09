@@ -106,9 +106,8 @@ impl System {
     }
 
     /// A device context of a window's, by `GetDCEx`'s flags and a region
-    /// (`USER.EXE` seg1 `a64c`, then `847b`-`87b7`; `dc_entries`), as the
-    /// TypeScript engine's `get-dc-ex.ts` says more of. **Recorded** by
-    /// `getdcex`, `visrule` and `dcentry`.
+    /// (`USER.EXE` seg1 `a64c`, then `847b`-`87b7`; `dc_entries`).
+    /// **Recorded** by `getdcex`, `visrule` and `dcentry`.
     pub fn get_dc_ex(&mut self, hwnd: u16, region: u16, flags: u32) -> u16 {
         if hwnd == 0 || matches!(self.target_of(hwnd), Target::None) {
             return 0;

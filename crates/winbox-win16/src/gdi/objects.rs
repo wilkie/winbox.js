@@ -952,8 +952,8 @@ pub(crate) fn create_font_indirect_call(
 }
 
 /// `CreateFontIndirect` with the structure spread out into fourteen
-/// arguments -- but for the precisions, which the TypeScript engine carries
-/// no further and makes nought.
+/// arguments -- but for the precisions, which are carried no further and
+/// made nought.
 ///
 /// The quality is carried, where the TypeScript engine's `CreateFont` makes
 /// it nought too: **recorded**, the `font` probe's proof quality requests,

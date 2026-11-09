@@ -382,7 +382,7 @@ fn engine_set_font_context_call(system: &mut System, args: &mut Args) -> Result<
     Ok(Answer::Dword(set_context(system, far, angle)))
 }
 
-/// `EngineGetGlyphBmp` (`GDI.EXE` seg7 `09e9`), as in `engine-glyphs.ts`.
+/// `EngineGetGlyphBmp` (`GDI.EXE` seg7 `09e9`).
 fn engine_get_glyph_bmp_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
 
@@ -516,8 +516,7 @@ pub(crate) fn width_of(font: &LogicalFont, info: &FontInfo, code: u16) -> Result
         .map_err(super::text::unreadable)
 }
 
-/// `EngineGetCharWidth` (`GDI.EXE` seg3 `2c8a`, into `2662`), as in
-/// `engine-glyphs.ts`.
+/// `EngineGetCharWidth` (`GDI.EXE` seg3 `2c8a`, into `2662`).
 fn engine_get_char_width_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let first = args.word(system);
@@ -551,10 +550,9 @@ fn engine_get_char_width_call(system: &mut System, args: &mut Args) -> Result<An
 /// `CEh`.
 const ENGINE_TEXT_FRAMES: u16 = 2 + 6 + 4 + 20 * 2 + 2 + 2 + 0x90 + 6;
 
-/// `EngineExtTextOut` (`GDI.EXE` seg1 `669a`), as in `engine-glyphs.ts`:
-/// a negative count's extent; nought for the rest.
-/// `EngineExtTextOut`: a negative count measured here, any other drawn
-/// (`engine_text.rs`).
+/// `EngineExtTextOut` (`GDI.EXE` seg1 `669a`): a negative count's extent;
+/// nought for the rest. `EngineExtTextOut`: a negative count measured here, any
+/// other drawn (`engine_text.rs`).
 fn engine_ext_text_out_any(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
         let given = {

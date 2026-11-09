@@ -101,10 +101,9 @@ fn bitmap_resource(system: &mut System, id: u16) -> Option<Vec<u8>> {
         .map(|resource| resource.data.to_vec())
 }
 
-/// A bitmap of COMMDLG's own, by its number, made for the screen with the
-/// first entry of its colour table that is one colour made another
-/// (**read out of `COMMDLG.DLL`**, seg6 `0000`-`0135`), as `pictures.ts`
-/// says more of. **Recorded** by `loadalt`.
+/// A bitmap of COMMDLG's own, by its number, made for the screen with the first
+/// entry of its colour table that is one colour made another (**read out of
+/// `COMMDLG.DLL`**, seg6 `0000`-`0135`). **Recorded** by `loadalt`.
 pub(super) fn load_alter_bitmap(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (id, replace, instead) = {

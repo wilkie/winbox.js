@@ -55,6 +55,26 @@ export interface RustArm {
   /** Other arms for the same name in the module's dispatches, which a call
    * does not reach first: file and line. */
   alsoIn: string[];
+
+  /**
+   * Where the arm a call reaches first is a wrapper ahead of one other arm
+   * -- a printer's wrapper (`printer_output.rs` and the rest) that hands any
+   * other device context on to GDI's own arm, MCISEQ's `DriverProc` that
+   * hands what the sequencer does not answer on to `mci_drivers.rs` -- that
+   * other arm's function, which answers a plain call: its path, file, line
+   * and doc comment. `null` where the arm has no other, or more than one.
+   */
+  plain: {
+    path: string | null;
+    file: string | null;
+    line: number | null;
+    doc: string | null;
+  } | null;
+
+  /** The summary a function's page shows: the first paragraph of `plain`'s
+   * doc comment where there is a `plain`, else of the arm's own; `null`
+   * where that is only the function's name and where it is (`bare`). */
+  shown: string | null;
 }
 
 /** A source file, with its comments and strings blanked for scanning. */
@@ -418,6 +438,14 @@ const firstParagraph = (doc: string) =>
     .split(/\n\s*\n/)[0]
     .replace(/\s+/g, ' ')
     .trim();
+
+/**
+ * Whether a summary is only the function's name and where it is,
+ * `` `mmioOpen` (`2a5`). ``: it says nothing of what the function does, so
+ * no summary is shown for it.
+ */
+const bare = (summary: string, name: string) =>
+  new RegExp(`^\`?${name}\`?\\s*\\([^()]*\\)\\.?$`, 'i').test(summary);
 
 /** The arms of one dispatch: each export name and the expression it answers with. */
 function armsOf(dispatch: Dispatch) {
@@ -799,6 +827,28 @@ export function scanRust(root: string): Map<string, RustArm> {
     return null;
   };
 
+  /* An arm's function: its path, where it is defined, and its doc comment. */
+  const describe = (step: Extract<Step, { kind: 'arm' }>, name: string) => {
+    const answer = step.answer as
+      { path: string | null } | { made: { source: Source; at: number } };
+    const armLine = lineOf(step.source.text, step.at);
+    const definition =
+      'made' in answer
+        ? answer.made
+        : answer.path
+          ? define(step.source, answer.path, sources)
+          : null;
+    const own = 'path' in answer && answer.path === null;
+
+    return {
+      armLine,
+      path: 'made' in answer ? name : answer.path,
+      file: own ? step.source.file : (definition?.source.file ?? null),
+      line: own ? armLine : definition ? lineOf(definition.source.text, definition.at) : null,
+      doc: definition && !('made' in answer) ? docAbove(definition.source, definition.at) : null,
+    };
+  };
+
   const arms = new Map<string, RustArm>();
 
   for (const [module, starts] of roots) {
@@ -847,32 +897,25 @@ export function scanRust(root: string): Map<string, RustArm> {
       }
 
       const { step } = found;
-      const answer = step.answer as
-        { path: string | null } | { made: { source: Source; at: number } };
-      const armLine = lineOf(step.source.text, step.at);
-      const definition =
-        'made' in answer
-          ? answer.made
-          : answer.path
-            ? define(step.source, answer.path, sources)
-            : null;
-      const own = 'path' in answer && answer.path === null;
-      const doc =
-        definition && !('made' in answer) ? docAbove(definition.source, definition.at) : null;
+      const first = describe(step, name);
+      const rest = (others.get(name) ?? []).filter((other) => other !== step);
+      const plain = rest.length === 1 ? describe(rest[0], name) : null;
+      const shown = plain ? plain.doc : first.doc;
+      const summaryShown = shown ? firstParagraph(shown) : null;
 
       arms.set(`${module}.${name}`, {
         module,
         name,
         armFile: step.source.file,
-        armLine,
-        path: 'made' in answer ? name : answer.path,
-        file: own ? step.source.file : (definition?.source.file ?? null),
-        line: own ? armLine : definition ? lineOf(definition.source.text, definition.at) : null,
-        doc,
-        summary: doc ? firstParagraph(doc) : null,
-        alsoIn: (others.get(name) ?? [])
-          .filter((other) => other !== step)
-          .map((other) => `${other.source.file}:${lineOf(other.source.text, other.at)}`),
+        armLine: first.armLine,
+        path: first.path,
+        file: first.file,
+        line: first.line,
+        doc: first.doc,
+        summary: first.doc ? firstParagraph(first.doc) : null,
+        alsoIn: rest.map((other) => `${other.source.file}:${lineOf(other.source.text, other.at)}`),
+        plain: plain && { path: plain.path, file: plain.file, line: plain.line, doc: plain.doc },
+        shown: summaryShown && !bare(summaryShown, name) ? summaryShown : null,
       });
     }
   }

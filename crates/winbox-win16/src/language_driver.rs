@@ -278,12 +278,12 @@ impl System {
 }
 
 /// USER's ordinal 470, `StringFunc` (`USER.EXE` seg11 `02e7`): four string
-/// routines behind one entry, chosen by CX through the table at `02df` --
-/// 1 `AnsiNext`'s body, 2 `AnsiPrev`'s, 3 `AnsiUpper` and 4 `AnsiLower`
-/// through their entries' tails, the last two by the language driver where
-/// one is loaded. Each pops its own arguments, 4 bytes or `AnsiPrev`'s 8.
-/// **Recorded** by `strfunc`. Another CX is not followed: nothing popped,
-/// the registers left. As `src/win16/user/string-func.ts`.
+/// routines behind one entry, chosen by CX through the table at `02df` -- 1
+/// `AnsiNext`'s body, 2 `AnsiPrev`'s, 3 `AnsiUpper` and 4 `AnsiLower` through
+/// their entries' tails, the last two by the language driver where one is
+/// loaded. Each pops its own arguments, 4 bytes or `AnsiPrev`'s 8. **Recorded**
+/// by `strfunc`. Another CX is not followed: nothing popped, the registers
+/// left.
 fn string_func(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
         let (routine, ss, sp) = {

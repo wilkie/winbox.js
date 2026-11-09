@@ -152,9 +152,9 @@ pub fn is_task_locked(system: &mut System, _: &mut Args) -> Result<Answer, Stop>
 }
 
 /// Locks the input to one window, or lets it go (`USER.EXE` seg1
-/// `4983`-`4af8`), as `lock-input.ts` has it: nought where the handle
-/// given first is not nought; to lock, where it is locked already or the
-/// window is none or a child; to let go, where it is not locked.
+/// `4983`-`4af8`): nought where the handle given first is not nought; to lock,
+/// where it is locked already or the window is none or a child; to let go,
+/// where it is not locked.
 ///
 /// Locking, USER locks the running task (`LockMyTask`), so no other runs;
 /// then keeps, and sets, without a message to any window: the focus and

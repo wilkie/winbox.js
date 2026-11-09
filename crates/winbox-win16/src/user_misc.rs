@@ -598,8 +598,7 @@ pub(crate) fn is_char_lower(system: &mut System, args: &mut Args) -> Result<Answ
 /// Pascal function: the output, the format and the values. Its count of
 /// characters written, its nought not counted. A format whose segment is
 /// nought is a number, not a string, and spells out nothing. A null format
-/// stops the program: the TypeScript engine takes the length of nothing
-/// there and throws.
+/// stops the program, its length taken at nought.
 ///
 /// Not done here: a format that cannot be read is turned away by the
 /// TypeScript engine before the call, answering nought and writing nothing

@@ -153,8 +153,7 @@ impl System {
 /// A window's icons put in their slots again, from the one at the top, a
 /// place set for any of them forgotten; answers how many (`userwin`: 0, 1,
 /// 2 -- of two, the one minimized last, above, takes the first slot).
-/// Nought with no raster desktop; asking makes it, as in the TypeScript
-/// engine.
+/// Nought with no raster desktop; asking makes it.
 pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
 

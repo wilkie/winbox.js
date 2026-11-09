@@ -253,7 +253,7 @@ pub fn load_cursor_icon_handler(system: &mut System, args: &mut Args) -> Result<
     Ok(Answer::Word(old_handler(system, block, resource)))
 }
 
-/// `LoadIconHandler` (seg12 `0328`-`0371`), as `icon-handlers.ts`'s.
+/// `LoadIconHandler` (seg12 `0328`-`0371`).
 pub fn load_icon_handler(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let block = args.word(system);
     let new_format = args.word(system);
@@ -271,9 +271,8 @@ pub fn load_icon_handler(system: &mut System, args: &mut Args) -> Result<Answer,
     Ok(Answer::Word(if done { block } else { 0 }))
 }
 
-/// `SignalProc` (`USER.EXE` seg1 `09bc`-`0a5c`), as `icon-handlers.ts`'s:
-/// signal 40h sets a module's handlers for its icons and cursors to USER's;
-/// nought answered.
+/// `SignalProc` (`USER.EXE` seg1 `09bc`-`0a5c`): signal 40h sets a module's
+/// handlers for its icons and cursors to USER's; nought answered.
 pub fn signal_proc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let signal = args.word(system);

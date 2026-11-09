@@ -967,8 +967,8 @@ fn extract_icons(
 }
 
 /// Icons of a file, a block of `nIcons` words (`SHELL.DLL` seg10
-/// `026e`-`0881`): fixed, zeroed, its words those `extract_icons` sets;
-/// nought where none is made. As `programs.ts`'s `InternalExtractIcon`.
+/// `026e`-`0881`): fixed, zeroed, its words those `extract_icons` sets; nought
+/// where none is made.
 pub fn internal_extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
 

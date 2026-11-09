@@ -47,6 +47,8 @@ import {
   type Page,
   readPages,
   readSurvey,
+  armOf,
+  rustArms,
   slugOf,
   targetsOf,
 } from './pages.js';
@@ -523,16 +525,27 @@ function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
   const signature =
     page.entry?.implemented && !constant ? SIGNATURES.get(`${module.name}.${page.name}`) : null;
   /* Only what is factual about the signature: the parameters' names and types
-   * and the return type, as `kb/data/signatures.json` keeps them. A summary,
-   * the Rust function's doc comment or one frozen there, is not shown: some
-   * follow the SDK reference's wording, which the site does not republish;
-   * the page's own summary stands in for them. See the Boundaries in the
-   * spec. */
+   * and the return type, as `kb/data/signatures.json` keeps them. The
+   * summaries frozen beside them are not shown: some follow the SDK
+   * reference's wording, which the site does not republish (see the
+   * Boundaries in the spec). */
   const signatureHtml = signature
     ? `<h2>Signature</h2>
 <p><code>${escape(signature.returns)} ${escape(page.name)}(${signature.parameters
         .map((parameter) => `${escape(parameter.type)} ${escape(parameter.name)}`)
         .join(', ')})</code></p>`
+    : '';
+
+  /* The summary: the first paragraph of the `///` comment of the Rust
+   * function that answers a plain call (`rustdoc.ts`, `shown`), the
+   * project's own words. */
+  const summary =
+    page.entry?.implemented && page.entry.kind === 'function'
+      ? (armOf(rustArms(), module.name, page.entry.name)?.shown ?? null)
+      : null;
+  const summaryHtml = summary
+    ? `<h2>Summary</h2>
+<p>${inline(summary).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</p>`
     : '';
 
   const article = body(page.page, 2);
@@ -576,6 +589,7 @@ ${versions}
 </tbody>
 </table>
 ${signatureHtml}
+${summaryHtml}
 ${article.html}
 ${conflict}
 ${evidence}

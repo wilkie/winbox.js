@@ -289,10 +289,9 @@ fn realize_true_type(system: &mut System, logfont: u32, transform: u32, font_inf
     0x96
 }
 
-/// A font the engine realized let go (`GDI.EXE` seg6 `0560`): for a
-/// `FONTINFO` of type 3 whose word 27h points at its name at 6Eh, the block
-/// at +54h freed and the word made nought; 1 answered. As
-/// `EngineDeleteFont` in `engine-font.ts`.
+/// A font the engine realized let go (`GDI.EXE` seg6 `0560`): for a `FONTINFO`
+/// of type 3 whose word 27h points at its name at 6Eh, the block at +54h freed
+/// and the word made nought; 1 answered.
 fn engine_delete_font(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
 

@@ -1057,9 +1057,9 @@ pub fn get_message(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 /// The next message, if there is one; it never waits. With nothing, the
-/// other tasks run, unless `PM_NOYIELD` asks not, and it looks again, as
-/// the TypeScript engine's `PeekMessage` does: a program polling, as
-/// Terminal polls its port, lets the programs beside it run.
+/// other tasks run, unless `PM_NOYIELD` asks not, and it looks again: a
+/// program polling, as Terminal polls its port, lets the programs beside it
+/// run.
 pub fn peek_message(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (far, filter, remove, nothing) = {
@@ -1319,7 +1319,7 @@ pub fn kill_timer(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 
 /// Ordinal 11, `Bear11`: `SetTimer` for a system timer, which comes as
 /// `WM_SYSTIMER` (`USER.EXE` seg1 `744c`, entering the body with CX 1).
-/// **Recorded** by `systimer`. As `SetTimer.ts`.
+/// **Recorded** by `systimer`.
 pub fn bear11(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let id = args.word(system);
@@ -1375,9 +1375,9 @@ pub fn wait_message(engine: &Engine, _: Args) -> Later<'_> {
 }
 
 /// A message posted to a task rather than a window, which `PeekMessage`
-/// takes with no window (`userwin`). As the TypeScript engine posts it: to
-/// the running task's queue, whichever task is named. Nought for a handle
-/// that is no task's.
+/// takes with no window (`userwin`). Not read out: here it goes to the
+/// running task's queue, whichever task is named. Nought for a handle that
+/// is no task's.
 pub fn post_app_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let task = args.word(system);
     let message = args.word(system);

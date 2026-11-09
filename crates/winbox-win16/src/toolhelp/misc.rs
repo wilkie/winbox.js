@@ -69,9 +69,9 @@ pub fn mem_man_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     Ok(Answer::Word(1))
 }
 
-/// A task ended (seg1 `26ea`-`27a0`): `FatalAppExit(0, NULL)`'s box
-/// shown unless `NO_UAE_BOX`, then the task ended with code `FFh`, as DOS's
-/// function 4Ch ends one. As `misc.ts`. **Recorded** by `thtask`.
+/// A task ended (seg1 `26ea`-`27a0`): `FatalAppExit(0, NULL)`'s box shown
+/// unless `NO_UAE_BOX`, then the task ended with code `FFh`, as DOS's function
+/// 4Ch ends one. **Recorded** by `thtask`.
 pub fn terminate_app(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (task, flags) = {

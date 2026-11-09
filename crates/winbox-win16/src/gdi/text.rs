@@ -137,7 +137,7 @@ pub fn get_text_metrics(system: &mut System, hdc: u16) -> Result<Option<Option<T
 /// `GetTextMetrics`: the `TEXTMETRIC` of the font selected, written where
 /// the program asked; nought for a handle that stands for nothing. A context
 /// with no font, or a handle that is no device context's, answers 1 and
-/// writes nothing, as the TypeScript engine's does.
+/// writes nothing; not read out.
 pub(crate) fn get_text_metrics_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);
