@@ -30,18 +30,19 @@ corepack enable pnpm
 pnpm install
 ```
 
-To run real Windows 3.1 programs in a browser, build the Rust engine for
-WebAssembly (it needs `wasm-bindgen-cli` 0.2.129 in `~/.cargo/bin`), then start
-the dev server, with hot module replacement:
+To run real Windows 3.1 programs in a browser, start the dev server, with hot
+module replacement:
 
 ```shell
-pnpm build:web
 pnpm dev
 ```
 
-The page runs programs on the Rust engine; `/run.html?engine=ts` runs them on
-the TypeScript engine instead, as the page does where the Rust engine has not
-been built.
+The page runs programs on the Rust engine built for WebAssembly. `pnpm dev`
+builds it first (`pnpm build:web`, which needs a Rust toolchain with the
+`wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129 in
+`~/.cargo/bin`) where it has not been built, or where the crates have changed
+since; `pnpm build:web` alone builds it again. Where it is not built, the page
+says so on its status line and runs nothing.
 
 Then open `/run.html` on it and drop zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
 memory with 8.3 names, and every Windows program on it gets a Run button. A zip
@@ -232,18 +233,18 @@ pnpm turbo run lint typecheck test build
 
 The individual tasks are also plain scripts, if you prefer:
 
-| Command           | What it does                                |
-| ----------------- | ------------------------------------------- |
-| `pnpm dev`        | Dev server, with the page at `/run.html`    |
-| `pnpm build`      | Production bundle into `dist/`              |
-| `pnpm typecheck`  | `tsc --noEmit` over `src`, `test` and `e2e` |
-| `pnpm lint`       | ESLint over the TypeScript sources          |
-| `pnpm lint:fix`   | ESLint with autofix                         |
-| `pnpm format`     | Prettier over the repository                |
-| `pnpm test`       | Jest unit tests                             |
-| `pnpm test:e2e`   | Playwright browser tests                    |
-| `pnpm bench`      | CPU throughput benchmark                    |
-| `pnpm build:docs` | API documentation into `docs/`              |
+| Command           | What it does                                                                  |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `pnpm dev`        | Dev server, with the page at `/run.html`, the engine built first where needed |
+| `pnpm build`      | Production bundle into `dist/`                                                |
+| `pnpm typecheck`  | `tsc --noEmit` over `src`, `test` and `e2e`                                   |
+| `pnpm lint`       | ESLint over the TypeScript sources                                            |
+| `pnpm lint:fix`   | ESLint with autofix                                                           |
+| `pnpm format`     | Prettier over the repository                                                  |
+| `pnpm test`       | Jest unit tests                                                               |
+| `pnpm test:e2e`   | Playwright browser tests                                                      |
+| `pnpm bench`      | CPU throughput benchmark                                                      |
+| `pnpm build:docs` | API documentation into `docs/`                                                |
 
 ## Documentation
 

@@ -9,7 +9,7 @@
  */
 
 import { readZip } from '../../zip.js';
-import { type WindowsMode } from '../../emulator/machine.js';
+import { type WindowsMode } from '../windows-mode.js';
 import { type Program } from '../drive.js';
 import {
   forgetAllChanges,
@@ -261,12 +261,6 @@ export const actions = {
     if (await rebuild(machine, { keeping: false })) {
       status('Forgot what programs wrote.');
     }
-  },
-
-  /** The other engine's page, once what every machine wrote is kept. */
-  async switchEngine(href: string) {
-    await Promise.all(machines.map((machine) => keepAll(machine)));
-    location.assign(href);
   },
 };
 

@@ -5,11 +5,9 @@
  * what its programs write kept in this browser; and a machine made afresh
  * from what has been dropped.
  *
- * The page is the same whichever engine runs the programs (`../engines/`):
- * the Rust engine built for WebAssembly, by default, once `pnpm build:web`
- * has built it, or the TypeScript engine, at `run.html?engine=ts` -- and
- * where the Rust engine has not been built. Every machine of a page is on
- * the same engine.
+ * The programs run on the Rust engine built for WebAssembly
+ * (`../engines/rust.ts`), once `pnpm build:web` has built it; where it has
+ * not been built, the page says so and makes no machine.
  */
 
 import { type Assets } from '../../assets/bundle.js';
@@ -17,8 +15,7 @@ import { composedDisplays } from '../../assets/compose.js';
 import { type Change, sameChanges } from '../changes.js';
 import { planDrive, type Program, type Stack } from '../drive.js';
 import { type Engine, type Page } from '../engines/engine.js';
-import { type WindowsMode } from '../../emulator/machine.js';
-import { TypeScriptEngine } from '../engines/ts.js';
+import { type WindowsMode } from '../windows-mode.js';
 import { recallChanges, recallLayers, rememberChanges } from '../store.js';
 import {
   current,
@@ -95,11 +92,8 @@ function pageOf(machine: Machine): Page {
 /** Where `pnpm build:web` writes the Rust engine's module, as `pnpm dev` serves it. */
 const RUST_MODULE = '/target/winbox-web/winbox_web_bg.wasm';
 
-/** The engine the page's address asks for, if it asks. */
-const asked = new URLSearchParams(location.search).get('engine');
-
-/** Whether the Rust engine's module has been built, for a page that asks for neither. */
-async function rustBuilt(): Promise<boolean> {
+/** Whether the Rust engine's module has been built. */
+async function engineBuilt(): Promise<boolean> {
   try {
     return (await fetch(RUST_MODULE, { method: 'HEAD' })).ok;
   } catch {
@@ -107,27 +101,20 @@ async function rustBuilt(): Promise<boolean> {
   }
 }
 
-/**
- * Which engine runs the programs: the Rust engine, unless the page's address
- * asks for the TypeScript engine, or the Rust engine has not been built.
- */
-const rust = asked === 'ts' ? false : asked === 'rust' ? true : await rustBuilt();
+/** Whether the engine is not built, which the status line says in place of a machine. */
+session.unbuilt = !(await engineBuilt());
 
-session.rust = rust;
-
-/** Whether the Rust engine was wanted but not there, which the header says. */
-session.unbuilt = asked === null && !rust;
-
-const engineName = rust ? 'Rust' : 'TypeScript';
+/** What the status line says where the engine is not built. */
+export const UNBUILT = 'The engine is not built: run pnpm build:web, then reload this page.';
 
 /**
- * An engine for a machine. The Rust engine's module, and its glue, are only
- * loaded where it is asked for.
+ * An engine for a machine. Its module, and its glue, are only loaded once
+ * the page has found it built.
  */
 function makeEngine(page: Page): Promise<Engine> {
-  return rust
-    ? import('../engines/rust.js').then(({ RustEngine }) => new RustEngine(page))
-    : Promise.resolve(new TypeScriptEngine(page));
+  return session.unbuilt
+    ? Promise.reject(new Error(UNBUILT))
+    : import('../engines/rust.js').then(({ RustEngine }) => new RustEngine(page));
 }
 
 /** Machines made, which numbers the next. */
@@ -190,11 +177,15 @@ export function addMachine({
   };
 
   machine.engine = makeEngine(pageOf(machine));
-  machine.engine.then((one) => {
-    machine.made = one;
-    one.sound = machine.sound;
-    one.heard = machine === current();
-  });
+  machine.engine.then(
+    (one) => {
+      machine.made = one;
+      one.sound = machine.sound;
+      one.heard = machine === current();
+    },
+    /* Not built: `rebuild` says so on the status line. */
+    () => {}
+  );
   machines.push(machine);
   return machine;
 }
@@ -501,9 +492,12 @@ export async function rebuild(machine: Machine, { keeping = true } = {}) {
       await engine.rebuild(setup);
     }
   } catch (error: any) {
-    console.error(error);
+    if (!session.unbuilt) {
+      console.error(error);
+    }
+
     status(
-      `The ${engineName} engine could not start: ${error?.message ?? error}`,
+      session.unbuilt ? UNBUILT : `The engine could not start: ${error?.message ?? error}`,
       'error',
       machine
     );

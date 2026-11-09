@@ -2,7 +2,7 @@
 
 import { type Layer, type LayerManifest } from '../layers/layer.js';
 import { type Change } from './changes.js';
-import { type WindowsMode } from '../emulator/machine.js';
+import { type WindowsMode } from './windows-mode.js';
 
 /**
  * Where the demo page keeps a person's Windows between visits, and what their

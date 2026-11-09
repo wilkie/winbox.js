@@ -7,14 +7,10 @@ import { InterruptManager } from './interrupt-manager.js';
 import { FAT16 } from '../file-systems/fat16.js';
 import { Clock } from './clock.js';
 import { Ports } from './cmos.js';
+import { type WindowsMode } from '../run/windows-mode.js';
 
-/**
- * The mode Windows runs in: standard mode, DOSX's, as every recording but
- * those in `oracle/fixtures/enhanced/` was made; or 386 enhanced mode,
- * WIN386's (`kb/guides/enhanced-mode.md`). KERNEL learns which as it
- * starts and answers by it (`KRNL386.EXE` seg1 `aa76`-`aa90`).
- */
-export type WindowsMode = 'standard' | 'enhanced';
+/** The mode Windows runs in, as the page names it (`src/run/windows-mode.ts`). */
+export type { WindowsMode } from '../run/windows-mode.js';
 
 /** The modes, by the names the page, the native front end and the replays give them. */
 export const WINDOWS_MODES: readonly WindowsMode[] = ['standard', 'enhanced'];

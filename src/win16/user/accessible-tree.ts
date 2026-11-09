@@ -13,6 +13,7 @@ import {
   SBS_VERT,
 } from './controls.js';
 import { MF_CHECKED, MF_DISABLED, MF_GRAYED, MF_POPUP } from './menu-data.js';
+import { type AccessibleNode, type AccessibleTree } from '../../run/accessible-tree.js';
 
 /**
  * USER's windows as an accessibility tree: what a screen reader is given in
@@ -40,29 +41,7 @@ import { MF_CHECKED, MF_DISABLED, MF_GRAYED, MF_POPUP } from './menu-data.js';
  * open, or the window with the focus.
  */
 
-export interface AccessibleNode {
-  /** Stable across updates, so a renderer can keep what a reader has found. */
-  key: string;
-  role: string;
-  name?: string;
-  description?: string;
-  roleDescription?: string;
-  /** For a text box, what it holds. */
-  value?: string;
-  checked?: boolean | 'mixed';
-  disabled?: boolean;
-  expanded?: boolean;
-  hasPopup?: boolean;
-  multiline?: boolean;
-  orientation?: 'horizontal' | 'vertical';
-  shortcut?: string;
-  children: AccessibleNode[];
-}
-
-export interface AccessibleTree {
-  nodes: AccessibleNode[];
-  focus: string | null;
-}
+export type { AccessibleNode, AccessibleTree } from '../../run/accessible-tree.js';
 
 const WS_SYSMENU = 0x00080000;
 const ES_MULTILINE = 0x0004;

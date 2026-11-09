@@ -629,23 +629,12 @@ function soundInstallation() {
   ];
 }
 
-/* Each test on each engine: the TypeScript engine, at `run.html?engine=ts`,
- * and the Rust engine built for WebAssembly, the page's own. */
-const ENGINES = [
-  { engine: 'ts', page: '/run.html?engine=ts' },
-  { engine: 'rust', page: '/run.html' },
-] as const;
+/* The page's engine: the Rust engine built for WebAssembly, the only one. */
+const ENGINES = [{ engine: 'rust', page: '/run.html' }] as const;
 
 for (const { engine, page: at } of ENGINES) {
   test.describe(`on the ${engine} engine`, () => {
-    test.skip(
-      engine === 'rust' && !existsSync(RUST),
-      'the Rust engine has not been built: pnpm build:web'
-    );
-    /* The TypeScript engine builds its drive and starts Windows many times
-     * slower than the Rust engine: with the browsers of a parallel run all
-     * doing so at once, its first machines take most of thirty seconds. */
-    test.slow(engine === 'ts', 'the TypeScript engine makes its machine slowly');
+    test.skip(!existsSync(RUST), 'the Rust engine has not been built: pnpm build:web');
 
     test('lists the programs in a dropped archive, on C: as 8.3 names', async ({ page }) => {
       const errors: string[] = [];
@@ -1292,16 +1281,6 @@ for (const { engine, page: at } of ENGINES) {
         ]),
       });
 
-      if (engine === 'ts') {
-        /* No sound card: Media Player finds no device it can play, and
-         * says so, as Windows does without one (`mplopen`). */
-        await page.getByRole('button', { name: 'Run C:\\APPS\\MPLAYER.EXE' }).click();
-        await expect(
-          page.getByText(/^There are no MCI device drivers installed on your system/)
-        ).toHaveCount(1, { timeout: 20000 });
-        return;
-      }
-
       await page.getByRole('checkbox', { name: 'Sound' }).check();
       await page.getByRole('button', { name: 'Run C:\\APPS\\MPLAYER.EXE' }).click();
       await expect(page.getByRole('group', { name: 'Media Player' })).toHaveCount(1, {
@@ -1588,20 +1567,15 @@ for (const { engine, page: at } of ENGINES) {
         buffer: archive([{ path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) }]),
       });
 
-      /* The machine the page made: the TypeScript engine's Win16, or the
-       * Rust engine's module's machine. */
+      /* The machine the page made: the Rust engine's module's machine. */
       const machine = () =>
         page.evaluate(() => {
-          const session = (globalThis as any).winbox.session;
-
-          (globalThis as any).made = session?.win16 ?? session?.machine;
+          (globalThis as any).made = (globalThis as any).winbox.session?.machine;
         });
       const same = () =>
-        page.evaluate(() => {
-          const session = (globalThis as any).winbox.session;
-
-          return (session?.win16 ?? session?.machine) === (globalThis as any).made;
-        });
+        page.evaluate(
+          () => (globalThis as any).winbox.session?.machine === (globalThis as any).made
+        );
 
       const window = page.getByRole('group', { name: 'Clock' });
       const status = page.locator('#status');
@@ -1628,20 +1602,17 @@ for (const { engine, page: at } of ENGINES) {
       await expect(status).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
       expect(await same()).toBe(true);
 
-      /* Sound, where there is a card to give, is the machine's, as the
-       * display is: ticked, the machine is made afresh. */
-      if (engine === 'rust') {
-        await page.getByRole('checkbox', { name: 'Sound' }).check();
-        await expect.poll(same).toBe(false);
-        await expect(window).toHaveCount(0);
-      }
+      /* Sound is the machine's, as the display is: ticked, the machine is
+       * made afresh. */
+      await page.getByRole('checkbox', { name: 'Sound' }).check();
+      await expect.poll(same).toBe(false);
+      await expect(window).toHaveCount(0);
     });
 
     test('makes the machine afresh once its script is stopped in the middle of a call', async ({
       page,
       browserName,
     }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine runs in a module of its own');
       test.skip(
         browserName !== 'chromium',
         "the script is stopped through Chromium's own protocol"
@@ -1799,7 +1770,6 @@ for (const { engine, page: at } of ENGINES) {
     });
 
     test('sounds what the sound card plays, with Sound ticked', async ({ page }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
       test.skip(
         !existsSync(SNDPLAY) || !existsSync(DRIVE_C),
         'the oracle pipeline has not run here'
@@ -1872,7 +1842,6 @@ for (const { engine, page: at } of ENGINES) {
     test('sounds sixteen-bit stereo at 44,100 on WinBox card, with Sound ticked', async ({
       page,
     }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
       test.skip(
         !existsSync(SNDPLAY) || !existsSync(DRIVE_C),
         'the oracle pipeline has not run here'
@@ -1932,7 +1901,6 @@ for (const { engine, page: at } of ENGINES) {
     });
 
     test('sounds the FM chip as MIDI plays, with Sound ticked', async ({ page }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
       test.skip(
         !existsSync(ADLIBMAP) || !existsSync(DRIVE_C),
         'the oracle pipeline has not run here'
@@ -1986,7 +1954,6 @@ for (const { engine, page: at } of ENGINES) {
     test("sounds the MIDI Mapper's base-level setup, not General MIDI's channel 1, with Sound ticked", async ({
       page,
     }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
       test.skip(
         !existsSync(ADLIBGM) || !existsSync(DRIVE_C),
         'the oracle pipeline has not run here'
@@ -2038,8 +2005,6 @@ for (const { engine, page: at } of ENGINES) {
     test("shows Control Panel's MIDI Mapper with the sound card, opened on its setups", async ({
       page,
     }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
-
       const control = join(DRIVE_C, 'CONTROL.EXE');
       const setups = join(DRIVE_C, 'SYSTEM', 'MIDIMAP.CFG');
 
@@ -2151,8 +2116,6 @@ for (const { engine, page: at } of ENGINES) {
     test("renders the speaker's stream without a click, through the browser's own worklet", async ({
       page,
     }) => {
-      test.skip(engine !== 'rust', 'only the Rust engine has a sound card');
-
       await page.goto(at);
       await expect(page.locator('#status')).toHaveText('Ready.');
       await page.addScriptTag({
@@ -2291,21 +2254,8 @@ for (const { engine, page: at } of ENGINES) {
       expect(rendered!.step).toBeLessThan(1.2 * (fm + wave));
     });
 
-    test('has no Sound to tick on the TypeScript engine', async ({ page }) => {
-      test.skip(engine !== 'ts', 'the Rust engine has one');
-
-      await page.goto(at);
-      await expect(page.locator('#status')).toHaveText('Ready.');
-      await expect(page.getByRole('checkbox', { name: 'Sound' })).toBeHidden();
-    });
-
-    test('keeps what a program writes, across a reload and on the other engine, until forgotten', async ({
-      page,
-    }) => {
-      test.skip(
-        !existsSync(STRINGS) || !existsSync(RUST),
-        'the strings probe, or the Rust engine, has not been built here'
-      );
+    test('keeps what a program writes, across a reload, until forgotten', async ({ page }) => {
+      test.skip(!existsSync(STRINGS), 'the strings probe has not been built here');
 
       /* The probe writes what it found to C:\ORACLE\STRINGS.OUT: dropped as
        * oracle.zip, its folder is C:\ORACLE. */
@@ -2350,17 +2300,6 @@ for (const { engine, page: at } of ENGINES) {
       /* Reloaded, with nothing dropped but what was remembered: the file put
        * back, in a folder of its own. */
       await page.reload();
-      await expect(page.locator('#status')).toHaveText('Ready.');
-      await expect(changed.filter({ hasText: out })).toHaveCount(1);
-      expect(await drive()).toEqual({ ORACLE: 'folder', 'ORACLE\\STRINGS.OUT': written });
-
-      /* The other engine, on the same page, puts back the same. */
-      await page
-        .getByRole('link', {
-          name: engine === 'ts' ? 'Use the Rust engine' : 'Use the TypeScript engine',
-        })
-        .click();
-      await expect(page).toHaveURL(engine === 'ts' ? /engine=rust/ : /engine=ts/);
       await expect(page.locator('#status')).toHaveText('Ready.');
       await expect(changed.filter({ hasText: out })).toHaveCount(1);
       expect(await drive()).toEqual({ ORACLE: 'folder', 'ORACLE\\STRINGS.OUT': written });
@@ -3731,14 +3670,22 @@ test('presents a screen bitmap on its canvas', async ({ page }) => {
   console.log(`present: ${result.width}x${result.height} in ${result.perFrame.toFixed(2)} ms`);
 });
 
-test('runs on the TypeScript engine where the Rust engine has not been built', async ({ page }) => {
+test('says the engine is not built where it has not been built, and names the build', async ({
+  page,
+}) => {
   await page.route('**/target/winbox-web/winbox_web_bg.wasm', (route) =>
     route.fulfill({ status: 404 })
   );
   await page.goto('/run.html');
-  await expect(page.locator('#status')).toHaveText('Ready.');
-  await expect(page.locator('#engine')).toContainText('the Rust engine is not built');
-  await expect(page.getByRole('link', { name: 'Use the Rust engine' })).toBeVisible();
+
+  /* On the status line, the live region every error is told in. */
+  const status = page.getByRole('status');
+
+  await expect(status).toHaveText(
+    'The engine is not built: run pnpm build:web, then reload this page.'
+  );
+  await expect(status).toHaveAttribute('aria-live', 'assertive');
+  await expect(page.getByRole('checkbox', { name: 'Sound' })).toBeHidden();
 });
 
 /* ---- accessibility ---- */
@@ -3781,9 +3728,9 @@ test.describe('the page, to a screen reader and the keyboard', () => {
         !existsSync(PMITEMC),
       'the asset bundle, or the strings, instlay or pmitem probe, has not been made here'
     );
-    test.slow(true, 'the TypeScript engine makes its machine slowly');
+    test.skip(!existsSync(RUST), 'the Rust engine has not been built: pnpm build:web');
 
-    await page.goto('/run.html?engine=ts');
+    await page.goto('/run.html');
     await expect(page.locator('#status')).toHaveText('Ready.');
     await accessible(page, 'fresh');
 
@@ -3888,9 +3835,12 @@ test.describe('the page, to a screen reader and the keyboard', () => {
   });
 
   test('lets the keyboard leave the Windows desktop with Meta and Escape', async ({ page }) => {
-    test.skip(!existsSync(BUNDLE), 'the asset bundle has not been made here');
+    test.skip(
+      !existsSync(BUNDLE) || !existsSync(RUST),
+      'the asset bundle, or the Rust engine, has not been made here'
+    );
 
-    await page.goto('/run.html?engine=ts');
+    await page.goto('/run.html');
     await expect(page.locator('#status')).toHaveText('Ready.');
     await page.locator('#picker').setInputFiles({
       name: 'winbox-assets.zip',
@@ -3918,7 +3868,9 @@ test.describe('the page, to a screen reader and the keyboard', () => {
   });
 
   test('skips to the Windows desktop from the top of the page', async ({ page }) => {
-    await page.goto('/run.html?engine=ts');
+    test.skip(!existsSync(RUST), 'the Rust engine has not been built: pnpm build:web');
+
+    await page.goto('/run.html');
     await expect(page.locator('#status')).toHaveText('Ready.');
     await page.keyboard.press('Tab');
 

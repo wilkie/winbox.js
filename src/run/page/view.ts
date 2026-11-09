@@ -21,7 +21,7 @@ import {
   type Wanting,
 } from '../drives.js';
 import { type KeptProgram, type Medium, modeOfProgram } from '../store.js';
-import { type WindowsMode } from '../../emulator/machine.js';
+import { type WindowsMode } from '../windows-mode.js';
 import { type Icon } from '../../layers/groups.js';
 import { type KeptGroup, type KeptGroups } from './groups.js';
 import { DISPLAY_MODES } from '../../win16/display-modes.js';
@@ -817,19 +817,6 @@ export function installView(
   return view;
 }
 
-/** The engine running, as the header names it, with the way to the other. */
-export function engineView(rust: boolean, unbuilt: boolean) {
-  return {
-    text: rust
-      ? 'Rust engine (WebAssembly). '
-      : unbuilt
-        ? 'TypeScript engine: the Rust engine is not built (pnpm build:web). '
-        : 'TypeScript engine. ',
-    href: rust ? '?engine=ts' : '?engine=rust',
-    link: rust ? 'Use the TypeScript engine' : 'Use the Rust engine',
-  };
-}
-
 /** A function called, as the trace lists it. */
 export interface TraceRow {
   name: string;
@@ -853,9 +840,7 @@ export function traceRows(counts: Map<string, { count: number; stub: boolean }>)
 
 /** Everything the page shows but the trace and the status line, which change far more often. */
 export interface PageView {
-  engine: ReturnType<typeof engineView>;
-
-  /** Whether the engine has a sound card to give (the Rust engine's). */
+  /** Whether the engine has a sound card to give: where it is built. */
   soundOffered: boolean;
   windows: string;
   forgettable: boolean;

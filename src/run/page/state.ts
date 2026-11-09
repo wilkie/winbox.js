@@ -16,7 +16,7 @@ import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 import { type DriveSet, imageKey, type Wanting } from '../drives.js';
 import { type Engine } from '../engines/engine.js';
-import { type WindowsMode } from '../../emulator/machine.js';
+import { type WindowsMode } from '../windows-mode.js';
 import { installerOf } from '../media.js';
 import {
   assetsIdentity,
@@ -35,7 +35,6 @@ import {
   type DriveOffer,
   driveRows,
   drivesNote,
-  engineView,
   type Installing,
   installView,
   KEPT_NOTE,
@@ -96,8 +95,7 @@ export const state: {
 
 /** What the page's actions share beside the state and the machines. */
 export const session: {
-  /** Which engine runs the programs, and whether the Rust engine was wanted but not there. */
-  rust: boolean;
+  /** Whether the engine's module is not built (`pnpm build:web`), so that no machine is made. */
   unbuilt: boolean;
 
   /**
@@ -109,7 +107,6 @@ export const session: {
   /** Where the machines' screens go: the components' desktop, once it is there. */
   desktop: HTMLElement | null;
 } = {
-  rust: false,
   unbuilt: false,
   wanting: [],
   desktop: null,
@@ -406,8 +403,7 @@ export function publish() {
   );
 
   pageView.set({
-    engine: engineView(session.rust, session.unbuilt),
-    soundOffered: session.rust,
+    soundOffered: !session.unbuilt,
     windows: windowsText(state.windows, state.assets, plan),
     forgettable: Boolean(state.windows || state.assets),
     changes: changesView(machine.kept.changes, machine.tooLarge),

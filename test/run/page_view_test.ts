@@ -7,7 +7,6 @@ import {
   changesView,
   displayKept,
   driveRows,
-  engineView,
   freeName,
   installView,
   keptRows,
@@ -539,15 +538,6 @@ describe('the run page, as it is shown', () => {
   it('numbers a name a kept program has', () => {
     expect(freeName([program('a')], 'b')).toBe('b');
     expect(freeName([program('a'), program('a 2')], 'a')).toBe('a 3');
-  });
-
-  it('names the engine, with the way to the other', () => {
-    expect(engineView(true, false)).toEqual({
-      text: 'Rust engine (WebAssembly). ',
-      href: '?engine=ts',
-      link: 'Use the TypeScript engine',
-    });
-    expect(engineView(false, true).text).toMatch(/the Rust engine is not built/);
   });
 
   it('lists the functions reaching nothing first, then the most called, then by name', () => {

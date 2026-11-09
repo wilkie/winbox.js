@@ -1,19 +1,17 @@
 /**
- * What the page asks of an engine, and what it gives one. The page is the
- * same whichever runs the programs: it reads what is dropped, plans the C:
- * drive (`planDrive`), lists the programs, keeps the trace and the status
- * line. An engine makes a machine from the plan, shows its screen in the
- * page's desktop, takes the mouse and keyboard there, and runs programs.
- *
- * Two engines answer it: the Rust engine built for WebAssembly (`rust.ts`),
- * the default, and the TypeScript engine (`ts.ts`), at `run.html?engine=ts`.
+ * What the page asks of an engine, and what it gives one. The page reads
+ * what is dropped, plans the C: drive (`planDrive`), lists the programs,
+ * keeps the trace and the status line. The engine makes a machine from the
+ * plan, shows its screen in the page's desktop, takes the mouse and keyboard
+ * there, and runs programs. It is the Rust engine built for WebAssembly
+ * (`rust.ts`).
  */
 
 import { type Assets } from '../../assets/bundle.js';
 import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 import { type DriveSet } from '../drives.js';
-import { type WindowsMode } from '../../emulator/machine.js';
+import { type WindowsMode } from '../windows-mode.js';
 
 /** What the page gives an engine. */
 export interface Page {

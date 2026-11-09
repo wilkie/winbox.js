@@ -1,8 +1,26 @@
 //! USER's windows as an accessibility tree, as winbox.js's
 //! `accessible-tree.ts` makes it: what a screen reader is given in place of
 //! the pixels the raster desktop draws. Windows 3.1 had no accessibility
-//! interface, so nothing here is measured; it is a mapping, and that file
-//! says why each window is the role it is.
+//! interface, so nothing here is measured; it is a mapping, and these are
+//! its choices. Each is the nearest ARIA role to what the window is to
+//! someone using it:
+//!
+//! * A top-level window is a group described as a window, named by its
+//!   caption, and said to be active, minimized or maximized.
+//! * Its menu bar is a `menubar` of `menuitem`s, each with its mnemonic as a
+//!   shortcut; an open pop-up is a `menu` inside the item that opened it, and
+//!   the system menu is a button with a pop-up of its own.
+//! * The standard controls are what they look like: a push button a `button`,
+//!   a check box a `checkbox`, a radio button a `radio`, an edit control a
+//!   `textbox`, a list box a `listbox` of `option`s, a scroll bar a
+//!   `scrollbar`; static text is text.
+//!
+//! Hidden windows are left out, and so is a minimized window's content: an
+//! icon shows its title and nothing else. The tree is in the order the
+//! windows are, the topmost first, children in the order they were made.
+//! `focus` names what keys go to: the item selected in the open menu if one
+//! is open, or the window with the focus. The page's types for it are
+//! `src/run/accessible-tree.ts`.
 //!
 //! The tree is serialised as the TypeScript engine's `JSON.stringify` writes
 //! its own, so a page's mirror (`aria-mirror.ts`) takes either alike: the

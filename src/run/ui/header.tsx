@@ -2,8 +2,8 @@
  * The page's banner: its one first-level heading, the launcher's menu
  * button beside it (`launcher.tsx`) -- in the banner, so that it is in the
  * same place, the first control after the skip link, at every width and
- * whatever the side shows, as a host's own start menu is -- the engine
- * running with the way to the other, and the status line.
+ * whatever the side shows, as a host's own start menu is -- and the status
+ * line, which also says where the engine is not built.
  *
  * The status line is a live region: polite for what the page tells, and
  * assertive for an error. Its words are written into it as each line is
@@ -14,10 +14,8 @@
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { useLayoutEffect, useRef } from 'react';
-import { actions } from '../page/actions.js';
 import { type PageView } from '../page/view.js';
 import { Launcher } from './launcher.js';
 import { useStatusLine } from './use.js';
@@ -58,8 +56,6 @@ function StatusLine() {
 }
 
 export function Header({ view }: { view: PageView | null }) {
-  const engine = view?.engine;
-
   return (
     <AppBar
       component="header"
@@ -83,23 +79,6 @@ export function Header({ view }: { view: PageView | null }) {
           Run Windows 3.1 programs
         </Typography>
         <Launcher launcher={view?.launcher ?? null} />
-        <Typography id="engine" variant="body2" color="text.secondary">
-          {engine && (
-            <>
-              {engine.text}
-              <Link
-                href={engine.href}
-                onClick={(event) => {
-                  /* What the machine wrote kept before the page is left for the other's. */
-                  event.preventDefault();
-                  actions.switchEngine(engine.href);
-                }}
-              >
-                {engine.link}
-              </Link>
-            </>
-          )}
-        </Typography>
         <StatusLine />
       </Box>
     </AppBar>

@@ -1,11 +1,11 @@
 'use strict';
 
-import { type AccessibleNode, type AccessibleTree } from '../win16/user/accessible-tree.js';
+import { type AccessibleNode, type AccessibleTree } from './accessible-tree.js';
 
 /**
  * The accessibility tree of the raster desktop, kept as elements a screen
  * reader can read: the mirror of what the canvas shows. See
- * `win16/user/accessible-tree.ts` for what is mapped to what.
+ * `crates/winbox-win16/src/accessible_tree.rs` for what is mapped to what.
  *
  * Elements are kept by key from one update to the next -- a window that
  * stays is the same element, only its attributes changed -- so a reader does

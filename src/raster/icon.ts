@@ -2,6 +2,7 @@
 
 import { DevicePalette } from './device-palette.js';
 import { matchedIndex, nearestStatic } from './colour-match.js';
+import { type IconData } from '../run/group-icon.js';
 
 /**
  * An icon as Windows 3.1 keeps one in a resource, and draws it.
@@ -16,16 +17,7 @@ import { matchedIndex, nearestStatic } from './colour-match.js';
  * picture -- the mask's set bits leave the screen, and a picture pixel of
  * black under a set bit leaves it too.
  */
-export interface IconData {
-  width: number;
-  height: number;
-
-  /** The picture, a palette index a pixel, top row first. */
-  xor: Uint8Array;
-
-  /** The mask, a byte a pixel: 1 keeps what is beneath. */
-  and: Uint8Array;
-}
+export type { IconData } from '../run/group-icon.js';
 
 /** What a group icon resource says of each icon in it. */
 export interface IconEntry {

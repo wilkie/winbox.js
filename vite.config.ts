@@ -17,7 +17,7 @@ export default defineConfig({
     },
   },
 
-  /* `run.html?engine=rust` imports the Rust engine's module from where
+  /* `run.html` imports the Rust engine's module from where
    * `pnpm build:web` writes it, `/target/winbox-web/`, served from the root
    * like any file; it is not bundled, and the page is not part of `pnpm
    * build`. The rest of `target/` is cargo's, too large and too busy to

@@ -7,7 +7,15 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'docs/**', 'coverage/**', 'playwright-report/**', 'test-results/**'],
+    ignores: [
+      'dist/**',
+      'docs/**',
+      'coverage/**',
+      'playwright-report/**',
+      'test-results/**',
+      /* cargo's, with the page's module that `pnpm build:web` writes. */
+      'target/**',
+    ],
   },
 
   js.configs.recommended,

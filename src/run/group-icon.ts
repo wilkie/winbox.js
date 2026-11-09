@@ -1,7 +1,6 @@
 'use strict';
 
 import { type Icon } from '../layers/groups.js';
-import { type IconData } from '../raster/icon.js';
 import { DevicePalette } from '../raster/device-palette.js';
 import { DISPLAY_MODES } from '../win16/display-modes.js';
 
@@ -19,6 +18,21 @@ import { DISPLAY_MODES } from '../win16/display-modes.js';
  * file's icon format (`1Ch`) is the same where the file is the display's,
  * and Program Manager makes the icons again where it is not (seg4 `17ae`).
  */
+
+/**
+ * An icon's pixels as the page draws them: what is there ANDed with the mask
+ * and XORed with the picture.
+ */
+export interface IconData {
+  width: number;
+  height: number;
+
+  /** The picture, a palette index a pixel, top row first. */
+  xor: Uint8Array;
+
+  /** The mask, a byte a pixel: 1 keeps what is beneath. */
+  and: Uint8Array;
+}
 
 const wordRow = (bits: number) => ((bits + 15) >> 3) & ~1;
 

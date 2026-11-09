@@ -1,14 +1,14 @@
 /**
  * The Rust engine, built for WebAssembly (`crates/winbox-web`), the page's
- * own (`run.html`, or `run.html?engine=rust`): its machine filled from the
- * same plan of C: as the TypeScript engine's, so a program sees the same 8.3
- * names, and a program stepped between the page's frames on the page's own
- * clock.
+ * engine (`run.html`): its machine filled from the page's plan of C:
+ * (`planDrive`, `fillDrive`), with its 8.3 names, and a program stepped
+ * between the page's frames on the page's own clock.
  *
  * Its module is what `pnpm build:web` writes to `target/winbox-web/`, which is
- * not committed. `pnpm dev` serves the repository's root, so the page imports
- * it from there, at run time, only when this engine is asked for; nothing of it
- * is bundled. The page is not part of `pnpm build`, which builds the library
+ * not committed; `pnpm dev` builds it first where it is missing or older than
+ * the crates (`scripts/web/predev.mjs`). `pnpm dev` serves the repository's
+ * root, so the page imports it from there, at run time, once it has found it
+ * built; nothing of it is bundled. The page is not part of `pnpm build`, which builds the library
  * alone, so there is no production build of it to place the module in.
  *
  * Programs run beside one another on the one machine, as on the TypeScript
