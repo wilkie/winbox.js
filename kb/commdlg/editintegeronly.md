@@ -29,4 +29,4 @@ It is a window procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a doubleword
 
 ## Implementation
 
-WinBox's own: `edit_integer_only` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `EditIntegerOnly` in `src/win16/commdlg/print-dlg.ts`, put in place of the three edits' procedure at its stub's address, the From edit's own kept as COMMDLG keeps it. [[measured]] WinBox agrees with [[probe:prdlg]]'s typed record.
+WinBox's own: `edit_integer_only` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `EditIntegerOnly`, put in place of the three edits' procedure at its stub's address, the From edit's own kept as COMMDLG keeps it. [[measured]] WinBox agrees with [[probe:prdlg]]'s typed record.

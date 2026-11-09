@@ -41,7 +41,7 @@ topics: [gdi-internals, printer-drivers, brush-dithering]
 
 ## Implementation
 
-`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA: each object laid out from named constants of the read-out; the colour matched by `colour-match.ts` and dithered by `dither.ts`, as the display's brushes are. [[probe:gdidmdrw]] agrees in both engines on the three. On the Hercules its own (`crates/winbox-win16/src/gdi/driver_hercules.rs`), [[probe:gdidmdrw]] agreeing. On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. The solid brush's dither is the one its brushes have on the screen ([[topic:brush-dithering]], `dither.ts`), which [[probe:gdidmdrw]] finds alike byte for byte.
+`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA: each object laid out from named constants of the read-out; the colour matched by `colour-match.ts` and dithered by `dither.ts`, as the display's brushes are. [[probe:gdidmdrw]] agrees in both engines on the three. On the Hercules its own (`crates/winbox-win16/src/gdi/driver_hercules.rs`), [[probe:gdidmdrw]] agreeing. On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. The solid brush's dither is the one its brushes have on the screen ([[topic:brush-dithering]]), which [[probe:gdidmdrw]] finds alike byte for byte.
 
 ## Not yet done
 

@@ -25,7 +25,7 @@ The documentation relied on:
 
 ### Kept with its file, kept only once loaded
 
-`OLECLI` is kept as `DDEML` is ([[guide:without-windows]], `own-modules.ts`): with `OLECLI.DLL` on the drive a program that imports it gets the file's library -- its entry runs -- and each import of an export, and `GetProcAddress`, is linked to WinBox's stub. Every export is answered. With no file, WinBox's own is found by the file's name and counted as the file would be.
+`OLECLI` is kept as `DDEML` is ([[guide:without-windows]]): with `OLECLI.DLL` on the drive a program that imports it gets the file's library -- its entry runs -- and each import of an export, and `GetProcAddress`, is linked to WinBox's stub. Every export is answered. With no file, WinBox's own is found by the file's name and counted as the file would be.
 
 What WinBox's does not do yet is left to the file where it is on the drive (`fileFirst`, `or_file`): [[fn:OLECLI.OleLockServer]] and [[fn:OLECLI.OleUnlockServer]] of an object not WinBox's. The object the file makes is used through its own method table thereafter, as every `Ole` function uses an object, in a document of WinBox's. With no file, those are refused.
 

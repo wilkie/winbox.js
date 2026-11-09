@@ -30,4 +30,4 @@ source: crates/winbox-win16/src/icons.rs
 
 ## Implementation
 
-`dump_icon` in `crates/winbox-win16/src/icons.rs`. The engines keep an icon in the same block layout as USER (`icon-block.ts`).
+`dump_icon` in `crates/winbox-win16/src/icons.rs`. The engines keep an icon in the same block layout as USER.

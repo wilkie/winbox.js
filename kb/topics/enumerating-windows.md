@@ -55,6 +55,6 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
 
 ## In winbox.js
 
-`crates/winbox-win16/src/enumerate.rs` has these calls. The first `InitApp` makes USER's three windows (`src/win16/user/user-windows.ts`), and nothing is done with them yet. The desktop tells `enumerate.ts` of each window it makes active, and `DestroyWindow` tells it of each window destroyed.
+`crates/winbox-win16/src/enumerate.rs` has these calls. The first `InitApp` makes USER's three windows, and nothing is done with them yet. The desktop tells `enumerate.ts` of each window it makes active, and `DestroyWindow` tells it of each window destroyed.
 
 Not followed, and known gaps:

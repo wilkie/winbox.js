@@ -18,7 +18,7 @@ topics: [sound-devices]
 
 ## Nuances
 
-- MMSYSTEM's own procedure has no export. Both engines keep it at an ordinal of MMSYSTEM's where Windows exports nothing (1202), as they keep its I/O procedures (`mmio.ts`).
+- MMSYSTEM's own procedure has no export. Both engines keep it at an ordinal of MMSYSTEM's where Windows exports nothing (1202), as they keep its I/O procedures.
 
 ## Inside Windows
 

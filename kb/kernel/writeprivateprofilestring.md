@@ -33,4 +33,4 @@ topics: [profile-files]
 
 ## Implementation
 
-winbox.js follows KERNEL's choice of what to do, measures the strings it writes as KERNEL does (`Profile.measure`), cutting the caller's in place, edits the loaded buffer through `Profile.set`, `removeLine` and `removeSection` in `src/win16/profile.ts`, writes it back whole at once, and holds it (`writeProfile` in `src/win16/kernel/profiles.ts`) with the file's stamp from before the write, as KERNEL's write-out keeps it, until KERNEL would let it go.
+winbox.js follows KERNEL's choice of what to do, measures the strings it writes as KERNEL does (`Profile.measure`), cutting the caller's in place, edits the loaded buffer through `Profile.set`, `removeLine` and `removeSection` in `src/win16/profile.ts`, writes it back whole at once, and holds it with the file's stamp from before the write, as KERNEL's write-out keeps it, until KERNEL would let it go.

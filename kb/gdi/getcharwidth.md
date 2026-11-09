@@ -27,4 +27,4 @@ probes: [text, maxorder, lbtext, prttcw]
 
 ## Not yet done
 
-- The nought answered on a device without `RC_GDI20_OUTPUT` (seg3 `20c2`): WinBox's own printer's `GDIINFO` (`printer.ts`) lacks the bit, which every display mode's has, and its widths are answered there; no probe hands a driver without it.
+- The nought answered on a device without `RC_GDI20_OUTPUT` (seg3 `20c2`): WinBox's own printer's `GDIINFO` lacks the bit, which every display mode's has, and its widths are answered there; no probe hands a driver without it.

@@ -70,8 +70,8 @@ The global block starts with 20h bytes of the display driver's header:
 
 winbox.js keeps GDI's objects, and a bitmap's pixels, in itself. Copying them into the program's memory as they change would cost every program for the sake of a few. Instead, the segments a program would find them in make their bytes when they are read:
 
-- `SplitBlock` in `src/emulator/split-block.ts` lets a 64 KiB segment's bytes come from a handler, which makes them when read and takes them when written. Only the 1 MiB block of memory holding such a segment does more work.
-- GDI's data segment is `GdiHeap` in `src/win16/gdi/gdi-heap.ts`. A read at a bitmap's handle answers its entry, and objects are given addresses above the handles, from 4000h, as they are first looked up. The object's type and the handle at +0Ah follow.
+- `SplitBlock` lets a 64 KiB segment's bytes come from a handler, which makes them when read and takes them when written. Only the 1 MiB block of memory holding such a segment does more work.
+- GDI's data segment is `GdiHeap`. A read at a bitmap's handle answers its entry, and objects are given addresses above the handles, from 4000h, as they are first looked up. The object's type and the handle at +0Ah follow.
 - The header's block, and the bits' block where they have their own, are ordinary moveable global blocks, made when the handle at +0Ah is first read, and plain memory, which the program reads and writes as it likes. winbox.js keeps the bitmap's pixels in itself too, so the two are made to agree around a call that names the bitmap, or a device context it is selected into: the pixels read from the bits before it, and the bits and the header's fields written from the pixels after. The bits past the bitmap's width are left as they were. Bubble Girl draws into its bits about two million times a run and names the bitmap to GDI about three hundred; when each of those bytes went through a handler instead, it was most of the run's time.
 - Deleting the bitmap lets its blocks go.
 

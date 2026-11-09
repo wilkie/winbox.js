@@ -39,4 +39,4 @@ In both engines as the VGA's driver has it, the objects `EnumObjects`'s, laid wh
 
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 
-On the Hercules the VGA's routine, in the display's two colours; on the 256-colour display its own (`vga256EnumObj` in `enumeratedColours` in `driver-vga256.ts`, and the Rust twins). [[probe:gdidmpx]] agrees in both engines on all three displays.
+On the Hercules the VGA's routine, in the display's two colours; on the 256-colour display its own (`vga256EnumObj` in `enumeratedColours`, and the Rust twins). [[probe:gdidmpx]] agrees in both engines on all three displays.

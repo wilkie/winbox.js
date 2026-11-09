@@ -25,4 +25,4 @@ topics: [sound-devices]
 
 ## Implementation
 
-**Not applicable (c).** Only MMSYSTEM's own parser calls it, near: the entry is `enter`, the parser's arguments read from `[bp+4]` up, and `ret 12h` (seg5 `3994`-`39dd`), so a far call takes the caller's return for its first arguments and returns to the caller's offset in MMSYSTEM's segment, which is no behaviour to follow. Both engines answer what the parser answers for a command it does not parse, nought (`39bf`-`39c1`), and pop the eighteen bytes its return pops (`mciParseCommand` in `src/win16/mmsystem/mci.ts`). See [[topic:user-internals]].
+**Not applicable (c).** Only MMSYSTEM's own parser calls it, near: the entry is `enter`, the parser's arguments read from `[bp+4]` up, and `ret 12h` (seg5 `3994`-`39dd`), so a far call takes the caller's return for its first arguments and returns to the caller's offset in MMSYSTEM's segment, which is no behaviour to follow. Both engines answer what the parser answers for a command it does not parse, nought (`39bf`-`39c1`), and pop the eighteen bytes its return pops. See [[topic:user-internals]].

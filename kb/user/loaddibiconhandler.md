@@ -35,4 +35,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`crates/winbox-win16/src/icon_handlers.rs` and `crates/winbox-win16/src/icon_convert.rs`. KERNEL's `LoadResource` and `LockResource` call it directly where a module's icons have it (`resource-handlers.ts`), and set it for each module's icons as its handlers are first asked for. `LoadIcon` with USER's own handler has a discardable icon's block made at once, where Windows waits for the first lock: WinBox's own drawing reads the block as it is.
+`crates/winbox-win16/src/icon_handlers.rs` and `crates/winbox-win16/src/icon_convert.rs`. KERNEL's `LoadResource` and `LockResource` call it directly where a module's icons have it, and set it for each module's icons as its handlers are first asked for. `LoadIcon` with USER's own handler has a discardable icon's block made at once, where Windows waits for the first lock: WinBox's own drawing reads the block as it is.

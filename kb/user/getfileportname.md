@@ -27,4 +27,4 @@ topics: [user-internals, printing]
 
 ## Implementation
 
-`crates/winbox-win16/src/print_to_file.rs`. The dialog is laid out from its controls, named constants; `test/win16/print_to_file_test.ts` compares it with `USER.EXE`'s dialog 10 where that is on disk. The procedure makes its calls through USER's and KERNEL's own exports, as COMMDLG's do (`commdlg/api.ts`).
+`crates/winbox-win16/src/print_to_file.rs`. The dialog is laid out from its controls, named constants; `test/win16/print_to_file_test.ts` compares it with `USER.EXE`'s dialog 10 where that is on disk. The procedure makes its calls through USER's and KERNEL's own exports, as COMMDLG's do.

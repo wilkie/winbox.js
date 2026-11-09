@@ -173,7 +173,7 @@ Read out of `MAIN.CPL`, segment 9.
   - The boot fonts and `[fonts]` are added at start-up as USER adds them: a value with no `.` given `.FON`, a path followed, a name alone looked for in the Windows directory and then the system directory (`fontLineFile`, `font_line_file`). Nothing else is loaded.
   - `[TrueType]` `TTEnable` and `TTOnly` are read at start-up (`trueTypeSettings`, `true_type_settings`).
 - The cache is kept as the fonts realised from a raster file's strike, each with the font object that made it and its `LOGFONT` (`Cached`). A font is realised as it is made, where Windows realises it as it is used. A file removed with such a font cached keeps its strikes out of the table until the object is deleted, or taken out of a scaled DC; added again, they go back where they were.
-- `fontFile` (`src/win16/font-file.ts`) reads what `AddFontResource` reads of a file, and `versionLimit` gives the limit from the display's `RC_BIGFONT`.
+- `fontFile` reads what `AddFontResource` reads of a file, and `versionLimit` gives the limit from the display's `RC_BIGFONT`.
 - The calls are `crates/winbox-win16/src/gdi/text/added.rs`.
 - [[measured]] [[probe:fontres]] 57 of 57, [[probe:fontdef]] 44 of 44, [[probe:fontver]] 24 of 24 on each display, [[probe:fontboot]] 32 of 32 in each preset, in both engines.
 - [[measured]] Control Panel's Fonts installs `DOSAPP.FON` and removes it, and removes Wingdings and installs it again from `WINGDING.TTF`, in both engines' sessions.

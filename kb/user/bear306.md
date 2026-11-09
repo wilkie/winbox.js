@@ -25,4 +25,4 @@ topics: [user-internals]
 
 ## Implementation
 
-In both engines the procedure WinBox's own `#32768` windows have, `DefWindowProc`: WinBox's menus draw and track their pop-ups themselves (`menu-loop.ts`), and the class's windows are USER's hidden ones (`user-windows.ts`). `crates/winbox-win16/src/user.rs`'s table; `crates/winbox-win16/src/user_internals.rs`.
+In both engines the procedure WinBox's own `#32768` windows have, `DefWindowProc`: WinBox's menus draw and track their pop-ups themselves, and the class's windows are USER's hidden ones. `crates/winbox-win16/src/user.rs`'s table; `crates/winbox-win16/src/user_internals.rs`.
