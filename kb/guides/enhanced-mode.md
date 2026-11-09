@@ -21,8 +21,8 @@ The oracle's Windows and WinBox runs in standard mode (`win /s`): DOSX.EXE is th
 
 A recording in enhanced mode is `oracle/fixtures/enhanced/<fixture>.json`, under the same name its standard-mode recording has at the top level. That leaves every existing fixture and test as it was:
 
-- the Rust engine reads a fixture by its name (`tests/support/mod.rs`), and names none under `enhanced/`;
-- a probe's slugs (`--display`, `--ini`, `--midimap`) are kept: `--mode enhanced --display ega` writes `enhanced/devcaps-ega.json`.
+- the Rust engine reads a fixture by its name (`crates/winbox-win16/tests/support/mod.rs`), and names none under `enhanced/`;
+- a probe's slugs (`--display`, `--ini`, `--midimap`) are kept: `--mode enhanced --display ega` writes `oracle/fixtures/enhanced/devcaps-ega.json`.
 
 Phase 1, below, is where the replay learns to read them.
 

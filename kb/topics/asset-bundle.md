@@ -142,10 +142,9 @@ Every probe was run on the installation and on the bundle's base, and their reco
 
 ```
 ASSETS_SWEEP=1 cargo test --release -p winbox-win16 --test assets_sweep -- --nocapture
-ASSETS_SWEEP=1 npx jest test/assets/sweep_test.ts
 ```
 
-Neither runs without `ASSETS_SWEEP=1`. [[measured]] The Rust engine's sweep, every fixture run twice, takes some 100 seconds on eight threads.
+It does not run without `ASSETS_SWEEP=1`. [[measured]] The Rust engine's sweep, every fixture run twice, takes some 100 seconds on eight threads.
 
 [[measured]] 23 fixtures differed in the Rust engine before the Program Manager probes were recorded and WinBox's own Program Manager answered on the base. Since, `ddeinst` and `pmatom` agree there whole, and `pmbare` on both its displays, `pmfiles`, `pmgroups`, `pmraw`, `pmstart`, `pmsyntax` and `progdde` differ as the table says. All but `diskfree` are a file the base does not have: each claim checked against what the probe or the program it starts opens, and that the file is on the installation and not on the base.
 
@@ -167,7 +166,7 @@ WinBox's own COMMDLG, which the dialogs are on the base, gives `comboesc` and `f
 
 Nothing else moves: not the display driver's resources, the fonts, the profiles, the registration database, `AccessResource` (`accres` reads its own resources), the search for a file (`search`, `loadpath`, `loadname`) or the file dialogs' directories (`ofnopen`).
 
-**The corpus.** `examples/corpus.rs --base assets` runs each program on the bundle's base and holds it to the reports made on the installation, and lists each program that differs against `corpus` in the same file. [[measured]] 29 of 37 programs agree to their stop, 30 run whole alike and 36 leave alike screens. The 8 that differ each load a library on the installation that the base has not, and whose code runs there before the program's: `COMMDLG.DLL` for `wslam`, `hanoi`, `fibsw`, `wordsrch`, `champ`, `bg` (by `LoadLibrary`) and `simtower`; `VER.DLL`, the `LZEXPAND.DLL` it imports, and `DDEML.DLL` for `caribb`. Its `LibEntry`'s calls come first, and its segments take selectors and handles the program's take on the base, so the calls part at the first. [[measured]] `hanoi` on the installation with `COMMDLG.DLL` taken off, and `caribb` with those three taken off, run call for call as on the base.
+**The corpus.** `crates/winbox-win16/examples/corpus.rs --base assets` runs each program on the bundle's base and holds it to the reports made on the installation, and lists each program that differs against `corpus` in the same file. [[measured]] 29 of 37 programs agree to their stop, 30 run whole alike and 36 leave alike screens. The 8 that differ each load a library on the installation that the base has not, and whose code runs there before the program's: `COMMDLG.DLL` for `wslam`, `hanoi`, `fibsw`, `wordsrch`, `champ`, `bg` (by `LoadLibrary`) and `simtower`; `VER.DLL`, the `LZEXPAND.DLL` it imports, and `DDEML.DLL` for `caribb`. Its `LibEntry`'s calls come first, and its segments take selectors and handles the program's take on the base, so the calls part at the first. [[measured]] `hanoi` on the installation with `COMMDLG.DLL` taken off, and `caribb` with those three taken off, run call for call as on the base.
 
 ## The files' stamps
 

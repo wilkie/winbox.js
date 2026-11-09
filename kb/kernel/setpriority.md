@@ -19,4 +19,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`kernel_calls/tasks.rs and task_order.rs`.
+`crates/winbox-win16/src/kernel_calls/tasks.rs` and `crates/winbox-win16/src/task_order.rs`.
