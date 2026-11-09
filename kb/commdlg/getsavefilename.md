@@ -34,7 +34,7 @@ topics: [common-dialogs, file-dialogs]
 
 ## Implementation
 
-The same code as Open's in both engines, `save` set: `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `file-init.ts`, `file-command.ts`, `file-ok.ts` and `file-lists.ts`, and the same-named files under `crates/winbox-win16/src/commdlg/`. Write's and Paintbrush's Save As run on it in the accessories' sessions.
+The same code as Open's in both engines, `save` set: `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `crates/winbox-win16/src/commdlg/file_init.rs`, `crates/winbox-win16/src/commdlg/file_command.rs`, `crates/winbox-win16/src/commdlg/file_ok.rs` and `crates/winbox-win16/src/commdlg/file_lists.rs`, and the same-named files under `crates/winbox-win16/src/commdlg/`. Write's and Paintbrush's Save As run on it in the accessories' sessions.
 
 ## Not yet done
 

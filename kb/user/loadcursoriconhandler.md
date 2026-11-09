@@ -20,4 +20,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`crates/winbox-win16/src/icon_handlers.rs` and `icon-convert.ts`'s `convertOld`; the Rust engine's `icon_handlers.rs` and `icon_convert.rs`. Set for a Windows 2 module's `RT_ICON` and `RT_CURSOR`, as [[fn:USER.SignalProc]] sets it. Read out only.
+`crates/winbox-win16/src/icon_handlers.rs` and `crates/winbox-win16/src/icon_convert.rs`'s `convertOld`; the Rust engine's `icon_handlers.rs` and `icon_convert.rs`. Set for a Windows 2 module's `RT_ICON` and `RT_CURSOR`, as [[fn:USER.SignalProc]] sets it. Read out only.
