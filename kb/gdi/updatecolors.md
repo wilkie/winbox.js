@@ -20,4 +20,4 @@ topics: [palettes]
 
 ## Implementation
 
-Nought in both engines; the redrawing is not followed ([[topic:palettes]]). [[probe:dcinner]] agrees in both.
+Nought; the redrawing is not followed ([[topic:palettes]]). [[probe:dcinner]] agrees in both.

@@ -13,7 +13,7 @@ topics: [printer-drivers, printing]
 
 ## Observed behaviour
 
-[[measured]] [[probe:prspool]] calls the spooler as a printer driver calls it, finding each function in GDI by its number. Each job goes to a file named as its port. Both engines agree with all 33 records.
+[[measured]] [[probe:prspool]] calls the spooler as a printer driver calls it, finding each function in GDI by its number. Each job goes to a file named as its port. WinBox agrees with all 33 records.
 
 - No port, or an empty one, answers -1.
 - A job to a file answers a handle. Shifted back left, the handle names a block of 352 bytes. The file is made empty at once, before anything is written.
@@ -33,7 +33,7 @@ topics: [printer-drivers, printing]
 
 ## Implementation
 
-`src/win16/gdi/spooler.ts` and `crates/winbox-win16/src/gdi/spooler.rs`, called by a driver through GDI's exports.
+`crates/winbox-win16/src/gdi/spooler.rs`, called by a driver through GDI's exports.
 
 ## Not yet done
 

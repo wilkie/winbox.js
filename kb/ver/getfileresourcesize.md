@@ -38,4 +38,4 @@ topics: [version-information]
 
 ## Implementation
 
-`GetFileResourceSize` in `src/win16/ver/ver.ts` and `get_file_resource_size` in `crates/winbox-win16/src/ver/mod.rs`, through WinBox's own LZEXPAND. Both engines agree with [[probe:verinfo]]'s records, with `VER.DLL` on the drive and without it.
+`get_file_resource_size` in `crates/winbox-win16/src/ver/mod.rs`, through WinBox's own LZEXPAND. WinBox agrees with [[probe:verinfo]]'s records, with `VER.DLL` on the drive and without it.

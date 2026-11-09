@@ -27,4 +27,4 @@ topics: [user-internals]
 
 ## Implementation
 
-**Implemented (a).** Both engines answer it as read out, the name laid in SHELL's data where SHELL keeps it (`HERETHARBETYGARS` in `src/win16/shell/internal-procs.ts`, `shell/internal_procs.rs`). Not done: WinBox's `ShellExecute` making these windows for an association that asks for DDE. See [[topic:user-internals]].
+**Implemented (a).** WinBox answers it as read out, the name laid in SHELL's data where SHELL keeps it (`HERETHARBETYGARS` in `crates/winbox-win16/src/shell/internal_procs.rs`). Not done: WinBox's `ShellExecute` making these windows for an association that asks for DDE. See [[topic:user-internals]].

@@ -17,4 +17,4 @@ topics: [system-queue]
 
 [[measured]] [[probe:lockinp]], through [[fn:USER.LockInput]]: while locked, a second program posted a message does not answer it, though the probe looks for messages and yields twenty times; let go, it answers.
 
-Both engines followed none of this before: it was a stub.
+WinBox followed none of this before: it was a stub.

@@ -18,4 +18,4 @@ A `RECT` is `left`, `top`, `right` and `bottom`, with the right and bottom edges
 
 ## In winbox.js
 
-`src/win16/user/rect-api.ts` has these functions, and `src/win16/user/PtInRect.ts` has `PtInRect`. File Manager needed `IntersectRect` to open its window.
+`crates/winbox-win16/src/user_misc.rs` has these functions. File Manager needed `IntersectRect` to open its window.

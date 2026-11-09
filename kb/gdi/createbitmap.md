@@ -24,4 +24,4 @@ source: crates/winbox-win16/src/gdi/bitmaps.rs
 
 ## Implementation
 
-winbox.js reads the caller's rows at their word stride into the four-byte rows it keeps (`src/win16/gdi/ddb.ts`). Until [[probe:bitbits]] it read them as four-byte rows, which moved every row after the first of any bitmap whose width is not a multiple of 32 pixels. Until [[probe:patmono]] it took one plane of four bits for the sixteen colours, packed two pixels a byte. `GetObject` then said one plane, and rows rounded to four bytes. A bitmap of another shape now keeps only its bytes, and no device context takes it.
+winbox.js reads the caller's rows at their word stride into the four-byte rows it keeps (`crates/winbox-win16/src/gdi/ddb.rs`). Until [[probe:bitbits]] it read them as four-byte rows, which moved every row after the first of any bitmap whose width is not a multiple of 32 pixels. Until [[probe:patmono]] it took one plane of four bits for the sixteen colours, packed two pixels a byte. `GetObject` then said one plane, and rows rounded to four bytes. A bitmap of another shape now keeps only its bytes, and no device context takes it.

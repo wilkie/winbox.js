@@ -29,4 +29,4 @@ source: crates/winbox-win16/src/system_driver.rs
 
 ## Implementation
 
-`src/win16/system-driver.ts`; the Rust engine's `crates/winbox-win16/src/system_driver.rs`. The places are kept in the module's data at the driver's offsets, the four held laid out as the driver is first called; a held place has no procedure and is only counted. A program's procedure is called as MMSYSTEM's timer events are, at interrupt time between two of the task's instructions (`Scheduler.atInterrupt`, the registers given), for each tick passed since the clock was last looked at, at most 64.
+`crates/winbox-win16/src/system_driver.rs`. The places are kept in the module's data at the driver's offsets, the four held laid out as the driver is first called; a held place has no procedure and is only counted. A program's procedure is called as MMSYSTEM's timer events are, at interrupt time between two of the task's instructions (`Scheduler.atInterrupt`, the registers given), for each tick passed since the clock was last looked at, at most 64.

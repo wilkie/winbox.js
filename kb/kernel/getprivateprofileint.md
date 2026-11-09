@@ -26,4 +26,4 @@ topics: [profile-files]
 
 ## Implementation
 
-`toInteger` in `src/win16/kernel/profiles.ts` holds the conversion, and its rules come from the recording.
+`to_integer` in `crates/winbox-win16/src/profiles_kernel.rs` holds the conversion, and its rules come from the recording.

@@ -10,7 +10,7 @@ Every accessory's **Help > About** calls [[fn:SHELL.ShellAbout]] with its own na
 ## SHELL's instance
 
 - [[read out]] SHELL's entry point (`SHELL.DLL` seg1 `0052`) calls seg2 `0000` with its instance, which keeps it at [350h] (seg2 `0010`). `ShellAbout` hands that to `DialogBoxParam` (seg9 `002b`), so the box is SHELL's, a module made for 3.00.
-- [[measured]] [[probe:abouthin]] reads the box's `GWW_HINSTANCE`, its first line's and its OK button's: each is the instance `LoadLibrary("SHELL.DLL")` answers. winbox.js made the box with the program's instance before; both engines now make it with SHELL's, and every record of [[probe:about]] agrees still.
+- [[measured]] [[probe:abouthin]] reads the box's `GWW_HINSTANCE`, its first line's and its OK button's: each is the instance `LoadLibrary("SHELL.DLL")` answers. winbox.js made the box with the program's instance before; WinBox now makes it with SHELL's, and every record of [[probe:about]] agrees still.
 
 ## The caption and the first line
 
@@ -37,7 +37,7 @@ Every accessory's **Help > About** calls [[fn:SHELL.ShellAbout]] with its own na
 
 ## In winbox.js
 
-`src/win16/shell/about.ts` is `ShellAbout`. The dialog template and SHELL's strings are winbox.js's own: `about-dialog.ts` and `strings.ts` beside it are generated from the installation by `scripts/oracle/dialog-template.mjs` and `scripts/oracle/strings-table.mjs`. The logo is read from the installation's `SHELL.DLL` when it is wanted, as the display's artwork is.
+`crates/winbox-win16/src/shell/about.rs` is `ShellAbout`. The dialog template and SHELL's strings are winbox.js's own, generated from the installation by `scripts/oracle/dialog-template.mjs` and `scripts/oracle/strings-table.mjs`. The logo is read from the installation's `SHELL.DLL` when it is wanted, as the display's artwork is.
 
 Not followed:
 

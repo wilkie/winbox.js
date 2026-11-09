@@ -18,4 +18,4 @@ source: crates/winbox-win16/src/queue.rs
 
 ## Implementation
 
-`src/win16/user/userwin.ts`, and the Rust engine's `queue.rs` (`post_app_message`).
+`crates/winbox-win16/src/queue.rs` (`post_app_message`).

@@ -18,4 +18,4 @@ source: crates/winbox-win16/src/gdi/bitmaps.rs
 
 ## Implementation
 
-winbox.js reads the rows at their word stride into the four-byte rows it keeps (`src/win16/gdi/ddb.ts`). Until this was written it read the same source byte for every byte of the bitmap. It writes the bitmap's own bits, not a surface it is selected into, which is one of the open questions above.
+winbox.js reads the rows at their word stride into the four-byte rows it keeps (`crates/winbox-win16/src/gdi/ddb.rs`). Until this was written it read the same source byte for every byte of the bitmap. It writes the bitmap's own bits, not a surface it is selected into, which is one of the open questions above.

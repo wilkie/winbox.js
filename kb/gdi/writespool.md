@@ -15,7 +15,7 @@ topics: [printer-drivers, printing]
 
 [[measured]] [[probe:prspool]]: writes of 7 and 300 bytes answer their counts. The file holds them once the job is closed: 314 bytes after a third write of 7. A job that is closed answers -3. A job handle from -5 to -1 is answered back as it is. A job deleted leaves no file.
 
-[[measured]] [[probe:prlpt]]: a write to `LPT1`, where no printer answers, puts up GDI's box, system-modal. Its title is the port, and it has `&Retry` and `Cancel` buttons and the text "The printer on this port is offline or not selected. Make sure the printer is online and selected, …". Cancel answers -3. Both engines agree with all 10 records.
+[[measured]] [[probe:prlpt]]: a write to `LPT1`, where no printer answers, puts up GDI's box, system-modal. Its title is the port, and it has `&Retry` and `Cancel` buttons and the text "The printer on this port is offline or not selected. Make sure the printer is online and selected, …". Cancel answers -3. WinBox agrees with all 10 records.
 
 [[measured]] [[probe:prabort]] counts the abort procedure's calls. The PostScript driver's `STARTDOC` alone asks it 43 times, once for each 100h bytes of its prolog written. An abort procedure that answers nought stops the document: `StartDoc` answers -1 and no file is left.
 
@@ -29,7 +29,7 @@ topics: [printer-drivers, printing]
 
 ## Implementation
 
-`src/win16/gdi/spooler.ts` and `crates/winbox-win16/src/gdi/spooler.rs`. GDI waits in its own loop for the timeouts, with nothing else running. On a virtual clock, the time that takes is charged to the clock as instructions run, so the box comes up after the same virtual time in both engines.
+`crates/winbox-win16/src/gdi/spooler.rs`. GDI waits in its own loop for the timeouts, with nothing else running. On a virtual clock, the time that takes is charged to the clock as instructions run, so the box comes up after the same virtual time.
 
 ## Not yet done
 

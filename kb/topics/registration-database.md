@@ -57,7 +57,7 @@ File associations and OLE servers are kept in the registration database, `REG.DA
 
 - `WIN.INI`'s `[embedding]` section, which SHELL copies in when a key is first opened and out when it writes (seg2 `1730`, `18b4`).
 - SHELL writes a temporary file and renames it into place, where winbox.js writes `REG.DAT` directly.
-- How SHELL grows the node table. [[measured]] Widget Workshop's installer, registering `.wgt` into the installation's `REG.DAT`, leaves Windows' file with one free node more than both engines' -- 215 entries to 214, so its texts begin eight bytes further on, 2,633 bytes to 2,625, the texts themselves the same (`test/layers/widget-windows.json`). [[read out]] The allocator at seg2 `0820` grows the table by 16 only when its free list is empty; what made Windows' one more is not read out.
+- How SHELL grows the node table. [[measured]] Widget Workshop's installer, registering `.wgt` into the installation's `REG.DAT`, leaves Windows' file with one free node more than WinBox's -- 215 entries to 214, so its texts begin eight bytes further on, 2,633 bytes to 2,625, the texts themselves the same (`test/layers/widget-windows.json`). [[read out]] The allocator at seg2 `0820` grows the table by 16 only when its free list is empty; what made Windows' one more is not read out.
 - The order SHELL packs the texts in when it writes, and the database being dropped and read again under memory pressure. winbox.js packs them in their entries' order, which is SHELL's for a database made from nothing and written once.
 
 ## In winbox.js

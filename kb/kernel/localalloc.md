@@ -25,4 +25,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-`LocalAlloc` finds the heap belonging to `DS >> 3` and asks it, `Heap.localAlloc` (`LocalHeap::local_alloc`), which follows KERNEL's routine: the handle from the tables, the block rounded as above and placed, the heap compacted and grown where it does not fit. The heap is kept in the segment, as KERNEL keeps it.
+`LocalAlloc` finds the heap belonging to `DS >> 3` and asks it, `LocalHeap::local_alloc`, which follows KERNEL's routine: the handle from the tables, the block rounded as above and placed, the heap compacted and grown where it does not fit. The heap is kept in the segment, as KERNEL keeps it.

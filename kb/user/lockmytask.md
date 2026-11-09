@@ -19,4 +19,4 @@ topics: [system-queue]
 
 [[read out]] USER locks the task itself for a system-modal dialog as it shows (`DialogBox`'s loop, seg25 `0854`; `CreateDialog`, seg24 `0976`), and lets it go in [[fn:USER.EndDialog]] (seg25 `2579`) and in [[fn:USER.DestroyWindow]] of any window while it is locked (seg8 `0a3f`-`0a48`). [[measured]] [[probe:sysdlg]]: `IsTaskLocked` names the program while its system-modal dialog shows, and no task once it is ended or destroyed ([[topic:dialog-boxes]]).
 
-Both engines followed none of this before: it was a stub.
+WinBox followed none of this before: it was a stub.

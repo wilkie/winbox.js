@@ -26,7 +26,7 @@ topics: [kernel-internals, keyboard-driver]
 
 ## Implementation
 
-**Implemented (a).** Both engines take the focus window's task and, where its action is 2, call its handler with the two words, AX 1 and BX nought, every register kept (`DoSignal` in `src/win16/kernel/signals.ts`, `kernel_calls/signals.rs`). WinBox's keyboard driver is its own and does not call it on Ctrl+Break.
+**Implemented (a).** WinBox takes the focus window's task and, where its action is 2, call its handler with the two words, AX 1 and BX nought, every register kept (`DoSignal` in `crates/winbox-win16/src/kernel_calls/signals.rs`). WinBox's keyboard driver is its own and does not call it on Ctrl+Break.
 
 ## Not yet done
 

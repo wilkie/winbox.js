@@ -26,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/internals.ts`; `crates/winbox-win16/src/user_internals.rs`. The cursor's count goes down and the system queue -- the keyboard's and the mouse's input not yet taken -- is emptied. WinBox's display is not turned off and its keyboard, mouse and timers are its own, so nothing else is done; GDI's [[fn:GDI.Death]] answers as the display's driver would and changes nothing either.
+`crates/winbox-win16/src/user_internals.rs`. The cursor's count goes down and the system queue -- the keyboard's and the mouse's input not yet taken -- is emptied. WinBox's display is not turned off and its keyboard, mouse and timers are its own, so nothing else is done; GDI's [[fn:GDI.Death]] answers as the display's driver would and changes nothing either.

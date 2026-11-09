@@ -25,4 +25,4 @@ source: crates/winbox-win16/src/window_state.rs
 
 ## Implementation
 
-`src/win16/user/placement.ts`; the Rust engine's `window_state.rs`. The icon's point is kept as the window stops being an icon (`desktop.ts`, `desktop.rs`). WinBox's `GetWindowPlacement` still answers -1,-1 for it.
+`crates/winbox-win16/src/window_state.rs`. The icon's point is kept as the window stops being an icon (`crates/winbox-win16/src/desktop.rs`). WinBox's `GetWindowPlacement` still answers -1,-1 for it.

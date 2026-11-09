@@ -41,4 +41,4 @@ topics: [version-information]
 
 ## Implementation
 
-`VerQueryValue` in `src/win16/ver/ver.ts` and `ver_query_value` in `crates/winbox-win16/src/ver/mod.rs` walk the block in the caller's memory, as VER does, and compare with USER's `lstrcmpi`. Both engines agree with [[probe:verinfo]], with `VER.DLL` on the drive and without it.
+`ver_query_value` in `crates/winbox-win16/src/ver/mod.rs` walk the block in the caller's memory, as VER does, and compare with USER's `lstrcmpi`. WinBox agrees with [[probe:verinfo]], with `VER.DLL` on the drive and without it.

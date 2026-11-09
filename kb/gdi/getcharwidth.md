@@ -13,7 +13,7 @@ probes: [text, maxorder, lbtext, prttcw]
 
 - [[measured]] For an outline face each width is the grid-fitted advance the scaler would lay the character out with — the same number a one-character string measures with [[fn:GDI.GetTextExtent]].
 - [[measured]] For a strike each width is read from the font file and scaled where the strike was stretched to the requested cell. An earlier implementation read it unscaled, and a 13-pixel MS Sans Serif stretched to 26 answered 7 for `A` where Windows answers 14 — 195 of `groundw`'s 820 records. See [[fonts:8o]].
-- [[measured]] [[probe:lbtext]]: a strike's simulations are in its widths. MS Sans Serif at 11 points, 13 rows, answers 6 for '1' and '2'; asked bold, 8; italic, 12; both, 14 -- each what [[fn:GDI.GetTextExtent]] answers for the one character, and its overhang 1, 6 and 7. Both engines had answered 6 each time.
+- [[measured]] [[probe:lbtext]]: a strike's simulations are in its widths. MS Sans Serif at 11 points, 13 rows, answers 6 for '1' and '2'; asked bold, 8; italic, 12; both, 14 -- each what [[fn:GDI.GetTextExtent]] answers for the one character, and its overhang 1, 6 and 7. WinBox had answered 6 each time.
 
 ## Inside Windows
 
@@ -23,8 +23,8 @@ probes: [text, maxorder, lbtext, prttcw]
 
 ## Implementation
 
-`GetCharWidth.ts` and `get_char_widths` in `gdi/text.rs` add the two for a strike the engines smear (`emboldens`) and the slant's half height less one for an italic strike, each width alike. A vector font's and an outline face's widths are as before; neither simulation of theirs is recorded here. `[063Eh]` set as read out (`_textSurface`; `note_char_width_device` in `gdi/mod.rs`), on a printer's driver's context too.
+`get_char_widths` in `crates/winbox-win16/src/gdi/text.rs` add the two for a strike the engines smear (`emboldens`) and the slant's half height less one for an italic strike, each width alike. A vector font's and an outline face's widths are as before; neither simulation of theirs is recorded here. `[063Eh]` set as read out (`_textSurface`; `note_char_width_device` in `crates/winbox-win16/src/gdi/mod.rs`), on a printer's driver's context too.
 
 ## Not yet done
 
-- The nought answered on a device without `RC_GDI20_OUTPUT` (seg3 `20c2`): WinBox's own printer's `GDIINFO` (`printer.ts`) lacks the bit, which every display mode's has, and its widths are answered there; no probe hands a driver without it.
+- The nought answered on a device without `RC_GDI20_OUTPUT` (seg3 `20c2`): WinBox's own printer's `GDIINFO` lacks the bit, which every display mode's has, and its widths are answered there; no probe hands a driver without it.

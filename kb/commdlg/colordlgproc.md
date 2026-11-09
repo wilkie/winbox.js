@@ -30,7 +30,7 @@ No program calls it. [[fn:COMMDLG.ChooseColor]] gives its far address to `Dialog
 | `SETRGBSTRING`'s        | `0239`          | a box of the colour in `lParam` chosen, or, opened out, the colour taken                  |
 
 - [[read out]] Anything else answers nought.
-- [[measured]] [[probe:choosclr]] drives the dialog with the keys and the mouse and records what the hook is given, the controls, the numbers and the pixels: every record is as read out, and both engines agree with all of them.
+- [[measured]] [[probe:choosclr]] drives the dialog with the keys and the mouse and records what the hook is given, the controls, the numbers and the pixels: every record is as read out, and WinBox agrees with all of them.
 
 ## Nuances
 
@@ -44,4 +44,4 @@ No program calls it. [[fn:COMMDLG.ChooseColor]] gives its far address to `Dialog
 
 ## Implementation
 
-WinBox's own: `ColorDlgProc` in `src/win16/commdlg/choose-color.ts` and `color_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_color.rs`, given to USER at its stub's address. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `color_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_color.rs`, given to USER at its stub's address. It works with no `COMMDLG.DLL` on the drive.

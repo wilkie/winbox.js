@@ -15,4 +15,4 @@ topics: [tool-helper]
 
 ## Implementation
 
-`src/win16/toolhelp/stack.ts`, and the Rust engine's `crates/winbox-win16/src/toolhelp/`. See [[topic:tool-helper]].
+`crates/winbox-win16/src/toolhelp/`. See [[topic:tool-helper]].

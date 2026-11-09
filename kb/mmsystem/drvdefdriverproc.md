@@ -22,4 +22,4 @@ topics: [installable-drivers]
 
 ## Implementation
 
-Both engines answer it with USER's own `DefDriverProc`.
+WinBox answers it with USER's own `DefDriverProc`.

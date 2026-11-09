@@ -27,4 +27,4 @@ topics: [gdi-internals]
 
 ## Implementation
 
-**Implemented (b), data.** In both engines `GetProcAddress` and an import of it give GDI's data segment and 2EFh (`exported-data.ts`, `exported_data.rs`), where WinBox's GDI segment reads nought. Not done: a GDI handle of 2EEh, which WinBox gives out only after some six hundred objects, would read there as its entry. See [[topic:gdi-internals]].
+**Implemented (b), data.** In WinBox, `GetProcAddress` and an import of it give GDI's data segment and 2EFh (`crates/winbox-win16/src/exported_data.rs`), where WinBox's GDI segment reads nought. Not done: a GDI handle of 2EEh, which WinBox gives out only after some six hundred objects, would read there as its entry. See [[topic:gdi-internals]].

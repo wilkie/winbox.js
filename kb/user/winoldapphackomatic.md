@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. The flag is kept; WinBox has no DOS program's window for it to matter to.
+`crates/winbox-win16/src/small_calls.rs`. The flag is kept; WinBox has no DOS program's window for it to matter to.

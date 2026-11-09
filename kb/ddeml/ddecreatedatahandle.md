@@ -32,4 +32,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-WinBox's own: `createDataHandle` in `src/win16/ddeml/data.ts` and `create_data_handle` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The block is `GMEM_DDESHARE` with DDE's header where there is an item (`make`, seg1 `63c6`), and the handle six bytes of the instance's heap. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `create_data_handle` in `crates/winbox-win16/src/ddeml/data.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The block is `GMEM_DDESHARE` with DDE's header where there is an item (`make`, seg1 `63c6`), and the handle six bytes of the instance's heap. WinBox agrees with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

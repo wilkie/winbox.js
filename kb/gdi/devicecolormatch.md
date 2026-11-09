@@ -29,6 +29,6 @@ topics: [gdi-internals]
 
 ## Implementation
 
-In both engines as read out. [[probe:gdiint]] agrees in both.
+As read out. [[probe:gdiint]] agrees in both.
 
 **Recommendation:** done.

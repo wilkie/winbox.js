@@ -83,7 +83,7 @@ GDI keeps the fonts it realises in a cache: a local block (`[36Ah]`), an entry o
 
 ## What the recordings show
 
-[[measured]] [[probe:fontres]] runs each step on the VGA, and both engines agree with all 57 records.
+[[measured]] [[probe:fontres]] runs each step on the VGA, and WinBox agrees with all 57 records.
 
 | Step                                                                                                       | Recorded                                                                                                                                              |
 | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -103,7 +103,7 @@ GDI keeps the fonts it realises in a cache: a local block (`[36Ah]`), an entry o
 
 [[measured]] A first recording also added `""`. It answered 0, and `C:\WINDOWS\` was written over the program's own data. That step is not kept in the probe.
 
-[[measured]] [[probe:fontdef]] removes a file while a font of it is realised, on the VGA; both engines agree with all 44 records.
+[[measured]] [[probe:fontdef]] removes a file while a font of it is realised, on the VGA; WinBox agrees with all 44 records.
 
 | Step                                                                                                  | Recorded                                                                                                                      |
 | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -116,7 +116,7 @@ GDI keeps the fonts it realises in a cache: a local block (`[36Ah]`), an entry o
 | Wingdings at 20 realised, `WINGDING.FOT` removed                                                      | Wingdings leaves the family list at once. The DC's `GetTextFace` is empty, its height still 20; a new request maps to Symbol. |
 | MS Serif at 26 in a DC of two units to a pixel, `SERIFE.FON` removed, the font taken out, added again | After Small Fonts: taken out of a scaled DC, the font left the cache, and the file went.                                      |
 
-[[measured]] [[probe:fontver]] copies `DOSAPP.FON` and writes another version into its first `FONTDIR` entry, on the VGA and on the Hercules; both engines agree with all 24 of each, and the TypeScript engine replays the VGA's.
+[[measured]] [[probe:fontver]] copies `DOSAPP.FON` and writes another version into its first `FONTDIR` entry, on the VGA and on the Hercules; WinBox agrees with all 24 of each.
 
 | `dfVersion`         | VGA (`RC_BIGFONT`) | Hercules |
 | ------------------- | ------------------ | -------- |
@@ -124,7 +124,7 @@ GDI keeps the fonts it realises in a cache: a local block (`[36Ah]`), an entry o
 | 250h, 300h          | 6                  | 0        |
 | 301h                | 0                  | 0        |
 
-[[measured]] [[probe:fontboot]] is recorded three times, `WIN.INI` set before Windows starts (`record.mjs --ini`); both engines agree with all 32 records of each.
+[[measured]] [[probe:fontboot]] is recorded three times, `WIN.INI` set before Windows starts (`record.mjs --ini`); WinBox agrees with all 32 records of each.
 
 | Preset   | `WIN.INI`                                                                                                       | Recorded                                                                                                                                                                                                                                                                                                       |
 | -------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -166,17 +166,17 @@ Read out of `MAIN.CPL`, segment 9.
 
 ## In winbox.js
 
-- Both engines keep GDI's font table: `FontManager.addResource` and `removeResource` in `src/win16/font-manager.ts`, and `crates/winbox-win16/src/fonts/added.rs`.
+- WinBox keeps GDI's font table: `add_resource` and `remove_resource` in `crates/winbox-win16/src/fonts/added.rs`.
   - A raster file is known by its module and a stub by its full name.
   - Strikes added are appended in the table's order.
   - A stub takes the first empty slot.
-  - The boot fonts and `[fonts]` are added at start-up as USER adds them: a value with no `.` given `.FON`, a path followed, a name alone looked for in the Windows directory and then the system directory (`fontLineFile`, `font_line_file`). Nothing else is loaded.
-  - `[TrueType]` `TTEnable` and `TTOnly` are read at start-up (`trueTypeSettings`, `true_type_settings`).
+  - The boot fonts and `[fonts]` are added at start-up as USER adds them: a value with no `.` given `.FON`, a path followed, a name alone looked for in the Windows directory and then the system directory (`font_line_file`). Nothing else is loaded.
+  - `[TrueType]` `TTEnable` and `TTOnly` are read at start-up (`true_type_settings`).
 - The cache is kept as the fonts realised from a raster file's strike, each with the font object that made it and its `LOGFONT` (`Cached`). A font is realised as it is made, where Windows realises it as it is used. A file removed with such a font cached keeps its strikes out of the table until the object is deleted, or taken out of a scaled DC; added again, they go back where they were.
-- `fontFile` (`src/win16/font-file.ts`) reads what `AddFontResource` reads of a file, and `versionLimit` gives the limit from the display's `RC_BIGFONT`.
-- The calls are `src/win16/gdi/AddFontResource.ts` and `crates/winbox-win16/src/gdi/text/added.rs`.
-- [[measured]] [[probe:fontres]] 57 of 57, [[probe:fontdef]] 44 of 44, [[probe:fontver]] 24 of 24 on each display, [[probe:fontboot]] 32 of 32 in each preset, in both engines.
-- [[measured]] Control Panel's Fonts installs `DOSAPP.FON` and removes it, and removes Wingdings and installs it again from `WINGDING.TTF`, in both engines' sessions.
+- `font_file` reads what `AddFontResource` reads of a file, and `version_limit` gives the limit from the display's `RC_BIGFONT`.
+- The calls are `crates/winbox-win16/src/gdi/text/added.rs`.
+- [[measured]] [[probe:fontres]] 57 of 57, [[probe:fontdef]] 44 of 44, [[probe:fontver]] 24 of 24 on each display, [[probe:fontboot]] 32 of 32 in each preset.
+- [[measured]] Control Panel's Fonts installs `DOSAPP.FON` and removes it, and removes Wingdings and installs it again from `WINGDING.TTF`' sessions.
 
 ## Not yet done
 

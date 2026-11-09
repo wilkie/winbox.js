@@ -5,7 +5,7 @@ summary: The bounds GDI keeps of what is drawn in a device context — the progr
 probes: [bounds]
 ---
 
-GDI can keep the bounds of what is drawn in a device context: a program's, which it enables and asks for with [[fn:GDI.SetBoundsRect]] and [[fn:GDI.GetBoundsRect]], and Windows' own, which every context keeps from the start and USER asks for with [[fn:GDI.IsDCDirty]] and [[fn:GDI.SetDCStatus]]. [[measured]] [[probe:bounds]] draws each kind of call alone into a memory context and a window's, and reads back the bounds; both engines agree with all 75 records.
+GDI can keep the bounds of what is drawn in a device context: a program's, which it enables and asks for with [[fn:GDI.SetBoundsRect]] and [[fn:GDI.GetBoundsRect]], and Windows' own, which every context keeps from the start and USER asks for with [[fn:GDI.IsDCDirty]] and [[fn:GDI.SetDCStatus]]. [[measured]] [[probe:bounds]] draws each kind of call alone into a memory context and a window's, and reads back the bounds; WinBox agrees with all 75 records.
 
 ## What is kept
 
@@ -28,4 +28,4 @@ GDI can keep the bounds of what is drawn in a device context: a program's, which
 
 ## In winbox.js
 
-`src/win16/gdi/bounds.ts` and `crates/winbox-win16/src/gdi/bounds.rs`, each call that draws giving them its rectangle.
+`crates/winbox-win16/src/gdi/bounds.rs`, each call that draws giving them its rectangle.

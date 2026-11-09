@@ -21,4 +21,4 @@ topics: [gdi-objects]
 
 ## Implementation
 
-In both engines as [[fn:GDI.CreateCompatibleBitmap]], as `CreateDiscardableBitmap` is answered. [[probe:gdimisc]] agrees in both.
+As [[fn:GDI.CreateCompatibleBitmap]], as `CreateDiscardableBitmap` is answered. [[probe:gdimisc]] agrees in both.

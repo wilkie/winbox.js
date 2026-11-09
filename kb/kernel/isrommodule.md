@@ -15,4 +15,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-`IsRomModule` in `src/win16/kernel/misc.ts`: nought, as KERNEL answers. Answered as a stub, AX was left as it was. That leftover AX once made Control Panel's Fonts fault, as the source records. See [[topic:kernel-internals]].
+`IsRomModule`: nought, as KERNEL answers. Answered as a stub, AX was left as it was. That leftover AX once made Control Panel's Fonts fault, as the source records. See [[topic:kernel-internals]].

@@ -29,4 +29,4 @@ topics: [kernel-internals, keyboard-driver]
 
 ## Implementation
 
-**Implemented (a).** Both engines keep a task's action and handler in their record of it (TDB 24h, 26h), and KERNEL's own pair for action 4, and answer as above, the stray registers too (`SetSigHandler` in `src/win16/kernel/signals.ts`, `kernel_calls/signals.rs`). KERNEL's own handler, a bare `RETF` at seg1 `6125`, is WinBox's `ValidateFreeSpaces` stub, a bare return in Windows as here ([[probe:kintrnl]]). See [[topic:kernel-internals]].
+**Implemented (a).** WinBox keeps a task's action and handler in their record of it (TDB 24h, 26h), and KERNEL's own pair for action 4, and answer as above, the stray registers too (`SetSigHandler` in `crates/winbox-win16/src/kernel_calls/signals.rs`). KERNEL's own handler, a bare `RETF` at seg1 `6125`, is WinBox's `ValidateFreeSpaces` stub, a bare return in Windows as here ([[probe:kintrnl]]). See [[topic:kernel-internals]].

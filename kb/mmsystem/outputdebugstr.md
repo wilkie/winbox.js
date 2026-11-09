@@ -22,4 +22,4 @@ topics: [multimedia-services]
 
 ## Implementation
 
-Both engines do nothing and leave AX.
+WinBox does nothing and leaves AX.

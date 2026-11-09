@@ -16,4 +16,4 @@ topics: [ole]
 
 ## Implementation
 
-WinBox's own: `WEP` in `src/win16/olecli/index.ts` and `wep` in `crates/winbox-win16/src/olecli/mod.rs` answer 1. WinBox's `OLECLI`'s data -- its documents' list and what it does as it starts -- goes as its library goes (`ownFreed`, `own_modules::freed_named`).
+WinBox's own: `wep` in `crates/winbox-win16/src/olecli/mod.rs` answers 1. WinBox's `OLECLI`'s data -- its documents' list and what it does as it starts -- goes as its library goes (`ownFreed`, `own_modules::freed_named`).

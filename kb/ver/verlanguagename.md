@@ -30,4 +30,4 @@ topics: [version-information]
 
 ## Implementation
 
-`VerLanguageName` in `src/win16/ver/ver.ts` and `ver_language_name` in `crates/winbox-win16/src/ver/mod.rs`, from the names copied out of VER's string tables (`src/win16/ver/languages.ts`, `crates/winbox-win16/src/ver/languages.rs`). Both engines agree with [[probe:verinfo]], with `VER.DLL` on the drive and without it.
+`ver_language_name` in `crates/winbox-win16/src/ver/mod.rs`, from the names copied out of VER's string tables (`crates/winbox-win16/src/ver/languages.rs`). WinBox agrees with [[probe:verinfo]], with `VER.DLL` on the drive and without it.

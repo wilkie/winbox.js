@@ -15,4 +15,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-No debugger is ever there, so nothing is done in either engine.
+No debugger is ever there, so nothing is done.

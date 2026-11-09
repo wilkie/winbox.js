@@ -17,4 +17,4 @@ topics: [system-queue]
 
 [[measured]] [[probe:lockinp]]: switched off, it answers 1, and a key put in reaches no window. Switched on again, it answers nought, and the next key reaches the window with the focus.
 
-Both engines followed none of this before: it was a stub.
+WinBox followed none of this before: it was a stub.

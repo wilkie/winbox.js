@@ -21,4 +21,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`): the visible region moved, the kind answered. A window's context is a view of the whole screen from its origin and draws through its region alone, so it draws where the moved region reaches, outside the window too; [[probe:visfam]]'s `offset` agrees in both.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): the visible region moved, the kind answered. A window's context is a view of the whole screen from its origin and draws through its region alone, so it draws where the moved region reaches, outside the window too; [[probe:visfam]]'s `offset` agrees in both.

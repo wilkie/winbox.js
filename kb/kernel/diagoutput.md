@@ -22,4 +22,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A retail no-op in both engines, popping four bytes (`nothing`). [[fn:KERNEL.DiagQuery]] answers nought, logging off, as Windows does when it was not started with `/b`, and with logging off Windows does nothing here. See [[topic:kernel-internals]].
+A retail no-op, popping four bytes (`nothing`). [[fn:KERNEL.DiagQuery]] answers nought, logging off, as Windows does when it was not started with `/b`, and with logging off Windows does nothing here. See [[topic:kernel-internals]].

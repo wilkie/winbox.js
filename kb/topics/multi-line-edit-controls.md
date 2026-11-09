@@ -123,6 +123,6 @@ Undo is the same in both kinds of control: see [[topic:edit-controls]]. [[measur
 
 ## In winbox.js
 
-- `src/win16/user/mledit.ts` handles the messages and builds the lines.
-- `src/win16/user/edit-buffer.ts` keeps the control's blocks in the program's heap.
-- `Desktop.linesLayout` and `#paintLines` in `src/win16/user/desktop.ts` lay the control out and draw it.
+- `crates/winbox-win16/src/mledit.rs` handles the messages and builds the lines.
+- `crates/winbox-win16/src/edit_buffer.rs` keeps the control's blocks in the program's heap.
+- `Desktop.linesLayout` and `#paintLines` in `crates/winbox-win16/src/desktop.rs` lay the control out and draw it.

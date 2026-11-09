@@ -21,4 +21,4 @@ topics: [gdi-objects]
 
 ## Implementation
 
-In both engines through `SelectObject`. WinBox makes its stock bitmap's handle the first time a memory context's first bitmap is replaced; nought before then answers nought. [[probe:gdimisc]] agrees in both.
+Through `SelectObject`. WinBox makes its stock bitmap's handle the first time a memory context's first bitmap is replaced; nought before then answers nought. [[probe:gdimisc]] agrees in both.

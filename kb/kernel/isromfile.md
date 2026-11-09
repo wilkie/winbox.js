@@ -15,4 +15,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-`IsRomFile` in `src/win16/kernel/misc.ts`: nought, as KERNEL answers. See [[topic:kernel-internals]].
+`IsRomFile`: nought, as KERNEL answers. See [[topic:kernel-internals]].

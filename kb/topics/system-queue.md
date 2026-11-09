@@ -24,7 +24,7 @@ probes:
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
 
-Everything here is [[read out]] of `USER.EXE` unless marked; the offsets are seg1's. [[probe:sysq]], [[probe:jrnlrec]], [[probe:jrnlplay]] and [[probe:inhook]] put their input in through USER's own `KEYBD_EVENT` and `MOUSE_EVENT`, as the drivers do, before taking any of it, and both engines agree with all 32 of their records.
+Everything here is [[read out]] of `USER.EXE` unless marked; the offsets are seg1's. [[probe:sysq]], [[probe:jrnlrec]], [[probe:jrnlplay]] and [[probe:inhook]] put their input in through USER's own `KEYBD_EVENT` and `MOUSE_EVENT`, as the drivers do, before taking any of it, and WinBox agrees with all 32 of their records.
 
 ## Putting an event in
 
@@ -79,7 +79,7 @@ The input is read from the head (`2aa2`), one event at a time (`827a`):
 - With no focus, the window `T` takes `WM_SYSKEYDOWN` and `WM_SYSCHAR`.
 - A `PeekMessage` for `WM_KEYUP` alone takes the release, passing over the press, which is taken after it.
 
-The engines kept the keyboard in each program's queue, and gave a key the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed; in Control Panel's Ports Settings, Up, Tab, Down and Enter moved the first list's selection both ways. Now both engines keep one queue and give each event its window as it is taken.
+The engines kept the keyboard in each program's queue, and gave a key the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed; in Control Panel's Ports Settings, Up, Tab, Down and Enter moved the first list's selection both ways. Now WinBox keeps one queue and gives each event its window as it is taken.
 
 ## Double clicks
 
@@ -111,7 +111,7 @@ A press that may not be a double click -- in the client area of a class without 
 - A width of 1, or of nought, or a height of 1: the half is nought, the rectangle empty, and no press is a double click, not even at the same point. A width of 5 is 4's.
 - Through `MOUSE_EVENT`, at once, at the same point: a double click; two pixels to the right: not.
 
-Both engines agree with all 16 records. Before, a press was made a double click as it was put in -- by the page's own count of clicks, or by `MOUSE_EVENT` at the same point within the time -- whatever window it came to.
+WinBox agrees with all 16 records. Before, a press was made a double click as it was put in -- by the page's own count of clicks, or by `MOUSE_EVENT` at the same point within the time -- whatever window it came to.
 
 ## Hooks on the way
 
@@ -183,13 +183,13 @@ The computer-based training hooks, `WH_CBT`, are told as a key or a mouse event 
 - A click on `A` with no mouse hook: nothing. With one: the press and the release, each told `c6` with its message, `A`, `HTCLIENT` and the point (129, 123), after the mouse hook has it with nought and before `A` is handed it.
 - The mouse hook answering 1 for the press as it is looked at: the CBT hook is told of the press there and then.
 
-Both engines agree with all eleven records. Before, the CBT hooks were kept and never called.
+WinBox agrees with all eleven records. Before, the CBT hooks were kept and never called.
 
 ### While USER's system error box is up
 
 [[read out]] [[fn:USER.SysErrorBox]] sets the word at `0E0h` (`9350`-`9359`), makes the desktop window the system-modal window, and gives it the capture and the focus (`9392`-`93d3`); its loop takes each message with `PeekMessage` for the desktop window, `PM_REMOVE | PM_NOYIELD` (`9759`-`9768`). So while it is up the keyboard and mouse hooks are not called and the CBT hooks are told of nothing skipped (`32de`, `2e6e`), the journal hooks are not called (the system-modal window, `4e42`), and the message hooks are handed each message the box takes, as `PeekMessage` hands any ([[topic:hooks]]). The word is put back as the box goes (`9a79`).
 
-[[measured]] [[probe:sebhook]] puts in a keyboard, a mouse, a CBT and a message hook for its own task and a journal record hook, and calls `SysErrorBox`; Enter is pressed at the box from outside. While it is up only the message hook is called, with `WM_KEYDOWN` and `WM_KEYUP`, code nought; the box answers 1. X pressed through `KEYBD_EVENT` once it is gone: the journal hook, the keyboard hook, the CBT hook's `HCBT_KEYSKIPPED` and the message hook, for the press and for the release, as before it. Both engines agree with all three records. winbox.js's box takes the keyboard and the mouse from the page straight; it now hands each message to the message hooks before it reads it, a key's `lParam` as the key would have had, a press's the point.
+[[measured]] [[probe:sebhook]] puts in a keyboard, a mouse, a CBT and a message hook for its own task and a journal record hook, and calls `SysErrorBox`; Enter is pressed at the box from outside. While it is up only the message hook is called, with `WM_KEYDOWN` and `WM_KEYUP`, code nought; the box answers 1. X pressed through `KEYBD_EVENT` once it is gone: the journal hook, the keyboard hook, the CBT hook's `HCBT_KEYSKIPPED` and the message hook, for the press and for the release, as before it. WinBox agrees with all three records. winbox.js's box takes the keyboard and the mouse from the page straight; it now hands each message to the message hooks before it reads it, a key's `lParam` as the key would have had, a press's the point.
 
 ### The hardware hooks
 
@@ -223,7 +223,7 @@ USER lets one program at a time read the input. The first to look holds it, at `
 
 [[measured]] [[probe:inlock]] runs a second program, `B`, which is active with the focus. The probe's window `A` answers `WM_MOUSEACTIVATE` with `MA_NOACTIVATE`. The left button pressed and let go on `A` and X pressed and let go are put in before anything is taken.
 
-- `A` yields forty times as it is handed the release. `B` takes X only after `A` has finished: `A:201`, `A:202`, `A:done`, then `B`'s X. Before, both engines gave X to `B` while `A` yielded.
+- `A` yields forty times as it is handed the release. `B` takes X only after `A` has finished: `A:201`, `A:202`, `A:done`, then `B`'s X. Before, WinBox gave X to `B` while `A` yielded.
 - `A` sends `B` `WM_USER` instead, in which `B` looks for a key with `PeekMessage`. `B` finds X's press there, before `A` has finished.
 
 [[measured]] [[probe:keyrep]]: X pressed, looked at with `PM_NOREMOVE`, then `WM_USER` posted to `T` and X let go. `T` takes X's press first, then the posted message, then the character and the release.
@@ -243,7 +243,7 @@ So the program that took an event lets the input go at its next look where nothi
 [[measured]] [[probe:inpost]] runs `B` as [[probe:inlock]] does. `A`, handed `WM_USER + 1`, yields forty times and writes `A:posted`. The click on `A` and X are put in before anything is taken.
 
 - `A` posts itself `WM_USER + 1` as it is handed the release: `A:201`, `A:202`, `A:done`, `A:posted`, and only then `B`'s X. `A` held the input while it handled what it posted itself.
-- `A` posts itself `WM_USER + 1` before the input is put in, and takes the move, the press and the release with `PeekMessage` for the mouse's messages alone, which pass over the posted message. Its next look lets the input go and takes `WM_USER + 1`; while it yields in it, `B` takes X: `A:201`, `A:202`, `B`'s X, then `A:posted`. Before, both engines kept the input with `A` until a look of its found none, and `B` took X after `A:posted`.
+- `A` posts itself `WM_USER + 1` before the input is put in, and takes the move, the press and the release with `PeekMessage` for the mouse's messages alone, which pass over the posted message. Its next look lets the input go and takes `WM_USER + 1`; while it yields in it, `B` takes X: `A:201`, `A:202`, `B`'s X, then `A:posted`. Before, WinBox kept the input with `A` until a look of its found none, and `B` took X after `A:posted`.
 
 ### Locking the input
 
@@ -267,7 +267,7 @@ So the program that took an event lets the input go at its next look where nothi
 - Letting go: 1, no message; the focus, the active window and the capture `W` again, no system-modal window, the clip as it was, and no task locked. Then `C` answers.
 - `EnableHardwareInput(0)` answers 1, and X put in reaches no window. Locked to `L` meanwhile, X reaches `L`; let go, it is lost again. `EnableHardwareInput(1)` answers nought, and X reaches `W`.
 
-Before, all five were stubs in both engines.
+Before, all five were stubs.
 
 ## Keys the queue takes for itself
 
@@ -289,4 +289,4 @@ While a window is system-modal, a key for a window outside it is passed over, le
 
 ## In winbox.js
 
-`src/win16/user/system-queue.ts` and `crates/winbox-win16/src/system_queue.rs` keep the queue and call the hooks; `RasterInput.virtualKey` and `pointer` (`raster-input.ts`, `key_input.rs`, `raster_input.rs`) put events in, and `nextMessage` in `queue.ts` (`take_input` in Rust) takes them. The queue is one array, every task's `_input` in the TypeScript engine and `System::input` in the Rust one. A press is added to the one before it as it is put in (`#queue`, `queue_input`). The task that holds the input is `_inputLock` (`input_lock`), taken and let go by the look (`holdsInput`, `holds_input`), and a task answering a message another sent it counts that in `inSent` (`in_sent`). The marks are `_inputMark` and each task's `_lastTaken` (`input_mark`, `Queue::taken_mark`), a posted message's its `mark` (`serial`), given by `postTo` (`post_to`). `lock-input.ts` and `lock_input.rs` keep `LockInput`, `LockMyTask` and `EnableHardwareInput`, and the scheduler's `locked` its locked task (`scheduler.ts`, `scheduler.rs`). `hardwareTarget`, `hardwareHook`, `keySkipped` and `clickSkipped` (`hardware_target`, `hardware_hook`, `key_skipped`, `click_skipped`) are the rest. `resolveMouse` and `noteClick` in `mouse-scan.ts` (`resolve_mouse`, `note_click`) make a press a double click and keep it. A button over no window is the desktop window's, its first program's (`mouse-scan.ts`, `mouse_scan.rs`; [[topic:task-list]]), and a double click there is made by the same rule, the desktop's class having `CS_DBLCLKS`. The browser's keys carry no scan code, but Print Screen's, which is the driver's; a program's through `KEYBD_EVENT` carry BL's. A key the browser repeats goes in as a press of its own, and is added to the press before it where that is not yet taken.
+`crates/winbox-win16/src/system_queue.rs` keeps the queue and calls the hooks; `virtual_key` and `pointer` (`crates/winbox-win16/src/key_input.rs`, `crates/winbox-win16/src/raster_input.rs`) put events in, and `next_message` in `crates/winbox-win16/src/queue.rs` (`take_input`) takes them. The queue is one array, `System::input`. A press is added to the one before it as it is put in (`#queue`, `queue_input`). The task that holds the input is `_inputLock` (`input_lock`), taken and let go by the look (`holds_input`), and a task answering a message another sent it counts that in `inSent` (`in_sent`). The marks are `_inputMark` and each task's `_lastTaken` (`input_mark`, `Queue::taken_mark`), a posted message's its `mark` (`serial`), given by `post_to`. `crates/winbox-win16/src/lock_input.rs` keeps `LockInput`, `LockMyTask` and `EnableHardwareInput`, and the scheduler's `locked` its locked task (`crates/winbox-win16/src/scheduler.rs`). `hardware_target`, `hardwareHook`, `key_skipped` and `click_skipped` (`hardware_target`, `hardware_hook`, `key_skipped`, `click_skipped`) are the rest. `resolve_mouse` and `note_click` in `crates/winbox-win16/src/mouse_scan.rs` make a press a double click and keep it. A button over no window is the desktop window's, its first program's (`crates/winbox-win16/src/mouse_scan.rs`; [[topic:task-list]]), and a double click there is made by the same rule, the desktop's class having `CS_DBLCLKS`. The browser's keys carry no scan code, but Print Screen's, which is the driver's; a program's through `KEYBD_EVENT` carry BL's. A key the browser repeats goes in as a press of its own, and is added to the press before it where that is not yet taken.

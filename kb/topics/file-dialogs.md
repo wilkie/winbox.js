@@ -88,15 +88,15 @@ probes: [ofnopen, ofnerr, ftitle]
 
 ## WinBox's own
 
-The file dialogs are WinBox's own, with [[fn:COMMDLG.GetFileTitle]] and [[fn:COMMDLG.CommDlgExtendedError]]. [[probe:ofnopen]], [[probe:ofnerr]] and [[probe:ftitle]] record them, and both engines agree with all their records.
+The file dialogs are WinBox's own, with [[fn:COMMDLG.GetFileTitle]] and [[fn:COMMDLG.CommDlgExtendedError]]. [[probe:ofnopen]], [[probe:ofnerr]] and [[probe:ftitle]] record them, and WinBox agrees with all their records.
 
 - **The templates are WinBox's own**: Open and Save As's box, 1536, and the box for several files, 1537, built into the engines with COMMDLG's strings. A program's template, named or by handle, is used in their place as COMMDLG uses one.
 - **The procedures** are WinBox's stubs for entries 6 and 7, `FileOpenDlgProc` and `FileSaveDlgProc`, and the subclasses of the folders' list and OK are entries 29 and 31, `dwLBSubclass` and `dwOKSubclass`. A program that asks [[fn:KERNEL.GetProcAddress]] for them gets those.
 - **The hook** is called before COMMDLG's own code for every message, as the file calls it, and is sent what comes before `WM_INITDIALOG` too.
-- **Each call into KERNEL, USER and GDI** is made as the file makes it: its arguments pushed below the stack, its strings and structures laid out below them, and the function that answers a program's call run (`api.ts`, `api.rs`). So the lists are filled, the boxes put up and the rows drawn by USER as they would be for the file, and USER's own quirks show in WinBox's dialogs as in COMMDLG's.
+- **Each call into KERNEL, USER and GDI** is made as the file makes it: its arguments pushed below the stack, its strings and structures laid out below them, and the function that answers a program's call run (`api.rs`). So the lists are filled, the boxes put up and the rows drawn by USER as they would be for the file, and USER's own quirks show in WinBox's dialogs as in COMMDLG's.
 - **The folders' and drives' pictures** are bitmap 576 of the installation's `COMMDLG.DLL`, read as data and made into the same strip. With no file there are none; the rows keep their height.
-- **Without `COMMDLG.DLL`** on the drive, Notepad's Open does all it does with the file: `test/win16/file_dialogs_test.ts` and `crates/winbox-web/tests/file_dialogs.rs`.
-- The code: `src/win16/commdlg/file-dialogs.ts`, `file-init.ts`, `file-command.ts`, `file-ok.ts`, `file-lists.ts`, `pictures.ts`, `parse-file.ts`; `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `file_init.rs`, `file_command.rs`, `file_ok.rs`, `file_lists.rs`, `pictures.rs`, `parse.rs`.
+- **Without `COMMDLG.DLL`** on the drive, Notepad's Open does all it does with the file: `crates/winbox-web/tests/file_dialogs.rs`.
+- The code: `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `crates/winbox-win16/src/commdlg/file_init.rs`, `crates/winbox-win16/src/commdlg/file_command.rs`, `crates/winbox-win16/src/commdlg/file_ok.rs`, `crates/winbox-win16/src/commdlg/file_lists.rs`, `crates/winbox-win16/src/commdlg/pictures.rs`, `parse.rs`.
 
 Fixing USER and DOS for the probes: a dialog's controls are made with `WS_EX_NOPARENTNOTIFY` ([[topic:dialog-boxes]]); a combo box lays itself out again for `WM_SETFONT`, and has `CBS_HASSTRINGS` in its style ([[topic:combo-boxes]]); a list box or combo box draws as it changes only where it and every window above it are visible; DOS's function 47h fails on a drive with no disk ([[topic:drives-and-disks]]).
 

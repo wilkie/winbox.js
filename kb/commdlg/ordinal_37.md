@@ -24,4 +24,4 @@ topics: [common-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 37 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping 0 bytes, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's file dialogs keep their pictures as device bitmaps of their own (`pictures.ts`, `pictures.rs`), and make no memory device context as COMMDLG loads.
+Not WinBox's own: ordinal 37 is a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`, popping 0 bytes, as the entry's `retf` does), with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's file dialogs keep their pictures as device bitmaps of their own (`crates/winbox-win16/src/commdlg/pictures.rs`), and make no memory device context as COMMDLG loads.

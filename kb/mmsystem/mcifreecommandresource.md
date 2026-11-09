@@ -22,4 +22,4 @@ topics: [sound-devices]
 
 ## Implementation
 
-Both engines, as read out: `src/win16/mmsystem/mci-tables.ts` and `crates/winbox-win16/src/mmsystem/mci_tables.rs`. WinBox's own MMSYSTEM and MCIWAVE have no resources: their tables are known by name, as their files have them, and their contents are not kept, since `mciSendString` here reads no table.
+As read out: `crates/winbox-win16/src/mmsystem/mci_tables.rs`. WinBox's own MMSYSTEM and MCIWAVE have no resources: their tables are known by name, as their files have them, and their contents are not kept, since `mciSendString` here reads no table.

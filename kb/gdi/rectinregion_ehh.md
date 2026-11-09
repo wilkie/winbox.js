@@ -21,4 +21,4 @@ topics: [regions]
 
 ## Implementation
 
-In both engines as [[fn:GDI.RectInRegion]]. [[probe:gdimisc]] agrees in both.
+As [[fn:GDI.RectInRegion]]. [[probe:gdimisc]] agrees in both.

@@ -22,4 +22,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`): a new context, its state the state `SaveDC` saves (the origin with it), its handle GDI's. [[probe:visfam]]'s `state` agrees in both.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): a new context, its state the state `SaveDC` saves (the origin with it), its handle GDI's. [[probe:visfam]]'s `state` agrees in both.

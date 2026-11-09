@@ -25,4 +25,4 @@ topics: [common-dialogs, choose-font]
 
 ## Implementation
 
-Not WinBox's own: ordinal 34 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping nothing, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive the file's own `WEP` calls the file's code.
+Not WinBox's own: ordinal 34 is a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`, popping nothing, as the entry's `retf` does), with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive the file's own `WEP` calls the file's code.

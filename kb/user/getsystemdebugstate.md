@@ -28,4 +28,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. `DefDlgProc` keeps the dialog's word (`dialogs.ts`, `dialogs.rs`). Never `SDS_NOTASKQUEUE`: a task here always has a queue.
+`crates/winbox-win16/src/small_calls.rs`. `DefDlgProc` keeps the dialog's word (`crates/winbox-win16/src/dialogs.rs`). Never `SDS_NOTASKQUEUE`: a task here always has a queue.

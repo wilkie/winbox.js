@@ -32,7 +32,7 @@ topics: [gdi-internals]
 
 ## Implementation
 
-In both engines (`driver-helpers.ts`, `driver_helpers.rs`), on the VGA, the Super VGA and the EGA: for a memory context's bitmap of four planes or one, read from WinBox's own pixels as [[fn:GDI.DMScanLR]] reads a bitmap's bits; for a window's or the screen's context, the screen's pixels from the context's origin. [[probe:gdiint]] and [[probe:scanscr]] agree in both.
+In WinBox, (`crates/winbox-win16/src/gdi/driver_helpers.rs`), on the VGA, the Super VGA and the EGA: for a memory context's bitmap of four planes or one, read from WinBox's own pixels as [[fn:GDI.DMScanLR]] reads a bitmap's bits; for a window's or the screen's context, the screen's pixels from the context's origin. [[probe:gdiint]] and [[probe:scanscr]] agree in both.
 
 **Recommendation:** done for those displays.
 

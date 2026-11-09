@@ -27,4 +27,4 @@ topics: [gdi-internals]
 
 ## Implementation
 
-**Not applicable (c), with the answer of a call.** Only USER's start-up calls it. Both engines answer a later call with the length of that string, kept as a named constant, with TrueType enabled (`FinalGDIInit` in `src/win16/gdi/system-exports.ts`): WinBox's GDI and USER start together, and nothing is left to do. See [[topic:gdi-internals]].
+**Not applicable (c), with the answer of a call.** Only USER's start-up calls it. WinBox answers a later call with the length of that string, kept as a named constant, with TrueType enabled (`FinalGDIInit` in `crates/winbox-win16/src/gdi/system_exports.rs`): WinBox's GDI and USER start together, and nothing is left to do. See [[topic:gdi-internals]].

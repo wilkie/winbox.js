@@ -16,4 +16,4 @@ topics: [kernel-internals, global-and-local-memory]
 
 ## Implementation
 
-`LocalHandleDelta` in `src/win16/kernel/memory-info.ts`, kept with each heap. See [[topic:kernel-internals]].
+`LocalHandleDelta`, kept with each heap. See [[topic:kernel-internals]].

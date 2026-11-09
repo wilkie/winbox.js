@@ -34,7 +34,7 @@ winbox.js agrees with all 27 records.
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context (`GDI.EXE` seg21 `0726`), the points are mapped and their bounds, out by the pen's reach, are cut to the visible region. A thin pen goes to the driver as `OS_POLYLINE` with the bounds as the clip (`0801`). A wide pen needs `LC_WIDE` and goes as a figure (`10cd`). A null pen draws nothing. [[measured]] [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context (`GDI.EXE` seg21 `0726`), the points are mapped and their bounds, out by the pen's reach, are cut to the visible region. A thin pen goes to the driver as `OS_POLYLINE` with the bounds as the clip (`0801`). A wide pen needs `LC_WIDE` and goes as a figure (`10cd`). A null pen draws nothing. [[measured]] [[probe:prdraw]], through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 

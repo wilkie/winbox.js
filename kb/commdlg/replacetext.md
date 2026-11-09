@@ -30,4 +30,4 @@ Nothing in the installation or the corpus uses it. [[probe:findrepl]] opens it a
 
 ## Implementation
 
-WinBox's own, beside `FindText`: `src/win16/commdlg/find-replace.ts` and `crates/winbox-win16/src/commdlg/find_replace.rs`.
+WinBox's own, beside `FindText`: `crates/winbox-win16/src/commdlg/find_replace.rs`.

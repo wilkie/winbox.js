@@ -62,6 +62,6 @@ Dashes along other slopes, raster operations other than the default beyond `R2_N
 
 ## In winbox.js
 
-`BitmapContext.stroke` implements the walk. It takes the display mode's tie rule (`lineTie`) and `CLIPCAPS`, and `Surface.drawLine` uses it on pixels winbox.js owns. [[fn:GDI.LineTo]] and [[fn:GDI.Polygon]]'s outline go through it, and all 9,912 records of `lines` agree when replayed through the exported `MoveTo` and `LineTo`. On a browser canvas, `drawLine` still makes the canvas's own stroke. That stroke is not the recorded walk.
+`BitmapContext.stroke` implements the walk. It takes the display mode's tie rule (`lineTie`) and `CLIPCAPS`, uses it on pixels winbox.js owns. [[fn:GDI.LineTo]] and [[fn:GDI.Polygon]]'s outline go through it, and all 9,912 records of `lines` agree when replayed through the exported `MoveTo` and `LineTo`. On a browser canvas the line is still the canvas's own stroke. That stroke is not the recorded walk.
 
 The full derivation, with every reading that was refused, is in [[fonts:3]] and [[fonts:8v]]. To record a display yourself, see [[guide:reproducing]].

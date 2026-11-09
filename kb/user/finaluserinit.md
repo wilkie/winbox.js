@@ -24,4 +24,4 @@ topics: [user-internals]
 
 ## Implementation
 
-An exact no-op in both engines (`src/win16/user/internals.ts`; `user_internals.rs`): WinBox's USER has done its own start, and its drawing needs no such context. Nothing a program can ask shows the context or the bitmap.
+An exact no-op (`crates/winbox-win16/src/user_internals.rs`): WinBox's USER has done its own start, and its drawing needs no such context. Nothing a program can ask shows the context or the bitmap.

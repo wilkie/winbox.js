@@ -15,6 +15,6 @@ probes: [getmsg]
 
 ## In winbox.js
 
-`nextMessage` in `src/win16/user/queue.ts` applies the filter to posted messages, paints and timers. A `GetMessage` with a filter has nothing it can take yet. It waits for any message to arrive, a timer to fall due, or a paint to be due, and then looks again.
+`next_message` in `crates/winbox-win16/src/queue.rs` applies the filter to posted messages, paints and timers. A `GetMessage` with a filter has nothing it can take yet. It waits for any message to arrive, a timer to fall due, or a paint to be due, and then looks again.
 
 Before this, `PeekMessage` kept to a window but not its children, and `GetMessage` took any message at all.

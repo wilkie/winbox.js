@@ -16,4 +16,4 @@ source: crates/winbox-win16/src/system_driver.rs
 
 ## Implementation
 
-`src/win16/system-driver.ts`; the Rust engine's `crates/winbox-win16/src/system_driver.rs`. The flag only: the timers are looked at while it is set.
+`crates/winbox-win16/src/system_driver.rs`. The flag only: the timers are looked at while it is set.

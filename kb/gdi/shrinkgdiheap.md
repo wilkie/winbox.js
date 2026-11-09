@@ -26,6 +26,6 @@ topics: [gdi-internals]
 
 ## Implementation
 
-Nothing in both engines: WinBox's GDI keeps its objects in itself, and the bytes a program sees of GDI's heap are made as they are read ([[topic:gdi-objects]]). No heap is there to shrink.
+Nothing: WinBox's GDI keeps its objects in itself, and the bytes a program sees of GDI's heap are made as they are read ([[topic:gdi-objects]]). No heap is there to shrink.
 
 **Recommendation:** done.

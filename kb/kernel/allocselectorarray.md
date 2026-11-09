@@ -19,4 +19,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/selector-aliases.ts`, and the Rust engine's `modules_kernel.rs (Descriptors::blank_run)`.
+`modules_kernel.rs (Descriptors::blank_run)`.

@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/sound.rs
 
 ## Implementation
 
-`src/win16/sound.ts`; the Rust engine's `crates/winbox-win16/src/sound.rs`.
+`crates/winbox-win16/src/sound.rs`.

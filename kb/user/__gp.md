@@ -26,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-**Implemented (b), data.** In both engines the export is a table of its end alone, a selector of nought, laid where its stub would be (`exported-data.ts`): WinBox's USER has no code of Windows' to fault in, and [[fn:KERNEL.HasGPHandler]] answers nought. See [[topic:user-internals]].
+**Implemented (b), data.** The export is a table of its end alone, a selector of nought, laid where its stub would be: WinBox's USER has no code of Windows' to fault in, and [[fn:KERNEL.HasGPHandler]] answers nought. See [[topic:user-internals]].

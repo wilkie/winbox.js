@@ -15,4 +15,4 @@ source: crates/winbox-win16/src/user.rs
 
 ## Implementation
 
-`src/win16/user.ts`'s table; the Rust engine's `user.rs`.
+`crates/winbox-win16/src/user.rs`'s table; the Rust engine's `user.rs`.

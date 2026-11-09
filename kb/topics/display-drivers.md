@@ -59,7 +59,7 @@ A program reaches a driver's own functions through [[fn:GDI.Escape]], by number.
 - [[measured]] `MOUSETRAILS` answers 7 on the colour displays and nought on the Hercules. It writes nothing back.
 - [[measured]] An escape the driver has not got answers nought.
 - [[measured]] A memory device context's driver is GDI's own for bitmaps, and answers nought to everything, `QUERYESCSUPPORT` included.
-- winbox.js does not run the driver's code. It answers from each display's record in `display-modes.ts`. Not followed: what `GETCOLORTABLE` answers.
+- winbox.js does not run the driver's code. It answers from each display's record in `src/win16/display-modes.ts`. Not followed: what `GETCOLORTABLE` answers.
 
 ## Why fixtures are recorded per display
 
@@ -265,13 +265,13 @@ Setup offers three more settings for the two drivers. winbox.js has a mode for e
 - [[read out]] At start-up GDI reads the statics from the driver and sends only the 236 entries between them (`GDI.EXE` seg22 `05df`-`071a`).
 - [[read out]] Where a realization changes the system palette, GDI sends the whole palette from nought (seg22 `0e51`, `0fd3`). `SetSystemPaletteUse` with any use but `SYSPAL_NOSTATIC` does the same (seg22 `0a94`-`0af3`).
 
-Both engines show the statics this way: dark red as BF0000 until a realization changes the palette, and as 800000 after it. `GetSystemPaletteEntries` and the rest answer the entries. [[read out]] `XGA.DRV` copies its statics unchanged into the palette it programs (seg3 `0ea5`-`0ebf`).
+WinBox shows the statics this way: dark red as BF0000 until a realization changes the palette, and as 800000 after it. `GetSystemPaletteEntries` and the rest answer the entries. [[read out]] `XGA.DRV` copies its statics unchanged into the palette it programs (seg3 `0ea5`-`0ebf`).
 
 ### An escape the driver has not got
 
-- [[read out]] **GDI passes the driver's answer back.** On a screen's context, `Escape` calls the driver's `Control` and answers what it answers (`GDI.EXE` seg7 `04f0`-`0526`). There are two exceptions. GDI answers escape 0Fh with nought itself (seg7 `008f`). Escapes 100h to BFFh are GDI's own: it answers 100h and 102h itself (seg7 `1c96`). For the rest it calls the driver only where a flag of the context's is set, bit 2 of its byte 0Bh, and otherwise answers nought (seg7 `044e`-`04c7`). Both engines answer nought to them, as before.
+- [[read out]] **GDI passes the driver's answer back.** On a screen's context, `Escape` calls the driver's `Control` and answers what it answers (`GDI.EXE` seg7 `04f0`-`0526`). There are two exceptions. GDI answers escape 0Fh with nought itself (seg7 `008f`). Escapes 100h to BFFh are GDI's own: it answers 100h and 102h itself (seg7 `1c96`). For the rest it calls the driver only where a flag of the context's is set, bit 2 of its byte 0Bh, and otherwise answers nought (seg7 `044e`-`04c7`). WinBox answers nought to them, as before.
 - [[read out]] **`8514.DRV`'s `Control` answers an escape it has not got with the escape's own number** (seg1 `1b28`-`1b35`). So `MOUSETRAILS` answers 39. `XGA.DRV`'s answers nought (seg1 `132c`), as the recorded drivers' do.
-- [[read out]] `GETCOLORTABLE` on the 8514/a copies the static colour of that index from the driver's table of twenty and answers 1 (seg1 `1b5e`-`1b7d`). Index 20 answers nought. On the XGA it copies the system palette's entry (seg1 `1358`). Neither engine follows `GETCOLORTABLE`.
+- [[read out]] `GETCOLORTABLE` on the 8514/a copies the static colour of that index from the driver's table of twenty and answers 1 (seg1 `1b5e`-`1b7d`). Index 20 answers nought. On the XGA it copies the system palette's entry (seg1 `1358`). WinBox does not follow `GETCOLORTABLE`.
 
 ### GDI's `DEFAULT_PALETTE`
 
@@ -281,13 +281,13 @@ Both engines show the statics this way: dark red as BF0000 until a realization c
 
 ### The drivers' export tables
 
-[[read out]] In both engines, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`display-driver.ts`, `Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
+[[read out]] In WinBox, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
 
 - **`SVGA256.DRV`** has 1 to 28, with `StretchBlt` (27) and `StretchDIBits` (28). It also has 101 to 104, `GetDriverResourceID` (450), 500, `SetColorTranslate` (1000), and the cards' bank routines 2000 to 2023. It has none of 90 to 92 or 400 to 403.
 - **`8514.DRV`** has 1 to 28 (27 and 28 are spares), 92 and 101 to 104. Its routines for 8 and for 4 bits are 200 to 226, and its text is 240 and 241. It also has 450 and 500. Its 501 to 506 are places in its data segment and are left out.
 - **`XGA.DRV`** has the same 1 to 28, 92, 101 to 104, 450 and 500, and 501 to 548, which have no names.
 - [[read out]] **`StrBlt` takes 1Eh bytes, not 28h.** On every driver it pops the return address, pushes the five words `ExtTextOut` has that it has not, and goes on as `ExtTextOut`, whose `RETF 28h` takes those too (`VGA.DRV` seg2 `082c`, `HERCULES.DRV` seg1 `108c`, `8514.DRV` seg1 `1243`, `XGA.DRV` seg2 `1098`). `argument-sizes.mjs` now counts what a function pushes in place of the arguments it took. It found the same in KERNEL's `DeletePathName` (seg3 `04b6`), which takes 4 bytes and pushes one more word for the routine it shares.
-- `GetProcAddress` of ordinal 450 answers the entry where the driver has one, and both engines answer it as the driver does ([[topic:display-driver-resources]]).
+- `GetProcAddress` of ordinal 450 answers the entry where the driver has one, and WinBox answers it as the driver does ([[topic:display-driver-resources]]).
 
 ### `lineTie` and `boldOverhang`
 
@@ -305,5 +305,5 @@ Both engines show the statics this way: dark red as BF0000 until a realization c
 ### Not yet done
 
 - **`lineTie` and `boldOverhang`** on the 8514/a and the XGA are the colour drivers' recorded choices. That is read out only for the 8514/a's lines into memory. On its screen the tie is the coprocessor's, which the driver does not hold. The XGA's lines and both drivers' text have not been read (above).
-- **`GETCOLORTABLE`** is read out on both drivers but followed by neither engine.
-- **Icons and cursors asked of the display's instance.** USER passes their groups' numbers through `GetDriverResourceID` too. No driver's icon or cursor group is numbered 1, 3 or above 7F87h, so both engines leave those numbers alone.
+- **`GETCOLORTABLE`** is read out on both drivers but followed by WinBox.
+- **Icons and cursors asked of the display's instance.** USER passes their groups' numbers through `GetDriverResourceID` too. No driver's icon or cursor group is numbered 1, 3 or above 7F87h, so WinBox leaves those numbers alone.

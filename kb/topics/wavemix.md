@@ -71,7 +71,7 @@ A session is a block of its local heap, marked `5432h` at its start and at `8Ch`
 - Flushed a tenth of a second in, the channel's wave is never told ended.
 - Deactivating, closing channels and freeing the wave answer 0, and closing the session 5.
 
-winbox.js agrees with all 30 records on the Rust engine, with WinBox's driver taking the Sound Blaster's part as the oracle's other sound recordings have it. It agrees with all 30 again on WinBox's own card, as `winbox-native --sound` installs it. There the card hands the host the square wave, its samples 40h either side of silence (`wavemix_on_winboxs_own_card`). The TypeScript engine has no sound card, and does not run recordings made with one.
+winbox.js agrees with all 30 records on the Rust engine, with WinBox's driver taking the Sound Blaster's part as the oracle's other sound recordings have it. It agrees with all 30 again on WinBox's own card, as `winbox-native --sound` installs it. There the card hands the host the square wave, its samples 40h either side of silence (`wavemix_on_winboxs_own_card`).
 
 ## SimTower plays nothing without SIMTOWER.INI
 

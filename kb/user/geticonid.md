@@ -32,4 +32,4 @@ source: crates/winbox-win16/src/cursor_make.rs
 
 ## Implementation
 
-`src/win16/user/cursor-make.ts`; the Rust engine's `cursor_make.rs`. The same choice is `pickIcon` (`src/raster/icon.ts`, `winbox-raster`'s `pick_icon`), which [[fn:USER.LoadIcon]], SHELL's [[fn:SHELL.ExtractIcon]] and WinBox's own icons make.
+`crates/winbox-win16/src/cursor_make.rs`. The same choice is `pickIcon` (`winbox-raster`'s `pick_icon`), which [[fn:USER.LoadIcon]], SHELL's [[fn:SHELL.ExtractIcon]] and WinBox's own icons make.

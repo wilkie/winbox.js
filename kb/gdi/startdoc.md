@@ -15,7 +15,7 @@ topics: [printing, printer-drivers]
 
 [[measured]] [[probe:printing]] prints two documents of two pages each, one by the calls and one by the escapes, and abandons a third. With Windows' PostScript driver, every call of a document succeeds, and each document is written. Before `StartDoc`, [[fn:GDI.StartPage]] answers 1, [[fn:GDI.EndPage]] -1 and [[fn:GDI.EndDoc]] 1. See [[topic:printing]].
 
-[[measured]] [[probe:prdoc]] prints a page through the PostScript driver to a file, and records each line of PostScript the driver wrote. Both engines run the driver and agree with all 223 records.
+[[measured]] [[probe:prdoc]] prints a page through the PostScript driver to a file, and records each line of PostScript the driver wrote. WinBox runs the driver and agrees with all 223 records.
 
 [[measured]] [[probe:prabort]]:
 
@@ -29,6 +29,6 @@ topics: [printing, printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/printing.ts` routes a driver's DC to `printer-driver.ts`. In Rust, `crates/winbox-win16/src/gdi/printing.rs` routes it to `printer_driver.rs`. WinBox's own printer (`printer.ts`, `printer.rs`) starts its job itself.
+`crates/winbox-win16/src/gdi/printing.rs` routes a driver's DC to `crates/winbox-win16/src/gdi/printer_driver.rs`. WinBox's own printer (`crates/winbox-win16/src/printer.rs`) starts its job itself.
 
 - Not recorded: `StartDoc` of a device context that is not a printer's, which winbox.js answers -1.

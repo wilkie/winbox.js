@@ -23,4 +23,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`nothing` in `src/win16/kernel/retail.ts`, and the Rust engine's `kernel_calls/retail.rs`.
+`nothing` in `crates/winbox-win16/src/kernel_calls/retail.rs`.

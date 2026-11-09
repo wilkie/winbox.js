@@ -19,4 +19,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A retail no-op in both engines, popping two bytes (`nothing`). WinBox's machine has no A20 line to switch. See [[topic:kernel-internals]].
+A retail no-op, popping two bytes (`nothing`). WinBox's machine has no A20 line to switch. See [[topic:kernel-internals]].

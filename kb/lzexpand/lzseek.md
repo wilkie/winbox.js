@@ -32,4 +32,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzSeek` in `src/win16/lzexpand/lz.ts` and `lz_seek` in `crates/winbox-win16/src/lzexpand/mod.rs`. Both engines agree with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it. [[fn:KERNEL._llseek]] follows DOSBox for a place before the start.
+`lz_seek` in `crates/winbox-win16/src/lzexpand/mod.rs`. WinBox agrees with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it. [[fn:KERNEL._llseek]] follows DOSBox for a place before the start.

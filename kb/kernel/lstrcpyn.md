@@ -32,8 +32,8 @@ The code is `KRNL386.EXE` segment 1, from `831f`. It takes the destination, the 
 
 ## Programs
 
-- [[measured]] [[probe:enumfam]] copies each font's face, full name and style out of the structures `EnumFontFamilies` hands it with `lstrcpyn`. The Rust engine runs the probe itself, and while `lstrcpyn` was a stub that answered nought and copied nothing, it agreed with 29 of 162 records on the VGA and the Super VGA, and 29 of 176 on the EGA and the Hercules. The TrueType families had no full name or style, and every family's name, kept with `lstrcpyn` to look it up again, was empty, so none of the calls by name were recorded. With it, all four agree in full. The TypeScript engine replays the probe through its exports, and never ran the probe's own copies. See [[topic:font-enumeration]].
+- [[measured]] [[probe:enumfam]] copies each font's face, full name and style out of the structures `EnumFontFamilies` hands it with `lstrcpyn`. The Rust engine runs the probe itself, and while `lstrcpyn` was a stub that answered nought and copied nothing, it agreed with 29 of 162 records on the VGA and the Super VGA, and 29 of 176 on the EGA and the Hercules. The TrueType families had no full name or style, and every family's name, kept with `lstrcpyn` to look it up again, was empty, so none of the calls by name were recorded. With it, all four agree in full. The replay runs the probe through its exports, and never ran the probe's own copies. See [[topic:font-enumeration]].
 
 ## Implementation
 
-`src/win16/kernel/lstrcpyn.ts`, and `lstrcpyn` in `crates/winbox-win16/src/kernel.rs`, follow the read-out: the length, the lesser of the two, words then a byte, then the terminator, each offset within its segment. See [[fn:KERNEL.lstrcpy]].
+`lstrcpyn` in `crates/winbox-win16/src/kernel.rs`, follow the read-out: the length, the lesser of the two, words then a byte, then the terminator, each offset within its segment. See [[fn:KERNEL.lstrcpy]].

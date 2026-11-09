@@ -29,4 +29,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-`src/win16/user/ReleaseDC.ts` and `dc-entries.ts`; the Rust engine's `crates/winbox-win16/src/get_dc.rs` and `dc_entries.rs`. As read out, in both. The context `GetDC` gives the window `LockWindowUpdate` locked is one of WinBox's own, not an entry, and is let go here ([[topic:visible-regions]], phase 5). The palette selected goes back to the stock one, as `SetDCState` sets it (`GDI.EXE` seg1 `074f`-`075e`); what Windows does then for the stock palette (seg22 `1088`) is not followed.
+`crates/winbox-win16/src/get_dc.rs` and `crates/winbox-win16/src/dc_entries.rs`. As read out, in both. The context `GetDC` gives the window `LockWindowUpdate` locked is one of WinBox's own, not an entry, and is let go here ([[topic:visible-regions]], phase 5). The palette selected goes back to the stock one, as `SetDCState` sets it (`GDI.EXE` seg1 `074f`-`075e`); what Windows does then for the stock palette (seg22 `1088`) is not followed.

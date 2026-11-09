@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/shell/drag.rs
 
 ## Implementation
 
-`src/win16/shell/drag.ts`; the Rust engine's `crates/winbox-win16/src/shell/drag.rs`. Nothing in WinBox drops files yet; a block made as File Manager makes one reads as SHELL reads it.
+`crates/winbox-win16/src/shell/drag.rs`. Nothing in WinBox drops files yet; a block made as File Manager makes one reads as SHELL reads it.

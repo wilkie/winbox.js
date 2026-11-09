@@ -5,7 +5,7 @@ summary: The priority queue GDI exports for the spooler -- a global block of fou
 probes: [gdipq]
 ---
 
-GDI exports a small priority queue, which the spooler keeps its jobs in: [[fn:GDI.CreatePQ]], [[fn:GDI.InsertPQ]], [[fn:GDI.MinPQ]], [[fn:GDI.ExtractPQ]], [[fn:GDI.SizePQ]] and [[fn:GDI.DeletePQ]]. [[measured]] [[probe:gdipq]] makes a queue of four, fills it, empties it, grows it and shrinks it, and after each call reads the block itself; both engines agree with all 37 records.
+GDI exports a small priority queue, which the spooler keeps its jobs in: [[fn:GDI.CreatePQ]], [[fn:GDI.InsertPQ]], [[fn:GDI.MinPQ]], [[fn:GDI.ExtractPQ]], [[fn:GDI.SizePQ]] and [[fn:GDI.DeletePQ]]. [[measured]] [[probe:gdipq]] makes a queue of four, fills it, empties it, grows it and shrinks it, and after each call reads the block itself; WinBox agrees with all 37 records.
 
 ## The block
 
@@ -36,4 +36,4 @@ GDI exports a small priority queue, which the spooler keeps its jobs in: [[fn:GD
 
 ## In winbox.js
 
-`src/win16/gdi/priority-queue.ts` and the Rust engine's `crates/winbox-win16/src/gdi/priority_queue.rs`, both on the block itself.
+`crates/winbox-win16/src/gdi/priority_queue.rs`, both on the block itself.

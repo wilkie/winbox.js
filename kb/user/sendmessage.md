@@ -22,4 +22,4 @@ See [[topic:system-parameters]], "A program's broadcast".
 
 ## Implementation
 
-`src/win16/user/broadcast.ts` and the Rust engine's `broadcast.rs` do the broadcast as USER does, and agree with all of [[probe:bcast]]'s records. Of USER's checks of the parameters, the DDE messages' are followed (`dde-checks.ts`, `dde_checks.rs`), and agree with [[probe:dderaw]].
+`crates/winbox-win16/src/broadcast.rs` do the broadcast as USER does, and agree with all of [[probe:bcast]]'s records. Of USER's checks of the parameters, the DDE messages' are followed (`crates/winbox-win16/src/dde_checks.rs`), and agree with [[probe:dderaw]].

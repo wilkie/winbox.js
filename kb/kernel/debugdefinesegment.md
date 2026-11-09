@@ -23,4 +23,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-**Not applicable (c).** Only KERNEL's segment loader reaches it, near. Both engines answer a call as its no-debugger path does -- nothing -- popping the twelve bytes its `RET 0Ch` pops (`nothing` in `src/win16/kernel/retail.ts`); what a far call does in Windows has no answer to follow. See [[topic:kernel-internals]].
+**Not applicable (c).** Only KERNEL's segment loader reaches it, near. WinBox answers a call as its no-debugger path does -- nothing -- popping the twelve bytes its `RET 0Ch` pops; what a far call does in Windows has no answer to follow. See [[topic:kernel-internals]].

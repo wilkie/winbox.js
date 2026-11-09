@@ -48,4 +48,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `queryConvInfo` in `src/win16/ddeml/conv.ts` and `query_conv_info` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The `CONVINFO` is laid out from the conversation's 42h bytes, or an asynchronous transaction's record, and copied for as many bytes as the caller's `cb` asks. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `query_conv_info` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The `CONVINFO` is laid out from the conversation's 42h bytes, or an asynchronous transaction's record, and copied for as many bytes as the caller's `cb` asks. WinBox agrees with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

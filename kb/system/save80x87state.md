@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/system_driver.rs
 
 ## Implementation
 
-`src/win16/system-driver.ts`; the Rust engine's `crates/winbox-win16/src/system_driver.rs`. WIN87EM's own `FSAVE` of the unit (`win87em.ts`, `win87em.rs`'s `save_unit`).
+`crates/winbox-win16/src/system_driver.rs`. WIN87EM's own `FSAVE` of the unit (`crates/winbox-win16/src/win87em.rs`'s `save_unit`).

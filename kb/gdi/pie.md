@@ -22,4 +22,4 @@ topics: [ellipses, polygon-fill]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context it goes to the driver as `OS_PIE`, as `Arc` goes as `OS_ARC` and `Chord` as `OS_CHORD`, with the corners and the two points mapped (`GDI.EXE` seg9 `02c4`). [[measured]] [[probe:prdraw]] draws a pie, an arc and a chord through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context it goes to the driver as `OS_PIE`, as `Arc` goes as `OS_ARC` and `Chord` as `OS_CHORD`, with the corners and the two points mapped (`GDI.EXE` seg9 `02c4`). [[measured]] [[probe:prdraw]] draws a pie, an arc and a chord through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].

@@ -31,4 +31,4 @@ topics: [truetype-queries]
 
 ## Implementation
 
-As read out, in both engines, from the font file's bytes the face was loaded from ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both.
+As read out, from the font file's bytes the face was loaded from ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both.

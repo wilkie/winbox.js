@@ -36,11 +36,11 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-In both engines as the VGA's driver has it, a pixel at a time. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. [[probe:gdidm]] agrees in both engines. [[fn:GDI.ScanLR]] is the same scan on a device context.
+As the VGA's driver has it, a pixel at a time. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. [[probe:gdidm]] agrees. [[fn:GDI.ScanLR]] is the same scan on a device context.
 
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 
-On the Hercules and the 256-colour display their own (`herculesScanLR` and `monoScan` in `driver-hercules.ts`, `scanLR` in `driver-vga256.ts`, and the Rust twins), [[probe:gdidmpx]] agreeing in both engines on all three displays.
+On the Hercules and the 256-colour display their own (`hercules_scan_lr` and `mono_scan` in `crates/winbox-win16/src/gdi/driver_hercules.rs`, `scan_lr` in `crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmpx]] agreeing on all three displays.
 
 ## Not yet done
 

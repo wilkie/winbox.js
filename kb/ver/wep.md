@@ -22,4 +22,4 @@ KERNEL calls it as VER is freed, with one word saying why; no program calls it. 
 
 ## Implementation
 
-`WEP` in `src/win16/ver/ver.ts` and `wep` in `crates/winbox-win16/src/ver/mod.rs` answer 1.
+`wep` in `crates/winbox-win16/src/ver/mod.rs` answer 1.

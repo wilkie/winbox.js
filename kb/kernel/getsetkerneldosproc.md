@@ -24,7 +24,7 @@ topics: [kernel-internals]
 
 ## Implementation
 
-**Implemented (a), the exchange.** Both engines keep the procedure given and answer the one kept (`GetSetKernelDosProc` in `src/win16/kernel/internals.ts`).
+**Implemented (a), the exchange.** WinBox keeps the procedure given and answers the one kept (`GetSetKernelDosProc` in `crates/winbox-win16/src/kernel_calls/internals.rs`).
 
 ## Not yet done
 

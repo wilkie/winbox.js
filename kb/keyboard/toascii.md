@@ -14,7 +14,7 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Observed behaviour
 
-- [[measured]] [[probe:kbdrv]] calls it for every virtual key with its scan code under eight shift states, and types numbers on the keypad with Alt held. Both engines agree with every record.
+- [[measured]] [[probe:kbdrv]] calls it for every virtual key with its scan code under eight shift states, and types numbers on the keypad with Alt held. WinBox agrees with every record.
 - A letter is small, capital with Shift, the other way about with Caps Lock; with Ctrl, with or without Shift, its low five bits.
 - The keypad's digits, 60h to 69h, type 0 to 9 without Ctrl or Alt.
 - The rest come from the layout: with Ctrl, Ctrl+2 and Ctrl+6, whose characters have bit 7 set, type nothing alone and nought and 1Eh with Shift too.
@@ -29,4 +29,4 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Implementation
 
-`src/win16/keyboard/driver.ts`; the Rust engine's `crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`keyboard/tables.ts`, `keyboard_tables.rs`). Not followed: the BIOS's shift flags, which WinBox has no BIOS for; dead keys and Caps Lock tables, which the US layout has none of.
+`crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`crates/winbox-win16/src/keyboard_tables.rs`). Not followed: the BIOS's shift flags, which WinBox has no BIOS for; dead keys and Caps Lock tables, which the US layout has none of.

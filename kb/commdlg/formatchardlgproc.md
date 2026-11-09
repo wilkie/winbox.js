@@ -29,8 +29,8 @@ No program calls it. [[fn:COMMDLG.ChooseFont]] gives its far address to `DialogB
 | `WM_CHOOSEFONT_GETLOGFONT` | `0865`, `241e` | the `LOGFONT` written to `lParam` as OK writes it; answers whether face, style and size are all chosen |
 
 - [[read out]] Anything else answers nought, as does a `WM_COMMAND` from a control it does not know -- Apply's among them (`0be7`); what it handles answers 1, but where the table says otherwise.
-- [[measured]] [[probe:chfont]] records the controls, the lists, the hook's messages, Help's message to the owner, the boxes it puts up, and `WM_CHOOSEFONT_GETLOGFONT`, with seven sets of flags: as read out, on both engines.
-- [[measured]] [[probe:chfont2]] records the sample's pixels and the colours' box, a face and a style typed whole, a hook answering OK itself -- the dialog stayed, the hook's answer the procedure's -- a program's template, and "Size must be a number.": as read out, on both engines. [[probe:chfont3]] records the lists' rows: the pictures of bitmap 38 agree, the text not yet ([[topic:choose-font]]).
+- [[measured]] [[probe:chfont]] records the controls, the lists, the hook's messages, Help's message to the owner, the boxes it puts up, and `WM_CHOOSEFONT_GETLOGFONT`, with seven sets of flags: as read out.
+- [[measured]] [[probe:chfont2]] records the sample's pixels and the colours' box, a face and a style typed whole, a hook answering OK itself -- the dialog stayed, the hook's answer the procedure's -- a program's template, and "Size must be a number.": as read out. [[probe:chfont3]] records the lists' rows: the pictures of bitmap 38 agree, the text not yet ([[topic:choose-font]]).
 
 ## Nuances
 
@@ -46,4 +46,4 @@ No program calls it. [[fn:COMMDLG.ChooseFont]] gives its far address to `DialogB
 
 ## Implementation
 
-WinBox's own: `FormatCharDlgProc` in `src/win16/commdlg/choose-font.ts` and `format_char_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, given to USER at its stub's address. The dialog's structure is kept in WinBox's memory by the number under its property A000h, where COMMDLG keeps four bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `format_char_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, given to USER at its stub's address. The dialog's structure is kept in WinBox's memory by the number under its property A000h, where COMMDLG keeps four bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.

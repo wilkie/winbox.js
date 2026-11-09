@@ -28,4 +28,4 @@ topics: [kernel-internals, keyboard-driver]
 
 ## Implementation
 
-**Not applicable (c), with the answer of a call.** Only `KEYBOARD.DRV`'s debugger key reaches it. A program's far call returns through its `IRET`, which takes one word above the return address as the flags. Both engines answer a bare return popping that word (`nothing`); WinBox calls no hook, as it calls no `RegisterPtrace` procedure. Not done: the popped word loaded into the flags. See [[topic:kernel-internals]].
+**Not applicable (c), with the answer of a call.** Only `KEYBOARD.DRV`'s debugger key reaches it. A program's far call returns through its `IRET`, which takes one word above the return address as the flags. WinBox answers a bare return popping that word (`nothing`); WinBox calls no hook, as it calls no `RegisterPtrace` procedure. Not done: the popped word loaded into the flags. See [[topic:kernel-internals]].

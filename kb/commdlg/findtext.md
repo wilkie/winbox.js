@@ -44,4 +44,4 @@ source: crates/winbox-win16/src/commdlg/find_replace.rs
 
 ## Implementation
 
-WinBox's own: `FindText` in `src/win16/commdlg/find-replace.ts` and `crates/winbox-win16/src/commdlg/find_replace.rs`, with COMMDLG's dialog 1540 kept as bytes of WinBox's own. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `FindText` in `crates/winbox-win16/src/commdlg/find_replace.rs`, with COMMDLG's dialog 1540 kept as bytes of WinBox's own. It works with no `COMMDLG.DLL` on the drive.

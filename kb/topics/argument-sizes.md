@@ -25,4 +25,4 @@ A Windows 3.1 program calls KERNEL, USER, GDI and the other modules with a far c
 
 ## In winbox.js
 
-`test/win16/argument_sizes_test.ts` holds every module's table to what the script reads from the installation, with the two exceptions written down. The names in the tables match the binaries' names ordinal for ordinal, which is what says the sizes are in the right places.
+`crates/winbox-win16/tests/argument_sizes.rs` holds every module's table to what the script reads from the installation, with the two exceptions written down. The names in the tables match the binaries' names ordinal for ordinal, which is what says the sizes are in the right places.

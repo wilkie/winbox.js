@@ -15,4 +15,4 @@ topics: [ole]
 
 ## Implementation
 
-Not WinBox's own: a stub in WinBox's table (`src/win16/olecli/index.ts`, named `Unknown`), with no arm in `crates/winbox-win16/src/olecli/mod.rs`.
+Not WinBox's own: a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`), with no arm in `crates/winbox-win16/src/olecli/mod.rs`.

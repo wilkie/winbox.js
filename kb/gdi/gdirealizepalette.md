@@ -23,4 +23,4 @@ USER's [[fn:USER.RealizePalette]] (`USER.EXE` seg6 `0134`) answers AX; where DX 
 
 ## Implementation
 
-In both engines as read out, on the system palette WinBox keeps ([[topic:palettes]]). A palette realized before keeps its slots in the foreground, as seg22 `0dd2` keeps them. [[probe:dcinner]] and [[probe:palreal]] agree in both.
+As read out, on the system palette WinBox keeps ([[topic:palettes]]). A palette realized before keeps its slots in the foreground, as seg22 `0dd2` keeps them. [[probe:dcinner]] and [[probe:palreal]] agree in both.

@@ -21,4 +21,4 @@ topics: [font-resources]
 
 ## Implementation
 
-As read out, in both engines; more than six bytes asked for writes only the six. [[probe:fontboot]] agrees in both.
+As read out; more than six bytes asked for writes only the six. [[probe:fontboot]] agrees in both.

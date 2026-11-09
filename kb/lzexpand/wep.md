@@ -18,4 +18,4 @@ KERNEL calls it as LZEXPAND is freed; no program calls it. Not measured.
 
 ## Implementation
 
-`WEP` in `src/win16/lzexpand/index.ts` and `wep` in `crates/winbox-win16/src/lzexpand/mod.rs` do nothing, AX as it was.
+`wep` in `crates/winbox-win16/src/lzexpand/mod.rs` do nothing, AX as it was.

@@ -24,8 +24,8 @@ topics: [dynamic-data-exchange]
 - `WM_USER + CBh`: 1, that it is a client's; with 1, the instance.
 - `WM_USER + CEh`, `CFh`, `D1h`: end it, `DdeEnableCallback`'s command, and a termination left from a synchronous transaction.
 
-[[measured]] [[probe:ddemgmt]]'s conversations, made, queried and ended, agree with Windows in both engines; so do [[probe:ddelist]]'s second acknowledgements, to a conversation alone and in a list.
+[[measured]] [[probe:ddemgmt]]'s conversations, made, queried and ended, agree with Windows; so do [[probe:ddelist]]'s second acknowledgements, to a conversation alone and in a list.
 
 ## Implementation
 
-WinBox's own: `clientProc` in `src/win16/ddeml/conv.ts` and `client_proc` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGClientClass` DDEML registers; the transactions' answers are `clientDde` (`client_dde`), seg1 `4866`. Both engines agree with [[probe:ddemgmt]] and [[probe:ddelist]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `client_proc` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGClientClass` DDEML registers; the transactions' answers are `client_dde`, seg1 `4866`. WinBox agrees with [[probe:ddemgmt]] and [[probe:ddelist]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

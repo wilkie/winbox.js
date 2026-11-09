@@ -42,7 +42,7 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-`driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA: the polyline walked as above with the style's counter, the clip and the raster operation; scanlines as above. [[probe:gdidmdrw]] agrees in both engines on the three. On the Hercules the VGA's but for its walk along a style (`herculesDashes`, `hercules_dashes`), and on the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
+`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA: the polyline walked as above with the style's counter, the clip and the raster operation; scanlines as above. [[probe:gdidmdrw]] agrees on the three. On the Hercules the VGA's but for its walk along a style (`herculesDashes`, `hercules_dashes`), and on the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
 
 ## Nuances
 

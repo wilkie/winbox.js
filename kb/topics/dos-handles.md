@@ -27,6 +27,6 @@ A Windows program opens files through KERNEL, and KERNEL goes to DOS. The handle
 
 ## In winbox.js
 
-`deviceInformation` in `src/dos/syscall/ioctl.ts`, and `FileManager.allocate` in `src/dos/file-manager.ts`. An error a DOS call throws at once, not only one it rejects later, sets the carry and puts the error in AX.
+`device_information` in `FileManager.allocate`. An error a DOS call throws at once, not only one it rejects later, sets the carry and puts the error in AX.
 
 A path's `.` is the folder it is in and `..` the one above, as DOS reads them: Four Seasons opens `.\FS_CARDS.PIC` from its own folder. winbox.js had looked for a folder named `.`.

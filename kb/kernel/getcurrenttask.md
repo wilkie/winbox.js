@@ -19,4 +19,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/tasks.ts`, and the Rust engine's `crates/winbox-win16/src/kernel_calls/tasks.rs`.
+`crates/winbox-win16/src/kernel_calls/tasks.rs`.

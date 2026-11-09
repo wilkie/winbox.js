@@ -40,7 +40,7 @@ winbox.js agrees with all 7 records. All four were stubs. [[fn:USER.InvalidateRe
 
 [[read out]] `BeginPaint` (`75c8`): its `rcPaint` is `GetClipBox` of its context, cut to the client area for a class with `CS_PARENTDC` (`7687`, `78be`-`790e`); where that is empty the erase is not sent, and the window is not due one after (`762a`, `768c`). Before it answers, each window in it whose frame is due and that has no update region is sent `WM_NCPAINT` (`76a7`, `7b30`). `GetUpdateRect` and `GetUpdateRgn` cut to the client areas the window is in by the same `8bb3` (`46f2`, `47c2`).
 
-Both engines agree with all 215 records.
+WinBox agrees with all 215 records.
 
 ### Of no window, and erasing as they answer
 
@@ -51,8 +51,8 @@ Both engines agree with all 215 records.
 - [[fn:USER.GetUpdateRect]] and `GetUpdateRgn` with `bErase` erase the window first, where an erase is due: `WM_ERASEBKGND` comes inside the call, before the answer, and the window is still due its paint, which comes with `fErase` nought. Made due without an erase, nothing is sent; with `bErase` FALSE the erase waits for the paint, as before. [[read out]] The body draws what is due of the window's frame and erase through seg1 `7913`, the window alone, before it answers (`466f`-`467c`, `478e`-`479b`).
 - What is made due of the desktop is told to the records USER keeps, as a window's is (`3f41`-`3f7c`, the box of it within the screen): W locked by [[fn:USER.LockWindowUpdate]], `RedrawWindow` of no window with (320, 60, 360, 100) and `RDW_INVALIDATE`, and W unlocked, W is due (19, 19, 59, 59) of its client area, what the rectangle covered of it, its frame with it; of no rectangle, all of W. A pop-up of a `CS_SAVEBITS` class over W, the desktop made due beneath it and the pop-up hidden, W is due all the pop-up covered.
 
-Both engines agree with all 64 records.
+WinBox agrees with all 64 records.
 
 ## Implementation
 
-`src/win16/user/update-region.ts`, through `redrawThrough` in `src/win16/user/invalidate-through.ts` (`InvalidateRect.ts`, `ValidateRect.ts`, `UpdateWindow.ts`, `BeginPaint.ts`); in Rust `user_calls/update_region.rs`, `invalidate_through.rs` and `paint.rs`. `InvalidateRect` of no window calls `RedrawWindow`'s body with 285h; `GetUpdateRect` and `GetUpdateRgn` with `bErase` call `syncPaintFrom` (`sync_paint_from`) for the window alone first; `RedrawWindow` of no window tells the records with `tellDesktop` (`tell_desktop`). Not followed: `GetUpdateRect` answering 1 for an update region whose box is empty; `bErase` given with the desktop window. The desktop still keeps a window's update as `dirtyRect`, its box, which everything else reads. The region beside it counts only while it is that box's: whatever sets `dirtyRect` another way falls back to the box, as before.
+`crates/winbox-win16/src/user_calls/update_region.rs`, `crates/winbox-win16/src/invalidate_through.rs` and `crates/winbox-win16/src/paint.rs`. `InvalidateRect` of no window calls `RedrawWindow`'s body with 285h; `GetUpdateRect` and `GetUpdateRgn` with `bErase` call `syncPaintFrom` (`sync_paint_from`) for the window alone first; `RedrawWindow` of no window tells the records with `tellDesktop` (`tell_desktop`). Not followed: `GetUpdateRect` answering 1 for an update region whose box is empty; `bErase` given with the desktop window. The desktop still keeps a window's update as its box, which everything else reads. The region beside it counts only while it is that box's: whatever sets the box another way falls back to the box, as before.

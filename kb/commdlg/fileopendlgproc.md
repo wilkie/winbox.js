@@ -29,7 +29,7 @@ No program calls it. [[fn:COMMDLG.GetOpenFileName]] gives its far address to `Di
 | `WM_DRAWITEM`       | a row of the folders or drives, its picture beside it (seg2 `4e8a`); answers 1                                                                                                  |
 
 - [[read out]] Anything else answers nought.
-- [[measured]] [[probe:ofnopen]] records what the hook is sent, before `WM_INITDIALOG` too, and the box after sixteen steps: both engines agree with all its records ([[topic:file-dialogs]]).
+- [[measured]] [[probe:ofnopen]] records what the hook is sent, before `WM_INITDIALOG` too, and the box after sixteen steps: WinBox agrees with all its records ([[topic:file-dialogs]]).
 
 ## Nuances
 
@@ -42,7 +42,7 @@ No program calls it. [[fn:COMMDLG.GetOpenFileName]] gives its far address to `Di
 
 ## Implementation
 
-WinBox's own: `FileOpenDlgProc` in `src/win16/commdlg/file-init.ts` and `file_open_dlg_proc` in `crates/winbox-win16/src/commdlg/file_init.rs`, given to USER at its stub's address. Its block is kept by its window, not under the property A000h ([[topic:file-dialogs]]).
+WinBox's own: `file_open_dlg_proc` in `crates/winbox-win16/src/commdlg/file_init.rs`, given to USER at its stub's address. Its block is kept by its window, not under the property A000h ([[topic:file-dialogs]]).
 
 ## Not yet done
 

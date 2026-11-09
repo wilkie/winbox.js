@@ -26,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/string-func.ts`; the Rust engine's `language_driver.rs` (`string_func`). Declared as popping nothing; the routine pops its arguments by moving the far return over them. Another CX is not followed: nothing is popped and the registers are left.
+`crates/winbox-win16/src/language_driver.rs` (`string_func`). Declared as popping nothing; the routine pops its arguments by moving the far return over them. Another CX is not followed: nothing is popped and the registers are left.

@@ -30,7 +30,7 @@ No program calls it. [[fn:COMMDLG.GetSaveFileName]] gives its far address to `Di
 
 ## Implementation
 
-WinBox's own: `FileSaveDlgProc` in `src/win16/commdlg/file-init.ts` and `file_save_dlg_proc` in `crates/winbox-win16/src/commdlg/file_init.rs`, the Open box's code with `save` set. Write's and Paintbrush's Save As run on it in the accessories' sessions.
+WinBox's own: `file_save_dlg_proc` in `crates/winbox-win16/src/commdlg/file_init.rs`, the Open box's code with `save` set. Write's and Paintbrush's Save As run on it in the accessories' sessions.
 
 ## Not yet done
 

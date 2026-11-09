@@ -75,7 +75,7 @@ A control asks its parent what to paint with, by sending it `WM_CTLCOLOR` as it 
 - A parent that answers a brush and sets no text colour leaves the device context's own, black. Chess's labels are drawn so. winbox.js had taken the pen's colour, white.
 - [[measured]] What a static control leaves alone. [[probe:ctltrans]] answers a static's `CTLCOLOR_STATIC` three ways, the background colour set yellow each time. A hollow brush with the mode made `TRANSPARENT` leaves the static's area and the text's cell as the dialog painted them. A blue brush with the mode `TRANSPARENT` fills the area blue, with no yellow cell behind the text. A hollow brush with the mode left `OPAQUE` fills nothing, but the text's cell is yellow. BWCC sets `TRANSPARENT` for the text on its panels, and Windows shows that text on the panel's grey, as a hollow brush would leave it.
 
-winbox.js agrees with all 36 records. Delphi colours every control of a form through this message: Championship Slots' memo is the colour of its form, with no border, as Windows shows it. The pieces are in `src/win16/user/ctlcolor.ts`.
+winbox.js agrees with all 36 records. Delphi colours every control of a form through this message: Championship Slots' memo is the colour of its form, with no border, as Windows shows it.
 
 ## Superclasses
 
@@ -95,4 +95,4 @@ The control's state is kept in the window's own bytes, whatever the class is cal
 
 ## Implementation
 
-`paintControl` in `src/win16/user/controls.ts` draws each control through the `Painter` that also paints window frames. `control-classes.ts` holds the classes' window procedures, and `test/raster/desktop_test.ts` holds each control's block of the capture to what the desktop paints. The conformance suite replays the whole window through the exports: `CreateWindow` for each control, [[fn:USER.SendDlgItemMessage]] for the checks and strings, and the probe's own message loop.
+`paintControl` in `crates/winbox-win16/src/controls.rs` draws each control through the `Painter` that also paints window frames. The classes are in `crates/winbox-win16/src/button.rs`, `crates/winbox-win16/src/edit.rs`, `crates/winbox-win16/src/listbox.rs`, `crates/winbox-win16/src/combobox.rs` and `crates/winbox-win16/src/scroll_bars.rs`. The conformance suite replays the whole window through the exports: `CreateWindow` for each control, [[fn:USER.SendDlgItemMessage]] for the checks and strings, and the probe's own message loop.

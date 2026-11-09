@@ -36,4 +36,4 @@ COMMDLG calls it for itself: [[fn:COMMDLG.Ordinal 42]] loads bitmap 576 twice wi
 
 ## Implementation
 
-`src/win16/commdlg/pictures.ts`; the Rust engine's `crates/winbox-win16/src/commdlg/pictures.rs`. The bitmap is the installation's `COMMDLG.DLL`'s, read as data, as the file dialogs' pictures are; none without the file. A colour not in the bitmap's data changes nothing, where COMMDLG's search runs on past it. The file dialogs make their pictures without the export (`pictures.ts`, `pictures.rs`).
+`crates/winbox-win16/src/commdlg/pictures.rs`. The bitmap is the installation's `COMMDLG.DLL`'s, read as data, as the file dialogs' pictures are; none without the file. A colour not in the bitmap's data changes nothing, where COMMDLG's search runs on past it. The file dialogs make their pictures without the export (`crates/winbox-win16/src/commdlg/pictures.rs`).

@@ -20,7 +20,7 @@ No program calls it. The Font dialog gives its far address to [[fn:GDI.EnumFontF
 - [[read out]] The type is given `PRINTER_FONTTYPE` from the printer, else `SCREEN_FONTTYPE` (`10ff`).
 - [[read out]] A face not yet listed is added with `CB_ADDSTRING`, its data the type; a list that will not take it answers nought, ending the enumeration (`11e2`).
 - [[read out]] A face listed already is replaced -- inserted again at its index and the old row deleted -- where the new ranks above the old by `1079`'s comparison: each type with its screen and printer bits cleared and its raster bit flipped, so TrueType, device, vector, raster from best to worst; and, with `CF_PRINTERFONTS` but not `CF_SCREENFONTS`, wherever a printer's face meets the screen's (`1145`). The row's data keeps the screen and printer bits of both (`11ba`) -- but where the printer's face met the screen's the old type is made nought first (`1163`), so that row keeps the printer's bit alone.
-- [[measured]] [[probe:chfont]] records the faces and their types for six sets of flags: TrueType faces 2004h, raster 2001h, vector 2000h; from an information context on the display enumerated as the printer, 6004h and 6000h. Both engines agree.
+- [[measured]] [[probe:chfont]] records the faces and their types for six sets of flags: TrueType faces 2004h, raster 2001h, vector 2000h; from an information context on the display enumerated as the printer, 6004h and 6000h. WinBox agrees.
 - [[measured]] [[probe:chfontpr]], with the PostScript printer's information context: its own faces, AvantGarde to ZapfDingbats, 4002h; the TrueType faces from the printer 4006h, `TRUETYPE_FONTTYPE` and `DEVICE_FONTTYPE`; with `CF_PRINTERFONTS` alone Courier 4002h and Modern 4000h, the screen's bit gone as read out, where with `CF_BOTH` they are 6002h and 6000h. Not yet on the engines: their GDI makes no information context for a Windows printer driver.
 
 ## Nuances
@@ -34,4 +34,4 @@ No program calls it. The Font dialog gives its far address to [[fn:GDI.EnumFontF
 
 ## Implementation
 
-WinBox's own: `FontFamilyEnumProc` in `src/win16/commdlg/choose-font.ts` and `font_family_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address with the data laid out below the stack as COMMDLG's own stack holds it. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `font_family_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address with the data laid out below the stack as COMMDLG's own stack holds it. It works with no `COMMDLG.DLL` on the drive.

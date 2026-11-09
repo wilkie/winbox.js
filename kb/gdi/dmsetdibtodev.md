@@ -29,9 +29,9 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-Nought, nothing drawn, in both engines (`driver-bitmap.ts`, `driver_bitmap.rs`). [[probe:gdidmdrw]] agrees.
+Nought, nothing drawn (`crates/winbox-win16/src/gdi/driver_bitmap.rs`). [[probe:gdidmdrw]] agrees.
 
-On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
+On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
 
 ## Not yet done
 

@@ -19,7 +19,7 @@ The oracle also has an installation with a Sound Blaster. What its Ad Lib driver
 
 ## Before a driver hears of it
 
-[[measured]] [[probe:mmnodev]] calls every waveform, MIDI and auxiliary function the way MMSYSTEM refuses it, on the installation with no sound driver and on the one with the Sound Blaster. Both engines agree with all 170 of its records on each.
+[[measured]] [[probe:mmnodev]] calls every waveform, MIDI and auxiliary function the way MMSYSTEM refuses it, on the installation with no sound driver and on the one with the Sound Blaster. WinBox agrees with all 170 of its records on each.
 
 - [[measured]] Every call on a handle given 1234h, or nought, answers `MMSYSERR_INVALHANDLE` (5) on both installations -- but [[fn:MMSYSTEM.waveOutMessage]] and its kin, which answer nought -- and leaves the words it would have written as they were.
 - [[measured]] Device 5 answers `MMSYSERR_BADDEVICEID` (2) on both. The mapper's number answers `MMSYSERR_NODRIVER` (6) where no mapper is installed: every kind with no sound driver, MIDI input and the auxiliary devices with the Sound Blaster. A size of nought for capabilities answers nought.
@@ -31,7 +31,7 @@ The device layer itself -- how drivers are installed, numbered and sent messages
 ## Error texts
 
 - [[measured]] [[fn:MMSYSTEM.waveOutGetErrorText]] and [[fn:MMSYSTEM.waveInGetErrorText]] answer 0 and copy the error's text, for 0, 2, 6 and 32: "The specified command was carried out.", "A device ID has been used that is out of range for your system.", "There is no driver installed on your system." and the text for an unsupported format.
-- The texts are `MMSYSTEM.DLL`'s string table, numbered as the errors are: 0 to 11 for the general errors, 32 to 35 for the waveform ones, 64 to 69 for MIDI, and from 257 for MCI. winbox.js keeps them itself, with MCI's device types and words, since no Windows file is shipped (`src/win16/mmsystem/strings.ts`).
+- The texts are `MMSYSTEM.DLL`'s string table, numbered as the errors are: 0 to 11 for the general errors, 32 to 35 for the waveform ones, 64 to 69 for MIDI, and from 257 for MCI. winbox.js keeps them itself, with MCI's device types and words, since no Windows file is shipped (`crates/winbox-win16/src/mmsystem/strings.rs`).
 - Not yet measured: the text for an error outside those numbers, which the documentation says answers `MMSYSERR_BADERRNUM`, and a buffer too small for the text.
 
 ## Why it mattered
@@ -51,7 +51,7 @@ The media control interface sits above the devices. A program opens a device by 
 
 ## Command tables
 
-An MCI command table is an `RCDATA` resource listing commands and their keywords, which MCI reads to parse a command string. [[measured]] [[probe:mmcmd]] loads tables of its own with [[fn:MMSYSTEM.mciLoadCommandResource]], frees them with [[fn:MMSYSTEM.mciFreeCommandResource]], and opens and closes a waveaudio device between. Both engines agree with all 23 records.
+An MCI command table is an `RCDATA` resource listing commands and their keywords, which MCI reads to parse a command string. [[measured]] [[probe:mmcmd]] loads tables of its own with [[fn:MMSYSTEM.mciLoadCommandResource]], frees them with [[fn:MMSYSTEM.mciFreeCommandResource]], and opens and closes a waveaudio device between. WinBox agrees with all 23 records.
 
 - [[measured]] The first table a program loads is 1: MMSYSTEM's `core` table is loaded first and is nought. A resource with no command, or none of the name, answers FFFFh. A number freed is given again.
 - [[measured]] Opening a waveaudio device loads MCIWAVE's own table and, unless a table of type 20Ah is loaded already, MMSYSTEM's `waveaudio` table; neither can be freed while the device is open. Closing frees both.
@@ -107,10 +107,9 @@ What the card plays is handed to the host with its rate, channels and bits: winb
 ## Not yet done
 
 - The command tables' contents: `mciSendString` here parses its commands itself, and does not load the core table as it first looks a command up (seg5 `3095`).
-- A sound card in the TypeScript engine: it installs only drivers from files, and the installation it runs names none.
 
 ## In winbox.js
 
-The device layer is `src/win16/mmsystem/devices.ts` and `crates/winbox-win16/src/mmsystem/devices.rs`: the drivers installed and numbered, the handles, the messages. What MMSYSTEM checks first is `checks.ts` and `checks.rs`; the waveform, MIDI and auxiliary calls `wave`, `midi` and `auxiliary`; `DriverCallback` `callback`. The TypeScript engine has no driver of its own and installs only drivers from files, which run on the processor; the Rust engine has its own sound card as well (`wbsound`).
+The device layer is `crates/winbox-win16/src/mmsystem/devices.rs`: the drivers installed and numbered, the handles, the messages. What MMSYSTEM checks first is `crates/winbox-win16/src/mmsystem/checks.rs`; the waveform, MIDI and auxiliary calls `wave`, `midi` and `auxiliary`; `DriverCallback` `callback`. The Rust engine installs drivers from files, which run on the processor, and has its own sound card as well (`wbsound`).
 
-MCI is `src/win16/mmsystem/mci.ts`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `src/win16/mmsystem/mci-drivers.ts`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.
+MCI is `crates/winbox-win16/src/mmsystem/mci.rs`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `crates/winbox-win16/src/mmsystem/mci_drivers.rs`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.

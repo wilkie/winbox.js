@@ -82,7 +82,7 @@ A window's style can be changed with [[fn:USER.SetWindowLong]], and its menu wit
 
 [[inferred]] As a window is made, its client area is the one `WM_NCCALCSIZE` makes for the style it has then, after `WM_NCCREATE`: Visual Basic's forms change their style in `WM_NCCREATE` (Four Seasons of the corpus), and with the client area laid out before, moving the window a pixel told it `WM_SIZE` once the client flags were followed. winbox.js lays the client area out again there.
 
-Both engines agree with all 312 records. winbox.js does not hand over the `WINDOWPOS`'s pointer. Before, winbox.js laid out the client area again as soon as `GWW_ID` changed, and never as `SWP_FRAMECHANGED` asked, so Clock lost its menu bar and kept its caption; and it sent `WM_NCCALCSIZE` with nought and no structure, which this probe's window procedure reads: on the Rust engine the run went no further.
+WinBox agrees with all 312 records. winbox.js does not hand over the `WINDOWPOS`'s pointer. Before, winbox.js laid out the client area again as soon as `GWW_ID` changed, and never as `SWP_FRAMECHANGED` asked, so Clock lost its menu bar and kept its caption; and it sent `WM_NCCALCSIZE` with nought and no structure, which this probe's window procedure reads: on the Rust engine the run went no further.
 
 ## A client area of the window's own
 
@@ -101,7 +101,7 @@ Both engines agree with all 312 records. winbox.js does not hand over the `WINDO
 - `WM_ERASEBKGND`'s clip box and `WM_PAINT`'s rectangle are the procedure's client area; an empty one is still sent both, for nothing, as the window is shown and as it grows.
 - Its bits: painted in stripes and sized from 200 by 150 to 240 by 170 with `DefWindowProc`'s rectangles, an answer of nought or 800h keeps the old client area's 192 by 123 at the new one's corner; `WVR_ALIGNRIGHT | WVR_ALIGNBOTTOM` keeps bits from 4 pixels right of the old client area's left edge and 23 below its top -- the old frame's edge among them -- at 4 in and 4 down; `WVR_REDRAW` keeps nothing; `WVR_VALIDRECTS` (400h), the second rectangle 40 by 30 at (20, 10) in the new client area and the third the old one's corner 40 by 30, keeps just those.
 
-winbox.js agrees with all 50 records in both engines. It had laid the client area out as the style says whatever the procedure answered, and kept the old client area's bits at the new one's corner whatever it answered: 33 of the 50 records disagreed.
+winbox.js agrees with all 50 records. It had laid the client area out as the style says whatever the procedure answered, and kept the old client area's bits at the new one's corner whatever it answered: 33 of the 50 records disagreed.
 
 - Not yet measured: a procedure's client area kept where USER lays a frame out again without `WM_NCCALCSIZE` -- a scroll bar shown, a menu set -- which winbox.js lays out as the style says where the size or style changed; and where the bits of a window's children go when its own go elsewhere than with its client area.
 
@@ -117,10 +117,10 @@ winbox.js agrees with all 50 records in both engines. It had laid the client are
 
 ## Implementation
 
-`frameChanged` in `desktop.ts` and `frame_changed` in `crates/winbox-win16/src/position.rs` lay a window out again for a changed frame and give its entry of `SetWindowPos`'s list where its bits go, which the list copies and draws ([[topic:visible-regions]]); `positionChanging` and `positionChanged` in `window-state.ts` (`position_changing`, `position_changed`) send `WM_NCCALCSIZE` (`calcSize`, `calc_size`) and work out the client flags. `calcKept` (`calc_kept`) works out what of the old client area's bits an answer keeps, which `moveWithBits` (`move_with_bits`) keeps; `answerClient` (`answer_client`) keeps a procedure's own client area, which `#layout` (`layout`) lays out while the window keeps its size and style.
+`frame_changed` in `crates/winbox-win16/src/position.rs` lay a window out again for a changed frame and give its entry of `SetWindowPos`'s list where its bits go, which the list copies and draws ([[topic:visible-regions]]); `position_changing` and `position_changed` in `crates/winbox-win16/src/position.rs` send `WM_NCCALCSIZE` (`calc_size`) and work out the client flags. `calcKept` (`calc_kept`) works out what of the old client area's bits an answer keeps, which `moveWithBits` (`move_with_bits`) keeps; `answer_client` keeps a procedure's own client area, which `#layout` (`layout`) lays out while the window keeps its size and style.
 
-`paintFrame` in `src/win16/user/frame.ts` paints a window's non-client area and returns the client rectangle. `test/raster/frame_test.ts` holds it to all 28 captures.
+`paintFrame` in `crates/winbox-win16/src/frame.rs` paints a window's non-client area and returns the client rectangle.
 
-`Desktop` in `src/win16/user/desktop.ts` is the screen as USER keeps it. It records which window each pixel shows, and each window's client area is a view of the screen's pixels, clipped to what shows, so everything GDI draws into a window lands on the screen. A brush's pattern starts at the corner of what it is drawn through: the window for its frame, the client area for the window's own drawing. `test/raster/desktop_test.ts` shows each captured window on a desktop the display's size and reads all 28 back from the screen.
+`Desktop` in `crates/winbox-win16/src/desktop.rs` is the screen as USER keeps it. It records which window each pixel shows, and each window's client area is a view of the screen's pixels, clipped to what shows, so everything GDI draws into a window lands on the screen. A brush's pattern starts at the corner of what it is drawn through: the window for its frame, the client area for the window's own drawing.
 
 The conformance suite replays [[probe:chrome]] itself through the exports: `RegisterClass`, `CreateWindow`, `ShowWindow` and `UpdateWindow`, with the probe's window procedure calling `BeginPaint`, `EndPaint` and `DefWindowProc`, then `GetWindowRect`, `GetClientRect`, [[fn:USER.ClientToScreen]] and [[fn:GDI.GetPixel]] on the screen. All eight of its windows agree on each display, 1,038 records each, the last one holding the standard controls ([[topic:standard-controls]]).

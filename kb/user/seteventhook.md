@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. Not followed: calling it, as WinBox's keyboard input does not go through USER's event procedure.
+`crates/winbox-win16/src/small_calls.rs`. Not followed: calling it, as WinBox's keyboard input does not go through USER's event procedure.

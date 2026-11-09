@@ -57,7 +57,7 @@ A hook is a procedure a program puts in USER's way. USER calls it with a code, a
 - The window moved from the keyboard, the keys posted first: no filter is called.
 - `CallMsgFilter` while the window is system-modal: neither is called, and it answers nought; with no system-modal window again, both are.
 
-Both engines agree with all thirteen records. Before, the system filters were kept and never called, and the scroll bar's loop called no filter.
+WinBox agrees with all thirteen records. Before, the system filters were kept and never called, and the scroll bar's loop called no filter.
 
 - [[measured]] A modal dialog box's loop calls the filters with `MSGF_DIALOGBOX`, 0, for each message it takes: the timer's `WM_TIMER` and the posted `WM_KEYDOWN`. [[read out]] It is [[fn:USER.IsDialogMessage]] that calls them (`USER.EXE` seg25 `0c38`), and so in a program's own loop too: [[measured]] [[probe:dlgcode]] has them called with code 0 for each message handed to `IsDialogMessage`, one for a window outside the dialog too, and a message they take answered TRUE and not dispatched. No `WM_PAINT` is among them. The dialog box is painted as it is shown, not by its loop, and winbox.js now paints it and its controls then too.
 - [[measured]] A menu's loop calls them with `MSGF_MENU`, 2, for each message it takes, `WM_PAINT` included. It also calls them with a `WM_MENUSELECT` as the menu starts and as it ends.
@@ -93,10 +93,10 @@ The other two codes, `HCBT_CLICKSKIPPED` and `HCBT_KEYSKIPPED`, come from the sy
 - **System commands.** `WM_SYSCOMMAND` with `SC_MINIMIZE` and an `lParam` of 120034h: `HCBT_SYSCOMMAND` with F020h and 120034h, then the minimizing. Answering 1: the window is not minimized.
 - **Moving.** `SC_MOVE` from the keyboard, Right twice and Enter posted first: `HCBT_SYSCOMMAND`, then `HCBT_MOVESIZE` with `T` and its new rectangle, 18 pixels right. Answering 1: `T` stays where it was. Enter alone: no `HCBT_MOVESIZE`. `WM_QUEUESYNC` posted before: `HCBT_QS`.
 
-Both engines agree with all 47 records. Before, the hooks were asked only of keys and clicks skipped.
+WinBox agrees with all 47 records. Before, the hooks were asked only of keys and clicks skipped.
 
 - [[measured]] A hook refusing `HCBT_CREATEWND` brings Windows down: [[probe:cbteat]] writes its record before `CreateWindow` and none after, and the screen shows a general protection fault in `USER.EXE` at 0001:3AB0. USER takes the window apart there and sends it `WM_NCDESTROY` (seg8 `0c36`-`0c84`) through its procedure, which it has not been given yet: seg1 `3ab0` calls the window's procedure, nought ([[read out]]). winbox.js, which has no code of USER's to fault in, takes the window apart with no message, and `CreateWindow` answers nought, as USER means it to (seg8 `039d`).
-- [[read out]] The Windows Tutorial's hook (`WINTUTOR.EXE` seg6 `167d`, put in at seg5 `0973`) answers only `HCBT_SYSCOMMAND`, and passes nothing on: 1 for `SC_NEXTWINDOW`, `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY`, and for every command in one state of its own. So Alt and Tab do not leave it, and Control and Escape bring up no Task List over it; both engines' sessions of the Tutorial hold to the last ([[topic:accessories]]).
+- [[read out]] The Windows Tutorial's hook (`WINTUTOR.EXE` seg6 `167d`, put in at seg5 `0973`) answers only `HCBT_SYSCOMMAND`, and passes nothing on: 1 for `SC_NEXTWINDOW`, `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY`, and for every command in one state of its own. So Alt and Tab do not leave it, and Control and Escape bring up no Task List over it; WinBox's sessions of the Tutorial hold to the last ([[topic:accessories]]).
 
 ## The debugging hook
 
@@ -150,7 +150,7 @@ The journal record and playback hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBAC
 - After `LockMyTask(TRUE)`, `PeekMessage` with `PM_REMOVE` hands the hook 3.
 - With the hook taken out, nothing is called.
 
-Both engines agree with all fourteen records. Before, the hooks were kept and never called.
+WinBox agrees with all fourteen records. Before, the hooks were kept and never called.
 
 ## A task's hooks, and its end
 
@@ -164,7 +164,7 @@ As a task ends, USER takes out every hook kept with its queue (seg1 `0be4`, `7f5
 - A message the program takes calls 6, 0, 3, 2, 1: the hooks kept with its queue, the newest first, then those for every task.
 - After the program ends, a message the probe looks at calls 3 and 2: the hook put in with the program's instance went with it, and the two whose module is the library's stay. `UnhookWindowsHook` and `UnhookWindowsHookEx` then take those out, answering 1.
 
-Both engines agree with all 20 records. Before, every hook was everyone's, and none was taken out as a task ended: Program Manager's message filter was called by the next program's loops after Program Manager ended ([[probe:progdde]]). In the corpus, Widget Workshop's install runs with Program Manager as the shell, whose message filter was called for every message the installer's dialog boxes took, 29 instructions each; it no longer is, and the run, its calls the same up to its polls of `PeekMessage`, makes 5,398,010 calls where it made 5,397,899, its screens as they were.
+WinBox agrees with all 20 records. Before, every hook was everyone's, and none was taken out as a task ended: Program Manager's message filter was called by the next program's loops after Program Manager ended ([[probe:progdde]]). In the corpus, Widget Workshop's install runs with Program Manager as the shell, whose message filter was called for every message the installer's dialog boxes took, 29 instructions each; it no longer is, and the run, its calls the same up to its polls of `PeekMessage`, makes 5,398,010 calls where it made 5,397,899, its screens as they were.
 
 ## Not yet followed
 
@@ -176,4 +176,4 @@ Both engines agree with all 20 records. Before, every hook was everyone's, and n
 
 ## In winbox.js
 
-`src/win16/user/hooks.ts` keeps each kind's chain, newest first, each hook with the task it is for and its module, a chain called as the running task calls it (`chainFor`), and takes a task's and a module's out (`unhookTask`, `unhookModule`); it calls the filters, the system's first, for the loops in `dialogs.ts`, `menu-loop.ts`, `scroll-track.ts` and `switch-loop.ts`. `askCbt` and `askCbtCreate` ask the computer-based training hooks for `CreateWindow.ts`, `DestroyWindow.ts`, `SetFocus.ts`, `dialogs.ts`, `window-state.ts`, `mouse-scan.ts`, `track-loop.ts` and `DefWindowProc.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it. `callHooksWith` lays a structure of USER's on the stack for a hook; `system-queue.ts` calls the input hooks with it. The Rust engine has the same in `crates/winbox-win16/src/hooks.rs` and `system_queue.rs`, with `ask_cbt`, `ask_cbt_with` and `ask_cbt_create`.
+`crates/winbox-win16/src/hooks.rs` keeps each kind's chain, newest first, each hook with the task it is for and its module, a chain called as the running task calls it (`chain_for`), and takes a task's and a module's out (`unhook_task`, `unhook_module`); it calls the filters, the system's first, for the loops in `crates/winbox-win16/src/dialogs.rs`. `ask_cbt`, `ask_cbt_with` and `ask_cbt_create` ask the computer-based training hooks. `sent_message_hook` is called before every window procedure run for a message sent, and not for one posted and dispatched. `crates/winbox-win16/src/system_queue.rs` calls the input hooks.

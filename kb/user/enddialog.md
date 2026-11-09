@@ -25,7 +25,7 @@ topics: [dialog-boxes, activation-and-focus]
 
 `DialogBox`'s loop sees the mark, destroys the dialog and answers the value. Called again, `EndDialog` does it all again, and the last value is the one answered.
 
-[[measured]] [[probe:enddlg]] ends a dialog at a timer's tick, twice, in `WM_INITDIALOG`, from its owner's procedure, over a disabled owner, a minimized one and none, under a dialog over it, and modeless. Both engines agree with all 499 records. [[topic:dialog-boxes]] lists what each case sends.
+[[measured]] [[probe:enddlg]] ends a dialog at a timer's tick, twice, in `WM_INITDIALOG`, from its owner's procedure, over a disabled owner, a minimized one and none, under a dialog over it, and modeless. WinBox agrees with all 499 records. [[topic:dialog-boxes]] lists what each case sends.
 
 ## Nuances
 
@@ -37,4 +37,4 @@ topics: [dialog-boxes, activation-and-focus]
 
 ## Implementation
 
-`EndDialog` in `src/win16/user/dialogs.ts`, and `end_dialog` in `crates/winbox-win16/src/dialogs.rs`.
+`EndDialog` in `end_dialog` in `crates/winbox-win16/src/dialogs.rs`.

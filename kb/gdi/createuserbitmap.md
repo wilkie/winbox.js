@@ -21,4 +21,4 @@ topics: [gdi-objects]
 
 ## Implementation
 
-In both engines as [[fn:GDI.CreateBitmap]]. The flag is not kept. [[probe:gdimisc]] agrees in both.
+As [[fn:GDI.CreateBitmap]]. The flag is not kept. [[probe:gdimisc]] agrees in both.

@@ -32,4 +32,4 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-**Implemented (a), the exchange.** Both engines keep the procedure and answer the old one, BX as above (`ToolHelpHook` in `src/win16/kernel/internals.ts`). WinBox tells no debugger of KERNEL's events, so the procedure is never called, as a `RegisterPtrace` one is not ([[topic:kernel-internals]]'s Not yet done).
+**Implemented (a), the exchange.** WinBox keeps the procedure and answers the old one, BX as above (`ToolHelpHook` in `crates/winbox-win16/src/kernel_calls/internals.rs`). WinBox tells no debugger of KERNEL's events, so the procedure is never called, as a `RegisterPtrace` one is not ([[topic:kernel-internals]]'s Not yet done).

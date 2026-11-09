@@ -26,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-**Implemented (a).** `[18Ch]` is read through the caller's DS, a program's own. Both engines call the far procedure there with AX and DX as above and answer what it answers (`_FFFE_FARFRAME` in `src/win16/user/internals.ts`); WinBox runs no `INT 3`, which goes on past with no debugger as [[fn:KERNEL.DebugBreak]] does. See [[topic:user-internals]].
+**Implemented (a).** `[18Ch]` is read through the caller's DS, a program's own. WinBox calls the far procedure there with AX and DX as above and answers what it answers; WinBox runs no `INT 3`, which goes on past with no debugger as [[fn:KERNEL.DebugBreak]] does. See [[topic:user-internals]].

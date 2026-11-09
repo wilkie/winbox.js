@@ -18,4 +18,4 @@ topics: [kernel-internals, task-list]
 
 ## Implementation
 
-Both engines answer the head of the chain that [[fn:KERNEL.RegisterWinOldApHook]] keeps: `src/win16/kernel/internals.ts` and `crates/winbox-win16/src/kernel_calls/internals.rs`. See [[topic:kernel-internals]].
+WinBox answers the head of the chain that [[fn:KERNEL.RegisterWinOldApHook]] keeps: `crates/winbox-win16/src/kernel_calls/internals.rs`. See [[topic:kernel-internals]].

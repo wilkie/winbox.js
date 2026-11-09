@@ -88,7 +88,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 - [[read out]] `SetWindowPos` sends the first window of its list moved without `SWP_NOACTIVATE`, if a child, `WM_CHILDACTIVATE`; a window at the top it makes active (`USER.EXE` seg7 `0ca3`-`0ce6`, `0260`-`026f`, `0382`-`03a6`). An MDI child so becomes the active one.
 - [[read out]] `DefMDIChildProc` given `WM_SIZE` with `SIZE_MINIMIZED`, where the client is within the active window, sends `WM_CHILDACTIVATE` to the first of the client's children from the front that is shown and owned by none (seg15 `1826`-`1865`): itself, minimized in front, or the one now above it.
 - [[read out]] A window's style holds its state: `MinMaximize` sets and clears `WS_MINIMIZE` and `WS_MAXIMIZE` (seg6 `1c40`-`1c44`, `1d13`-`1d35`), and `GetWindowLong` answers them.
-- [[measured]] Program Manager's `[ShowGroup]` gives a group each show command in turn; which group is current after each, and where its window lies, is in [[topic:program-manager-dde]]. Both engines agree with every record of [[probe:pmgroups]].
+- [[measured]] Program Manager's `[ShowGroup]` gives a group each show command in turn; which group is current after each, and where its window lies, is in [[topic:program-manager-dde]]. WinBox agrees with every record of [[probe:pmgroups]].
 - [[read out]] `SetWindowPlacement` with `WPF_SETMINPOSITION` puts the window's icon at `ptMinPosition`, in its parent's client area. [[measured]] Program Manager places a minimized group so, and two groups loaded from the same file's bytes lie at one icon place ([[probe:pmfiles]]).
 
 ## What they needed besides
@@ -133,7 +133,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 
 ## In winbox.js
 
-- `src/win16/user/mdi.ts` holds the class, its messages and the default procedures.
-- `src/win16/user/placement.ts` holds `SetWindowPlacement`.
-- `showRaster` in `src/win16/user/window-state.ts` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
+- `crates/winbox-win16/src/mdi.rs` holds the class, its messages and the default procedures.
+- `crates/winbox-win16/src/window_state.rs` holds `SetWindowPlacement`.
+- `show_raster` in `crates/winbox-win16/src/window_state.rs` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
 - `Desktop.maximize` fills a child's parent.

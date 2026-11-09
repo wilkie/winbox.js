@@ -1,13 +1,13 @@
 ---
 kind: topic
 name: DPMI's functions
-summary: What a Windows program gets from INT 31h in each mode — standard mode's DOSX.EXE, read out function by function from its table, with its refusals, its no-ops and the faults that end Windows; 386 enhanced mode's WIN386, as the probes recorded it — and how WinBox answers each, in both engines.
+summary: What a Windows program gets from INT 31h in each mode — standard mode's DOSX.EXE, read out function by function from its table, with its refusals, its no-ops and the faults that end Windows; 386 enhanced mode's WIN386, as the probes recorded it — and how WinBox answers each.
 probes: [enhmode, dpmildt, dpmimem, dpmirm, dpmiexc, dpmigro, dpmigrw, dpminul, dpmiout]
 ---
 
 A Windows program runs on a DPMI host, and can call it itself through INT 31h: the descriptor table, memory, interrupt vectors, exception handlers, calls into real mode and watchpoints. Standard mode's host is `DOSX.EXE`; 386 enhanced mode's is WIN386's virtual machine manager ([[guide:enhanced-mode]]). Few programs call it: KERNEL, which is WinBox, makes most of the calls a program needs. SimTower's 000Bh and 000Ch are the corpus's ([[topic:global-and-local-memory]], "Descriptors through DPMI"), and WATCOM's Win386 supervisor asks 0400h.
 
-Every probe below was recorded in both modes (`record.mjs --mode enhanced`), and every function is answered in both engines by the machine's mode (`src/dos/dpmi.ts`, `crates/winbox-win16/src/dpmi.rs`).
+Every probe below was recorded in both modes (`record.mjs --mode enhanced`), and every function is answered by the machine's mode (`crates/winbox-win16/src/dpmi.rs`).
 
 ## DOSX's table
 
@@ -36,7 +36,7 @@ Every probe below was recorded in both modes (`record.mjs --mode enhanced`), and
 
 [[measured]] [[probe:dpmigro]] grows a block whose next is taken, and [[probe:dpmigrw]] one that is alone: each time the screen goes back to DOS with "Standard Mode: Fault in MS-DOS Extender.", `EC=2000` (the size's low word) and DOSX's CS:IP, `0053:2713` and `0053:2725`. Windows has ended. In [[probe:dpmigro]] a second program wrote a record every 200 ms until the call, and none after. [[probe:enhmode]]'s standard-mode recording ends at the same call. 0502h and 0101h given nought end Windows the same way, at 2734h (`EC=0A08`, [[probe:dpminul]]). In enhanced mode, WIN386 answers all of these.
 
-WinBox ends the session where DOSX does: no task runs again (the TypeScript engine's scheduler stops; the Rust engine's run stops as ended), and the reason is kept (`DPMI.hostFault`, `Host::fault`). That is what a program can see: nothing more of Windows runs. A 0503h of an unknown handle is refused, AX as it was, before any of that.
+WinBox ends the session where DOSX does: no task runs again (the Rust engine's run stops as ended), and the reason is kept (`Host::fault`). That is what a program can see: nothing more of Windows runs. A 0503h of an unknown handle is refused, AX as it was, before any of that.
 
 ## Descriptors: 0000h-000Dh
 
@@ -85,7 +85,7 @@ WinBox ends the session where DOSX does: no task runs again (the TypeScript engi
 
 - Real-mode code of a program's: 0300h-0302h into anything but a callback or an interrupt WinBox answers. The processors run real mode, but WinBox keeps nothing of DOS's or the BIOS's real-mode code in the first megabyte for a program's to call.
 - WinBox's processor runs a task with its interrupt flag clear, where Windows runs it set: 0902h answers nought, and an exception handler's frame has the flag clear ([[probe:dpmimem]], [[probe:dpmiexc]]).
-- WinBox's DOS says it is version 6.00 (INT 21h 30h, both engines); DOSBox's, beneath Windows, is 5.00 through 0300h and through KERNEL alike ([[probe:dpmirm]], [[probe:dpmiexc]]).
+- WinBox's DOS says it is version 6.00 (INT 21h 30h); DOSBox's, beneath Windows, is 5.00 through 0300h and through KERNEL alike ([[probe:dpmirm]], [[probe:dpmiexc]]).
 - 000Dh's sixteen descriptors are not kept free: WinBox gives the table's first descriptors to blocks, and 000Dh of one in use is refused ([[probe:dpmildt]], [[probe:enhmode]]).
 - Where DOSX's arena and WIN386's put a block (0501h's base and handle), what WIN386's 0800h maps an address to, and the real-mode vectors' values, which are DOS's and the BIOS's.
 - WIN386's table growing as KERNEL asks for more, and its callbacks' limit.

@@ -28,4 +28,4 @@ topics: [user-internals, mouse-input]
 
 ## Implementation
 
-`src/win16/user/drag-object.ts`; the Rust engine's `crates/winbox-win16/src/drag_object.rs`, each making its calls through USER's and KERNEL's own exports. WinBox keeps no picture of USER's cursor 100: a handle of its own stands for it, drawn as the arrow, and the cursor given is shown as it is, not first made a monochrome cursor of the system's size. Neither picture reaches a program.
+`crates/winbox-win16/src/drag_object.rs`, each making its calls through USER's and KERNEL's own exports. WinBox keeps no picture of USER's cursor 100: a handle of its own stands for it, drawn as the arrow, and the cursor given is shown as it is, not first made a monochrome cursor of the system's size. Neither picture reaches a program.

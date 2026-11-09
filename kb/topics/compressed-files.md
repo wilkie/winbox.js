@@ -85,12 +85,12 @@ probes: [lzfiles]
 
 ## WinBox's code
 
-`src/win16/lzexpand/lz.ts` and `crates/winbox-win16/src/lzexpand/mod.rs` follow each routine: the slots and the current buffers are a state of the system's own (`State`), and the blocks and buffers are global memory, allocated with the same flags and sizes, laid out as LZEXPAND lays them out. Files are read, written and sought through KERNEL's own `_lread`, `_lwrite` and `_llseek`, and the file's time through `Dos3Call`, as the library calls them. With `LZEXPAND.DLL` on the drive the file is loaded, and every import of an export is linked to WinBox's stub (`src/win16/own-modules.ts`, `crates/winbox-win16/src/own_modules.rs`); with none, `LoadLibrary("LZEXPAND.DLL")` finds WinBox's. Both engines agree with every record of [[probe:lzfiles]], with the file on the drive and without it (`test/win16/ver_lzexpand_test.ts`, `crates/winbox-win16/tests/ver_lzexpand.rs`).
+`crates/winbox-win16/src/lzexpand/mod.rs` follows each routine: the slots and the current buffers are a state of the system's own (`State`), and the blocks and buffers are global memory, allocated with the same flags and sizes, laid out as LZEXPAND lays them out. Files are read, written and sought through KERNEL's own `_lread`, `_lwrite` and `_llseek`, and the file's time through `Dos3Call`, as the library calls them. With `LZEXPAND.DLL` on the drive the file is loaded, and every import of an export is linked to WinBox's stub (`crates/winbox-win16/src/own_modules.rs`); with none, `LoadLibrary("LZEXPAND.DLL")` finds WinBox's. WinBox agrees with every record of [[probe:lzfiles]], with the file on the drive and without it (`crates/winbox-win16/tests/ver_lzexpand.rs`).
 
 ## Not yet done
 
 - [[fn:LZEXPAND.LZCopy]] of an LZ handle past 40Fh reads past LZEXPAND's table into its other data (seg4 `0185`); WinBox answers it as an empty slot, -1.
 - The copying buffers' smaller sizes, where 8000h bytes cannot be allocated: WinBox's global heap always has them.
 - `LZERROR_WRITE`, a disk that takes fewer bytes than given: no probe fills a disk.
-- A file opened only for reading given to [[fn:LZEXPAND.LZCopy]] as its output: DOSBox refuses the write, and neither engine's DOS knows a file's mode yet; the probe uses a handle that is none (-2) instead.
+- A file opened only for reading given to [[fn:LZEXPAND.LZCopy]] as its output: DOSBox refuses the write, and WinBox's DOS knows a file's mode yet; the probe uses a handle that is none (-2) instead.
 - The C library's start and end (seg11), and the entries reached only from them, which LZEXPAND's exports never call: opening a file by its name (entry 24) and seg7 `01e0`.

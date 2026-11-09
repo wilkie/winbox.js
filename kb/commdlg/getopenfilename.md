@@ -13,7 +13,7 @@ topics: [common-dialogs, file-dialogs]
 
 ## Observed behaviour
 
-[[probe:ofnopen]] opens the box with a hook in a folder of its own, `C:\ORACLE\OFN`, holding `A.TXT`, `B.TXT`, `README`, `C.DOC`, `D.TX` and the folders `SUB` and `ANOTHER`. Its filter is `Text (*.txt)`, `Documents` (`*.doc`) and `All Files`, chosen 2, with a custom filter `Mine` (`*.tx`). It records the controls, what the hook is sent, and the box's state after each of sixteen steps a timer takes. [[probe:ofnerr]] records what the call refuses and the flags it leaves. Both engines agree with all of both probes' records.
+[[probe:ofnopen]] opens the box with a hook in a folder of its own, `C:\ORACLE\OFN`, holding `A.TXT`, `B.TXT`, `README`, `C.DOC`, `D.TX` and the folders `SUB` and `ANOTHER`. Its filter is `Text (*.txt)`, `Documents` (`*.doc`) and `All Files`, chosen 2, with a custom filter `Mine` (`*.tx`). It records the controls, what the hook is sent, and the box's state after each of sixteen steps a timer takes. [[probe:ofnerr]] records what the call refuses and the flags it leaves. WinBox agrees with all of both probes' records.
 
 **The box** ([[measured]]):
 
@@ -59,12 +59,12 @@ topics: [common-dialogs, file-dialogs]
 
 ## Implementation
 
-In both engines, a function at a time as the file runs it, each call into KERNEL, USER and GDI made as the file makes it ([[topic:file-dialogs]]):
+A function at a time as the file runs it, each call into KERNEL, USER and GDI made as the file makes it ([[topic:file-dialogs]]):
 
-- `src/win16/commdlg/file-dialogs.ts` (the start), `file-init.ts` (the procedure, `WM_INITDIALOG`, the subclasses), `file-command.ts` (the controls), `file-ok.ts` (OK), `file-lists.ts` (the lists, the drives, the boxes, the rows), `pictures.ts`; the templates and strings in `file-open-dialog.ts`, `multi-file-open-dialog.ts` and `strings.ts`.
+- `crates/winbox-win16/src/commdlg/file_dialogs.rs` (the start), `crates/winbox-win16/src/commdlg/file_init.rs` (the procedure, `WM_INITDIALOG`, the subclasses), `crates/winbox-win16/src/commdlg/file_command.rs` (the controls), `crates/winbox-win16/src/commdlg/file_ok.rs` (OK), `crates/winbox-win16/src/commdlg/file_lists.rs` (the lists, the drives, the boxes, the rows), `crates/winbox-win16/src/commdlg/pictures.rs`.
 - `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `file_init.rs`, `file_command.rs`, `file_ok.rs`, `file_lists.rs`, `pictures.rs`, `resources.rs`.
 
-The templates are WinBox's own, built in. Without `COMMDLG.DLL` on the drive the box is the same -- WinBox's COMMDLG answers for its instance the Windows version the file is made for, 3.00, so the drives' combo box tells the hook no `CBN_SELENDOK` or `CBN_SELENDCANCEL` and the folders' list `LBN_SELCHANGE` twice on a double click, as with the file ([[topic:combo-boxes]], [[topic:list-boxes]]; [[probe:comboesc]] and [[probe:filedlg]] on the asset bundle's base, [[topic:asset-bundle]]) -- but for the folders' and drives' pictures, which are the file's bitmap and are not drawn; their rows keep their size. Notepad's Open is used both ways in `test/win16/file_dialogs_test.ts` and `crates/winbox-web/tests/file_dialogs.rs`. Media Player's Open (a hook) and Control Panel's Add Fonts (a hook and a template) run on it too.
+The templates are WinBox's own, built in. Without `COMMDLG.DLL` on the drive the box is the same -- WinBox's COMMDLG answers for its instance the Windows version the file is made for, 3.00, so the drives' combo box tells the hook no `CBN_SELENDOK` or `CBN_SELENDCANCEL` and the folders' list `LBN_SELCHANGE` twice on a double click, as with the file ([[topic:combo-boxes]], [[topic:list-boxes]]; [[probe:comboesc]] and [[probe:filedlg]] on the asset bundle's base, [[topic:asset-bundle]]) -- but for the folders' and drives' pictures, which are the file's bitmap and are not drawn; their rows keep their size. Notepad's Open is used both ways in `crates/winbox-web/tests/file_dialogs.rs`. Media Player's Open (a hook) and Control Panel's Add Fonts (a hook and a template) run on it too.
 
 ## Not yet done
 

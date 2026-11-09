@@ -48,5 +48,5 @@ Calendar, Cardfile and Write each make a temporary file as they start. They refu
 
 ## In winbox.js
 
-- `src/win16/kernel/GetTempFileName.ts` holds both functions.
-- `src/dos/syscall/files.ts` holds the DOS calls.
+- `crates/winbox-win16/src/kernel_calls/temp_files.rs` holds both functions.
+- `crates/winbox-win16/src/dos.rs` holds the DOS calls.

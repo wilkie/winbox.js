@@ -18,7 +18,7 @@ topics: [user-internals]
 - [[measured]] [[probe:iconhand]]: `LoadResource` of an icon answers a block discarded, of nought bytes (`GlobalFlags` 4100h), and nothing is called; `LockResource` has it made, and it is USER's block, not the DIB the file holds:
   - On the VGA: hotspot 16, 16; 32 by 32; 4 bytes a mask row; 4 planes of a bit; `GlobalSize` 672 -- whether the resource was 16, 32, 48 or 64 square. On the 256-colour display, a plane of 8 bits, 1184.
   - Black and white: one plane of a bit whatever the display, the mask then the picture, 288.
-  - Every byte as far as the header says the block holds -- 12, the mask's rows, the picture's -- as `icon-convert.ts` makes it.
+  - Every byte as far as the header says the block holds -- 12, the mask's rows, the picture's -- as `crates/winbox-win16/src/icon_convert.rs` makes it.
 - [[measured]] [[probe:iconhand]]: `LoadIcon` of a group answers the block `LoadResource` gives for its member, the same again for every `LoadIcon`; `DestroyIcon` of it answers nought while it is still used.
 - [[measured]] [[probe:iconhand]]: a program's handler set for `RT_ICON` in place of this one is not called by `LoadIcon`, and is called once by `DrawIcon` of that icon, which locks it; `LoadResource` of another icon calls it not at all, `LockResource` once.
 - [[measured]] [[probe:iconhand]]: drawn with `DrawIcon` on grey, a black and white icon's set bits are white, its clear bits black, and where the mask shows the screen a set bit inverts it.
@@ -35,4 +35,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/icon-handlers.ts` and `icon-convert.ts`; the Rust engine's `icon_handlers.rs` and `icon_convert.rs`. KERNEL's `LoadResource` and `LockResource` call it directly where a module's icons have it (`resource-handlers.ts`), and set it for each module's icons as its handlers are first asked for. `LoadIcon` with USER's own handler has a discardable icon's block made at once, where Windows waits for the first lock: WinBox's own drawing reads the block as it is.
+`crates/winbox-win16/src/icon_handlers.rs` and `crates/winbox-win16/src/icon_convert.rs`. KERNEL's `LoadResource` and `LockResource` call it directly where a module's icons have it, and set it for each module's icons as its handlers are first asked for. `LoadIcon` with USER's own handler has a discardable icon's block made at once, where Windows waits for the first lock: WinBox's own drawing reads the block as it is.

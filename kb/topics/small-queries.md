@@ -34,4 +34,4 @@ A program asks USER and GDI many small questions that nobody thinks of as part o
 
 ## Implementation
 
-USER's are in `src/win16/user/queries.ts`, the character classes kept as the probe recorded them. GDI's are in `src/win16/gdi/queries.ts`. `GetMessage` and `PeekMessage` keep the last message's time and point on the task. [[fn:USER.DestroyMenu]] now frees a menu's handle; its pop-ups, which the documentation says go with it, are left.
+USER's are in `crates/winbox-win16/src/user_misc.rs`, the character classes kept as the probe recorded them. `GetMessage` and `PeekMessage` keep the last message's time and point on the task. [[fn:USER.DestroyMenu]] now frees a menu's handle; its pop-ups, which the documentation says go with it, are left.

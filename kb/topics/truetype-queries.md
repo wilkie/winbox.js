@@ -7,7 +7,7 @@ probes: [ttquery, ttqmap]
 
 Four calls ask about the TrueType font selected into a device context rather than draw with it: [[fn:GDI.GetFontData]], [[fn:GDI.GetKerningPairs]], [[fn:GDI.GetCharABCWidths]] and [[fn:GDI.GetOutlineTextMetrics]]. Each asks GDI's TrueType engine, which lives in `GDI.EXE` itself: its entry points are a table at seg47 `001e`, which seg36's stubs `0042` to `00ae` call through. A strike — any font that is not a TrueType one — has none of these answers.
 
-[[measured]] [[probe:ttquery]] asks all four of Arial, Arial Bold and Bold Italic, Times New Roman Italic and Bold, Courier New, Symbol and Wingdings at a few sizes, in a window's device context and a memory one, and of the System font. All 226 records agree in both engines. [[probe:ttqmap]] asks the same under `MM_LOMETRIC`.
+[[measured]] [[probe:ttquery]] asks all four of Arial, Arial Bold and Bold Italic, Times New Roman Italic and Bold, Courier New, Symbol and Wingdings at a few sizes, in a window's device context and a memory one, and of the System font. All 226 records agree. [[probe:ttqmap]] asks the same under `MM_LOMETRIC`.
 
 ## The engine's part
 
@@ -25,10 +25,10 @@ Four calls ask about the TrueType font selected into a device context rather tha
 
 ## In winbox.js
 
-The engine's part is `src/raster/truetype-queries.ts` and `crates/winbox-raster/src/truetype_queries.rs`, reading the face's file. GDI's part is `src/win16/gdi/outline-queries.ts` and `crates/winbox-win16/src/gdi/text/queries.rs`. ABC widths are taken from `GetGlyphOutline`'s box and advance. The filler byte of `OUTLINETEXTMETRIC`, which Windows leaves as its stack had it, is written nought.
+The engine's part is `crates/winbox-raster/src/truetype_queries.rs`, reading the face's file. GDI's part is `crates/winbox-win16/src/gdi/text/queries.rs`. ABC widths are taken from `GetGlyphOutline`'s box and advance. The filler byte of `OUTLINETEXTMETRIC`, which Windows leaves as its stack had it, is written nought.
 
 ## Not yet done
 
-- **Fonts under a mapping mode.** Windows realises a font's height in the device context's units; both engines take it as pixels ([[topic:mapping-modes]]). [[probe:ttqmap]]'s `GetFontData` agrees; its widths, kerning amounts and outline metrics are those of a font three times the size, and are listed among the known gaps.
+- **Fonts under a mapping mode.** Windows realises a font's height in the device context's units; WinBox takes it as pixels ([[topic:mapping-modes]]). [[probe:ttqmap]]'s `GetFontData` agrees; its widths, kerning amounts and outline metrics are those of a font three times the size, and are listed among the known gaps.
 - The engine's own failure for a character, which GDI answers with the default character's widths, has not been seen: every character of the installed faces has a glyph, the missing glyph standing for those without.
 - A Macintosh-only `cmap` or name table, which the engine turns into codes through its table of the Macintosh character set (seg39 `0000`); no installed face has one.

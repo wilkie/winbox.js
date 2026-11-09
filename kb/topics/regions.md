@@ -59,4 +59,4 @@ Every call that makes or changes a region answers its kind: 1 for an empty regio
 
 ## In winbox.js
 
-`src/win16/gdi/regions.ts` makes and uses regions. A region's pixels are a `ClipRegion` (`src/raster/clip-region.ts`), the same banded form clipping uses, so `SelectClipRgn` takes any region's shape. `FillRect` is now what USER makes it: the brush selected and `PatBlt` with `PATCOPY`, so it dithers as `PatBlt` does.
+`crates/winbox-win16/src/gdi/regions.rs` makes and uses regions. A region's pixels are a `ClipRegion` (`crates/winbox-raster/src/clip_region.rs`), the same banded form clipping uses, so `SelectClipRgn` takes any region's shape. `FillRect` is now what USER makes it: the brush selected and `PatBlt` with `PATCOPY`, so it dithers as `PatBlt` does.

@@ -32,4 +32,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzInit` in `src/win16/lzexpand/lz.ts` and `lz_init` in `crates/winbox-win16/src/lzexpand/mod.rs` allocate the block with KERNEL's `GlobalAlloc`, as LZEXPAND does. Both engines agree with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.
+`lz_init` in `crates/winbox-win16/src/lzexpand/mod.rs` allocate the block with KERNEL's `GlobalAlloc`, as LZEXPAND does. WinBox agrees with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.

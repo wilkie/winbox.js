@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Implementation
 
-`src/win16/keyboard/driver.ts`; the Rust engine's `crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`keyboard/tables.ts`, `keyboard_tables.rs`). The flags begin at 2, as recorded.
+`crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`crates/winbox-win16/src/keyboard_tables.rs`). The flags begin at 2, as recorded.

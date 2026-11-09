@@ -78,7 +78,7 @@ A group Program Manager would refuse says why: "Program Manager would not load i
 
 ## Tested
 
-[[measured]] `crates/winbox-native/src/library/tests.rs` and `launcher/tests.rs`:
+[[measured]] `crates/winbox-native/src/library/tests.rs` and `crates/winbox-native/src/launcher/tests.rs`:
 
 - The library is the host's folder, or the one given.
 - A record keeps `mode` (`standard` by default, `enhanced` read back), and a record without it reads as standard. `bases.json` is read back as written.

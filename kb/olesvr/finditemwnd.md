@@ -92,4 +92,4 @@ topics: [ole]
 
 ## Implementation
 
-WinBox's own: `findItemWnd` in `src/win16/olesvr/server.ts` and `find_item_wnd` in `crates/winbox-win16/src/olesvr/server.rs`. Both engines hand it USER as the file does, and agree with [[probe:oleitem]] but for its one known gap ([[topic:ole]]), [[probe:olesrv]] and [[probe:olepbr]], with `OLESVR.DLL` on the drive and without it (`test/win16/olesvr_test.ts`, `crates/winbox-win16/tests/olesvr.rs`).
+WinBox's own: `find_item_wnd` in `crates/winbox-win16/src/olesvr/server.rs`. WinBox hands it USER as the file does, and agree with [[probe:oleitem]] but for its one known gap ([[topic:ole]]), [[probe:olesrv]] and [[probe:olepbr]], with `OLESVR.DLL` on the drive and without it (`crates/winbox-win16/tests/olesvr.rs`).

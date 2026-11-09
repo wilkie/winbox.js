@@ -22,4 +22,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`), the region's shape kept as the context's visible region, and the kind of the clip region within it answered; nought for no context or no region. A window's context is a view of the whole screen from its origin and draws through its region alone: where the region reaches outside the window, it draws there, as Windows does ([[probe:visfam]]'s `select`).
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`), the region's shape kept as the context's visible region, and the kind of the clip region within it answered; nought for no context or no region. A window's context is a view of the whole screen from its origin and draws through its region alone: where the region reaches outside the window, it draws there, as Windows does ([[probe:visfam]]'s `select`).

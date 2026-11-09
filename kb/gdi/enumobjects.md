@@ -13,7 +13,7 @@ source: crates/winbox-win16/src/gdi/calls/enum_objects.rs
 
 ## Observed behaviour
 
-[[probe:enumobj]] enumerates the pens and the brushes of the screen, then each again with a callback that answers nought at the third. It was recorded on the VGA, the EGA, the Super VGA, the Hercules and the 256-colour display, and WinBox agrees with all 20 records in both engines.
+[[probe:enumobj]] enumerates the pens and the brushes of the screen, then each again with a callback that answers nought at the third. It was recorded on the VGA, the EGA, the Super VGA, the Hercules and the 256-colour display, and WinBox agrees with all 20 records.
 
 - [[measured]] Pens: each style from solid, 0, to dash-dot-dot, 4, and in each style the display's colours from its last to its first. The width is nought. That is 80 pens on the sixteen-colour displays and 10 on the Hercules.
 - [[measured]] The colours are the display's own, as its bitmaps index them: white first and black last, with the EGA's `404040` where the others have `C0C0C0`. The Super VGA, in its sixteen-colour mode, gives the VGA's.
@@ -27,7 +27,7 @@ source: crates/winbox-win16/src/gdi/calls/enum_objects.rs
 
 ## Implementation
 
-`EnumObjects.ts` and `enum_objects.rs`: the sixteen-colour displays' and the Hercules's as measured; on the 256-colour display the driver's twenty colours in its order (`enumeratedColours`, `enumerated_colours`).
+`crates/winbox-win16/src/gdi/calls/enum_objects.rs`: the sixteen-colour displays' and the Hercules's as measured; on the 256-colour display the driver's twenty colours in its order (`enumerated_colours`).
 
 ## Not yet measured
 

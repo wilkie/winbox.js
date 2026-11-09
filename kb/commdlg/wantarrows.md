@@ -32,4 +32,4 @@ No program calls it. The Color dialog's `WM_INITDIALOG` gives it to `SetWindowLo
 
 ## Implementation
 
-WinBox's own: `WantArrows` in `src/win16/commdlg/choose-color.ts` and `want_arrows` in `crates/winbox-win16/src/commdlg/choose_color.rs`, given to `SetWindowLong` at its stub's address, as COMMDLG gives the entry's. Both engines agree with all of [[probe:choosclr]]'s records.
+WinBox's own: `want_arrows` in `crates/winbox-win16/src/commdlg/choose_color.rs`, given to `SetWindowLong` at its stub's address, as COMMDLG gives the entry's. WinBox agrees with all of [[probe:choosclr]]'s records.

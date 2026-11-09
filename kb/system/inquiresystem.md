@@ -26,4 +26,4 @@ source: crates/winbox-win16/src/system_driver.rs
 
 ## Implementation
 
-`src/win16/system-driver.ts`; the Rust engine's `crates/winbox-win16/src/system_driver.rs`. The drive is `driveInquiry` (`src/win16/kernel/GetDriveType.ts`, `modules_kernel.rs`'s `drive_inquiry`), which `GetDriveType` answers the AX of. DOSBox's B: with nothing in it, which it selects, is what WinBox's missing B: answers as.
+`crates/winbox-win16/src/system_driver.rs`. The drive is `driveInquiry` (`crates/winbox-win16/src/modules_kernel.rs`'s `drive_inquiry`), which `GetDriveType` answers the AX of. DOSBox's B: with nothing in it, which it selects, is what WinBox's missing B: answers as.

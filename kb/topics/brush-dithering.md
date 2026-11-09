@@ -112,6 +112,6 @@ This reproduces all 981 fills on each of the three displays. [[probe:dither3]] f
 
 ## Implementation
 
-`src/raster/dither.ts` makes each pattern as an eight-by-eight tile. `rasterOp` uses it wherever the destination is the display's own format, or monochrome. The EGA's palette is its driver's, `DevicePalette.EGA`, and every bitmap of the display's depth uses it. `src/raster/colour-match.ts` is the one-colour routine. [[fn:GDI.GetNearestColor]] answers with it, and a device bitmap's context and the screen's turn every colour drawn into an index with it, knowing the display they are drawn on.
+`crates/winbox-raster/src/dither.rs` makes each pattern as an eight-by-eight tile. `rasterOp` uses it wherever the destination is the display's own format, or monochrome. The EGA's palette is its driver's, `DevicePalette.EGA`, and every bitmap of the display's depth uses it. `src/raster/colour-match.ts` is the one-colour routine. [[fn:GDI.GetNearestColor]] answers with it, and a device bitmap's context and the screen's turn every colour drawn into an index with it, knowing the display they are drawn on.
 
 Not yet measured: a 256-colour driver, hatched and pattern brushes, and brushes into colour bitmaps of a depth other than the display's.

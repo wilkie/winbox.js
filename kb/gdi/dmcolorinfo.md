@@ -39,7 +39,7 @@ topics: [gdi-internals, printer-drivers, brush-dithering]
 
 ## Implementation
 
-In both engines as the VGA's driver has it (`driver-helpers.ts`, `driver_helpers.rs`): the match is `colour-match.ts`'s, the colours and flags named constants from the read-out. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. On the Hercules as its own driver has it (`driver-hercules.ts`, `driver_hercules.rs`), [[probe:gdidmdrw]] agreeing. On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. [[probe:gdidm]] agrees in both engines.
+As the VGA's driver has it (`crates/winbox-win16/src/gdi/driver_helpers.rs`): the match is `crates/winbox-raster/src/colour_match.rs`'s, the colours and flags named constants from the read-out. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. On the Hercules as its own driver has it (`crates/winbox-win16/src/gdi/driver_hercules.rs`), [[probe:gdidmdrw]] agreeing. On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. [[probe:gdidm]] agrees.
 
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 

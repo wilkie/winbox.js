@@ -29,4 +29,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-WinBox's own: `addData` in `src/win16/ddeml/data.ts` and `add_data` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. A block grown by `GlobalReAlloc`, or a new one where that fails, is put in the old one's place in the instance's handles. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `add_data` in `crates/winbox-win16/src/ddeml/data.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. A block grown by `GlobalReAlloc`, or a new one where that fails, is put in the old one's place in the instance's handles. WinBox agrees with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

@@ -68,7 +68,7 @@ A program reaches the serial and parallel ports through USER: [[fn:USER.OpenComm
 
 ## In winbox.js
 
-`src/win16/user/comm.ts` is USER's side: the table of ports, the names, and `BuildCommDCB`. `src/win16/comm.ts` is the driver's side, written in TypeScript since no Windows file is shipped. It keeps each port's settings, queues, errors and handshake state, with the event words in a data segment of its own.
+`crates/winbox-win16/src/user_comm.rs` is USER's side: the table of ports, the names, and `BuildCommDCB`. `crates/winbox-win16/src/comm.rs` is the driver's side, written by WinBox since no Windows file is shipped. It keeps each port's settings, queues, errors and handshake state, with the event words in a data segment of its own.
 
 Its ports have nothing connected. A byte sent goes nowhere, one character time after the last, at the port's baud rate. The line under them is an interface, `SerialLine`, so that a port could one day be the browser's.
 

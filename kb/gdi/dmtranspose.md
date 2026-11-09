@@ -30,6 +30,6 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-In both engines as read out. [[probe:gdidm]] agrees in both.
+As read out. [[probe:gdidm]] agrees in both.
 
 **Recommendation:** done.

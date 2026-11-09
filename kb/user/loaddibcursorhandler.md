@@ -31,4 +31,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/icon-handlers.ts` and `icon-convert.ts`; the Rust engine's `icon_handlers.rs` and `icon_convert.rs`. A cursor `LoadCursor` loads is its block, which `SetCursor` shows as the display would (`blockCursorImage`).
+`crates/winbox-win16/src/icon_handlers.rs` and `crates/winbox-win16/src/icon_convert.rs`. A cursor `LoadCursor` loads is its block, which `SetCursor` shows as the display would (`blockCursorImage`).

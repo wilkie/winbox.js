@@ -16,4 +16,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`ExportedStub` in `src/win16/lzexpand/index.ts` and `exported_stub` in `crates/winbox-win16/src/lzexpand/mod.rs` answer nought.
+`exported_stub` in `crates/winbox-win16/src/lzexpand/mod.rs` answer nought.

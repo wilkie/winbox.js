@@ -25,7 +25,7 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-**Implemented (a).** Both engines make a fixed block of KERNEL's the first time it is asked for, 46h bytes, as far as the words KERNEL's own code touches in it run (seg1 `2bbe`-`2bcb`, `97fd`-`9802`), and answer its selector in AX and DX; `GlobalHandle` answers it as both handle and selector (`GlobalMasterHandle` in `src/win16/kernel/thhook.ts`, `kernel_calls/thhook.rs`). Its words read as noughts: WinBox keeps its blocks in itself and lays out no arenas for a walker. See [[topic:kernel-internals]].
+**Implemented (a).** WinBox makes a fixed block of KERNEL's the first time it is asked for, 46h bytes, as far as the words KERNEL's own code touches in it run (seg1 `2bbe`-`2bcb`, `97fd`-`9802`), and answer its selector in AX and DX; `GlobalHandle` answers it as both handle and selector (`GlobalMasterHandle` in `crates/winbox-win16/src/kernel_calls/thhook.rs`). Its words read as noughts: WinBox keeps its blocks in itself and lays out no arenas for a walker. See [[topic:kernel-internals]].
 
 ## Not yet done
 

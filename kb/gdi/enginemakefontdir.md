@@ -14,7 +14,7 @@ topics: [font-resources]
 
 ## Observed behaviour
 
-- [[measured]] [[probe:prtteng]]: for `ARIAL.TTF` it answers 138 and writes the entry Arial's `.FOT` holds: a count of 1, an ordinal of nought, the header from `dfVersion` to `dfBreakChar`, and `Arial`, `Arial` and `Regular`. For `WINGDING.TTF`, 146, the symbol set and an offset of F000h.
+- [[measured]] [[probe:prtteng]]: for `ARIAL.TTF` it answers 138 and writes the entry Arial's `.FOT` holds: a count of 1, an ordinal of nought, the header from `dfVersion` to `dfBreakChar`, and `Arial` and `Regular`. For `WINGDING.TTF`, 146, the symbol set and an offset of F000h.
 - [[measured]] What it does not write it leaves as it was: 1Dh bytes after the copyright, six after `dfBreakChar`, two after `dfFace` and one before the names, and every byte past the answer.
 - [[measured]] `dfType` is 4083h where the first argument is not nought, 4003h where it is.
 - [[measured]] `dfFace` is the offset of the names in the caller's own segment, not in the entry.
@@ -33,7 +33,7 @@ topics: [font-resources]
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`, reading the face's file through DOS. The facts are the ones `CreateScalableFontResource`'s stub is built from (`trueTypeFacts`), with `fsSelection` and the last character beside them.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`, reading the face's file through DOS. The facts are the ones `CreateScalableFontResource`'s stub is built from (`true_type_facts`), with `fsSelection` and the last character beside them.
 
 ## Not yet done
 

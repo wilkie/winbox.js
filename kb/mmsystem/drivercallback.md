@@ -20,4 +20,4 @@ topics: [sound-devices]
 
 ## Implementation
 
-Both engines, as read out: `src/win16/mmsystem/callback.ts` and `crates/winbox-win16/src/mmsystem/callback.rs`. Neither moves to an interrupt stack for the call: there is no interrupt time to need one.
+As read out: `crates/winbox-win16/src/mmsystem/callback.rs`. Neither moves to an interrupt stack for the call: there is no interrupt time to need one.

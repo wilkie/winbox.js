@@ -33,4 +33,4 @@ The 8514/a's **depends on state**: called again with no `Enable` between, the ho
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts` with `display-driver.ts`' `disableAnswer`; `crates/winbox-win16/src/gdi/visible_region.rs` with `Display::disable_answer`): the display's driver's answer from the table above, nothing turned off; the 8514/a's second call answers as its first. Nought for no context and for a printer's, whose driver's `Disable` is not followed.
+(`crates/winbox-win16/src/gdi/visible_region.rs` with `Display::disable_answer`): the display's driver's answer from the table above, nothing turned off; the 8514/a's second call answers as its first. Nought for no context and for a printer's, whose driver's `Disable` is not followed.

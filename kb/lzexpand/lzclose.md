@@ -26,4 +26,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzClose` in `src/win16/lzexpand/lz.ts` and `lz_close` in `crates/winbox-win16/src/lzexpand/mod.rs` leave AX as it was.
+`lz_close` in `crates/winbox-win16/src/lzexpand/mod.rs` leave AX as it was.

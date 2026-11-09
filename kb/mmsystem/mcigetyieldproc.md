@@ -18,7 +18,7 @@ topics: [sound-devices]
 
 ## Nuances
 
-- MMSYSTEM's own procedure has no export. Both engines keep it at an ordinal of MMSYSTEM's where Windows exports nothing (1202), as they keep its I/O procedures (`mmio.ts`).
+- MMSYSTEM's own procedure has no export. WinBox keeps it at an ordinal of MMSYSTEM's where Windows exports nothing (1202), as they keep its I/O procedures.
 
 ## Inside Windows
 
@@ -26,4 +26,4 @@ topics: [sound-devices]
 
 ## Implementation
 
-Both engines, as read out: `src/win16/mmsystem/mci.ts` and `crates/winbox-win16/src/mmsystem/mci.rs`.
+As read out: `crates/winbox-win16/src/mmsystem/mci.rs`.

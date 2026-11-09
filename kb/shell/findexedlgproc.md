@@ -27,4 +27,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/shell/find-program.ts`; the Rust engine's `crates/winbox-win16/src/shell/find_program.rs`. The box is made with `DialogBoxParam`'s machinery and this export as its procedure, through SHELL's and USER's own exports as COMMDLG's calls are made. **Not yet done**: Locate, which asks COMMDLG's `GetOpenFileName`; Help opens WinBox's `WinHelp`.
+`crates/winbox-win16/src/shell/find_program.rs`. The box is made with `DialogBoxParam`'s machinery and this export as its procedure, through SHELL's and USER's own exports as COMMDLG's calls are made. **Not yet done**: Locate, which asks COMMDLG's `GetOpenFileName`; Help opens WinBox's `WinHelp`.

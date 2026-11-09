@@ -106,4 +106,4 @@ Cardfile hides its card's scroll bars this way. Before, they stayed.
 
 ## In winbox.js
 
-`src/win16/user/scroll-bars.ts` keeps the ranges, positions and arrows turned off, for windows and for controls. `Painter.scrollBar` in `src/win16/user/painter.ts` draws the thumb where they put it, and `frame.ts` lays the bars out.
+`crates/winbox-win16/src/scroll_bars.rs` keeps the ranges, positions and arrows turned off, for windows and for controls. `Painter.scrollBar` in `crates/winbox-win16/src/painter.rs` draws the thumb where they put it, and `crates/winbox-win16/src/frame.rs` lays the bars out.

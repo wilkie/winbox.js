@@ -15,4 +15,4 @@ topics: [kernel-internals, task-startup]
 
 ## Implementation
 
-`src/win16/kernel/InitTask.ts`, and the Rust engine's own. [[topic:task-startup]] describes both. See [[topic:kernel-internals]] for where it stands among KERNEL's undeclared exports.
+own. [[topic:task-startup]] describes both. See [[topic:kernel-internals]] for where it stands among KERNEL's undeclared exports.

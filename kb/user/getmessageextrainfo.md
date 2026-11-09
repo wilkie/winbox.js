@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. Nought: WinBox's input events carry no extra information.
+`crates/winbox-win16/src/small_calls.rs`. Nought: WinBox's input events carry no extra information.

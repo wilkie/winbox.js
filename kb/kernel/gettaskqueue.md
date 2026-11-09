@@ -19,4 +19,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-USER makes the queue as the task calls `InitApp`. winbox.js keeps a task's messages itself and has no block for them, so it makes a block of nothing the first time a task's queue is asked for, and answers its selector (`queueOf`, `src/win16/kernel/task-order.ts`). Not yet done: before `InitApp`, Windows answers nought.
+USER makes the queue as the task calls `InitApp`. winbox.js keeps a task's messages itself and has no block for them, so it makes a block of nothing the first time a task's queue is asked for, and answers its selector. Not yet done: before `InitApp`, Windows answers nought.

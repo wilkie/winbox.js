@@ -22,4 +22,4 @@ topics: [palettes]
 
 ## Implementation
 
-In both engines as read out. [[probe:dcinner]] agrees in both, on the VGA and the 256-colour display.
+As read out. [[probe:dcinner]] agrees in both, on the VGA and the 256-colour display.

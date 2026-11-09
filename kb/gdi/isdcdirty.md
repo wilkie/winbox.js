@@ -21,4 +21,4 @@ topics: [drawing-bounds]
 
 ## Implementation
 
-In both engines as read out. [[probe:bounds]] agrees in both.
+As read out. [[probe:bounds]] agrees in both.

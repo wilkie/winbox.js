@@ -39,4 +39,4 @@ It never calls one while the task is stopped inside some other call of the API, 
 
 ## In winbox.js
 
-`src/win16/mmsystem/time.ts` has the functions and `pollTimeEvents`. `Scheduler.atInterrupt`, `deliverInterrupt` and `takeInterrupts` in `src/win16/scheduler.ts` make the calls, and `src/win16/user/queue.ts` takes them as a task wakes from waiting for a message.
+`crates/winbox-win16/src/mmsystem/time.rs` has the functions and `poll_time_events`. `Scheduler.atInterrupt`, `deliver_interrupt` and `take_interrupts` in `crates/winbox-win16/src/interrupts.rs` make the calls, and `crates/winbox-win16/src/queue.rs` takes them as a task wakes from waiting for a message.

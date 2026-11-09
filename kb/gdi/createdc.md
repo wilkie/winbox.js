@@ -29,4 +29,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` run the driver's code on the processor; `DISPLAY` and `WBPRINT` are kept by winbox.js ([[topic:printing]]). Not followed: banding drivers, and drawing through the driver.
+`crates/winbox-win16/src/gdi/printer_driver.rs` runs the driver's code on the processor; `DISPLAY` and `WBPRINT` are kept by winbox.js ([[topic:printing]]). Not followed: banding drivers, and drawing through the driver.

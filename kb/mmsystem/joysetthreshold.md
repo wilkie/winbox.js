@@ -22,4 +22,4 @@ topics: [multimedia-services]
 
 ## Implementation
 
-Both engines, as read out: `src/win16/mmsystem/joystick.ts` and `crates/winbox-win16/src/mmsystem/joystick.rs`.
+As read out: `crates/winbox-win16/src/mmsystem/joystick.rs`.

@@ -23,4 +23,4 @@ topics: [kernel-internals, application-errors]
 
 ## Implementation
 
-A retail no-op in both engines (`nothing`). WinBox has no system debugger to tell, so the change Windows makes never shows. See [[topic:kernel-internals]].
+A retail no-op (`nothing`). WinBox has no system debugger to tell, so the change Windows makes never shows. See [[topic:kernel-internals]].

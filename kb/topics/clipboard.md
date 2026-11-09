@@ -30,7 +30,7 @@ The clipboard is one for the whole system. A window opens it, empties it to beco
 
 ## Cut, copy and paste
 
-[[measured]] [[probe:editclip]] sends a single-line and a multi-line edit control `WM_COPY`, `WM_CUT`, `WM_PASTE` and `WM_CLEAR`. After each it records the text, the selection, the clipboard's text and owner, and what the parent was told. Both engines run the probe itself and agree with all 11 records. It reads the clipboard's text back through [[fn:KERNEL.lstrcpyn]], and while that was a stub the Rust engine, which ran the probe, read none of it (1 of 11), while the TypeScript engine replayed it by hand and never called it.
+[[measured]] [[probe:editclip]] sends a single-line and a multi-line edit control `WM_COPY`, `WM_CUT`, `WM_PASTE` and `WM_CLEAR`. After each it records the text, the selection, the clipboard's text and owner, and what the parent was told. WinBox runs the probe itself and agrees with all 11 records. It reads the clipboard's text back through [[fn:KERNEL.lstrcpyn]], and while that was a stub the Rust engine, which ran the probe, read none of it (1 of 11).
 
 - [[measured]] `WM_COPY` puts the selection on as `CF_TEXT`, and the control becomes the clipboard's owner. With nothing selected, the clipboard is left as it was. The parent is told nothing.
 - [[measured]] `WM_CUT` copies the selection and takes it out. `WM_CLEAR` only takes it out. Either tells the parent `EN_UPDATE`, then `EN_CHANGE`.
@@ -48,4 +48,4 @@ Print Screen puts a copy of the screen, or with Alt of the active window, on the
 
 ## In winbox.js
 
-`src/win16/user/clipboard.ts`, and `edit-clipboard.ts` for the edit controls.
+`crates/winbox-win16/src/clipboard.rs` for the edit controls.

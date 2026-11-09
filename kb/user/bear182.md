@@ -25,4 +25,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/SetTimer.ts`; `crates/winbox-win16/src/queue.rs` (`kill_timer_as`).
+`crates/winbox-win16/src/queue.rs` (`kill_timer_as`).

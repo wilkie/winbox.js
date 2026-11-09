@@ -31,4 +31,4 @@ topics: [profile-files]
 
 ## Implementation
 
-winbox.js loads the file through its `Profile` class (`src/win16/profile.ts`), which normalises it as Windows does, or reads the buffer KERNEL still holds (`heldProfile`), and copies out through `copyOut` and `copyOutList` in `src/win16/kernel/profiles.ts`.
+winbox.js loads the file through its `Profile` class (`src/win16/profile.ts`), which normalises it as Windows does, or reads the buffer KERNEL still holds (`held_profile`), and copies out through `copyOut` and `copyOutList` in `crates/winbox-win16/src/profiles_kernel.rs`.

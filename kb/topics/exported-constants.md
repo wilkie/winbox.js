@@ -40,7 +40,7 @@ The first megabyte is not at linear nought in winbox.js. A program's segments ta
 
 The selectors are the nine indices of the local table below the interrupt descriptor table's, 0FFDh, in Windows' order: 7FA7h for `__E000H` up to 7FE7h for `__0000H`. No block reaches them. The table's last indices stay empty: Windows' local table is smaller, and probes count on 0FFF7h faulting ([[probe:fault]], [[probe:badptr]]). `GetSelectorBase` answers where they really are, FFE00000h and up. Only the distances between them are Windows'.
 
-The table entries are `ExportedConstant`s (`src/win16/kernel/constants.ts`), and the Rust engine's `kernel_constant` (`crates/winbox-win16/src/linker.rs`) holds the same values. The knowledge base counts a constant as implemented when its table entry gives the number, and shows it as a constant, not a function with argument bytes.
+The table entries are `ExportedConstant`s, and the Rust engine's `kernel_constant` (`crates/winbox-win16/src/linker.rs`) holds the same values. The knowledge base counts a constant as implemented when its table entry gives the number, and shows it as a constant, not a function with argument bytes.
 
 ## `__GP`
 

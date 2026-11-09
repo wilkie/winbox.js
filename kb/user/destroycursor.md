@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/cursor_make.rs
 
 ## Implementation
 
-`src/win16/user/cursor-make.ts`; the Rust engine's `crates/winbox-win16/src/cursor_make.rs`. A cursor made is drawn from its block as the display shows it, a bit of its picture set flipping the screen's pixel.
+`crates/winbox-win16/src/cursor_make.rs`. A cursor made is drawn from its block as the display shows it, a bit of its picture set flipping the screen's pixel.

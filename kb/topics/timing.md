@@ -40,13 +40,13 @@ Each function's page carries its own: how long each way it was recorded took, an
 
 [[read out]] A journal playback hook answers `HC_GETNEXT` with how many milliseconds to wait before its event is taken ([[topic:system-queue]]). USER keeps the wait beside its timers and counts it down on the same ticks of its own system timer, by the milliseconds `GetSystemMsecCount` says have passed since the last (`USER.EXE` seg1 `72c6`-`7365`). Within 5 ms of nought the wait is over, and the program that would take the event is woken; its look asks the hook again. The timer is set for whichever is due first, a timer or the wait, so the wait is kept to about the system timer's tick.
 
-[[measured]] [[probe:jrnlplay]] asks for a wait of 200 ms before one key. From the hook's first `HC_GETNEXT` for it to the key's press being taken, `GetTickCount` counted at least 150 ms, and the hook was asked for it more than once. Both engines wait it on their own clocks: the host's, or, on a virtual clock, the instructions run.
+[[measured]] [[probe:jrnlplay]] asks for a wait of 200 ms before one key. From the hook's first `HC_GETNEXT` for it to the key's press being taken, `GetTickCount` counted at least 150 ms, and the hook was asked for it more than once. WinBox waits it on their own clocks: the host's, or, on a virtual clock, the instructions run.
 
 ## The screen saver's look
 
 [[read out]] USER looks whether the screen saver is due every ten seconds, on a system timer of the task list's window, its own, that the first `InitApp` sets (`USER.EXE` seg5 `0470`-`047f`); the timer's message is in the first program's queue, and the look is made as that program dispatches it ([[topic:system-parameters]]). The delay is counted from the last input's time, so the screen saver starts between the delay and the delay and ten seconds after the last input.
 
-[[measured]] [[probe:spiidle]], with a delay of 1 second, had `SC_SCREENSAVE` within ten seconds of the delay being set, and none in the next twelve without input. Both engines look on their own clocks, the Rust engine's the instructions run and the TypeScript engine's the virtual clock in its recordings. A run that waits with nothing due before its end or its step's -- the look ten seconds on -- goes on a frame at a time rather than skipping to it, so a step ends on time; and a step's key due within a frame of a timer goes in before the timer is looked at, as a look takes input before timers.
+[[measured]] [[probe:spiidle]], with a delay of 1 second, had `SC_SCREENSAVE` within ten seconds of the delay being set, and none in the next twelve without input. The Rust engine looks on its own clock, the instructions run. A run that waits with nothing due before its end or its step's -- the look ten seconds on -- goes on a frame at a time rather than skipping to it, so a step ends on time; and a step's key due within a frame of a timer goes in before the timer is looked at, as a look takes input before timers.
 
 ## How long a call takes
 
@@ -123,7 +123,7 @@ A few of the calls at the fixed rate, as instructions: `GetTickCount` 11, `GetAc
 
 A region of many rectangles costs a call next to nothing: some 300 instructions for a `BitBlt` with eight windows over its window. What costs is the pixels drawn, and a drawing half covered has fewer.
 
-winbox.js on the development machine (a Ryzen 9 3950X), drawing a pixel through a window's view of the screen: the Rust engine's raster 6 ns with nothing to test, 8 with one test of the pixel -- today's, of the window's pixels, or a region's -- 9.5 with a region of eight holes, 11.3 with today's two tests, the window's pixels and the clip region; the TypeScript engine's about 570 ns, in which the tests do not show. A benchmark of the raster alone, not kept.
+winbox.js on the development machine (a Ryzen 9 3950X), drawing a pixel through a window's view of the screen: the Rust engine's raster 6 ns with nothing to test, 8 with one test of the pixel -- today's, of the window's pixels, or a region's -- 9.5 with a region of eight holes, 11.3 with today's two tests, the window's pixels and the clip region; the TypeScript engine's (retired 2026-11-08; the numbers of it on this page are history) about 570 ns, in which the tests do not show. A benchmark of the raster alone, not kept.
 
 [[measured]] With drawing through the region alone ([[topic:visible-regions]], phase 3), on the same machine, through the whole engine: a program that fills its window's client area, 200 by 150, with `PatBlt` and `PATINVERT` a thousand times -- 30 million pixels -- run whole, less the same program filling nothing, so that only the pixels are left. Alone on the screen, and with eight pop-ups of 20 by 20 over the window:
 

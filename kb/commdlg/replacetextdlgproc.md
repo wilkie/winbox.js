@@ -18,7 +18,7 @@ No program calls it. [[fn:COMMDLG.ReplaceText]] gives its far address to `Create
 - [[read out]] As [[fn:COMMDLG.FindTextDlgProc]], it finds the structure by the property A000h (`COMMDLG.DLL` seg5 `0591`) and gives the hook each message first.
 - [[read out]] `WM_INITDIALOG` sets both texts, sending each its `EN_CHANGE`, and shows the dialog with `SW_SHOW`.
 - [[read out]] Find Next, Replace and Replace All write the structure with `FR_FINDNEXT`, `FR_REPLACE` or `FR_REPLACEALL`, always with `FR_DOWN`, and send the owner `FINDMSGSTRING`'s message. Where the owner answers exactly 1 to Replace or Replace All, Cancel's text becomes COMMDLG's string 40Dh, "Close".
-- [[measured]] [[probe:findrepl]] records the owner told 191h, 1A1h and 189h, and Cancel saying "Close" after the owner answered 1: as read out, and both engines agree.
+- [[measured]] [[probe:findrepl]] records the owner told 191h, 1A1h and 189h, and Cancel saying "Close" after the owner answered 1: as read out, and WinBox agrees.
 
 ## Nuances
 
@@ -31,4 +31,4 @@ No program calls it. [[fn:COMMDLG.ReplaceText]] gives its far address to `Create
 
 ## Implementation
 
-WinBox's own: `ReplaceTextDlgProc` in `src/win16/commdlg/find-replace.ts` and `replace_text_dlg_proc` in `crates/winbox-win16/src/commdlg/find_replace.rs`. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `replace_text_dlg_proc` in `crates/winbox-win16/src/commdlg/find_replace.rs`. It works with no `COMMDLG.DLL` on the drive.

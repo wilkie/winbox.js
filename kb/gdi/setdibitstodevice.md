@@ -33,7 +33,7 @@ winbox.js agrees with all 36 records.
 - From a scan line not nought, every line is drawn whatever the count. On the VGA the DIB moves up by the start, its rectangle as before, so its lines above the destination are drawn. On the 256-colour display it moves down by its height less the start and the count, and what falls below the destination is clipped.
 - On the 256-colour display a line past the top of the destination ends it.
 
-[[read out]] GDI hands the DIB to the driver's `SetDIBitsToDevice` with the destination's rectangle to clip to. `VGA.DRV` seg9 `0e2a` gives it to export 501 with the DIB's rectangle at GDI's place (`0e3d`-`0e7b`), which clips only where that rectangle does not lie inside the clip (`1325`-`134a`), its first line `start` up from its bottom (`13e6`). `SVGA256.DRV` seg9 `0dba` moves the place down by the DIB's height less the start and the count (`0dc4`-`0dd7`) and gives it to `15ac` (`0e5e`-`0e7c`), which clips likewise (`179f`-`17de`) and ends at a line above the clip (`164a`). `rle-dib.ts`, `rle_dib.rs`; [[probe:rledib]] agrees in both engines.
+[[read out]] GDI hands the DIB to the driver's `SetDIBitsToDevice` with the destination's rectangle to clip to. `VGA.DRV` seg9 `0e2a` gives it to export 501 with the DIB's rectangle at GDI's place (`0e3d`-`0e7b`), which clips only where that rectangle does not lie inside the clip (`1325`-`134a`), its first line `start` up from its bottom (`13e6`). `SVGA256.DRV` seg9 `0dba` moves the place down by the DIB's height less the start and the count (`0dc4`-`0dd7`) and gives it to `15ac` (`0e5e`-`0e7c`), which clips likewise (`179f`-`17de`) and ends at a line above the clip (`164a`). `crates/winbox-win16/src/gdi/rle_dib.rs`; [[probe:rledib]] agrees.
 
 ## Nuances
 
@@ -43,7 +43,7 @@ winbox.js agrees with all 36 records.
 
 ## Implementation
 
-`src/win16/gdi/dib-to-device.ts` reads the header, colour table and scan lines into a bitmap of the destination's format with the same code as [[fn:GDI.CreateDIBitmap]], and copies the scan lines in range with the raster-operation engine.
+`dib_to_device` in `crates/winbox-raster/src/dib.rs` reads the header, colour table and scan lines into a bitmap of the destination's format with the same code as [[fn:GDI.CreateDIBitmap]], and copies the scan lines in range with the raster-operation engine.
 
 ## On a printer's context
 

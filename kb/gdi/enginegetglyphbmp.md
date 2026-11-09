@@ -37,7 +37,7 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`. The glyph is drawn as `GetGlyphOutline` draws one, by the face the engine's context holds, turned by its angle. Turned, the box is the ink's and the corner is measured from where the baseline's origin falls as the character would be drawn. The context keeps GDI's matrix (`engineMatrix`); where it is not a plain upright scale the advance is the scaler's phantoms', made as read out above (`engineAdvance`), both engines alike, and otherwise the upright face's. GDI's slant leans the outline by the matrix's `m10` over `m11` (`engineLean`, the `Outline`'s `lean`), not the display's `floor(em / 3)`.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`. The glyph is drawn as `GetGlyphOutline` draws one, by the face the engine's context holds, turned by its angle. Turned, the box is the ink's and the corner is measured from where the baseline's origin falls as the character would be drawn. The context keeps GDI's matrix (`engineMatrix`); where it is not a plain upright scale the advance is the scaler's phantoms', made as read out above (`engineAdvance`), and otherwise the upright face's. GDI's slant leans the outline by the matrix's `m10` over `m11` (the `Outline`'s `lean`), not the display's `floor(em / 3)`.
 
 ## Not yet done
 

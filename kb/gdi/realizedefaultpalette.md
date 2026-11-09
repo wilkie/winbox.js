@@ -21,4 +21,4 @@ topics: [palettes]
 
 ## Implementation
 
-In both engines as read out; on a display of fixed colours the answer is the selector that stands for GDI's data segment. [[probe:dcinner]] agrees in both.
+As read out; on a display of fixed colours the answer is the selector that stands for GDI's data segment. [[probe:dcinner]] agrees in both.

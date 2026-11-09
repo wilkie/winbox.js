@@ -43,4 +43,4 @@ source: crates/winbox-win16/src/commdlg/choose_color.rs
 
 ## Implementation
 
-WinBox's own: `ChooseColor`, `ColorDlgProc` and `WantArrows` in `src/win16/commdlg/choose-color.ts` and `crates/winbox-win16/src/commdlg/choose_color.rs`, the arithmetic in `colour-math.ts` and `colour_math.rs`. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `ChooseColor`, `ColorDlgProc` and `WantArrows` in `crates/winbox-win16/src/commdlg/choose_color.rs`, the arithmetic in `crates/winbox-win16/src/commdlg/colour_math.rs`. It works with no `COMMDLG.DLL` on the drive.

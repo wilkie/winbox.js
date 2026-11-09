@@ -25,7 +25,7 @@ topics: [small-queries, printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/physical-font.ts` and `crates/winbox-win16/src/gdi/physical_font.rs`.
+`crates/winbox-win16/src/gdi/physical_font.rs`.
 
 - A printer's context answers the block of the `FONTINFO` its driver realized, from the table of fonts realized for its device ([[topic:printer-drivers]]). This is GDI's own object: the block it allocated, 42h bytes more than the driver asked for. Where the font selected has not yet been realized for the device, nought.
 - A display's fonts are realized by WinBox without a `FONTINFO` in memory. So WinBox keeps a block for each font object the first time its physical font is asked for. It is 96h bytes, as GDI keeps a TrueType font's, or a font file's header's 76h for the others, moveable, zeroed and shared. Contexts that select the same font object answer the same block.

@@ -23,4 +23,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/retail.ts`, and the Rust engine's `kernel_calls/retail.rs`.
+`crates/winbox-win16/src/kernel_calls/retail.rs`.

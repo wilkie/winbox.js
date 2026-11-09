@@ -26,7 +26,7 @@ topics: [kernel-internals, task-list]
 
 ## Implementation
 
-**Implemented (a).** Both engines answer the registers above (`WinOldApCall` in `src/win16/kernel/internals.ts`); WinBox keeps no module file open, so nothing is closed. DI's 10h is DOSBox's DOS's, as WinBox's is.
+**Implemented (a).** WinBox answers the registers above (`WinOldApCall` in `crates/winbox-win16/src/kernel_calls/internals.rs`); WinBox keeps no module file open, so nothing is closed. DI's 10h is DOSBox's DOS's, as WinBox's is.
 
 ## Not yet done
 

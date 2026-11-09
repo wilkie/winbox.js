@@ -23,4 +23,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/Dos3Call.ts`, and the Rust engine's `crates/winbox-win16/src/kernel_calls/code.rs`.
+`crates/winbox-win16/src/kernel_calls/code.rs`.

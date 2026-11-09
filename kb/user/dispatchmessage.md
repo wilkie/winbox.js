@@ -22,4 +22,4 @@ topics: [several-programs]
 
 ## Implementation
 
-`src/win16/user/DispatchMessage.ts` asks `dde-checks.ts` before `dispatchMessage`, which USER's own loops call; the Rust engine's `dispatch_message` in `queue.rs` asks `dde_checks.rs` before `Engine::dispatch`. The other rows of the validation are not followed.
+`dispatch_message` in `crates/winbox-win16/src/queue.rs` asks `crates/winbox-win16/src/dde_checks.rs` before `Engine::dispatch`. The other rows of the validation are not followed.

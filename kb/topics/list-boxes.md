@@ -43,14 +43,14 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 - [[measured]] Down, Page Down and End move the selection and scroll just enough to show it. A typed character finds the next item it begins, after the caret. A click selects the row under it.
 - [[read out]] A page is a row less than show. The first arrow pressed with nothing selected selects the caret's item.
-- [[read out]] A list box made with neither `WS_VSCROLL` nor `WS_HSCROLL` never has a scroll bar: making it keeps whether it was given either (seg38 `00ea`), and the scroll bar's update leaves at once without (seg43 `0019`). [[measured]] [[probe:lbtext]]: a list box of style nought, one row showing and two items, keeps its whole width. Both engines had shown it a scroll bar.
+- [[read out]] A list box made with neither `WS_VSCROLL` nor `WS_HSCROLL` never has a scroll bar: making it keeps whether it was given either (seg38 `00ea`), and the scroll bar's update leaves at once without (seg43 `0019`). [[measured]] [[probe:lbtext]]: a list box of style nought, one row showing and two items, keeps its whole width. WinBox had shown it a scroll bar.
 - [[read out]] The scroll bar shows while the list is scrolled or does not fit. Its position is the top over the furthest the top can go, as a percentage rounded as `MulDiv` rounds, in the window's range of 0 to 100. [[measured]] Tops of 5, 6, 9 and 3 of 14 items with 5 showing give 56, 67, 100 and 33.
 
 ## Notifications
 
 - [[measured]] With `LBS_NOTIFY`, keys, typing and a click send `LBN_SELCHANGE`, and `LB_SETCURSEL` sends nothing. The focus arriving sends `LBN_SETFOCUS` and leaving sends `LBN_KILLFOCUS`, with or without `LBS_NOTIFY`.
 - [[read out]] A press takes the focus for the list box itself, as it is taken, when it does not have it: `WM_KILLFOCUS` to the window that had it, then `WM_SETFOCUS` to the list (`USER.EXE` seg35 `133d`-`1353`). The class is registered with `CS_DBLCLKS` ([[topic:window-classes]]), so the second press of a double click comes as `WM_LBUTTONDBLCLK`, which is followed as a press let go at once (`13fc`). Let go, a double click is told as `LBN_DBLCLK`; to a list whose window lacks a mark of its state, bit 2 (04h) of byte 26h, `LBN_SELCHANGE` comes first (`16a2`-`16b5`). The mark is the one for a module made for Windows 3.10: `CreateWindow` sets it where `GetExpWinVer` (`KERNEL` 167) of the instance it was given answers 30Ah or more (seg8 `0425`-`0432`), the same a combo box's `CBN_SELENDOK` hangs on ([[topic:combo-boxes]]). It is the module of the instance the list was made with, not its task's: COMMDLG's folders' list is COMMDLG's, made for 3.00, in a program made for 3.10 too. [[measured]] [[probe:lbmark]]'s lists, each made with another module's instance, are told `LBN_SELCHANGE` twice on a double click for the probe's own and `SHELL`'s, both made for 3.00, and once for `USER`'s and `KERNEL`'s; `GetExpWinVer` answers 300h, 300h, 30Ah and 30Ah for them ([[fn:KERNEL.GetExpWinVer]]).
-- [[measured]] [[probe:filedlg]] presses `COMMDLG.DLL`'s Open dialog with `MOUSE_EVENT`. A click on the directories, the file name's edit having the focus, sends `EN_KILLFOCUS`, `LBN_SETFOCUS` and `LBN_SELCHANGE`. A double click on a directory sends `LBN_SELCHANGE` twice and then `LBN_DBLCLK`: COMMDLG.DLL is made for Windows 3.00. The dialog then goes into the directory. Both engines agree with all 17 records.
+- [[measured]] [[probe:filedlg]] presses `COMMDLG.DLL`'s Open dialog with `MOUSE_EVENT`. A click on the directories, the file name's edit having the focus, sends `EN_KILLFOCUS`, `LBN_SETFOCUS` and `LBN_SELCHANGE`. A double click on a directory sends `LBN_SELCHANGE` twice and then `LBN_DBLCLK`: COMMDLG.DLL is made for Windows 3.00. The dialog then goes into the directory. WinBox agrees with all 17 records.
 
 ## Owner-drawn
 
@@ -82,6 +82,6 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 ## In winbox.js
 
-- `src/win16/user/listbox.ts` handles the messages.
-- `control-classes.ts` gives it the desktop and its owner.
+- `crates/winbox-win16/src/listbox.rs` handles the messages.
+- `crates/winbox-win16/src/control_host.rs` gives it the desktop and its owner.
 - `Desktop.listText`, `listFocus` and `listErase` draw it.

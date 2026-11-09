@@ -26,7 +26,7 @@ topics: [gdi-internals]
 
 ## Implementation
 
-**Implemented (a).** Both engines answer the requests as GDI does (`GDISeeGDIDo` in `src/win16/gdi/system-exports.ts`), the heap's requests on GDI's data segment as USER's [[fn:USER.UserSeeUserDo]] answers its own.
+**Implemented (a).** WinBox answers the requests as GDI does (`GDISeeGDIDo` in `crates/winbox-win16/src/gdi/system_exports.rs`), the heap's requests on GDI's data segment as USER's [[fn:USER.UserSeeUserDo]] answers its own.
 
 ## Not yet done
 

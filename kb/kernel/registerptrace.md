@@ -23,4 +23,4 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-Both engines answer the procedure's selector in AX and keep DX (`src/win16/kernel/internals.ts`, `crates/winbox-win16/src/kernel_calls/internals.rs`). No procedure is kept: WinBox tells no debugger of its events. The side effect a program could see in Windows is the procedure being called on KERNEL's events; that would come with [[fn:KERNEL.ToolHelpHook]]'s, which is not done. See [[topic:kernel-internals]].
+WinBox answers the procedure's selector in AX and keeps DX (`crates/winbox-win16/src/kernel_calls/internals.rs`). No procedure is kept: WinBox tells no debugger of its events. The side effect a program could see in Windows is the procedure being called on KERNEL's events; that would come with [[fn:KERNEL.ToolHelpHook]]'s, which is not done. See [[topic:kernel-internals]].

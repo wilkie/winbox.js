@@ -23,4 +23,4 @@ topics: [tool-helper]
 
 ## Implementation
 
-`src/win16/toolhelp/tasks.ts`, and the Rust engine's `crates/winbox-win16/src/toolhelp/tasks.rs`.
+`crates/winbox-win16/src/toolhelp/tasks.rs`.

@@ -22,4 +22,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`): the state put back as [[fn:GDI.RestoreDC]] puts one, the origin and the visible region left as they were; the clip region is kept in the context's own terms, so it needs no moving. WinBox's state holds no palette: a program's `SetDCState` leaves it as it was; USER's, as `ReleaseDC` gives a common context back, sets the stock one. [[probe:visfam]] agrees in both.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): the state put back as [[fn:GDI.RestoreDC]] puts one, the origin and the visible region left as they were; the clip region is kept in the context's own terms, so it needs no moving. WinBox's state holds no palette: a program's `SetDCState` leaves it as it was; USER's, as `ReleaseDC` gives a common context back, sets the stock one. [[probe:visfam]] agrees in both.

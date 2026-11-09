@@ -24,4 +24,4 @@ topics: [dynamic-link-libraries]
 
 ## Implementation
 
-Both engines give it [[fn:KERNEL.FreeLibrary]]'s code. Like `FreeLibrary`, it answers nothing. A module deleted gives its selectors back as KERNEL does (`freeModuleSegments`, `free_module_segments`), and is found by its name or its file no more.
+WinBox gives it [[fn:KERNEL.FreeLibrary]]'s code. Like `FreeLibrary`, it answers nothing. A module deleted gives its selectors back as KERNEL does (`freeModuleSegments`, `free_module_segments`), and is found by its name or its file no more.

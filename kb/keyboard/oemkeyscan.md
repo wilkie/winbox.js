@@ -14,7 +14,7 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Observed behaviour
 
-- [[measured]] [[probe:kbdrv]] asks for every character; both engines agree with all 256.
+- [[measured]] [[probe:kbdrv]] asks for every character; WinBox agrees with all 256.
 - A capital is its letter with Shift (2 in the high word), a small letter its capital's; 01h to 1Ah are Ctrl (4) and a letter; space, Enter, Tab and Backspace their keys; the rest as [[fn:KEYBOARD.VkKeyScan]] finds them, but not with Alt; a character from 80h up as the ANSI character it is, where that is 80h or more and comes back the same. -1 for the rest.
 
 ## Inside Windows
@@ -23,4 +23,4 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Implementation
 
-`src/win16/keyboard/driver.ts`; the Rust engine's `crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`keyboard/tables.ts`, `keyboard_tables.rs`).
+`crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`crates/winbox-win16/src/keyboard_tables.rs`).

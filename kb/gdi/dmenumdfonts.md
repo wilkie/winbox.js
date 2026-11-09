@@ -21,7 +21,7 @@ topics: [printer-drivers, gdi-internals]
 
 ## Implementation
 
-In both engines as read out. [[probe:gdicopy]] agrees in both.
+As read out. [[probe:gdicopy]] agrees in both.
 
 ## Not yet done
 

@@ -25,7 +25,7 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-`Brute`'s choice in both engines (`driver-helpers.ts`, `driver_helpers.rs`): the answer for a device that is not a bitmap as read out; for a memory bitmap nought, with nothing drawn, as WinBox's display driver's stubs answer -- WinBox draws with its own raster code and has not got the display driver's `StretchDIBits` for a bitmap in memory.
+`Brute`'s choice (`crates/winbox-win16/src/gdi/driver_helpers.rs`): the answer for a device that is not a bitmap as read out; for a memory bitmap nought, with nothing drawn, as WinBox's display driver's stubs answer -- WinBox draws with its own raster code and has not got the display driver's `StretchDIBits` for a bitmap in memory.
 
 **Recommendation:** not applicable on the VGA, the EGA and the Hercules, whose drivers have no `StretchDIBits` (ordinal 28); as Windows does on the 256-colour driver (M).
 

@@ -25,8 +25,8 @@ topics: [line-drawing, display-drivers]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context a line goes as a polyline of two points (`GDI.EXE` seg21 `0726`). A line along an axis across the region's edge is cut to it first. [[measured]] [[probe:prdraw]]: a dashed line, and a line across a clip, through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context a line goes as a polyline of two points (`GDI.EXE` seg21 `0726`). A line along an axis across the region's edge is cut to it first. [[measured]] [[probe:prdraw]]: a dashed line, and a line across a clip, through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 
-`LineTo` draws through `Surface.drawLine`. When winbox.js owns the pixels, as on a memory bitmap, that call walks the line as recorded (`BitmapContext.stroke`). It uses the tie rule and `CLIPCAPS` of the display mode, and leaves out the last pixel. All 9,912 records of [[probe:lines]] are replayed through [[fn:GDI.MoveTo]] and this export, and all of them agree. On a browser canvas the line is the canvas's own stroke instead. That stroke is only an approximation, and nothing has recorded it against Windows. To record the lines yourself, see [[guide:reproducing]].
+`LineTo` draws the line. When winbox.js owns the pixels, as on a memory bitmap, that call walks the line as recorded (`BitmapContext.stroke`). It uses the tie rule and `CLIPCAPS` of the display mode, and leaves out the last pixel. All 9,912 records of [[probe:lines]] are replayed through [[fn:GDI.MoveTo]] and this export, and all of them agree. On a browser canvas the line is the canvas's own stroke instead. That stroke is only an approximation, and nothing has recorded it against Windows. To record the lines yourself, see [[guide:reproducing]].

@@ -27,4 +27,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/resource-handlers.ts`, and the Rust engine's `crates/winbox-win16/src/resources.rs`.
+`crates/winbox-win16/src/resources.rs`.

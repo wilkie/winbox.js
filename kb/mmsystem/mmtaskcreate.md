@@ -20,8 +20,8 @@ topics: [multimedia-services]
 
 ## Nuances
 
-- Where the drive has no `MMTASK.TSK`, WinBox starts its own `MMTASK`, made in memory: its start-up calls `InitTask` and then a procedure of WinBox's that does what `MMTASK.TSK` does. [[measured]] `mmtask_test.ts` and `tests/mmtask.rs` run [[probe:mmtaskc]] with the file taken off: every record is Windows'.
+- Where the drive has no `MMTASK.TSK`, WinBox starts its own `MMTASK`, made in memory: its start-up calls `InitTask` and then a procedure of WinBox's that does what `MMTASK.TSK` does. [[measured]] `crates/winbox-win16/tests/mmtask.rs` runs [[probe:mmtaskc]] with the file taken off: every record is Windows'.
 
 ## Implementation
 
-`src/win16/mmsystem/mmtask.ts` (the image, `mmTaskCreate` and `MMTASK`'s procedure, kept at MMSYSTEM's ordinal 1204, where it exports nothing), and the Rust engine's `crates/winbox-win16/src/mmsystem/mmtask.rs`. Both start it through `startNamed` / `start_named`, `LoadModule`'s own work.
+`crates/winbox-win16/src/mmsystem/mmtask.rs` (the image and `MMTASK`'s procedure, kept at MMSYSTEM's ordinal 1204, where it exports nothing). Both start it through `startNamed` / `start_named`, `LoadModule`'s own work.

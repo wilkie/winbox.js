@@ -24,4 +24,4 @@ topics: [dynamic-data-exchange, atoms]
 
 ## Implementation
 
-WinBox's own: `keepStringHandle` in `src/win16/ddeml/instance.ts` and `keep_string_handle` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The count is added by `GlobalAddAtom` of the atom's name, as `2e18` adds it. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `keep_string_handle` in `crates/winbox-win16/src/ddeml/instance.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The count is added by `GlobalAddAtom` of the atom's name, as `2e18` adds it. WinBox agrees with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

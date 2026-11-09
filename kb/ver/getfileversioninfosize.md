@@ -32,4 +32,4 @@ topics: [version-information]
 
 ## Implementation
 
-`GetFileVersionInfoSize` in `src/win16/ver/ver.ts` and `get_file_version_info_size` in `crates/winbox-win16/src/ver/mod.rs`. Both engines agree with [[probe:verinfo]], with `VER.DLL` on the drive and without it.
+`get_file_version_info_size` in `crates/winbox-win16/src/ver/mod.rs`. WinBox agrees with [[probe:verinfo]], with `VER.DLL` on the drive and without it.

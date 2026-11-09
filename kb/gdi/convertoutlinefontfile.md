@@ -22,4 +22,4 @@ topics: [font-resources]
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`: the selector WinBox keeps for GDI's data segment, the one GDI's callbacks find in DS.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`: the selector WinBox keeps for GDI's data segment, the one GDI's callbacks find in DS.

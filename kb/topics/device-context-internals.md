@@ -5,7 +5,7 @@ summary: The calls GDI exports for USER and the drivers to manage a device conte
 probes: [dcinner, dchook]
 ---
 
-GDI exports calls that USER and the display and printer drivers use to manage a device context, and which no program is meant to need. Programs call them all the same. [[measured]] [[probe:dcinner]] calls each on a memory context and a window's, on the VGA and on the 256-colour display, and both engines agree with all 51 records on each. [[probe:dchook]] is the same with the hook's calls recorded.
+GDI exports calls that USER and the display and printer drivers use to manage a device context, and which no program is meant to need. Programs call them all the same. [[measured]] [[probe:dcinner]] calls each on a memory context and a window's, on the VGA and on the 256-colour display, and WinBox agrees with all 51 records on each. [[probe:dchook]] is the same with the hook's calls recorded.
 
 ## What a device context keeps
 
@@ -28,7 +28,7 @@ GDI exports calls that USER and the display and printer drivers use to manage a 
 - [[measured]] With a hook of its own and the flag set, a program's procedure is called once from each of `GetClipBox`, `GetTextColor` and `Rectangle`, with the context, `DCHC_INVALIDVISRGN` (1), the data and nought ([[probe:dchook]]). The flag stays set until cleared.
 - [[measured]] A window's context, as `GetDC` lends it, has USER's `DCHOOK` and data of USER's, and its flag clear.
 
-GDI calls the hook so in both engines: a program's through the processor, USER's own `DCHOOK` run by WinBox itself, which works a lent context's visible region out again ([[fn:USER.DCHook]]). Which calls call it, and the visible region USER keeps through GDI, are in [[topic:visible-regions]].
+GDI calls the hook so: a program's through the processor, USER's own `DCHOOK` run by WinBox itself, which works a lent context's visible region out again ([[fn:USER.DCHook]]). Which calls call it, and the visible region USER keeps through GDI, are in [[topic:visible-regions]].
 
 ## Not yet done
 
@@ -38,4 +38,4 @@ GDI calls the hook so in both engines: a program's through the processor, USER's
 
 ## In winbox.js
 
-`src/win16/gdi/dc-internals.ts` and `crates/winbox-win16/src/gdi/dc_internals.rs`; the palette calls are `palettes.ts` and `palettes.rs` ([[topic:palettes]]).
+`crates/winbox-win16/src/gdi/dc_internals.rs`; the palette calls are `crates/winbox-win16/src/gdi/palettes.rs` ([[topic:palettes]]).
