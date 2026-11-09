@@ -34,7 +34,7 @@ While a journal playback hook plays, the mouse's own moves are lost and the curs
 
 ## The mouse put in by a program
 
-[[fn:USER.Mouse_Event]] is how the mouse driver tells USER what the mouse did, and a program can call it too. [[measured]] [[probe:iconclk]] does, and Windows' own loops take what it puts in as they take the mouse. Presses queued before the move loop starts are still the loop's: USER keeps the mouse in one queue for the system and hit-tests each event when it is taken. Both engines keep it so too ([[topic:system-queue]]); what follows a press on a caption, until the button is let go, wakes that caption's program, whose move loop takes it.
+[[fn:USER.Mouse_Event]] is how the mouse driver tells USER what the mouse did, and a program can call it too. [[measured]] [[probe:iconclk]] does, and Windows' own loops take what it puts in as they take the mouse. Presses queued before the move loop starts are still the loop's: USER keeps the mouse in one queue for the system and hit-tests each event when it is taken. WinBox keeps it so too ([[topic:system-queue]]); what follows a press on a caption, until the button is let go, wakes that caption's program, whose move loop takes it.
 
 ## Why it matters
 

@@ -114,7 +114,7 @@ Everything read out here is `PROGMAN.EXE`; its group code is segment 4.
 
 ## In WinBox
 
-Program Manager is Microsoft's, run from the installation, and both engines run its files as above byte for byte ([[probe:pmbare]] on the VGA and the EGA, [[probe:pmfiles]]).
+Program Manager is Microsoft's, run from the installation, and WinBox runs its files as above byte for byte ([[probe:pmbare]] on the VGA and the EGA, [[probe:pmfiles]]).
 
 WinBox's own reader and writer is pure code, `src/layers/groups.ts` and `crates/winbox-win16/src/groups.rs`, for the stand-in and for the list of a kept program's groups on the page and in the native build's `--list` ([[topic:program-manager-dde]], [[format:layer]]):
 

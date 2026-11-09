@@ -23,4 +23,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`crates/winbox-win16/src/gdi/visible_region.rs`): the copy's handle becomes the one [[fn:GDI.InquireVisRgn]] answers, and the old one is let go. [[probe:visfam]]'s `save` agrees in both.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): the copy's handle becomes the one [[fn:GDI.InquireVisRgn]] answers, and the old one is let go. [[probe:visfam]]'s `save` agrees in both.

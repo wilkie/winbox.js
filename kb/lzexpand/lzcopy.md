@@ -26,7 +26,7 @@ topics: [compressed-files]
 
 - [[read out]] The arguments: the source's handle, the output's; it pops 4 bytes and answers a `LONG`.
 - [[read out]] The output is a DOS handle: it is sought to its start and written from there.
-- [[read out]] The copy's time is set to the source's (DOS 5700h, then 5701h); DOSBox does not set it, so neither engine does.
+- [[read out]] The copy's time is set to the source's (DOS 5700h, then 5701h); DOSBox does not set it, so WinBox does not.
 - [[read out]] A handle past 40Fh is not checked: it reads past the table of slots into LZEXPAND's other data (seg4 `0185`). Not followed.
 
 ## Inside Windows

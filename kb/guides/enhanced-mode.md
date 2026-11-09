@@ -1,12 +1,12 @@
 ---
 kind: guide
 name: 386 enhanced mode
-summary: A design for a second, separately measured mode of WinBox — Windows 3.1's 386 enhanced mode beside the standard mode the oracle and both engines run today — what a program can see of the difference, how the oracle records it, what WinBox has to build in phases, and the decisions still open.
+summary: A design for a second, separately measured mode of WinBox — Windows 3.1's 386 enhanced mode beside the standard mode the oracle and WinBox runs today — what a program can see of the difference, how the oracle records it, what WinBox has to build in phases, and the decisions still open.
 ---
 
 This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode and both front ends, the first of phase 2's answers and phase 3, the DPMI host's functions, are built (2026-11-07), and phase 4's Win386 programs and libraries (2026-11-08); the rest is not. It follows the model of [[guide:launcher]].
 
-The oracle's Windows and both engines run in standard mode (`win /s`): DOSX.EXE is the DPMI host and KRNL386.EXE the kernel. Some programs refuse to run there. Lode Runner: The Legend Returns' setup loads Sierra's `SMACKE16.DLL`, a WATCOM Win386 library. The Win386 supervisor asks DPMI's version (INT 31h function 0400h) and, unless BX's bit 0 says a 32-bit host, shows "Not running on a 386 DPMI implementation" and loads nothing. Real Windows 3.1 in standard mode refuses it the same way, on the owner's disc. Widget Workshop's `WIDGET.EXE` is a Win32 program and needs Win32s, which needs enhanced mode ([[topic:win32s]], [[topic:cd-rom]]). On 2026-11-07 the owner decided to plan 386 enhanced mode as a second mode, measured on its own, with this page first.
+The oracle's Windows and WinBox runs in standard mode (`win /s`): DOSX.EXE is the DPMI host and KRNL386.EXE the kernel. Some programs refuse to run there. Lode Runner: The Legend Returns' setup loads Sierra's `SMACKE16.DLL`, a WATCOM Win386 library. The Win386 supervisor asks DPMI's version (INT 31h function 0400h) and, unless BX's bit 0 says a 32-bit host, shows "Not running on a 386 DPMI implementation" and loads nothing. Real Windows 3.1 in standard mode refuses it the same way, on the owner's disc. Widget Workshop's `WIDGET.EXE` is a Win32 program and needs Win32s, which needs enhanced mode ([[topic:win32s]], [[topic:cd-rom]]). On 2026-11-07 the owner decided to plan 386 enhanced mode as a second mode, measured on its own, with this page first.
 
 ## The oracle in enhanced mode
 

@@ -8,7 +8,7 @@ A layer is not a format of Windows'. It is WinBox's way of keeping what a progra
 
 Whatever the stack, C: must look as one folder of what the stack holds does. The oracle's C: is one DOSBox `localDrive` over one folder of the host's, and what a program sees of a folder is that drive's ([[topic:drives-and-disks]]). Layering must never show.
 
-Both engines read and write the format: `src/layers/layer.ts` and `crates/winbox-win16/src/layers.rs`. They give the same ids, the same flattened drive and the same zip bytes (`test/layers/stack.json`, held by `test/layers/layer_test.ts` and `crates/winbox-win16/tests/layers.rs`).
+WinBox reads and write the format: `src/layers/layer.ts` and `crates/winbox-win16/src/layers.rs`. They give the same ids, the same flattened drive and the same zip bytes (`test/layers/stack.json`, held by `test/layers/layer_test.ts` and `crates/winbox-win16/tests/layers.rs`).
 
 ## The manifest
 
@@ -140,7 +140,7 @@ On every run, without the switch, `crates/winbox-win16/tests/layers_sweep.rs` ch
 
 ## On the page
 
-The page (`run.html`, either engine) keeps programs as layers ([[topic:asset-bundle]] has the rest of the page).
+The page (`run.html`) keeps programs as layers ([[topic:asset-bundle]] has the rest of the page).
 
 **Storage.** IndexedDB `winbox-run`, version 4 (`src/run/store.ts`). Version 3's stores, `archives`, `assets` and `changes`, are kept as they are, and three are added:
 

@@ -5,7 +5,7 @@ summary: What Win32s 1.25 is made of and what Widget Workshop's 32-bit files nee
 probes: []
 ---
 
-**Status: deferred by the owner, 2026-10-25.** Neither engine runs a Win32s program. This page is the inventory of what that would take, read out of the files on Widget Workshop's disc ([[topic:cd-rom]], "Installing from a disc"): `WIDGET.EXE` and its libraries are Win32 programs (PE) that need Microsoft's Win32s 1.25, which the disc carries as `WIN31\WIN32S\DISK1` and `DISK2`. Nothing here is behaviour: it is names, ordinals, counts and formats. What a function does inside Win32s was not read out.
+**Status: deferred by the owner, 2026-10-25.** WinBox does not run a Win32s program. This page is the inventory of what that would take, read out of the files on Widget Workshop's disc ([[topic:cd-rom]], "Installing from a disc"): `WIDGET.EXE` and its libraries are Win32 programs (PE) that need Microsoft's Win32s 1.25, which the disc carries as `WIN31\WIN32S\DISK1` and `DISK2`. Nothing here is behaviour: it is names, ordinals, counts and formats. What a function does inside Win32s was not read out.
 
 The full lists are `kb/data/win32s-imports.json`; `scripts/kb/win32s-expand.py`, `scripts/kb/win32s-inventory.py` and `scripts/kb/win32s-coverage.ts` make it from the disc's folder (see "Making the lists" below). None of Microsoft's files is in the repository.
 

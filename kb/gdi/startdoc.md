@@ -15,7 +15,7 @@ topics: [printing, printer-drivers]
 
 [[measured]] [[probe:printing]] prints two documents of two pages each, one by the calls and one by the escapes, and abandons a third. With Windows' PostScript driver, every call of a document succeeds, and each document is written. Before `StartDoc`, [[fn:GDI.StartPage]] answers 1, [[fn:GDI.EndPage]] -1 and [[fn:GDI.EndDoc]] 1. See [[topic:printing]].
 
-[[measured]] [[probe:prdoc]] prints a page through the PostScript driver to a file, and records each line of PostScript the driver wrote. Both engines run the driver and agree with all 223 records.
+[[measured]] [[probe:prdoc]] prints a page through the PostScript driver to a file, and records each line of PostScript the driver wrote. WinBox runs the driver and agree with all 223 records.
 
 [[measured]] [[probe:prabort]]:
 

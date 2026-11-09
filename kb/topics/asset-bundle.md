@@ -70,7 +70,7 @@ The maker (`src/assets/make.ts`) takes floppy images, zips of them, the disks' f
 
 WinBox reads only their resources: the display driver's bitmaps, icons, cursors and `OEMBIN` ([[topic:display-driver-resources]]), USER's flag icon and cursors, and SHELL's logo; and `PROGMAN.EXE`'s icons, which WinBox's own Program Manager gives the items of DOS programs and of programs not found, by the owner's decision of 2026-10-22 ([[topic:program-manager-dde]]). Their exports are WinBox's own table, not the file's ([[topic:dynamic-link-libraries]]). [[measured]] Each module read from the bundle gives the same resource table as the whole file, entry for entry and offset for offset, so the same resource handles; the same bytes for every resource; the same `DriverResources::read` and `read_oem`; and the same `OEMBIN` values (`crates/winbox-win16/tests/asset_modules.rs`).
 
-[[measured]] Setup writes the user's name and company into `USER.EXE`: into one of its string tables, a resource, not a segment. The bundle's is the disk's, which says "Unknown User" and "Unknown Organization". Both engines take those strings from their own table, so nothing drawn changes.
+[[measured]] Setup writes the user's name and company into `USER.EXE`: into one of its string tables, a resource, not a segment. The bundle's is the disk's, which says "Unknown User" and "Unknown Organization". WinBox takes those strings from their own table, so nothing drawn changes.
 
 The modules are not files on C:. A program that looks for `USER.EXE` or `VGA.DRV` in the system directory does not find them, as with WinBox's own COMMDLG.
 
@@ -104,7 +104,7 @@ An engine started from the bundle has two things where it would have an installa
 **How each is run from it:**
 
 - **Native**: `winbox-native PROGRAM.EXE --assets winbox-assets.zip` (or the unpacked folder) `--display <mode>`. It is refused with `--windows`, and for a display the bundle does not serve. The base for the display is written once into the host's cache folder, `winbox/base-<id>-<display>` (`%LOCALAPPDATA%` on Windows, `$XDG_CACHE_HOME` or `~/.cache` elsewhere), each file last written when the base says and each folder at the page's stamp, and is then what the `--windows` folder would be: the drive above it is `HostDrive::over` it, and `--sound` installs the sound driver into the drive's `SYSTEM.INI` from the base's, as from an installation's. Programs kept as layers over that base, with `--install`, `--layer-from` and `--program`, are kept in the same cache folder ([[format:layer]], The native build's programs).
-- **The page** (`run.html`, either engine): the user drops the disks' images, and the bundle is made there (On the page, below).
+- **The page** (`run.html`): the user drops the disks' images, and the bundle is made there (On the page, below).
 - **The probe harnesses**: `WINBOX_BASE=assets`. The Rust harness (`tests/support`, `Setup::of`) writes the base into the host's temporary folder, `winbox-bases/base-<id>-<display>`, and mounts it as it mounts an installation. It refuses to run when `oracle/build/assets` is not made. Without the switch nothing changes. `WINBOX_BASE=layers` runs on the same base split into a stack of layers, with a decoy and its whiteout and files shadowed by the same bytes: the Rust harness materialises the layers and mounts them with `HostDrive::layered`. Every probe writes on it what it writes on `WINBOX_BASE=assets` ([[format:layer]]).
 
   `WINBOX_BASE=assets cargo test --release -p winbox-win16 --test probes -- --ignored --nocapture survey`

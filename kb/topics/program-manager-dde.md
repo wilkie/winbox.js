@@ -265,7 +265,7 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 
 ## In winbox.js
 
-Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole, its `SYSTEM.INI` naming the probe as the shell, as the recorder has it. What Program Manager asks of the engines underneath, and what had to be followed for it:
+Program Manager is Microsoft's program, run from the installation, and WinBox runs [[probe:progdde]] whole, its `SYSTEM.INI` naming the probe as the shell, as the recorder has it. What Program Manager asks of the engines underneath, and what had to be followed for it:
 
 - `SHELL`'s `ExtractAssociatedIcon` and `USER`'s `DumpIcon`, for each item's icon ([[fn:SHELL.ExtractAssociatedIcon]], [[fn:USER.DumpIcon]]).
 - `DispatchMessage` refusing a DDE message whose sender's window is gone ([[fn:USER.DispatchMessage]]), for `[ExitProgman]`.

@@ -29,6 +29,6 @@ The engine's part is `crates/winbox-raster/src/truetype_queries.rs`, reading the
 
 ## Not yet done
 
-- **Fonts under a mapping mode.** Windows realises a font's height in the device context's units; both engines take it as pixels ([[topic:mapping-modes]]). [[probe:ttqmap]]'s `GetFontData` agrees; its widths, kerning amounts and outline metrics are those of a font three times the size, and are listed among the known gaps.
+- **Fonts under a mapping mode.** Windows realises a font's height in the device context's units; WinBox takes it as pixels ([[topic:mapping-modes]]). [[probe:ttqmap]]'s `GetFontData` agrees; its widths, kerning amounts and outline metrics are those of a font three times the size, and are listed among the known gaps.
 - The engine's own failure for a character, which GDI answers with the default character's widths, has not been seen: every character of the installed faces has a glyph, the missing glyph standing for those without.
 - A Macintosh-only `cmap` or name table, which the engine turns into codes through its table of the Macintosh character set (seg39 `0000`); no installed face has one.

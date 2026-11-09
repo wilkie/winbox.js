@@ -5,7 +5,7 @@ summary: How Windows 3.1's DDEML carries a transaction — what DdeClientTransac
 probes: [ddexact, ddefail, ddenest, ddeheap, ddemon]
 ---
 
-`DDEML.DLL` is Microsoft's library; WinBox's own DDEML follows this page, with or without the file on the drive. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. Both engines run it whole, and all 92 of its records agree with Windows on each. [[probe:ddefail]] holds a server's `CBF_FAIL_` and `CBF_SKIP_` flags and `EC_ENABLEONE`, [[probe:ddenest]] transactions nested and a time-out past FFFFh milliseconds, [[probe:ddeheap]] an instance's heap filled, and [[probe:ddemon]] what monitors are told.
+`DDEML.DLL` is Microsoft's library; WinBox's own DDEML follows this page, with or without the file on the drive. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. WinBox runs it whole, and all 92 of its records agree with Windows on each. [[probe:ddefail]] holds a server's `CBF_FAIL_` and `CBF_SKIP_` flags and `EC_ENABLEONE`, [[probe:ddenest]] transactions nested and a time-out past FFFFh milliseconds, [[probe:ddeheap]] an instance's heap filled, and [[probe:ddemon]] what monitors are told.
 
 Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML (`DdeInitialize`, string handles, `DdeConnect` and the rest, its windows and hooks) is on [[topic:dynamic-data-exchange]].
 

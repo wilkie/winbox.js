@@ -23,4 +23,4 @@ Not recorded: under the recorder it would follow [[fn:GDI.Death]], which turns t
 
 ## Implementation
 
-In both engines (`enableAnswer`, `Display::enable_answer`): 1, WinBox's display never having been turned off, its palette still set. Nought for no context and for a printer's.
+In WinBox, (`enableAnswer`, `Display::enable_answer`): 1, WinBox's display never having been turned off, its palette still set. Nought for no context and for a printer's.

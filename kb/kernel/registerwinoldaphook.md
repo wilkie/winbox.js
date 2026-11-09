@@ -22,4 +22,4 @@ topics: [kernel-internals, task-list]
 
 ## Implementation
 
-Both engines keep the chain as Windows does, in the caller's own records, linked through their first four bytes: `crates/winbox-win16/src/kernel_calls/internals.rs`. WinBox reports standard mode, so the record is always taken. No procedure in the chain is ever called, since WinBox runs no DOS session. See [[topic:kernel-internals]].
+WinBox keeps the chain as Windows does, in the caller's own records, linked through their first four bytes: `crates/winbox-win16/src/kernel_calls/internals.rs`. WinBox reports standard mode, so the record is always taken. No procedure in the chain is ever called, since WinBox runs no DOS session. See [[topic:kernel-internals]].

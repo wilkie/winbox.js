@@ -166,7 +166,7 @@ Read out of `MAIN.CPL`, segment 9.
 
 ## In winbox.js
 
-- Both engines keep GDI's font table: `FontManager.addResource` and `removeResource` in `crates/winbox-win16/src/fonts/added.rs`.
+- WinBox keeps GDI's font table: `FontManager.addResource` and `removeResource` in `crates/winbox-win16/src/fonts/added.rs`.
   - A raster file is known by its module and a stub by its full name.
   - Strikes added are appended in the table's order.
   - A stub takes the first empty slot.

@@ -77,7 +77,7 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 - [[measured]] A drive that is not there answers FFFFh in AX and leaves BX, CX and DX as they were. Under DOSBox, A: is not mounted, so it is not there, though [[fn:KERNEL.GetDriveType]] calls it removable.
 - [[measured]] Function 1Ch answers the same geometry without the free clusters: AL 7Fh, CX 0200h, DX 3FFFh for C:, and AL FFh for a drive that is not there. DS:BX comes back as a selector other than the program's own (DOSX's, in standard mode), over the media byte: F8h for C:, 00h for Z:.
 - [[read out]] File Manager multiplies the three numbers out before it copies (`WINFILE.EXE` `3b62`). With FFFFh it says "Not enough disk space". It makes the copy with function 6C00h, extended open, BX 2012h and DX 12h, which replaces a file that is there and makes one that is not (`1f785`). It then asks 4401h to set the new handle's device information (DX 20h), and goes on whatever is answered. It reads the source's stamp with 5700h and sets the copy's with 5701h (`1f879`). DOSBox's 5701h does nothing: "DOS:57:Set File Date Time Faked" (`dos.cpp`).
-- [[read out]] File Manager also asks function 32h for a drive parameter block, and copies 21h bytes from DS:BX (`WINFILE.EXE` `e43a`). Neither engine answers 32h or 1Ch.
+- [[read out]] File Manager also asks function 32h for a drive parameter block, and copies 21h bytes from DS:BX (`WINFILE.EXE` `e43a`). WinBox does not answer 32h or 1Ch.
 
 ### In each engine
 
@@ -209,7 +209,7 @@ DOSBox mounts disk and disc images as drives with `IMGMOUNT`: a floppy's or hard
 
 ### The page's drives
 
-The page (`run.html`, either engine) mounts images beside C: from its **Drives** strip (`src/run/drives.ts`).
+The page (`run.html`) mounts images beside C: from its **Drives** strip (`src/run/drives.ts`).
 
 - **What an image is.** A file dropped or chosen that is not a zip is read as DOSBox's `imgmount` would mount it (`imageKind`): an `.iso` or `.bin` a disc (`ISO9660`); anything else a FAT volume (`FATImage`) -- a floppy where it is 2,880 KB or less, as `is_floppy` has it, a hard disk else -- and a disc where it holds no FAT, whatever it is named. Anything neither reader takes is read as before ([[topic:asset-bundle]]).
 - **Cue sheets.** A `.cue` dropped or chosen is paired with the files it names among those dropped or chosen with it (`pairCues`, `cueFile`): by name without regard to case, else by the name's last part. With them all it is one disc, its files its tracks (`Disk.tracks`), read through them by both engines (`findIn`; the Rust engine's `ImageBytes.file`). Without them it asks for each by name -- `GAME.CUE wants GAME.BIN: drop or choose it too.`, and a row each under the drives -- and takes them from the files dropped or chosen next. A kept program remembers a sheet's files with it (`Medium.tracks`), kept and asked for again as the sheet is. A `.bin` alone is a raw disc.
@@ -261,7 +261,7 @@ The owner's decisions (2026-10-22):
 - What Windows' own programs make of a disk swapped under them -- File Manager's window of the drive, an installer's prompt for its next disk -- with no probe of their own; and MSCDEX's media-changed answer, a buffer call ([[topic:cd-rom]]).
 - IOCTL 4404h, 4405h and 4411h, and 440Dh's minor codes other than 46h, 60h and 66h, which DOSBox refuses with error 1.
 - MSCDEX's calls with a buffer, and 1100h's word on the caller's stack.
-- The BIOS's equipment word itself, `INT 11h`: neither engine answers it. `GetDriveType` counts each removable drive with a disk in it as DOSBox's BIOS counts a floppy image mounted.
+- The BIOS's equipment word itself, `INT 11h`: WinBox does not answer it. `GetDriveType` counts each removable drive with a disk in it as DOSBox's BIOS counts a floppy image mounted.
 - B: under DOSBox is selectable with nothing mounted; a session here without B: has none, and answers 0 for it as DOSBox does -- but with two floppy images DOSBox's B: would answer 2. Unrecorded.
 - The stamps of the root's `.` and `..`, which are the host folder's and its parent's under DOSBox, and unmeasured. The Rust engine gives the root's own stamp to both. The root's stamp for a drive held in memory is not among its changes, so it is not kept from one visit to the next.
 - A search's attributes as DOSBox gives them: only a folder's bit or the archive bit, from the host (`drive_local.cpp` 255-266). The engines give each file's own.

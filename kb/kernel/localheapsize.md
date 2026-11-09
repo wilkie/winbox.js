@@ -22,4 +22,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-Both engines read the same two words.
+WinBox reads the same two words.

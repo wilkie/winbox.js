@@ -92,5 +92,5 @@ probes: [lzfiles]
 - [[fn:LZEXPAND.LZCopy]] of an LZ handle past 40Fh reads past LZEXPAND's table into its other data (seg4 `0185`); WinBox answers it as an empty slot, -1.
 - The copying buffers' smaller sizes, where 8000h bytes cannot be allocated: WinBox's global heap always has them.
 - `LZERROR_WRITE`, a disk that takes fewer bytes than given: no probe fills a disk.
-- A file opened only for reading given to [[fn:LZEXPAND.LZCopy]] as its output: DOSBox refuses the write, and neither engine's DOS knows a file's mode yet; the probe uses a handle that is none (-2) instead.
+- A file opened only for reading given to [[fn:LZEXPAND.LZCopy]] as its output: DOSBox refuses the write, and WinBox's DOS knows a file's mode yet; the probe uses a handle that is none (-2) instead.
 - The C library's start and end (seg11), and the entries reached only from them, which LZEXPAND's exports never call: opening a file by its name (entry 24) and seg7 `01e0`.

@@ -228,6 +228,6 @@ Not yet done:
 - Whether a dialog whose control cannot be made fails as a whole.
 - A probe cannot hear a beep. The beeps `IsDialogMessage`, `DefWindowProc` and the menu loop give are read out, not measured.
 - `SetSysModalWindow` and `ActivateWindow` refused for another task's system-modal window are read out; [[probe:sysdlg]]'s system-modal dialog is the program's own, and a send to the other program while its task is locked would wait for ever.
-- The word at `0DCh` of USER's data, which keeps a system-modal window from refusing another and from locking its task (seg1 `19e8`, seg24 `096d`), set and put back at seg5 `0319`-`0334`, is not followed; neither engine keeps it.
+- The word at `0DCh` of USER's data, which keeps a system-modal window from refusing another and from locking its task (seg1 `19e8`, seg24 `096d`), set and put back at seg5 `0319`-`0334`, is not followed; WinBox does not keep it.
 - The dialog manager reads a control's text for its mnemonic with `WM_GETTEXT` (seg19 `010b`); both engines read the text the control keeps, which a control of a program's own class answering `WM_GETTEXT` itself would tell apart.
 - [[probe:sysdlg]] passes its procedures through `MakeProcInstance`.

@@ -23,4 +23,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`crates/winbox-win16/src/gdi/visible_region.rs`): on a display's context whose clip region within the visible region is one rectangle, four `PatBlt`s in the device's terms -- top and bottom the whole width, the sides between -- and −1; nought otherwise. [[probe:visfam]]'s `frame` agrees in both.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): on a display's context whose clip region within the visible region is one rectangle, four `PatBlt`s in the device's terms -- top and bottom the whole width, the sides between -- and −1; nought otherwise. [[probe:visfam]]'s `frame` agrees in both.

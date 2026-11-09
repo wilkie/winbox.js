@@ -22,4 +22,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`crates/winbox-win16/src/gdi/visible_region.rs`): each copy a region object with a handle of GDI's, kept on the context's stack. [[probe:visfam]]'s `save` agrees in both.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): each copy a region object with a handle of GDI's, kept on the context's stack. [[probe:visfam]]'s `save` agrees in both.

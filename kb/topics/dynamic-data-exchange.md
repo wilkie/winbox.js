@@ -178,7 +178,7 @@ DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), ev
 
 - **A library's instance as its data segment's handle** ([[probe:ddewep]], 1 record): WinBox numbers a library's instance from a table of its own, so `WEP`'s answer, DDEML's data segment, is not one more than it.
 - **WinBox's own DDEML with no file, loaded and let go** ([[probe:ddewep]], 3 records with no `DDEML.DLL`): `GetModuleHandle` finds no `DDEML` while a program that imports it runs, and nothing undoes its data as that program ends. With the file, both are as in Windows.
-- **Freeing a task's memory as it ends**, and a module's `GMEM_DDESHARE` blocks as its last instance ends ([[probe:ddeleft]], 5 records): neither engine knows a block's owner.
+- **Freeing a task's memory as it ends**, and a module's `GMEM_DDESHARE` blocks as its last instance ends ([[probe:ddeleft]], 5 records): WinBox does not know a block's owner.
 - **An atom deleted once too often**: the answer depends on KERNEL's local heap in USER's data segment, which winbox.js does not keep ([[probe:ddeleft]], 1 record).
 - USER's checks of the other messages' parameters (seg1 `afc2`-`b388`, and `af84` for the controls'): only the DDE rows are followed.
 - Atom numbers where a deleted atom's place in USER's table is taken: winbox.js gives a deleted atom's number to the next string added ([[topic:atoms]]), Windows the place in its heap that fits. Whether DDEML's `Progman` test holds after the atom was gone can differ: a first draft of [[probe:pmatom]], whose first instance ended before the connections, saw the test fail under Windows, the number taken by another name, and hold in winbox.js. Not recorded in the probe as it stands.

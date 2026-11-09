@@ -102,7 +102,7 @@ What a window answers `WM_GETMINMAXINFO`, and what USER does with it, is in [[to
 
 ## Not yet done
 
-What [[probe:popmax]] recorded that neither engine follows yet:
+What [[probe:popmax]] recorded that WinBox does not follow yet:
 
 - A pop-up made with `WS_MINIMIZE` is minimized as it is made, as an overlapped one is (seg8 `0843`-`0850`): its first `WM_SIZE` is the whole window, 100 by 50, as an icon's client area is; it goes to the first place among the icons with `SWP_NOZORDER` among the flags, 134h. WinBox minimizes only an overlapped window as it is made, and a child neither; a child made with `WS_MAXIMIZE` or `WS_MINIMIZE` is not recorded.
 

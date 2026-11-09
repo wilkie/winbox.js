@@ -50,4 +50,4 @@ A multimedia driver runs at interrupt time and needs a stack it can trust. An MC
 
 ## In winbox.js
 
-The stacks are `crates/winbox-win16/src/mmsystem/stacks.rs`; the tasks `crates/winbox-win16/src/tasks.rs`; the joystick `crates/winbox-win16/src/mmsystem/joystick.rs`. The joystick capture's timer procedure has no export in Windows; both engines keep it at an ordinal where MMSYSTEM exports nothing (1203), as they keep MCI's break-key yield procedure (1202), `MMTASK`'s own (1204, `crates/winbox-win16/src/mmsystem/mmtask.rs`) and the I/O procedures of `mmio`.
+The stacks are `crates/winbox-win16/src/mmsystem/stacks.rs`; the tasks `crates/winbox-win16/src/tasks.rs`; the joystick `crates/winbox-win16/src/mmsystem/joystick.rs`. The joystick capture's timer procedure has no export in Windows; WinBox keeps it at an ordinal where MMSYSTEM exports nothing (1203), as they keep MCI's break-key yield procedure (1202), `MMTASK`'s own (1204, `crates/winbox-win16/src/mmsystem/mmtask.rs`) and the I/O procedures of `mmio`.

@@ -21,4 +21,4 @@ topics: [gdi-objects]
 
 ## Implementation
 
-In both engines: -1. WinBox's bitmaps keep their bits in no global block, so there is none to wire. [[probe:gdimisc]] agrees in both.
+In WinBox: -1. WinBox's bitmaps keep their bits in no global block, so there is none to wire. [[probe:gdimisc]] agrees in both.

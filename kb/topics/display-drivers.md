@@ -271,7 +271,7 @@ WinBox shows the statics this way: dark red as BF0000 until a realization change
 
 - [[read out]] **GDI passes the driver's answer back.** On a screen's context, `Escape` calls the driver's `Control` and answers what it answers (`GDI.EXE` seg7 `04f0`-`0526`). There are two exceptions. GDI answers escape 0Fh with nought itself (seg7 `008f`). Escapes 100h to BFFh are GDI's own: it answers 100h and 102h itself (seg7 `1c96`). For the rest it calls the driver only where a flag of the context's is set, bit 2 of its byte 0Bh, and otherwise answers nought (seg7 `044e`-`04c7`). WinBox answers nought to them, as before.
 - [[read out]] **`8514.DRV`'s `Control` answers an escape it has not got with the escape's own number** (seg1 `1b28`-`1b35`). So `MOUSETRAILS` answers 39. `XGA.DRV`'s answers nought (seg1 `132c`), as the recorded drivers' do.
-- [[read out]] `GETCOLORTABLE` on the 8514/a copies the static colour of that index from the driver's table of twenty and answers 1 (seg1 `1b5e`-`1b7d`). Index 20 answers nought. On the XGA it copies the system palette's entry (seg1 `1358`). Neither engine follows `GETCOLORTABLE`.
+- [[read out]] `GETCOLORTABLE` on the 8514/a copies the static colour of that index from the driver's table of twenty and answers 1 (seg1 `1b5e`-`1b7d`). Index 20 answers nought. On the XGA it copies the system palette's entry (seg1 `1358`). WinBox does not follow `GETCOLORTABLE`.
 
 ### GDI's `DEFAULT_PALETTE`
 
@@ -281,7 +281,7 @@ WinBox shows the statics this way: dark red as BF0000 until a realization change
 
 ### The drivers' export tables
 
-[[read out]] In both engines, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
+[[read out]] In WinBox, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
 
 - **`SVGA256.DRV`** has 1 to 28, with `StretchBlt` (27) and `StretchDIBits` (28). It also has 101 to 104, `GetDriverResourceID` (450), 500, `SetColorTranslate` (1000), and the cards' bank routines 2000 to 2023. It has none of 90 to 92 or 400 to 403.
 - **`8514.DRV`** has 1 to 28 (27 and 28 are spares), 92 and 101 to 104. Its routines for 8 and for 4 bits are 200 to 226, and its text is 240 and 241. It also has 450 and 500. Its 501 to 506 are places in its data segment and are left out.
