@@ -85,7 +85,7 @@ For each display, `crates/winbox-win16/data/setup.json` says what Setup put on C
 
 The pool's files keep the date and time of their files on the disk, as `LZCopy` gives an expanded file its compressed file's stamp. The profiles and `REG.DAT` are stamped as the page's drive stamps what it makes, 10:20:40 on 6 January 2020.
 
-[[measured]] For each of the ten displays -- `vga`, `svga`, `ega`, `hercules`, `vga256`, `8514`, `8514s`, `xga256`, `xga256s`, `xga640` -- every file the base places is the installation's file byte for byte: the fonts, `MIDIMAP.CFG`, `SETUP.REG`, both profiles and the 2,556 bytes of `REG.DAT`. No file of the installation's that is in the pool, nor a profile, nor `REG.DAT`, is left out. The two engines' bases are the same listing, path, size, CRC and stamp (`test/assets/composed.json`).
+[[measured]] For each of the ten displays -- `vga`, `svga`, `ega`, `hercules`, `vga256`, `8514`, `8514s`, `xga256`, `xga256s`, `xga640` -- every file the base places is the installation's file byte for byte: the fonts, `MIDIMAP.CFG`, `SETUP.REG`, both profiles and the 2,556 bytes of `REG.DAT`. No file of the installation's that is in the pool, nor a profile, nor `REG.DAT`, is left out. The bases are the same listing, path, size, CRC and stamp (`test/assets/composed.json`).
 
 What the base lacks of an installation is its code and what only code reads: `WIN.COM`, the accessories, `TASKMAN`, `WINHELP`, `CONTROL.EXE`, every `.DRV`, `.DLL`, `.386` and grabber, the help files, the groups, `PROGMAN.INI`, `CONTROL.INI` and the `.PIF` files. `PROGMAN.INI`, which only Program Manager reads, is written by an install run's Program Manager as it starts, so a program installed on the base keeps it in its layer ([[topic:program-manager-dde]]).
 
@@ -134,7 +134,7 @@ The media are made into a bundle by the maker `pnpm assets` runs (`makeAssets`),
 
 **Programs kept.** A zip of programs dropped on the bundle's base, or an installation, is kept as a layer of its own, bound to the display it was dropped on, and what it writes is kept with its stack apart from the rest ([[format:layer]], On the page). Forgetting the bundle forgets the programs kept on it.
 
-`e2e/run.spec.ts` drops the disks' images and the driver's files on each engine, checks the bundle's id and the displays offered, runs the `chrome` probe to its window on the screen, reloads to the bundle remembered and forgets it; drops a `winbox-assets.zip` made already and keeps what the `strings` probe writes apart for the VGA and the EGA; and keeps two programs dropped on it, reloads to them listed, opens one with what it wrote, and forgets each, its layer and blobs with it. All are skipped where the media, the bundle or the probes are not there.
+`e2e/run.spec.ts` drops the disks' images and the driver's files, checks the bundle's id and the displays offered, runs the `chrome` probe to its window on the screen, reloads to the bundle remembered and forgets it; drops a `winbox-assets.zip` made already and keeps what the `strings` probe writes apart for the VGA and the EGA; and keeps two programs dropped on it, reloads to them listed, opens one with what it wrote, and forgets each, its layer and blobs with it. All are skipped where the media, the bundle or the probes are not there.
 
 ## What a program sees differently
 

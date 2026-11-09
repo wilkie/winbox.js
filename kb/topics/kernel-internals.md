@@ -42,7 +42,7 @@ KERNEL exports 233 entries in Windows 3.1. The SDK's headers declare 130 of them
 
 ## The map
 
-Status is what WinBox does today: implemented, a retail no-op, its number for an exported constant, data at its address, or a stub that logs and pops the bytes the table declares. Of the last pass, (a) marks an export a program can observe, answered as Windows does; (b) one that is data; (c) one only Windows' own start-up, shutdown or code reaches, given the answer of a call. Recommendations are sized XS (one line in each engine), S (tens of lines), M (a structure or hook of WinBox's own to keep) and L. Callers name the importing files; corpus programs are counted. "(declared)" marks the two stubs that the SDK headers do declare.
+Status is what WinBox does today: implemented, a retail no-op, its number for an exported constant, data at its address, or a stub that logs and pops the bytes the table declares. Of the last pass, (a) marks an export a program can observe, answered as Windows does; (b) one that is data; (c) one only Windows' own start-up, shutdown or code reaches, given the answer of a call. Recommendations are sized XS (one line in the engine), S (tens of lines), M (a structure or hook of WinBox's own to keep) and L. Callers name the importing files; corpus programs are counted. "(declared)" marks the two stubs that the SDK headers do declare.
 
 ### Start-up and end
 

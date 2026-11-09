@@ -305,5 +305,5 @@ WinBox shows the statics this way: dark red as BF0000 until a realization change
 ### Not yet done
 
 - **`lineTie` and `boldOverhang`** on the 8514/a and the XGA are the colour drivers' recorded choices. That is read out only for the 8514/a's lines into memory. On its screen the tie is the coprocessor's, which the driver does not hold. The XGA's lines and both drivers' text have not been read (above).
-- **`GETCOLORTABLE`** is read out on both drivers but followed by neither engine.
+- **`GETCOLORTABLE`** is read out on both drivers but followed by WinBox.
 - **Icons and cursors asked of the display's instance.** USER passes their groups' numbers through `GetDriverResourceID` too. No driver's icon or cursor group is numbered 1, 3 or above 7F87h, so WinBox leaves those numbers alone.

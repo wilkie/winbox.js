@@ -176,4 +176,4 @@ DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), ev
 
 - The 4CCh queue's timing against other messages, beyond the orders recorded here.
 - Where the `DMLERR_NOTPROCESSED` of a transaction a local server's flags fail goes: to the instance an unset word of the stack names, which no probe has seen.
-- A time-out's length to the millisecond: [[probe:ddenest]] holds it to two of `GetTickCount`'s ticks, where both engines, held to the millisecond, came short of the 66,036 asked (66,021 in one run of the Rust engine's): a timer's period against `GetTickCount`, which Windows' recording, held to the same, did not come short of.
+- A time-out's length to the millisecond: [[probe:ddenest]] holds it to two of `GetTickCount`'s ticks, where WinBox, held to the millisecond, came short of the 66,036 asked (66,021 in one run of the Rust engine's): a timer's period against `GetTickCount`, which Windows' recording, held to the same, did not come short of.

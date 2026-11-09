@@ -16,7 +16,7 @@ topics: [profile-files]
 - [[measured]] All 13 of its records in [[probe:profile]] agree with Windows: 6 writes read back, 6 that record the caller's string, and the flush — and the eight snapshots of the file's bytes after its writes, byte for byte. Each write returned 1 and was read back through [[fn:KERNEL.GetPrivateProfileString]].
 - [[measured]] A new entry in an existing section (`added`), a replaced entry (`entry`) and an entry in a new section (`[Fresh] first`) each read back as written.
 - [[measured]] A NULL value removes the entry: reading `added` back afterwards gives the default.
-- [[measured]] [[probe:profnul]]'s 48 records agree with both engines. A NULL entry removes the section that is there, its entries, blank lines and heading, whatever the value; a section that is not there, with a NULL entry or a NULL value, is left alone, nothing written, and the answer is 1. So is an entry not there with a NULL value. Comments within a removed section stay. See [[topic:profile-files]] for where exactly, read out of `KRNL386.EXE` seg1 `6cec`-`7088`.
+- [[measured]] [[probe:profnul]]'s 48 records agree. A NULL entry removes the section that is there, its entries, blank lines and heading, whatever the value; a section that is not there, with a NULL entry or a NULL value, is left alone, nothing written, and the answer is 1. So is an entry not there with a NULL value. Comments within a removed section stay. See [[topic:profile-files]] for where exactly, read out of `KRNL386.EXE` seg1 `6cec`-`7088`.
 - [[measured]] After all five writes, `[Plain]` lists the same 13 names in the same order as before them, so the replaced `entry` and `spaced` stayed in place and the removed `added` left nothing behind.
 
 ## Nuances

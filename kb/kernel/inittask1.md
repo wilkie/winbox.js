@@ -21,4 +21,4 @@ topics: [kernel-internals, task-startup]
 
 ## Implementation
 
-WinBox answers the pointer's selector in AX and keep DX (`crates/winbox-win16/src/kernel_calls/internals.rs`). No pointer is kept. WinBox's `LoadModule` would call it only for a module of that flag, and none was found. See [[topic:kernel-internals]].
+WinBox answers the pointer's selector in AX and keeps DX (`crates/winbox-win16/src/kernel_calls/internals.rs`). No pointer is kept. WinBox's `LoadModule` would call it only for a module of that flag, and none was found. See [[topic:kernel-internals]].

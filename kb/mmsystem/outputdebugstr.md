@@ -22,4 +22,4 @@ topics: [multimedia-services]
 
 ## Implementation
 
-WinBox does nothing and leave AX.
+WinBox does nothing and leaves AX.

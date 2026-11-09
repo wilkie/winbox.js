@@ -85,7 +85,7 @@ WinBox ends the session where DOSX does: no task runs again (the Rust engine's r
 
 - Real-mode code of a program's: 0300h-0302h into anything but a callback or an interrupt WinBox answers. The processors run real mode, but WinBox keeps nothing of DOS's or the BIOS's real-mode code in the first megabyte for a program's to call.
 - WinBox's processor runs a task with its interrupt flag clear, where Windows runs it set: 0902h answers nought, and an exception handler's frame has the flag clear ([[probe:dpmimem]], [[probe:dpmiexc]]).
-- WinBox's DOS says it is version 6.00 (INT 21h 30h, both engines); DOSBox's, beneath Windows, is 5.00 through 0300h and through KERNEL alike ([[probe:dpmirm]], [[probe:dpmiexc]]).
+- WinBox's DOS says it is version 6.00 (INT 21h 30h); DOSBox's, beneath Windows, is 5.00 through 0300h and through KERNEL alike ([[probe:dpmirm]], [[probe:dpmiexc]]).
 - 000Dh's sixteen descriptors are not kept free: WinBox gives the table's first descriptors to blocks, and 000Dh of one in use is refused ([[probe:dpmildt]], [[probe:enhmode]]).
 - Where DOSX's arena and WIN386's put a block (0501h's base and handle), what WIN386's 0800h maps an address to, and the real-mode vectors' values, which are DOS's and the BIOS's.
 - WIN386's table growing as KERNEL asks for more, and its callbacks' limit.

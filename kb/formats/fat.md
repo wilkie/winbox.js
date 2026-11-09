@@ -1,7 +1,7 @@
 ---
 kind: format
 name: FAT disk images
-summary: A floppy's or hard disk's FAT12 or FAT16 volume in an image file, as DOSBox 0.74-3's IMGMOUNT reads and writes it — where the volume begins, FAT12 or FAT16 by its count of clusters, the boot sector's fields, the FAT's entries, a directory's slots and what a search makes of them, what a write makes of them — and how each engine mounts one as a drive, what is written kept apart from the image.
+summary: A floppy's or hard disk's FAT12 or FAT16 volume in an image file, as DOSBox 0.74-3's IMGMOUNT reads and writes it — where the volume begins, FAT12 or FAT16 by its count of clusters, the boot sector's fields, the FAT's entries, a directory's slots and what a search makes of them, what a write makes of them — and how WinBox mounts one as a drive, what is written kept apart from the image.
 probes: [imgflop, imghdd, imgwrite]
 ---
 
@@ -76,7 +76,7 @@ DOSBox writes to the image's file as a program writes to the drive (`fopen(..., 
 - [[read out]] Function 36h answers the volume's own figures: the sectors to a cluster, 512 bytes to a sector, its clusters, and those whose FAT entry is nought free, each count at most FFFFh (`AllocationInfo`, 730-751).
 - [[measured]] [[probe:imgflop]]'s floppy: 1 sector to a cluster, 2,832 of 2,847 free. [[probe:imghdd]]'s: 1, 5,917 of 5,921.
 
-## In each engine
+## In WinBox
 
 Both mount an image the same way, read and write it as DOSBox does, and agree with every record [[probe:imgflop]], [[probe:imghdd]] and [[probe:imgwrite]] make.
 

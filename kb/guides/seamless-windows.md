@@ -98,7 +98,7 @@ The front end uses winit 0.30 and softbuffer, one surface per host window.
 5. **The choice of mode** per program, so a program that needs the desktop opens in desktop mode.
 6. **macOS**, then **Wayland** under XWayland.
 
-None of this changes either engine. What seamless mode does differently is the host's drag, the switching keys and the icons. Each is named above and is in seamless mode alone, so the probes, the corpus and the sessions keep running in desktop mode as they do now.
+None of this changes the engine. What seamless mode does differently is the host's drag, the switching keys and the icons. Each is named above and is in seamless mode alone, so the probes, the corpus and the sessions keep running in desktop mode as they do now.
 
 ## What is built
 

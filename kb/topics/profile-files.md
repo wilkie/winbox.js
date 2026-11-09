@@ -42,7 +42,7 @@ The profile calls share one reading of the file. [[probe:profile]] writes its ow
 
 ## Removing an entry or a section
 
-Read out of `KRNL386.EXE` seg1 `6cec`-`7088`, and recorded by [[probe:profnul]], whose 48 records agree with both engines. Each of its cases lays down a file of its own through the file API, makes one call, and records the answer and the file after it.
+Read out of `KRNL386.EXE` seg1 `6cec`-`7088`, and recorded by [[probe:profnul]], whose 48 records agree. Each of its cases lays down a file of its own through the file API, makes one call, and records the answer and the file after it.
 
 - [[read out]] [[fn:KERNEL.WritePrivateProfileString]] looks for the section first (`66ac`). Where it is missing, a NULL entry or a NULL value leaves the buffer as it is and answers 1 (`6d6f`-`6d82`, `707c`): nothing is written. [[measured]] The file keeps the spacing it was laid down with, which a write would have compacted (`missing`, `missing section`, `empty section null`). A section that is there and a NULL entry removes the section, whatever the value (`6d97`; `value given`). An entry that is not there and a NULL value leaves the buffer (`6db6`; `missing entry`, `empty entry null`); one that is there loses its line (`6deb`, `704b`).
 - [[read out]] A section goes from the `[` of its heading -- the last on its line -- line by line, a line running to its line feed, up to a line that starts with `[` or the buffer's end (`71cb`-`7229`). A line that starts with `;` is kept and moved up to where the heading was; everything else goes, entries and blank lines alike. [[measured]] `[Gone]` with `x=1`, `; kept comment`, `y=two  ` and a blank line after it leaves `; kept comment` where `[Gone]` was. The blank line before the heading stays. The last section takes the file to its last byte, the first leaves the file starting at the second, and of two sections of the same name the first goes (`twice`: `D`'s `b` still reads `2` from the second).
@@ -76,7 +76,7 @@ Every rule here is from the eight snapshots of the file's bytes, and winbox.js r
 
 ## What KERNEL holds, and when it loads the file again
 
-Read out of `KRNL386.EXE` seg1 and recorded by [[probe:profhold]], whose twelve records agree with both engines. Each of its cases writes a value with leading spaces and reads it back: the spaces say whether the buffer the write left answered, or the file loaded again.
+Read out of `KRNL386.EXE` seg1 and recorded by [[probe:profhold]], whose twelve records agree. Each of its cases writes a value with leading spaces and reads it back: the spaces say whether the buffer the write left answered, or the file loaded again.
 
 - [[read out]] KERNEL holds two buffers: one for `WIN.INI` and one for a private file (`636b`: the name `WIN.INI`, or Windows' own path for it, picks `ds:03e4`; any other name `ds:047e`). A name without a path is the file in the Windows directory; the private buffer keeps the whole path and compares it without regard to case.
 - [[read out]] [[measured]] A read leaves its buffer held too, not only a write. The private buffer is let go when a profile call names another private file (`63e7`-`6438`, `6b33`): a value written, then a read of `PROFHLD2.INI`, then the value read back gives it trimmed. The same file named by its whole path, `C:\WINDOWS\PROFHOLD.INI`, keeps the buffer, and so does reading `WIN.INI` in between.

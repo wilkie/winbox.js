@@ -124,7 +124,7 @@ A machine is the set of things a launcher keeps per program or group of programs
 Synthesis can't be checked against a recording of Windows: DOSBox's synthesizers aren't the hardware, and a SoundFont is anyone's. The bytes can.
 
 - **Probes.** The oracle's DOSBox emulates an MPU-401 and can capture the raw MIDI it is sent. A probe plays notes, program changes, System Exclusive and a MIDI file through MCI and through `midiOut*`, on `MPU401.DRV`, under each MIDI Mapper setup. The recording is the bytes in order. Their times are compared to within the machine's clock, as the corpus compares timing ([[topic:timing]]).
-- **Both engines** produce the same bytes from the same program. That is the port and the driver checked, whatever sink is behind them.
+- **WinBox** produces the same bytes from the same program. That is the port and the driver checked, whatever sink is behind them.
 - **The MT-32 sink** is trusted to Munt's own fidelity. It is not something this project can measure.
 
 ## The order of the work

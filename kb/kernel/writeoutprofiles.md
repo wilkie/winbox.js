@@ -25,4 +25,4 @@ topics: [kernel-internals, profile-files]
 
 ## Implementation
 
-WinBox answers KERNEL's data selector in AX and keep DX (`crates/winbox-win16/src/kernel_calls/internals.rs`). WinBox writes a profile to its file on each write ([[topic:profile-files]]), so nothing ever waits, and that path is the one Windows takes too. If WinBox ever defers its writes, this is where they must be done. See [[topic:kernel-internals]].
+WinBox answers KERNEL's data selector in AX and keeps DX (`crates/winbox-win16/src/kernel_calls/internals.rs`). WinBox writes a profile to its file on each write ([[topic:profile-files]]), so nothing ever waits, and that path is the one Windows takes too. If WinBox ever defers its writes, this is where they must be done. See [[topic:kernel-internals]].

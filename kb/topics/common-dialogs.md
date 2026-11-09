@@ -190,7 +190,7 @@ The registration point is one entry per export:
 
 Helpers WinBox keeps for the dialogs: the far address of an export WinBox answers (`procAddress`, `proc_address`), the extended error (`setError`, `set_error`), `COMMDLG`'s instance (`instance`), a hook called as `COMMDLG` calls one (`callHook`, `call_hook`), the wait cursor (`waitCursor`, `wait_cursor`) and the registered messages (`message`).
 
-**How a dialog calls USER, GDI and KERNEL.** WinBox makes every call as a program makes it: its arguments pushed below the stack, its structures and strings laid out below them and read back after, and the function that answers a program's call run, through `api.rs` (`crates/winbox-win16/src/commdlg/guest_calls.rs` give Find, Replace and Color the shape the file dialogs have). So the two engines make the same calls in the same order, and both show USER's quirks as COMMDLG's code would.
+**How a dialog calls USER, GDI and KERNEL.** WinBox makes every call as a program makes it: its arguments pushed below the stack, its structures and strings laid out below them and read back after, and the function that answers a program's call run, through `api.rs` (`crates/winbox-win16/src/commdlg/guest_calls.rs` give Find, Replace and Color the shape the file dialogs have). So the dialogs make the same calls in the same order as a program, and show USER's quirks as COMMDLG's code would.
 
 ## Not yet done
 

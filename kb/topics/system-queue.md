@@ -79,7 +79,7 @@ The input is read from the head (`2aa2`), one event at a time (`827a`):
 - With no focus, the window `T` takes `WM_SYSKEYDOWN` and `WM_SYSCHAR`.
 - A `PeekMessage` for `WM_KEYUP` alone takes the release, passing over the press, which is taken after it.
 
-The engines kept the keyboard in each program's queue, and gave a key the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed; in Control Panel's Ports Settings, Up, Tab, Down and Enter moved the first list's selection both ways. Now WinBox keeps one queue and give each event its window as it is taken.
+The engines kept the keyboard in each program's queue, and gave a key the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed; in Control Panel's Ports Settings, Up, Tab, Down and Enter moved the first list's selection both ways. Now WinBox keeps one queue and gives each event its window as it is taken.
 
 ## Double clicks
 
