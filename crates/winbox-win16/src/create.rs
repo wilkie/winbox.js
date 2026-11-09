@@ -1002,8 +1002,7 @@ impl Engine {
             let system = self.system();
             let at = system.front_of(index);
             // The windows at the top whose place among the windows at the top
-            // is before where it goes among all the windows: the TypeScript
-            // engine compares the two, as here.
+            // is before where it goes among all the windows: the two are compared.
             let after = system
                 .z_order
                 .iter()
@@ -1318,7 +1317,7 @@ pub fn create_window_ex(engine: &Engine, mut args: Args) -> Later<'_> {
 impl System {
     /// Whether there is a raster desktop -- an installation's display
     /// driver to draw it with -- made the first time it is asked after, as
-    /// the TypeScript engine makes it: whatever asks first, `InitApp`, a
+    /// whatever asks first, `InitApp`, a
     /// standard cursor or icon, a message's point, makes it.
     pub fn raster(&mut self) -> bool {
         if self.driver.is_none() {

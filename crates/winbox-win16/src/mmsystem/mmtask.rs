@@ -1,7 +1,6 @@
 //! MMSYSTEM's tasks of their own: `mmTaskCreate`, which starts
 //! `MMTASK.TSK` to call a procedure on a task of its own, and WinBox's own
-//! `MMTASK`, started where the drive has no `MMTASK.TSK`. As
-//! `mmsystem/mmtask.ts`, which cites the read-outs; **recorded** by
+//! `MMTASK`, started where the drive has no `MMTASK.TSK`. **Recorded** by
 //! `mmtaskc`.
 
 use crate::call::{Answer, Args, Later, Stop};
@@ -67,7 +66,7 @@ fn align(bytes: &mut Vec<u8>) {
     bytes.resize(bytes.len().div_ceil(unit) * unit, 0);
 }
 
-/// The executable's bytes, as `mmtask.ts`'s `image`.
+/// The executable's bytes.
 #[must_use]
 pub fn image() -> Vec<u8> {
     let mut bytes = vec![0u8; NE + 0x40];

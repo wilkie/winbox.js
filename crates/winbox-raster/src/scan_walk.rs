@@ -17,8 +17,7 @@
 //! quadrant, which is settled once per edge before the walk begins.
 //!
 //! The document's conic walk, `CalcSpline`, is not here: nothing draws with
-//! it (see `evaluate_spline`), and the TypeScript engine keeps it only for a
-//! test of its transcription.
+//! it (see `evaluate_spline`).
 
 use std::collections::HashMap;
 

@@ -1,5 +1,4 @@
-//! What `DefWindowProc` does for a window on the raster desktop, as
-//! winbox.js's `DefWindowProc.ts` does it: paints it, activates it, draws
+//! What `DefWindowProc` does for a window on the raster desktop: paints it, activates it, draws
 //! its frame and caption, erases it, answers where the mouse is on it and
 //! with what cursor, and closes it. The menus, the system menu's commands
 //! and the keyboard are `menu_default.rs`'s.
@@ -151,7 +150,7 @@ impl Engine {
     /// `DefWindowProc`'s `WM_NCACTIVATE` of an icon that shows (seg1
     /// `5cfc`-`5d03`), and by `ActivateWindow` of the icon losing the
     /// activation and of the one gaining it (`3646`-`3662`, `37d7`-`37e9`).
-    /// **Recorded** by `minact`. The TypeScript engine's `redrawIconTitle`.
+    /// **Recorded** by `minact`.
     pub(crate) async fn redraw_icon_title(&self, icon: usize) -> Result<(), Stop> {
         let (hwnd, title) = {
             let system = self.system();
@@ -187,7 +186,7 @@ impl Engine {
     /// `SetWindowPos` erases what it showed or made due (seg7 `028d`): each
     /// title's `WM_ERASEBKGND` draws it (seg1 `6d0b`-`6d62`), and drawing
     /// it asks its window's text, 80 characters (`6984`). **Recorded** by
-    /// `minact`. The TypeScript engine's `paintDueTitles`.
+    /// `minact`.
     pub(crate) async fn paint_due_titles(&self) -> Result<(), Stop> {
         let due: Vec<usize> = {
             let system = self.system();
@@ -212,7 +211,7 @@ impl Engine {
     }
 
     /// One icon's title drawn, its window's text asked as USER asks it
-    /// (`6984`). The TypeScript engine's `paintTitle`.
+    /// (`6984`).
     pub(crate) async fn paint_title(&self, title: usize) -> Result<(), Stop> {
         let icon = {
             let mut system = self.system();
@@ -573,8 +572,8 @@ impl Engine {
         Ok(())
     }
 
-    /// `DefWindowProc`'s `WM_SETCURSOR`, as `USER.EXE` has it (seg1 `590a`;
-    /// `set-cursor.ts`): with a mouse message, a sizing border's cursor,
+    /// `DefWindowProc`'s `WM_SETCURSOR`, as `USER.EXE` has it (seg1 `590a`):
+    /// with a mouse message, a sizing border's cursor,
     /// asking no parent; else a child's parent asked first, TRUE when it
     /// set one; with no mouse message, the arrow. `HTERROR` with the left
     /// button's press brings up the window this one owns; `HTCLIENT` shows

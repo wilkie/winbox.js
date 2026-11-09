@@ -108,11 +108,11 @@ fn runs_a_program_to_its_first_call() {
     assert!(!system.heaps.contains_key(&data));
 }
 
-/// Where the TypeScript engine has them, from descriptor 4: each handle 32
+/// Where they are kept, from descriptor 4: each handle 32
 /// or more (`modhand`), a fixed module's instance its data's selector, a
 /// moveable one's one below.
 #[test]
-fn keeps_modules_where_the_typescript_engine_does() {
+fn keeps_modules_from_descriptor_4() {
     let system = System::new();
     let kernel = &system.kept[system.kept_named("kernel").unwrap()];
 

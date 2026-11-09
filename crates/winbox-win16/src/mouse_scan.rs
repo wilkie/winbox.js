@@ -1,8 +1,7 @@
-//! The mouse as USER's system queue gives it out, as winbox.js's
-//! `mouse-scan.ts` does: each mouse message hit-tested as a look comes to
-//! it, the window asked where the point is on it, and, as a press is taken,
-//! the windows it is in told and the window asked whether to be made
-//! active.
+//! The mouse as USER's system queue gives it out: each mouse message
+//! hit-tested as a look comes to it, the window asked where the point is on
+//! it, and, as a press is taken, the windows it is in told and the window
+//! asked whether to be made active.
 //!
 //! **Read out** of `USER.EXE`.
 //!
@@ -326,7 +325,7 @@ impl Engine {
     /// at no window, not even the desktop window's: the system-modal
     /// window, which the walk begins at, answering `HTTRANSPARENT`
     /// (`USER.EXE` seg1 `7282`-`7285` to `71c6`), so that `WindowFromPoint`
-    /// answers nought. The TypeScript engine's `hitWalk`.
+    /// answers nought.
     pub(crate) async fn hit_walk(
         &self,
         x: i32,

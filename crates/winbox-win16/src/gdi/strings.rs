@@ -1,8 +1,7 @@
-//! GDI's strings, by their resource numbers: the spooler's messages and
-//! the Print To File box's. winbox.js keeps them itself, as it keeps GDI:
-//! no Windows file is shipped. Made to match the Windows 3.1 the
-//! recordings are made on by `scripts/oracle/strings-table.mjs`; the twin
-//! of `src/win16/gdi/strings.ts`.
+//! GDI's strings, by their resource numbers: the spooler's messages and the
+//! Print To File box's. winbox.js keeps them itself, as it keeps GDI: no
+//! Windows file is shipped. Made to match the Windows 3.1 the recordings are
+//! made on by `scripts/oracle/strings-table.mjs`.
 
 /// Each string by its number, in order.
 const STRINGS: &[(u16, &str)] = &[

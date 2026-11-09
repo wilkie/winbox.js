@@ -19,8 +19,8 @@
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;
 
-/// A `.TTF`'s bytes, read big-end first; a read past the end is nought, the
-/// TypeScript engine's `DataView` throwing there for a file that is no font.
+/// A `.TTF`'s bytes, read big-end first; a read past the end is nought,
+/// which a file that is no font reads as.
 struct Big<'a>(&'a [u8]);
 
 impl Big<'_> {
@@ -433,8 +433,7 @@ pub(crate) fn create_scalable_font_resource_call(
         return Ok(Answer::Word(0));
     };
 
-    // A handle that stands for no file answers nought, and is left open, as
-    // the TypeScript engine leaves it.
+    // A handle that stands for no file answers nought, and is left open.
     let Some(file) = system.files.resolve(target) else {
         return Ok(Answer::Word(0));
     };

@@ -365,9 +365,8 @@ impl Machine {
         })
         .ok_or_else(|| JsError::new(&format!("no display {display}")))?;
 
-        // Windows stays up once the last program has ended, as the
-        // TypeScript engine's does on the page: the next runs on the same
-        // machine.
+        // Windows stays up once the last program has ended, as it
+        // does on the page: the next runs on the same machine.
         session.stay_up();
 
         Ok(Self { session })
@@ -608,8 +607,7 @@ impl Machine {
         self.session.shown().colours
     }
 
-    /// USER's windows as an accessibility tree, as JSON: the tree the
-    /// TypeScript engine's `accessibleTree` makes, written as its
+    /// USER's windows as an accessibility tree, as JSON, written as
     /// `JSON.stringify` writes it, for a page's mirror to read.
     pub fn accessible_tree(&self) -> String {
         self.session.accessible_tree()

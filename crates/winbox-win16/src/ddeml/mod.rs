@@ -243,8 +243,7 @@ fn wep(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// and the file loaded again starts from its data again, as the first time
 /// (**recorded** by `ddewep`: an instance made after has the serial the
 /// first instance of all had). WinBox's own data is made the file's again
-/// at the next export called (`ready`), its local heap with it. As
-/// `exports.ts`'s `freed`.
+/// at the next export called (`ready`), its local heap with it.
 pub(crate) fn freed(system: &mut System) {
     if !system.ddeml.ready {
         return;
@@ -431,8 +430,8 @@ mod tests {
     use super::*;
     use crate::modules::Kept;
 
-    /// Each export WinBox answers here is one the TypeScript engine
-    /// answers, and no other: its table is `kept.rs`'s.
+    /// Each export WinBox answers here is one of the module's kept
+    /// exports, and no other: its table is `kept.rs`'s.
     #[test]
     fn ours_agree() {
         let kept = Kept::named(NAME).expect("DDEML kept");

@@ -1177,9 +1177,8 @@ impl Files {
         self.swap(letter, Box::new(empty))
     }
 
-    /// A drive taken away, its letter no drive's any more, as the
-    /// TypeScript engine's `FileManager.unmount`: the page's Drives strip
-    /// removing a set of images. The volume it had; none where no drive
+    /// A drive taken away, its letter no drive's any more: the page's
+    /// Drives strip removing a set of images. The volume it had; none where no drive
     /// was.
     pub fn unmount(&mut self, letter: char) -> Option<Box<dyn Volume>> {
         self.drives.remove(&letter.to_ascii_uppercase())
@@ -1265,7 +1264,7 @@ mod tests {
     }
 
     /// A folder of more files than one of FAT's clusters has entries for,
-    /// and past the 1,024 the TypeScript engine's FAT once stopped at:
+    /// and past 1,024 entries:
     /// Catz's `PTZFILES\CAT\RESOURCE` holds nearly 300. Each file created
     /// is listed and opened again.
     #[test]
@@ -1803,7 +1802,6 @@ mod tests {
     /// A disc's file open across a swap reads the disc swapped in at its
     /// own sectors, but for the sector it last read (`DiscFile`), as
     /// `imgswap` records; a drive left empty gives it nothing to read.
-    /// As `swap_test.ts`.
     #[test]
     fn a_discs_file_reads_the_disc_swapped_in() {
         let mut files = Files::new();

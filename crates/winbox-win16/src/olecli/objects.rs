@@ -1,7 +1,6 @@
 //! What every object is, whatever its kind: its block, laid out as
 //! `olemem` measured it, made and let go, put in its document's list,
-//! named, and its methods found through its table. As
-//! `src/win16/olecli/objects.ts`.
+//! named, and its methods found through its table.
 
 use crate::engine::GuestArg;
 

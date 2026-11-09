@@ -1,8 +1,7 @@
-//! GDI's objects where a program that goes looking finds them: in GDI's
-//! data segment, its local heap, as Windows 3.1 keeps them -- winbox.js's
-//! `gdi-heap.ts`. The objects are kept here in Rust; this makes the bytes a
-//! program reads from GDI's segment as it reads them, and loses what it
-//! writes there.
+//! GDI's objects where a program that goes looking finds them: in GDI's data
+//! segment, its local heap, as Windows 3.1 keeps them. The objects are kept
+//! here in Rust; this makes the bytes a program reads from GDI's segment as
+//! it reads them, and loses what it writes there.
 //!
 //! **Recorded** by `gdiobj`, walking as the engine Bubble Girl of the
 //! corpus brings walks, to draw into a bitmap's bits itself:
@@ -25,10 +24,10 @@
 //! The header and the bits are plain memory, which the program reads and
 //! writes as it likes; around each call the bitmaps whose blocks were made
 //! are made to agree with them: their pixels read from the bits before, and
-//! the bits and the header written from the pixels after. The TypeScript
-//! engine does this around a call that names such a bitmap; read before and
+//! the bits and the header written from the pixels after. Read before and
 //! written after, the bits come back as they were, so doing it around every
-//! call is the same, and costs nothing until a program has asked.
+//! call, not only one that names such a bitmap, is the same, and costs
+//! nothing until a program has asked.
 //!
 //! Only a bitmap of the display's four planes is laid out; other objects,
 //! and the rest of their fields, read as noughts. Where Windows puts objects

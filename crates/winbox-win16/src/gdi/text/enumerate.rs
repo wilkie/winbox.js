@@ -27,12 +27,12 @@
 //! A printer driver's own fonts come first, through its `EnumDFonts`
 //! (`printer_driver.rs`); the screen drivers have none.
 //!
-//! Not followed, as the TypeScript engine does not: the mapping mode, whose
-//! units GDI would turn the sizes into; a device context whose aspect does not
-//! match a raster font's; the compatibility flags that change what an old
-//! program is told; and, for `EnumFonts` (seg5 `05a7`), a TrueType style
-//! that duplicates another's, or is none of regular, bold and italic, which
-//! it lists under its full name -- the fonts installed have none.
+//! Not followed: the mapping mode, whose units GDI would turn the sizes
+//! into; a device context whose aspect does not match a raster font's; the
+//! compatibility flags that change what an old program is told; and, for
+//! `EnumFonts` (seg5 `05a7`), a TrueType style that duplicates another's, or
+//! is none of regular, bold and italic, which it lists under its full name
+//! -- the fonts installed have none.
 
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -61,9 +61,9 @@ const ENUMLOGFONT_SIZE: usize = 50 + 64 + 32;
 /// A `NEWTEXTMETRIC`'s: a `TEXTMETRIC`, a doubleword and three words.
 const NEWTEXTMETRIC_SIZE: usize = 31 + 4 + 6;
 
-/// A structure written over the bytes already where it goes, field by
-/// field, as the TypeScript engine writes one: a string field is its text
-/// and a nought, and the bytes after the nought are left as they were.
+/// A structure written over the bytes already where it goes, field by field:
+/// a string field is its text and a nought, and the bytes after the nought
+/// are left as they were.
 pub(crate) struct Fields(pub(crate) Vec<u8>);
 
 impl Fields {
@@ -106,7 +106,7 @@ fn same(a: &str, b: &str) -> bool {
     a.to_uppercase() == b.to_uppercase()
 }
 
-/// Bytes as the Latin-1 text the TypeScript engine reads them as.
+/// Bytes as Latin-1 text.
 fn latin1(bytes: &[u8]) -> String {
     bytes.iter().map(|&byte| char::from(byte)).collect()
 }
@@ -286,7 +286,7 @@ fn from_outline(log_x: i32, log_y: i32, resource: &FontResource, face: &str) -> 
 /// code, so this is a block of its own, sixteen bytes moveable and zeroed,
 /// made the first time it is needed, that holds nothing a program should
 /// read. Where the block cannot be had the selector is nought, and it is
-/// asked for again the next time, as the TypeScript engine asks.
+/// asked for again the next time.
 pub fn gdi_data_selector(system: &mut System) -> u16 {
     if let Some(selector) = system.gdi.data {
         return selector;
@@ -471,8 +471,8 @@ fn enumerate(engine: &Engine, mut args: Args, families: u16) -> Later<'_> {
             let family = args.dword(&system);
             let procedure = args.dword(&system);
             let lparam = args.dword(&system);
-            // A string whose segment is nought is a number to the
-            // TypeScript engine, and named by its digits.
+            // A string whose segment is nought is a number, and named by its
+            // digits.
             let name = match text_argument(&system, family) {
                 Text::Refused => return Ok(Answer::Word(0)),
                 Text::Absent if family == 0 => None,

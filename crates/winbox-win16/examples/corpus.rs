@@ -1,15 +1,15 @@
-//! The corpus run on the Rust engine and its calls compared with the
-//! TypeScript engine's, as the survey recorded them: for each program, how
-//! many of the Rust engine's calls agree with the TypeScript engine's in
-//! order, up to where the Rust engine stopped, and why it stopped. A program
-//! agrees to its stop when every call it made is the TypeScript engine's.
+//! The corpus run on the Rust engine and its calls compared with those the
+//! survey recorded (`corpus/reports`, which `--write` writes): for each
+//! program, how many of the Rust engine's calls agree with the recorded ones
+//! in order, up to where the Rust engine stopped, and why it stopped. A
+//! program agrees to its stop when every call it made is the recorded one.
 //!
 //! And the screen as each run left it, and each box of USER's as it came
-//! up, compared pixel for pixel with the TypeScript engine's
+//! up, compared pixel for pixel with the recorded ones
 //! (`corpus/reports/<id>.png`, `<id>.box1.png`): both are winbox.js's
 //! colours, so a screen alike is alike to the bit. A program surveyed with
 //! steps -- keys pressed at set times -- has its keys pressed and its
-//! screens kept where the TypeScript engine's report says it did.
+//! screens kept where the recorded report says it did.
 //!
 //! `cargo build --release -p winbox-win16 --example trace --example corpus`
 //! then `target/release/examples/corpus`, from the repository's root, with
@@ -79,7 +79,7 @@ struct Survey {
     seconds: Option<f64>,
 }
 
-/// A call of the TypeScript engine's as the comparison reads it: `normal`,
+/// A recorded call as the comparison reads it: `normal`,
 /// and, where its answer is negative but would fit a word, also as the long
 /// it may have been -- a function answering a long answers -1 as the long
 /// all ones, and the report does not say which it was.
@@ -182,7 +182,7 @@ fn is_call(line: &str) -> bool {
             .is_some_and(|(name, after)| !name.is_empty() && after.starts_with("= "))
 }
 
-/// Whether the Rust engine's call is the TypeScript engine's: the same, or
+/// Whether the Rust engine's call is the recorded one: the same, or
 /// both with an address and the Rust engine's with no answer.
 fn same(got: &str, want: &str) -> bool {
     if got == want {
@@ -219,7 +219,7 @@ struct Run {
     base: (&'static str, String),
     display: String,
     screen: std::path::PathBuf,
-    /// The TypeScript engine's calls.
+    /// The calls the report recorded.
     calls: usize,
     /// Its seconds on the clock: the survey's ten, and each step's.
     seconds: f64,
@@ -228,8 +228,7 @@ struct Run {
     /// Images mounted beside C:, `D:corpus/cache/<id>/<id>.iso`.
     mounts: Vec<String>,
     /// Started as an install is, Program Manager the shell, with the
-    /// oracle's A: and Z: beside C: as the TypeScript engine's run has
-    /// them.
+    /// oracle's A: and Z: beside C: as the recorded run has them.
     install: bool,
 }
 
@@ -256,9 +255,8 @@ fn trace(run: &Run) -> String {
             // The survey's boxKeys: Enter at each of three boxes.
             "--boxes",
             "3",
-            // As far as the TypeScript engine's run went: its calls, and the
-            // frame it was in at its time's end, as far as a frame can take
-            // it.
+            // As far as the recorded run went: its calls, and the frame it
+            // was in at its time's end, as far as a frame can take it.
             "--calls",
             &run.calls.to_string(),
             "--seconds",
@@ -270,7 +268,7 @@ fn trace(run: &Run) -> String {
         .arg("--screen")
         .arg(&run.screen);
 
-    // Its keys pressed and its screens kept where the TypeScript engine's
+    // Its keys pressed and its screens kept where the recorded run's
     // were.
     if let Some(marks) = &run.marks {
         command.arg("--marks").arg(marks);
@@ -348,7 +346,7 @@ fn seconds_of(survey: &Survey) -> f64 {
         })
 }
 
-/// When the TypeScript engine's run came to its last place, in
+/// When the recorded run came to its last place, in
 /// milliseconds: its steps may end past their seconds, where it skipped
 /// ahead to a timer, and the run goes on as far as it went.
 fn last_place(id: &str) -> f64 {
@@ -411,7 +409,7 @@ fn differing(ours: &Path, theirs: &Path) -> Option<usize> {
     )
 }
 
-/// How many calls the TypeScript engine's run made: those it kept first,
+/// How many calls the recorded run made: those it kept first,
 /// those it counted and did not keep, and the last it kept.
 fn total_of(want: &[(String, Option<String>)], kept: usize) -> usize {
     let Some(marker) = want.get(kept) else {
@@ -428,7 +426,7 @@ fn total_of(want: &[(String, Option<String>)], kept: usize) -> usize {
     want.len() - 1 + skipped
 }
 
-/// Whether a run made as many calls as the TypeScript engine's, its last
+/// Whether a run made as many calls as the recorded one, its last
 /// ones the same, and how many it made: past the calls it kept first,
 /// the report counts those it did not keep, then keeps the last.
 fn whole_run(want: &[(String, Option<String>)], kept: usize, got: &[String]) -> (bool, usize) {
@@ -455,7 +453,7 @@ fn whole_run(want: &[(String, Option<String>)], kept: usize, got: &[String]) -> 
 }
 
 /// How a program's screen, and each box of USER's it met, differ from the
-/// TypeScript engine's: nothing where they are alike.
+/// recorded ones: nothing where they are alike.
 fn screen_differences(id: &str, screen: &Path) -> Vec<String> {
     let theirs = |name: String| Path::new("corpus/reports").join(name);
     let mut differences = Vec::new();
@@ -535,18 +533,16 @@ fn write_to() -> Option<std::path::PathBuf> {
 }
 
 /// How many calls the survey keeps from a run's start, and from its end,
-/// the rest counted between (`survey_test.ts`'s `keepCalls` and tail).
+/// the rest counted between.
 const KEPT_FIRST: usize = 100_000;
 const KEPT_LAST: usize = 1_000;
 
-/// A program's report, written as the TypeScript survey writes its own
-/// (`test/corpus/survey_test.ts`): `<id>.json`, `<id>.calls.txt`, and its
-/// screens, `<id>.png`, `<id>-2.png` on after steps, `<id>.boxN.png`, from
-/// the trace's screens in `screens`. The calls are the Rust engine's
-/// lines, `MODULE.Name = answer @cs:ip`, which keep no arguments; the
-/// TypeScript survey's show them as its argument types decode them. A
-/// run's steps' places (`stepMarks`) are what the run was given, the
-/// TypeScript report's, kept as it has them. A screen alike pixel for
+/// A program's report, written as the survey writes it: `<id>.json`,
+/// `<id>.calls.txt`, and its screens, `<id>.png`, `<id>-2.png` on after
+/// steps, `<id>.boxN.png`, from the trace's screens in `screens`. The calls
+/// are the Rust engine's lines, `MODULE.Name = answer @cs:ip`, which keep no
+/// arguments. A run's steps' places (`stepMarks`) are what the run was
+/// given, the recorded report's, kept as it has them. A screen alike pixel for
 /// pixel with the report's already there is written as that file, its bytes
 /// as they were (PNG encoders differ), so `--write corpus/reports` leaves
 /// every unchanged screen unchanged.
@@ -605,7 +601,7 @@ fn write_report(dir: &Path, id: &str, title: &str, out: &str, screens: &Path) ->
         last.join(",")
     );
 
-    // The places a run with steps was given, as its TypeScript report has
+    // The places a run with steps was given, as its recorded report has
     // them.
     let theirs = std::fs::read_to_string(Path::new("corpus/reports").join(format!("{id}.json")))
         .unwrap_or_default();
@@ -702,7 +698,7 @@ fn is_png(file: &str) -> bool {
         .is_some_and(|extension| extension.eq_ignore_ascii_case("png"))
 }
 
-/// What `--write` wrote set beside the TypeScript survey's reports
+/// What `--write` wrote set beside the reports already there
 /// (`corpus/reports`): how many files are the same to the byte, and of the
 /// rest, the calls alike as the comparison reads them (`normal`, their
 /// arguments left out) and the screens alike pixel for pixel.
@@ -774,7 +770,7 @@ fn compare_written(dir: &Path, ids: &[(String, Vec<String>)]) {
 }
 
 /// Whether a call written here, read as the comparison reads it, is the
-/// TypeScript survey's line: the same, or a negative answer it wrote that
+/// recorded line: the same, or a negative answer it wrote that
 /// is the word or the long here (`wanted`), or one with no answer either
 /// side.
 fn same_call(got: &str, want: &str) -> bool {
@@ -849,8 +845,8 @@ fn main() {
         let display = survey.display.clone().unwrap_or_else(|| "vga".to_string());
         let base = base_of(assets, &display);
         let screen = screens.join(format!("{}.png", program.id));
-        // The TypeScript engine keeps its first calls and its last, the
-        // rest counted between: past its first, there is nothing to compare.
+        // The report keeps the run's first calls and its last, the rest
+        // counted between: past its first, there is nothing to compare.
         let kept = want
             .iter()
             .position(|(line, _)| line.starts_with("... ") && line.ends_with(" calls not kept ..."))
@@ -887,8 +883,8 @@ fn main() {
         }
         let mut n = 0;
 
-        // The TypeScript engine's last call may have had no answer by the
-        // end of its run: a call it was waiting in, which a run on as far
+        // The recorded run's last call may have had no answer by the end
+        // of its run: a call it was waiting in, which a run on as far
         // as its frame went has answered.
         while n < got.len()
             && n < kept
@@ -903,7 +899,7 @@ fn main() {
             agree += 1;
         }
 
-        // And the whole run: as many calls as the TypeScript engine's, and
+        // And the whole run: as many calls as the recorded run, and
         // its last calls -- those it kept after the ones it counted -- the
         // same.
         let (whole, total) = whole_run(&want, kept, &got);
@@ -924,14 +920,14 @@ fn main() {
         } else if n < got.len() {
             let _ = write!(
                 row,
-                "\n    TS:   {}\n    RUST: {}",
+                "\n    WANT: {}\n    RUST: {}",
                 want.get(n).map_or("", |(line, _)| line.as_str()),
                 got[n]
             );
         }
 
         // The screen it left, and each box as it came up, against the
-        // TypeScript engine's.
+        // recorded ones.
         let differences = screen_differences(&program.id, &screen);
 
         compared += 1;

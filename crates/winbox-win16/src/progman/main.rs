@@ -3,8 +3,7 @@
 //! `WinMain` seg1 `0010`, its start-up seg3 `09fd`, the frame's procedure
 //! seg2 `2229`. Every call into KERNEL, USER and SHELL is made as the file
 //! makes it (`commdlg/api.rs`), and what the file keeps in its data segment
-//! is kept at the same places in the instance's own (`D_*`). As
-//! `src/win16/progman/main.ts`.
+//! is kept at the same places in the instance's own (`D_*`).
 //!
 //! Its groups are `loaded.rs`'s, their items `items.rs`'s, their windows'
 //! procedure `window.rs`'s. What it does not do yet, each left where the

@@ -1,8 +1,7 @@
 //! What every routine of WinBox's `OLECLI` stands on: guest memory, the
 //! calls it makes into KERNEL, USER and GDI (through `commdlg/api.rs`, as a
 //! program's call reaches them, unlogged), its own data segment, and the
-//! layouts of the blocks a program holds pointers to. As
-//! `src/win16/olecli/core.ts`.
+//! layouts of the blocks a program holds pointers to.
 //!
 //! Written from OLE 1.0's documented interface (`ole.h`, the OLE 1.0
 //! programmer's reference) and from what the probes measured under DOSBox:

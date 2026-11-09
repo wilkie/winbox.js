@@ -1,7 +1,6 @@
 //! One-pixel lines as the display drivers walk them, and as GDI walks them
-//! for a driver that cannot clip: the walk the TypeScript engine's
-//! `BitmapContext.stroke` makes, which the plotter fonts' strokes are drawn
-//! with.
+//! for a driver that cannot clip: the walk the plotter fonts'
+//! strokes are drawn with.
 //!
 //! Not Bresenham's error term but the value it approximates, worked out per
 //! step in integers: the minor coordinate at step `k` of `n` is

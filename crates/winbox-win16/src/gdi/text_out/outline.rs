@@ -2,13 +2,12 @@
 //! and filled by the scan converter's walk (`winbox_raster::glyph_raster`),
 //! a bold GDI synthesises smeared a column across, a slant made from the raw
 //! outline, and turned text carried through the scaler's transform -- with
-//! the ground and the rules that go with each. All of it as the TypeScript
-//! engine's `Surface` draws it, call for call: the interpreter keeps state
-//! from one glyph to the next at a size, so which glyphs are fitted, and in
-//! what order, is part of what is drawn.
+//! the ground and the rules that go with each. All of it drawn call for
+//! call: the interpreter keeps state from one glyph to the next at a size,
+//! so which glyphs are fitted, and in what order, is part of what is drawn.
 
-// Deliberately: numbers compared and converted as a JavaScript engine's
-// are, since every rule here was measured through one.
+// Deliberately: numbers compared and converted as doubles are, since every
+// rule here was measured through them.
 #![allow(clippy::float_cmp, clippy::cast_precision_loss)]
 
 use winbox_raster::glyph_raster::{FillOptions, fill_walked};
@@ -27,7 +26,7 @@ use super::{TA_BASELINE, TA_BOTTOM, TA_CENTER, TA_RIGHT, TRANSPARENT, Writer};
 
 const OPAQUE: u16 = 2;
 
-/// `Math.sign(v) * Math.round(Math.abs(v))`: a half away from nought.
+/// `value` rounded with a half away from nought.
 fn away(value: f64) -> f64 {
     let rounded = round(value.abs());
 
@@ -233,9 +232,9 @@ fn slant(contours: &[Contour], scale: f64, lean: f64) -> Vec<Contour> {
 /// bytes. **Recorded** by `times-tall`, `times-reach`, `times-wide` and
 /// `buffer`.
 ///
-/// The extremes are a JavaScript engine's `Math.max` and `Math.min`, as the
-/// rule was measured through one: a point a program left as not-a-number
-/// makes the reach not-a-number, and the glyph is refused.
+/// The extremes propagate not-a-number, as the rule was measured: a point a
+/// program left as not-a-number makes the reach not-a-number, and the glyph
+/// is refused.
 fn has_room(contours: &[Contour], up: f64, max_width: f64, cell: f64) -> bool {
     let reach: Vec<&Point> = contours.iter().flatten().collect();
     let (raised, columns) = if reach.is_empty() {
@@ -1176,14 +1175,13 @@ pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<Glyph
     glyph_of(font, code, 0.0)
 }
 
-/// One character of an outline font as GDI's TrueType engine answers for
-/// it, upright or turned by `turn` tenths of a degree -- the angle a
-/// printer's driver sets the engine's context to (`EngineSetFontContext`).
-/// Turned, the box is the ink's, the corner is measured from the
-/// baseline's origin as the text would be drawn, and the advance is
-/// carried along the baseline, each part rounded away from nought. As
-/// `Surface.glyphOf`.
-// One glyph drawn and read back, in the order the TypeScript engine does.
+/// One character of an outline font as GDI's TrueType engine answers for it,
+/// upright or turned by `turn` tenths of a degree -- the angle a printer's
+/// driver sets the engine's context to (`EngineSetFontContext`). Turned, the
+/// box is the ink's, the corner is measured from the baseline's origin as
+/// the text would be drawn, and the advance is carried along the baseline,
+/// each part rounded away from nought.
+// One glyph drawn and read back, in the order the interpreter needs.
 #[allow(clippy::too_many_lines)]
 pub(crate) fn glyph_of(
     font: &LogicalFont,

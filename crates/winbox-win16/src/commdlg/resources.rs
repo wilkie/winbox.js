@@ -1,8 +1,7 @@
 //! COMMDLG's resources, WinBox's own: no Windows file is shipped. Made to
-//! match the Windows 3.1 the recordings are made on, as the TypeScript
-//! engine's `strings.ts`, `file-open-dialog.ts` and
-//! `multi-file-open-dialog.ts` are, by `scripts/oracle/strings-table.mjs`
-//! and `scripts/oracle/dialog-template.mjs`.
+//! match the Windows 3.1 the recordings are made on, by
+//! `scripts/oracle/strings-table.mjs` and
+//! `scripts/oracle/dialog-template.mjs`.
 
 /// COMMDLG's strings, by their resource numbers: the messages and names of
 /// its dialogs.

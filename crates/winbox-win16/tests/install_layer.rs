@@ -15,8 +15,7 @@
 //! The installer's top's changes and the layer made of them are written to
 //! `test/layers/instlay-layer.json` (`INSTLAY_WRITE=1`, on the installed
 //! base), which `test/layers/install_test.ts` makes the layer of with the
-//! page's own `installedLayer`, so that page code is held to this run
-//! without an engine of its own.
+//! page's own `installedLayer`, so that page code is held to this run.
 
 mod support;
 

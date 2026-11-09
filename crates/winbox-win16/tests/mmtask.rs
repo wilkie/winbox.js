@@ -1,9 +1,8 @@
 //! WinBox's own `MMTASK` (`src/mmsystem/mmtask.rs`), started where
 //! `mmTaskCreate` starts `MMTASK.TSK` and there is none: `mmtaskc`, run
 //! with the file removed from the installation, is held to what Windows
-//! wrote with Microsoft's; and run with the file, Microsoft's runs. The
-//! image is the TypeScript engine's, byte for byte. As
-//! `test/win16/mmtask_test.ts`.
+//! wrote with Microsoft's; and run with the file, Microsoft's runs. The image
+//! is the recorded one, byte for byte.
 
 mod support;
 
@@ -13,7 +12,7 @@ use support::{Base, Setup, recorded, run_setup};
 
 const PROBE: &str = "mmtaskc";
 
-/// The image's digest and size, as the TypeScript engine's test has them.
+/// The image's digest and size, as recorded.
 const IMAGE_SHA256: &str = "bc45e530211a3418a9f161dda8852690f903c3d2bec1b7da794de944e4e76a50";
 const IMAGE_SIZE: usize = 272;
 
@@ -38,7 +37,7 @@ fn run(setup: Setup) -> (Stop, Vec<[String; 3]>, bool) {
 }
 
 #[test]
-fn is_the_image_the_typescript_engine_makes() {
+fn is_the_recorded_image() {
     let bytes = winbox_win16::mmsystem::mmtask::image();
     let digest = winbox_win16::sha256::sha256_hex(&bytes);
 

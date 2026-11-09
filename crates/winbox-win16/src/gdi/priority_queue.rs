@@ -1,7 +1,6 @@
 //! GDI's priority queue, which the spooler keeps its jobs in: `CreatePQ`,
 //! `InsertPQ`, `MinPQ`, `ExtractPQ`, `SizePQ` and `DeletePQ`, as `GDI.EXE`
-//! seg27 has them. The TypeScript engine's twin is
-//! `src/win16/gdi/priority-queue.ts`, where each read-out is told.
+//! seg27 has them.
 //!
 //! **Recorded** by `gdipq`.
 

@@ -1,5 +1,5 @@
 //! What an edit control keeps to undo, for both kinds of control --
-//! winbox.js's `edit-undo.ts` -- read out of `USER.EXE`'s shared edit code
+//! read out of `USER.EXE`'s shared edit code
 //! (segment 26) and **recorded** by `editundo` in a single-line control, a
 //! multi-line one that scrolls down and one that does not.
 //!

@@ -1,7 +1,6 @@
 //! USER's resource handlers for icons and cursors, and `SignalProc`, which
 //! sets them on each module KERNEL loads. **Read out of `USER.EXE`** and
-//! **recorded** by `iconhand` and `userproc`. The twin of
-//! `src/win16/user/icon-handlers.ts`, which says more.
+//! **recorded** by `iconhand` and `userproc`.
 
 // Each export has the signature every function that answers a call has.
 #![allow(clippy::unnecessary_wraps)]
@@ -163,7 +162,7 @@ fn dib(system: &mut System, bytes: &[u8], size: usize, icon: bool) -> Option<Con
 }
 
 /// `LoadDIBIconHandler` and `LoadDIBCursorHandler` (seg12 `100d`, `0ff1`,
-/// both `10ce`), as `icon-handlers.ts`'s `dibHandler`.
+/// both `10ce`).
 fn dib_handler(system: &mut System, icon: bool, block: u16, resource: u16) -> u16 {
     let size = system.resource_size(resource) as usize & 0xffff;
     let handle = crate::resources::kernel_handler(system, block, resource);
@@ -183,7 +182,7 @@ fn dib_handler(system: &mut System, icon: bool, block: u16, resource: u16) -> u1
     handle
 }
 
-/// `LoadCursorIconHandler` (seg12 `0deb`-`0e49`), as `icon-handlers.ts`'s.
+/// `LoadCursorIconHandler` (seg12 `0deb`-`0e49`).
 fn old_handler(system: &mut System, block: u16, resource: u16) -> u16 {
     let size = system.resource_size(resource);
 
@@ -291,8 +290,8 @@ pub fn signal_proc(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 }
 
 /// A module's icon or cursor as `LoadIcon` and `LoadCursor` load one
-/// (`USER.EXE` seg12 `05b9`-`05ea`, `0374`-`0409`), as `icon-handlers.ts`'s
-/// `loadFromModule`: the group's member that fits the display for a module
+/// (`USER.EXE` seg12 `05b9`-`05ea`, `0374`-`0409`): the group's member that
+/// fits the display for a module
 /// of Windows 3 or later, else the resource of the name; loaded, and made
 /// at once where its handler is USER's own. Nought for none.
 pub(crate) async fn load_from_module(

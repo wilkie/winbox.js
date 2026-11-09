@@ -1,8 +1,7 @@
 //! A program's `OLESTREAM`: its table's `Get` and `Put`, called far with
 //! the stream, a far pointer and a count, each answering the bytes it
 //! moved (ole.h). What `OLECLI` reads and writes is a field at a time
-//! (**recorded** by `olestat`, each `Put`'s count). As
-//! `src/win16/olecli/streams.ts`.
+//! (**recorded** by `olestat`, each `Put`'s count).
 
 use crate::engine::GuestArg;
 

@@ -1,6 +1,5 @@
 //! A printer's driver from the drive -- the PostScript driver, or any other
-//! Windows printer driver -- run as Windows' GDI runs it. The twin of
-//! `src/win16/gdi/printer-driver.ts`.
+//! Windows printer driver -- run as Windows' GDI runs it.
 //!
 //! **Read out** of `GDI.EXE`, `CreateDC` and `CreateIC` (seg1 `480a`,
 //! `47d8`, both into seg1 `0078` with a flag, 0 for a DC and 80h for an

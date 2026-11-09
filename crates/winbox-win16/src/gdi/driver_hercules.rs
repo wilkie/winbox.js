@@ -1,7 +1,6 @@
 //! The Hercules's own `ColorInfo`, `RealizeObject`, `ExtTextOut` and
-//! `GetCharWidth` on a memory bitmap, as `HERCULES.DRV` makes them for
-//! GDI's helpers (`driver_helpers.rs`). The twin of
-//! `src/win16/gdi/driver-hercules.ts`; the reading out of each is there.
+//! `GetCharWidth` on a memory bitmap, as `HERCULES.DRV` makes them for GDI's
+//! helpers (`driver_helpers.rs`).
 
 use crate::system::System;
 
@@ -420,10 +419,9 @@ const DIAGONAL: i32 = 0x13;
 const STRETCH: i32 = 0x26;
 
 /// Whether each pixel of a styled polyline is drawn as the Hercules walks
-/// its style (seg4 `0b41`), as `herculesDashes` in the TypeScript: a count
-/// from 26h less each move to the next pixel, the mask turned left a bit
-/// and 26h added back where it has fallen below nought, a dash where the
-/// mask's top bit is set.
+/// its style (seg4 `0b41`): a count from 26h less each move to the next
+/// pixel, the mask turned left a bit and 26h added back where it has fallen
+/// below nought, a dash where the mask's top bit is set.
 pub fn hercules_dashes(points: &[(i32, i32)], end: (i32, i32), style: u16) -> Vec<bool> {
     let mut mask = HERCULES_STYLE_MASKS
         .get(usize::from(style))

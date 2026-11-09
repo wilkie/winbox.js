@@ -19,7 +19,7 @@ use crate::system::System;
 const RT_ICON: i32 = 3;
 const RT_GROUP_ICON: i32 = 14;
 
-/// Bytes as the TypeScript engine's strings hold them, a character each.
+/// Bytes as a string holds them, a character each.
 fn text(bytes: &[u8]) -> String {
     bytes.iter().map(|&byte| char::from(byte)).collect()
 }
@@ -37,7 +37,7 @@ fn write_string(system: &mut System, far: u32, text: &[u8]) {
     system.write_far(far, &bytes);
 }
 
-/// A string argument as the TypeScript engine has it: none for a null
+/// A string argument: none for a null
 /// pointer, a number's digits, or its text.
 fn js_string(text: Text) -> Option<String> {
     match text {
@@ -47,8 +47,7 @@ fn js_string(text: Text) -> Option<String> {
     }
 }
 
-/// A string argument as the TypeScript engine's `String(x ?? '')` makes
-/// it: empty for none, a number's digits; `None` for one that cannot be
+/// A string argument: empty for none, a number's digits; `None` for one that cannot be
 /// read, which turns the call away.
 fn string_argument(system: &System, far: u32) -> Option<String> {
     match text_argument(system, far) {
@@ -57,7 +56,7 @@ fn string_argument(system: &System, far: u32) -> Option<String> {
     }
 }
 
-/// JavaScript's `trim`, over the bytes it counts as space.
+/// Text with the bytes counted as space trimmed from both ends.
 fn trim(text: &str) -> String {
     text.trim_matches(|c: char| u8::try_from(u32::from(c)).is_ok_and(js_space))
         .to_string()
@@ -211,13 +210,10 @@ fn exists(system: &mut System, path: &str) -> bool {
 }
 
 /// Whether a directory is there. A folder on no drive mounted -- or that
-/// names none -- is listed as empty by the TypeScript engine's file
-/// manager rather than refused, so is there.
+/// names none -- is listed as empty rather than refused, so is there.
 ///
-/// One difference, the drive's and not SHELL's: the TypeScript engine's
-/// FAT looks a drive's root (`C:`) up as a name, finds none, and so
-/// answers 3 for a file missing from a root; the drive here has its root,
-/// and the answer is 2, as KERNEL's search for a library takes it too.
+/// A file missing from a drive's root (`C:`) answers 2, the drive having its
+/// root, as KERNEL's search for a library takes it too.
 fn directory_exists(system: &System, folder: &str) -> bool {
     let parsed = Files::parse(folder);
 
@@ -374,9 +370,8 @@ fn command_for(
     Ok(replace_carets(&entry, stem(&path)))
 }
 
-/// Each `^` in an entry replaced, as JavaScript's `replace(/\^/g, stem)`
-/// replaces it: the stem is a replacement pattern there, `$$` one `$`,
-/// `$&` the `^`, `` $` `` what comes before it and `$'` what comes after,
+/// Each `^` in an entry replaced: the stem is a replacement pattern, `$$` one
+/// `$`, `$&` the `^`, `` $` `` what comes before it and `$'` what comes after,
 /// and any other `$` as it is. A DOS name may hold a `$`.
 fn replace_carets(entry: &str, stem: &str) -> String {
     let mut out = String::new();
@@ -408,7 +403,7 @@ fn replace_carets(entry: &str, stem: &str) -> String {
     out
 }
 
-/// A name to look up, from text the TypeScript engine upper-cased: `ÿ`'s
+/// A name to look up, from upper-cased text: `ÿ`'s
 /// capital, which is not Latin-1, is `ÿ` again in a profile's lookup
 /// (which compares in lower case), and the one other capital past Latin-1,
 /// `µ`'s, matches nothing there. In the registration database neither is
@@ -720,7 +715,7 @@ fn execute(system: &mut System, texts: [Text; 4]) -> Result<String, u16> {
 
     let [verb, file, parameters, directory] = texts.map(js_string);
     // Only a null verb is `open`: an empty one is a verb all the same, as
-    // the TypeScript engine's string object is, and opens nothing.
+    // a string is, and opens nothing.
     let verb = verb.unwrap_or_else(|| "open".to_string());
     let [file, parameters, directory] =
         [file, parameters, directory].map(Option::unwrap_or_default);
@@ -749,7 +744,7 @@ fn js_index(index: i64, length: usize) -> usize {
 }
 
 /// A file's resources, in the order of its resource table; none where the
-/// table runs past the file's end, where the TypeScript engine throws.
+/// table runs past the file's end, where there is nothing to read.
 pub(crate) fn resources_of(bytes: &[u8]) -> Option<Vec<Resource<'_>>> {
     let word = |at: usize| Some(u16::from_le_bytes([*bytes.get(at)?, *bytes.get(at + 1)?]));
     let header = u32::from_le_bytes(bytes.get(0x3c..0x40)?.try_into().ok()?) as usize;
@@ -770,8 +765,7 @@ pub(crate) fn resources_of(bytes: &[u8]) -> Option<Vec<Resource<'_>>> {
         at += 8;
 
         for _ in 0..count {
-            // JavaScript's `<<`: a signed 32-bit answer, the count taken
-            // modulo 32.
+            // A signed 32-bit shift, the count taken modulo 32.
             let offset = i32::from(word(at)?).wrapping_shl(u32::from(shift));
             let length = i32::from(word(at + 2)?).wrapping_shl(u32::from(shift));
             let id = word(at + 6)?;
@@ -841,9 +835,8 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
     Ok(extract_icons(system, name, index, 1)?.map_or(0, |words| words[0]))
 }
 
-/// The icons `InternalExtractIcon` gives (`SHELL.DLL` seg10 `026e`-`0881`),
-/// as `programs.ts`'s `extractIcons`: `None` where it makes no block, else
-/// its `count` words.
+/// The icons `InternalExtractIcon` gives (`SHELL.DLL` seg10 `026e`-`0881`):
+/// `None` where it makes no block, else its `count` words.
 fn extract_icons(
     system: &mut System,
     name: &str,
@@ -1003,7 +996,7 @@ pub fn internal_extract_icon(system: &mut System, args: &mut Args) -> Result<Ans
 /// entries, ten at most, made a group's directory, each numbered by its
 /// place from one; the icon for the display picked from it as from a
 /// program's group, and its image made the icon (`SHELL.DLL` seg10
-/// `0360`-`04ea`), as `programs.ts`'s `iconFileIcon`. None where it cannot
+/// `0360`-`04ea`). None where it cannot
 /// be read.
 fn icon_file_icon(system: &mut System, bytes: &[u8]) -> Option<u16> {
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
@@ -1070,7 +1063,7 @@ mod tests {
 
     #[test]
     fn a_stem_is_a_replacement_pattern() {
-        // As `"x ^.TXT".replace(/\^/g, stem)` answers in JavaScript.
+        // The stem is read as a replacement pattern.
         assert_eq!(
             replace_carets("x ^.TXT", "C:\\$$$&$`$'$1$"),
             "x C:\\$^x .TXT$1$.TXT"

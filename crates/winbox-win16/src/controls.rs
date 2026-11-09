@@ -1,12 +1,11 @@
-//! The standard controls -- the classes USER registers itself -- as
-//! winbox.js's `controls.ts`, `control-classes.ts` and `ctlcolor.ts` keep
-//! them: what a control keeps, and what its window procedure does with the
+//! The standard controls -- the classes USER registers itself: what a
+//! control keeps, and what its window procedure does with the
 //! messages a program sends it. What each paints is `control_paint.rs`'s. The
 //! edit control, the list box, the combo box and the scroll bar control,
 //! each with a state and messages of its own, are in `edit.rs`,
 //! `mledit.rs`, `listbox.rs`, `combobox.rs` and `scroll_bars.rs`; their
 //! window procedure, here, hands each its messages in the order
-//! `control-classes.ts`'s `controlProc` does.
+//! it takes them.
 
 use winbox_raster::IconData;
 
@@ -591,7 +590,7 @@ impl Engine {
     }
 
     /// The window procedure of USER's control classes, `kind` the class, as
-    /// `control-classes.ts`'s `controlProc` takes a message: an adopted
+    /// it takes a message: an adopted
     /// control made; an adopted list or combo box's parts made once it is
     /// made; a combo box's own messages; an edit control's memory freed,
     /// its modified flag, its clipboard and its own messages; a list box
@@ -599,7 +598,7 @@ impl Engine {
     /// and a list box's messages; and the rest to `DefWindowProc`.
     ///
     /// The caret, which `BeginPaint` and `EndPaint` take away and put back
-    /// around a control's painting, is USER's drawing, not ported yet.
+    /// around a control's painting, is USER's drawing, not done here.
     #[allow(clippy::too_many_lines)]
     pub async fn control_proc(
         &self,

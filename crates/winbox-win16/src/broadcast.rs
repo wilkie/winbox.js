@@ -16,8 +16,6 @@
 //!   1000h, and the block's address passed, its offset nought (seg1
 //!   `0093`); a block that cannot be had answers 10000h and nothing is
 //!   sent. Sent, the block is freed after; posted, it is never freed.
-//!
-//! The TypeScript engine's `broadcast.ts` is the same.
 
 use crate::call::{Args, Stop};
 use crate::engine::Engine;

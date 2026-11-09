@@ -1,9 +1,8 @@
 //! KERNEL's internal calls that a program can reach and that WinBox
 //! answers as `KRNL386.EXE` does: the chain of WINOLDAP's hooks, and the
 //! calls left from real mode and the debugging build whose answers are
-//! only what their code leaves in AX and DX. As `kernel/internals.ts`,
-//! which cites the read-outs; **recorded** by `kintrnl`. `UndefDynlink`
-//! is `kernel.rs`'s, beside `FatalAppExit`.
+//! only what their code leaves in AX and DX. **Recorded** by `kintrnl`.
+//! `UndefDynlink` is `kernel.rs`'s, beside `FatalAppExit`.
 
 use winbox_cpu::{AX, BP, BX, CX, DI, DS, DX, ES, SI, SP, SS};
 use winbox_machine::{index_for, segment_selector};

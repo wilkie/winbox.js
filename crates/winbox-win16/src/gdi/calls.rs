@@ -107,8 +107,8 @@ fn unicode_to_ansi(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 ///
 /// As documented, not yet recorded: a result past sixteen bits, or a
 /// division by nought, answers 32767, or -32768 for one below nought. How a
-/// half rounds is not documented; it rounds away from nought, as the
-/// TypeScript engine has it, which a probe would settle.
+/// half rounds is not documented; it rounds away from nought, which a probe
+/// would settle.
 pub fn mul_div(multiplicand: i32, multiplier: i32, divisor: i32) -> i32 {
     let sign = |value: i32| i32::from(value as i16);
     let product = f64::from(sign(multiplicand)) * f64::from(sign(multiplier));

@@ -14,7 +14,7 @@ use crate::system::System;
 /// stack and the heap more (`KRNL386.EXE` seg1 `7678`-`76a7`), which the
 /// global heap rounds up to 32 bytes as it rounds any block's (**recorded**
 /// by `grround`), no more than a selector's 64K here. `number` counts from
-/// 1. As `loader.ts`'s `segmentBlockSize`.
+/// 1.
 pub fn segment_block_size(executable: &Executable, number: usize) -> u32 {
     let header = &executable.header;
     let segment = &executable.segments[number - 1];
@@ -40,8 +40,7 @@ pub fn segment_block_size(executable: &Executable, number: usize) -> u32 {
 /// past a library's segments' lengths, to their minimum allocation and two
 /// bytes, every byte is nought. Microsoft's setup toolkit relies on it:
 /// `MSCOMSTF.DLL`'s segment 32 ends in a `retf 8` whose last byte, past the
-/// file's `FD0h` bytes, is the nought of its minimum allocation of `FD1h`. As
-/// `loader.ts`'s `loadedSegment`.
+/// file's `FD0h` bytes, is the nought of its minimum allocation of `FD1h`.
 pub fn loaded_segment(mut bytes: Vec<u8>, size: u32) -> Vec<u8> {
     if bytes.len() < size as usize {
         bytes.resize(size as usize, 0);
@@ -80,7 +79,7 @@ pub struct Module {
 /// order it gives them (`load_program`): its module's database where the
 /// module is new, the task's database, its program segment prefix, a
 /// second selector and USER's message queue; and its environment, as it
-/// starts. As `win16.ts`'s `own`.
+/// starts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Own {
     pub database: usize,
@@ -135,8 +134,7 @@ impl Module {
 /// What a program or a library holds of the modules it imported, to let
 /// go with it: a library loaded from its file, by its index among the
 /// modules; or one of WinBox's own whose file is not there, by its index
-/// among the kept modules (`own_modules::use_own`). As `library.ts`'s
-/// `Held`.
+/// among the kept modules (`own_modules::use_own`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Held {
     Library(usize),
@@ -568,7 +566,6 @@ impl System {
     /// which the global heap rounds up to 32 bytes as it rounds any
     /// block's (**recorded** by `grround`: 2FF0h is given 3000h, and
     /// `locinfo`'s heap at the end of its data segment grows from there).
-    /// As `win16.ts`.
     fn size_segments(&mut self, module: &Module) {
         for (number, &index) in module.segments.iter().enumerate() {
             self.global

@@ -467,8 +467,7 @@ fn exit_windows(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(1))
 }
 
-/// A byte in lower case, as the TypeScript engine lowers a string's
-/// characters: A to Z, and Latin-1's capitals.
+/// A byte in lower case: A to Z, and Latin-1's capitals.
 fn lower(byte: u8) -> u8 {
     match byte {
         b'A'..=b'Z' | 0xc0..=0xd6 | 0xd8..=0xde => byte + 0x20,
@@ -684,7 +683,7 @@ mod tests {
 
     /// `GetTickCount` steps by the timer's tick, as `tickstep` recorded
     /// Windows': 55 milliseconds at a time, and 54 every thirteenth or
-    /// fourteenth. As `test/win16/tick_count_test.ts`.
+    /// fourteenth.
     #[test]
     fn get_tick_count_steps_by_whole_ticks_54_or_55_milliseconds() {
         let mut system = system();
@@ -717,7 +716,7 @@ mod tests {
     }
 
     /// `RegisterWindowMessage` gives one message a string, in any case, from
-    /// C000h. As `test/win16/task_test.ts`.
+    /// C000h.
     #[test]
     fn register_window_message_gives_one_message_a_string_in_any_case() {
         let mut system = System::new();

@@ -36,8 +36,7 @@ thread_local! {
     static NOW: Cell<f64> = const { Cell::new(0.0) };
 }
 
-/// Where Notepad is started, and so where the dialog opens: as the
-/// TypeScript engine's test puts it (`test/win16/file_dialogs_test.ts`).
+/// Where Notepad is started, and so where the dialog opens.
 const NOTEPAD: &str = "C:\\CORPUS\\NOTEPAD\\NOTEPAD.EXE";
 
 /// The dialog's controls (`COMMDLG.DLL`'s template): the file name, the
@@ -84,8 +83,7 @@ fn hold(session: &mut Session, folder: &Path, dos: &str, without: &[&str]) {
 }
 
 /// A fresh machine, Windows staying up, the installation on C: and Notepad
-/// in a folder of its own, the root's folders those of the TypeScript
-/// engine's drive: `CORPUS`, `ORACLE` and `WINDOWS`. Notepad started, and
+/// in a folder of its own, the root's folders `CORPUS`, `ORACLE` and `WINDOWS`. Notepad started, and
 /// its File Open dialog opened from the keyboard. None where the oracle's
 /// build is not here.
 fn opened() -> Option<Session> {
@@ -446,8 +444,7 @@ fn a_directory_double_clicked_is_gone_into_and_a_file_clicked_is_opened() {
 
 /// The same with no `COMMDLG.DLL` on the drive: the dialog is WinBox's own,
 /// its template and its code, and does all the same. Only the folders' and
-/// drives' pictures, which are the file's, are not drawn. As the TypeScript
-/// engine's test.
+/// drives' pictures, which are the file's, are not drawn.
 #[test]
 fn the_same_with_no_commdlg_dll_on_the_drive() {
     let Some(mut session) = opened_without(&["\\WINDOWS\\SYSTEM\\COMMDLG.DLL"]) else {

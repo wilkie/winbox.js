@@ -20,8 +20,7 @@
 //! back to the unhinted outline for that glyph: a half-run program leaves
 //! points moved by some instructions and not others, which is worse than not
 //! hinting at all, and silently wrong rather than visibly so. A read past
-//! the end of the font is the same fault, as it is a thrown `RangeError` in
-//! the TypeScript engine, which catches both alike.
+//! the end of the font is the same fault.
 //!
 //! The numbers are a JavaScript engine's, because that is what every rule
 //! here was measured through: a coordinate may carry a fraction (a component
@@ -41,9 +40,7 @@ use crate::truetype::{Contour, Fault, FontData, Point};
 /// How many instructions one program may run before it is assumed stuck.
 const STEP_LIMIT: u32 = 400_000;
 
-/// How deep functions may call one another. The TypeScript engine has no
-/// limit of its own and stops where its host's stack runs out, which it
-/// catches as it catches any other fault; this stops at a depth no font's
+/// How deep functions may call one another. It stops at a depth no font's
 /// program reaches, rather than at the native stack's end.
 const CALL_DEPTH: u32 = 2_000;
 
@@ -1525,8 +1522,7 @@ impl Hinter {
                 let high = self.pop()?;
                 let low = self.pop()?;
 
-                // A range no outline has room for is a program gone wrong; the
-                // TypeScript engine would grind through it.
+                // A range no outline has room for is a program gone wrong.
                 if high - low > 1_000_000.0 {
                     return Err(Fault);
                 }
@@ -2454,8 +2450,8 @@ impl Hinter {
         let size = self.size_along() - (state.delta_base + band);
         let mut moves = Vec::new();
 
-        // Not a range's `contains`: a size that is not a number passes, as it
-        // does in the TypeScript engine.
+        // Not a range's `contains`: a size that is not a number passes, since
+        // no comparison with it holds.
         #[allow(clippy::manual_range_contains)]
         if size < 0.0 || size >= 16.0 {
             return moves;

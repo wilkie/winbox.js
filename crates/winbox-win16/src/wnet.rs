@@ -3,7 +3,7 @@
 //! USER fills as Windows starts, and with none answers 1,
 //! `WN_NOT_SUPPORTED` (`USER.EXE` seg22 `0770`-`0790`) -- `WNetGetCaps`
 //! nought. `WNetErrorText` is USER's own, from its strings. **Recorded**
-//! by `wnetall` and `netcaps`. As `src/win16/user/wnet.ts`.
+//! by `wnetall` and `netcaps`.
 //!
 //! Not followed: the checks most make of their arguments first, a pointer
 //! by touching it and a window by its class's signature, which answer 4 or

@@ -1,6 +1,6 @@
 //! The Print dialog's procedure, `PrintDlgProc` (21): COMMDLG's dialog
 //! 1538 set up from the structure, the printer shown, the checks of OK,
-//! Setup... and Help (`COMMDLG.DLL` seg3 `371f`). As `print-proc.ts`.
+//! Setup... and Help (`COMMDLG.DLL` seg3 `371f`).
 
 use super::api::{Arg, buffer};
 use super::print_dlg::{

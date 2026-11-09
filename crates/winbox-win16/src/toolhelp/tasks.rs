@@ -1,5 +1,4 @@
-//! TOOLHELP's walk of the tasks (`TOOLHELP.DLL` seg1 `0caa`-`0f19`). As
-//! `toolhelp/tasks.ts`.
+//! TOOLHELP's walk of the tasks (`TOOLHELP.DLL` seg1 `0caa`-`0f19`).
 
 use super::structures::structure;
 use crate::call::{Answer, Args, Later, Stop};
@@ -32,8 +31,7 @@ pub(crate) fn module_name(system: &System, module: usize) -> String {
         .to_ascii_uppercase()
 }
 
-/// A `TASKENTRY` filled for a task (seg1 `0e69`-`0f19`); see `fill` in
-/// `tasks.ts`. False for a handle that is no task.
+/// A `TASKENTRY` filled for a task (seg1 `0e69`-`0f19`); false for a handle that is no task.
 fn fill(system: &mut System, far: u32, handle: u16) -> bool {
     let Some(entry) = structure(system, far, TASKENTRY) else {
         return false;

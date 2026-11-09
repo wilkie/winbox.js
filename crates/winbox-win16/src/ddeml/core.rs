@@ -2,7 +2,7 @@
 //! the guest memory its structures live in, its calls into KERNEL and USER
 //! made as `DDEML.DLL` makes them, and the little library of lists, arrays
 //! and queues `DDEML.DLL` keeps them in (seg1 `2144`-`2d80`, `5eae`-`6114`,
-//! `6118`-`62dc`, `7334`-`74d4`). As `src/win16/ddeml/core.ts`.
+//! `6118`-`62dc`, `7334`-`74d4`).
 //!
 //! Every structure is where `DDEML.DLL` puts it and laid out as it lays it
 //! out: the instances in DDEML's own local heap, everything of an

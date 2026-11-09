@@ -19,8 +19,7 @@
 //!   write it (seg4 `2662`-`2826`); `groups_of` the groups on a flattened
 //!   stack.
 //!
-//! Strings are bytes. The TypeScript engine's twin is
-//! `src/layers/groups.ts`; the two are held to `test/layers/groups.json`
+//! Strings are bytes. The cases in `test/layers/groups.json` hold it
 //! (`tests/groups.rs`).
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -1807,7 +1806,7 @@ pub fn group_files(ini: &[u8]) -> Vec<String> {
 /// refused. A group whose file is the base's is left out: an
 /// installation's own groups are Windows', not a program's kept over it.
 /// Listed by the native build's `--list` and shown under each kept program
-/// on the page; the TypeScript engine's twin is `programGroups`.
+/// on the page.
 pub fn program_groups<'a>(read: impl Fn(&str) -> Option<&'a [u8]>) -> Vec<StackGroup> {
     groups_from(&read)
         .groups
@@ -1818,8 +1817,7 @@ pub fn program_groups<'a>(read: impl Fn(&str) -> Option<&'a [u8]>) -> Vec<StackG
 
 /// A kept program's own files: its layers, the lowest first, flattened
 /// over an empty base of the name they were made on. Refused as `flatten`
-/// refuses the layers. The TypeScript engine's `programFiles` has only
-/// each path's sha256, the page reading the bytes it needs alone.
+/// refuses the layers.
 pub fn program_files(layers: &[crate::layers::Layer]) -> Result<Flat, String> {
     use crate::layers::{FORMAT, Layer, Made, Manifest, flatten};
 

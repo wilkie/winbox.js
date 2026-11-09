@@ -49,11 +49,11 @@ pub const HKEY_CLASSES_ROOT: u32 = 1;
 const MAGIC: &[u8; 8] = b"SHCC3.10";
 const EMPTY_BUCKETS: usize = 37;
 
-/// An entry's four words, kept as the TypeScript engine keeps them, as
+/// An entry's four words, kept as
 /// numbers: a text's count of uses may pass nought going down.
 pub type Entry = [i32; 4];
 
-/// Text as JavaScript's `toUpperCase` makes it, each byte a character.
+/// Text in upper case as Unicode has it, each byte a character.
 pub fn upper(text: &[u8]) -> String {
     text.iter()
         .map(|&byte| char::from(byte))
@@ -134,8 +134,7 @@ impl RegistryDatabase {
             let mut id = db.entries[bucket][0] as usize;
 
             while id > db.buckets {
-                // A chain that leads past the table: the TypeScript engine
-                // throws reading it; here the file is refused.
+                // A chain that leads past the table: the file is refused.
                 let Some(&[_, _, length, offset]) = db.entries.get(id) else {
                     return Err(ERROR_BADDB);
                 };

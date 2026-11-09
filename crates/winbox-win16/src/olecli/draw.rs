@@ -3,7 +3,7 @@
 //! records are enumerated through. Each call into GDI and USER as
 //! `OLECLI.DLL` makes it, seen with its arguments as WinBox ran the file;
 //! the metafiles it leaves **measured** by `olemem`'s `record`s, the
-//! pixels **recorded** by `olestat`. As `src/win16/olecli/draw.ts`.
+//! pixels **recorded** by `olestat`.
 
 use crate::commdlg::api::Arg;
 use crate::engine::GuestArg;

@@ -95,8 +95,7 @@ impl Profile {
 
     /// A buffer cut into lines, each running to and taking in a line feed,
     /// as KERNEL steps from line to line; the text of each is what comes
-    /// before its first carriage return, the rest its ending (`profile.ts`'s
-    /// `split`).
+    /// before its first carriage return, the rest its ending.
     fn split(text: &[u8]) -> Vec<Line> {
         let mut lines = Vec::new();
         let mut at = 0;
@@ -155,7 +154,7 @@ impl Profile {
     /// with an `=` the blanks before and after it; the rest copied as it
     /// was, a value's trailing blanks with it (`profnul`) -- a comment's and
     /// a section's line compacted too, under Windows in protected mode
-    /// (`WF_PMODE` at `6b92`), as `profile.ts`'s `normalise`.
+    /// (`WF_PMODE` at `6b92`).
     fn normalise(text: &[u8]) -> Vec<u8> {
         let mut out = Vec::new();
 
@@ -270,7 +269,7 @@ impl Profile {
     /// The buffer as KERNEL holds it, the file and the return, line feed and
     /// nought it adds as it loads one (`KRNL386.EXE` seg1 `6ca8`-`6cdf`),
     /// edited; the file is what is left less those three, as KERNEL writes
-    /// `[0Ah]` less three (`70ef`-`710a`), as `profile.ts`'s `edit`.
+    /// `[0Ah]` less three (`70ef`-`710a`).
     fn edit(&mut self, edit: impl FnOnce(Vec<u8>) -> Vec<u8>) {
         let mut buffer = self.text();
 
@@ -314,7 +313,7 @@ impl Profile {
     /// with no entry removes it (`KRNL386.EXE` seg1 `703f`, `71cb`-`7229`):
     /// from the heading's last `[` every line to the next that starts with
     /// `[`, or to the file's end, but a line that starts with `;` kept,
-    /// moved up to where the heading was; as `profile.ts`'s `removeSection`.
+    /// moved up to where the heading was.
     pub fn remove_section(&mut self, section: &[u8]) {
         let Some(index) = self.heading(section) else {
             return;
@@ -392,8 +391,7 @@ impl Profile {
 
     /// A value read as `GetPrivateProfileString` reads it, which cuts its
     /// trailing spaces in the buffer (`KRNL386.EXE` seg1 `6569`-`656c`,
-    /// `6864`): the byte that ended it written over the first of them, as
-    /// `profile.ts`'s `read`.
+    /// `6864`): the byte that ended it written over the first of them.
     pub fn read(&mut self, section: &[u8], entry: &[u8]) -> Option<Vec<u8>> {
         let mut within = false;
 
@@ -482,8 +480,7 @@ impl Profile {
                     Some(value) => {
                         // The value from after the `=`, a return and a line
                         // feed over the old ending's first two bytes
-                        // (`KRNL386.EXE` seg1 `6e06`-`6e1a`, `72b5`), as
-                        // `profile.ts`'s `set`.
+                        // (`KRNL386.EXE` seg1 `6e06`-`6e1a`, `72b5`).
                         let end = &lines[at].end;
                         let ending = if end.len() >= 2 {
                             [b"\r\n", &end[2..]].concat()
@@ -535,8 +532,7 @@ impl Profile {
             // From the buffer's end, back over every return and line feed
             // to the last other byte; three on from it the section goes,
             // `\r\n` before its heading unless that is the buffer's start
-            // (`KRNL386.EXE` seg1 `6e49`-`6e7b`, `726a`), as `profile.ts`'s
-            // `set`.
+            // (`KRNL386.EXE` seg1 `6e49`-`6e7b`, `726a`).
             let text = self.text();
             let at = text
                 .iter()

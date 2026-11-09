@@ -5,7 +5,7 @@
 //! (`4f9e`, `50be`, `DdeDisconnect`, `DdeDisconnectList`), the posts kept
 //! for a full queue (`5c58`, `5de4`), and the queries (`DdeQueryConvInfo`,
 //! `DdeSetUserHandle`, `DdeQueryNextServer`), as `DDEML.DLL` seg1 has
-//! them. As `src/win16/ddeml/conv.ts`.
+//! them.
 
 use crate::commdlg::api::Arg;
 

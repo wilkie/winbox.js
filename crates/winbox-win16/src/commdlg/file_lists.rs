@@ -1,7 +1,7 @@
 //! The file boxes' lists and drives, DOS as COMMDLG asks it, its message
 //! boxes, and its owner-drawn rows (`COMMDLG.DLL` seg2 `039b`, `0180`,
 //! `4827`, `4732`, `2107`, `4ae2`, `1a26`, `4dcc`, `4e8a`, and seg1's DOS
-//! calls). As `file-dialogs.ts`.
+//! calls).
 
 use super::api::{self, Arg, item, item_text, list_text, send, send_item, set_item_text, text};
 use super::file_dialogs::{

@@ -1,6 +1,5 @@
 //! How many times over a strike is drawn: a measurement of Windows read
-//! straight out of `font-vga`'s recording. Ported from the TypeScript
-//! engine's `test/raster/strike_stretch_test.ts`.
+//! straight out of `font-vga`'s recording.
 //!
 //! A bitmap face has a handful of strikes and is asked for every size, so
 //! most sizes are answered by drawing a smaller strike a whole number of

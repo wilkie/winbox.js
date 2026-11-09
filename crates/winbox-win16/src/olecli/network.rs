@@ -1,8 +1,7 @@
 //! `OLECLI`'s network helpers, exports 950-954: a link's document on a
 //! drive connected to a share -- its network name, kept in its stream --
 //! told, checked, and connected again through a dialog, "Connect Network
-//! Drive". As `src/win16/olecli/network.ts`, where what each does is told:
-//! **read out** of `OLECLI.DLL` seg8 in prose, **measured** by `olenet`.
+//! Drive". **Read out** of `OLECLI.DLL` seg8 in prose, **measured** by `olenet`.
 
 use crate::commdlg::api::{Arg, text};
 use crate::dialog_template::{DialogTemplate, parse_dialog_template};
@@ -276,7 +275,7 @@ struct Control {
 }
 
 /// The dialog, `CONNECTDLG`, laid out from what `olenet` measured of it
-/// (`network.ts`). No byte of `OLECLI.DLL`'s resource is copied.
+/// No byte of `OLECLI.DLL`'s resource is copied.
 const STYLE: u32 = WS_POPUP | WS_CAPTION | WS_SYSMENU | DS_MODALFRAME;
 const BOX: (u16, u16, u16, u16) = (78, 55, 155, 76);
 const CAPTION: &str = "Connect Network Drive";
@@ -470,7 +469,7 @@ async fn list_drives(ole: &Ole<'_>, dialog: u16) -> R<()> {
 
 /// `CONNECTDLGPROC` (950): the dialog's procedure (**read out**, seg8
 /// `0456`-`0620`; shown and cancelled, **measured** by `olenet`; what
-/// Connect does `unrecorded`). `network.ts` tells each message.
+/// Connect does `unrecorded`).
 #[allow(clippy::too_many_lines)]
 pub(crate) async fn connect_dlg_proc(
     ole: &Ole<'_>,

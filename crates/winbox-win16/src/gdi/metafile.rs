@@ -70,12 +70,10 @@
 //!   from memory to disk or disk to memory says three words more in its
 //!   header's size than it holds; one to its own kind, what it holds.
 //!
-//! A call is routed here where the call is taken, as the TypeScript
-//! engine's dispatcher routes it: any of GDI's functions whose first
-//! argument is a device context, given a metafile's (`recording`). The
-//! export tables this engine is built from do not say which functions take
-//! a device context first, so `DC_FIRST` names them, from the TypeScript
-//! engine's table.
+//! A call is routed here where the call is taken: any of GDI's functions
+//! whose first argument is a device context, given a metafile's
+//! (`recording`). The export tables this engine is built from do not say
+//! which functions take a device context first, so `DC_FIRST` names them.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -505,8 +503,7 @@ pub(crate) fn recording(
 
 /// A call into a metafile's device context kept as a record: its answer in
 /// AX, and DX nought for one that answers a long; AX and DX left for one
-/// that answers nothing. The call log is not told its answer, as the
-/// TypeScript engine's watcher is not.
+/// that answers nothing. The call log is not told its answer.
 pub(crate) fn record_call(
     system: &mut System,
     index: usize,
@@ -543,8 +540,7 @@ fn dword_at(image: &[u8], at: usize) -> u32 {
 }
 
 /// A string argument as a record keeps it: none for a null pointer, the
-/// digits of the offset of one whose segment is nought, as the TypeScript
-/// engine makes a string of the number it reads there.
+/// digits of the offset of one whose segment is nought.
 fn kept_text(system: &System, far: u32) -> Vec<u8> {
     match (far >> 16, far & 0xffff) {
         (0, 0) => Vec::new(),
@@ -963,8 +959,7 @@ fn kind_of(system: &mut System, handle: u16) -> Option<usize> {
         GdiObject::Font(_) => FONT,
     };
 
-    // A font is one where it has a `LOGFONT`, as the TypeScript engine
-    // asks of it.
+    // A font is one where it has a `LOGFONT`.
     if kind == FONT {
         font_logfont(system, handle)?;
     }
@@ -1282,13 +1277,12 @@ pub(crate) fn realize_palette_in_metafile(system: &mut System, hdc: u16) -> Opti
     Some(1)
 }
 
-/// A string argument naming a file, as the TypeScript engine reads one.
+/// A string argument naming a file.
 enum Name {
     /// A null pointer.
     None,
     /// A string; the digits of the offset of a pointer whose segment is
-    /// nought, as the TypeScript engine makes a string of the number it
-    /// reads there.
+    /// nought.
     Given(String),
     /// One that cannot be read, which turns the call away (`badarg`).
     Refused,
@@ -1418,7 +1412,7 @@ fn dos_stamp(system: &System) -> Vec<u8> {
 
 /// The handle of a metafile on disk: its header of kind 2, six bytes, the
 /// file's `OFSTRUCT`, in a block of 192 bytes (`diskmeta`). A path too long
-/// for it makes the block longer, as the TypeScript engine's array grows.
+/// for it makes the block longer.
 fn disk_handle(system: &mut System, bytes: &[u8], path: &str) -> u16 {
     let name: Vec<u8> = path.chars().map(|char| char as u32 as u8).collect();
     let mut block = vec![0u8; 192];
@@ -1472,11 +1466,10 @@ fn metafile_of(system: &mut System, hmf: u16) -> Option<u32> {
 const LARGEST: u64 = 0x0100_0000;
 
 /// How many bytes a metafile's header says it is, read as far as that
-/// whether or not its block holds them, as the TypeScript engine reads
-/// them to copy them (`CopyMetaFile`). One that says more than `LARGEST`
-/// stops here, where the TypeScript engine would try to make an array of
-/// that many: a deliberate difference. Playing and enumerating read only
-/// the records, and take any size.
+/// whether or not its block holds them, to copy them (`CopyMetaFile`). One
+/// that says more than `LARGEST` stops here, rather than make a buffer of
+/// that many. Playing and enumerating read only the records, and take any
+/// size.
 fn total_of(system: &System, far: u32) -> Result<u32, Stop> {
     let total = u64::from(dword_in(system, far, 6)) * 2;
 
@@ -1536,17 +1529,15 @@ impl Opened {
     }
 
     /// Each record's offset, the ending one left out. Only the records are
-    /// read, so the header's size is taken at its word however large, as
-    /// the TypeScript engine takes it: the walk ends at the first record of
-    /// no function, or past that size.
+    /// read, so the header's size is taken at its word however large: the
+    /// walk ends at the first record of no function, or past that size.
     fn records(&self, system: &System) -> Vec<u32> {
         let total = u64::from(dword_in(system, self.far, 6)) * 2;
         let mut records = Vec::new();
         let mut at = u64::from(self.header) * 2;
 
         while at + 6 <= total {
-            // Past four gigabytes an offset wraps, as the TypeScript
-            // engine's `>>>` takes it.
+            // Past four gigabytes an offset wraps.
             let size = dword_in(system, self.far, at as u32);
             let function = word_in(system, self.far, (at as u32).wrapping_add(4));
 
@@ -2037,10 +2028,9 @@ fn play_at_once(
         }
         META_POLYGON | META_POLYLINE => {
             // The record's count is a word, given here signed as the two
-            // functions take theirs. The TypeScript engine's `Polygon`
-            // compares it unsigned, so a count past 32767 draws there and
-            // not here: a deliberate difference, met only by a record whose
-            // points would reach past their segment.
+            // functions take theirs, so a count past 32767 draws nothing:
+            // met only by a record whose points would reach past their
+            // segment.
             let points = far_at(far, 8);
             let count = word(system, 6) as i16;
 
@@ -2588,9 +2578,9 @@ mod tests {
         assert_eq!(meta.largest, 7);
     }
 
-    /// A header that says more than memory holds: its records are walked
-    /// to the first of no function, as the TypeScript engine walks them,
-    /// and only a copy of it, which would read every byte, stops.
+    /// A header that says more than memory holds: its records are walked to
+    /// the first of no function, and only a copy of it, which would read
+    /// every byte, stops.
     #[test]
     fn walks_the_records_of_a_header_larger_than_memory() {
         let mut system = System::new();
@@ -2612,8 +2602,7 @@ mod tests {
         );
     }
 
-    /// An offset past four gigabytes wraps rather than overflows, as the
-    /// TypeScript engine's `>>>` takes it.
+    /// An offset past four gigabytes wraps rather than overflows.
     #[test]
     fn reads_a_word_at_the_last_offset_there_is() {
         let mut system = System::new();

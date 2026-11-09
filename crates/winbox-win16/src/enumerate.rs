@@ -1,5 +1,5 @@
 //! USER's calls that hand a program's procedure each window in turn, and
-//! the last active pop-up, as winbox.js's `enumerate.ts` has them. **Read
+//! the last active pop-up. **Read
 //! out of `USER.EXE`** and **recorded** by `minis3`.
 
 // Each has the signature every function that answers a call has, whether

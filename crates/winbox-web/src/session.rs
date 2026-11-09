@@ -222,9 +222,8 @@ impl Session {
     /// it: the last ends as the others do, its windows taken away as
     /// Windows takes a task's away as it ends it, its code told with
     /// theirs (`take_exits`); and the run waits (`State::Waiting`) for the
-    /// next started, which runs on the same machine. As the TypeScript
-    /// engine's `Win16` stays, with its desktop, once its last task has
-    /// ended. Without it, as the trace and the survey run a program, the
+    /// next started, which runs on the same machine. Windows stays, with its
+    /// desktop, once its last task has ended. Without it, as the trace and the survey run a program, the
     /// run is over with the last (`stop`), its last screen kept.
     pub fn stay_up(&mut self) {
         self.engine.system().stays_up = true;
@@ -610,8 +609,7 @@ impl Session {
     /// `show` -- with `directory` its current directory, the one
     /// `ShellExecute` made current as it started it. The page works out
     /// all four from the item as `itemRun` does (`src/layers/launch.ts`,
-    /// `launch.rs`); the TypeScript engine's twin is `Win16.run`'s
-    /// `commandLine`, `show` and `directory`. Beside those running, once a
+    /// `launch.rs`). Beside those running, once a
     /// program has started (`System::launch_item`).
     pub fn start_item(
         &mut self,
@@ -875,8 +873,7 @@ impl Session {
         Screen::shown(&mut system, &indices)
     }
 
-    /// USER's windows as an accessibility tree, as JSON, as the TypeScript
-    /// engine's `accessibleTree` is written (`accessible_tree.rs`).
+    /// USER's windows as an accessibility tree, as JSON (`accessible_tree.rs`).
     pub fn accessible_tree(&self) -> String {
         self.engine.system().accessible_tree_json()
     }

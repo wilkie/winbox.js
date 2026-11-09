@@ -21,7 +21,7 @@
 //! answered with Enter, each saved as it came up (`FILE.box1.png`).
 //! `--calls N` stops the run as the program makes its call after the
 //! Nth, where it has not stopped before. `--marks REPORT.json` presses the
-//! keys and keeps the screens a TypeScript engine's survey report says it
+//! keys and keeps the screens a survey report says it
 //! did, where it did (`stepMarks`). `--input SEED` gives the run made-up
 //! keys and clicks every second and a half of its clock, the same for the
 //! same seed (`scripted_input`); given with `--marks`, only after the
@@ -42,8 +42,8 @@ use winbox_ne::Executable;
 use winbox_win16::survey::{Screen, Survey};
 
 /// A folder copied where the drive's folder is, and every folder in it, as
-/// the TypeScript engine maps one onto its disk image: what the program
-/// writes there stays with the run and never reaches the folder itself.
+/// so that what the program writes there stays with the run and never
+/// reaches the folder itself.
 fn copy_folder(folder: &Path, at: &Path) {
     let _ = std::fs::create_dir_all(at);
 
@@ -60,7 +60,7 @@ fn copy_folder(folder: &Path, at: &Path) {
 
 /// The screen as the run left it, the cursor over it, and each box kept
 /// beside it; or, where screens were kept at marks, each of those, as the
-/// TypeScript engine's survey names them: the first as asked, the rest
+/// the survey names them: the first as asked, the rest
 /// `-2`, `-3` and on.
 fn save_screens(screen: &Path, screens: &[Screen], boxes: &[Screen]) {
     for (at, kept) in screens.iter().enumerate() {
@@ -82,8 +82,7 @@ fn save_screens(screen: &Path, screens: &[Screen], boxes: &[Screen]) {
     }
 }
 
-/// A screen saved as a PNG, in the colours it showed, as the TypeScript
-/// engine's survey saves its own.
+/// A screen saved as a PNG, in the colours it showed.
 fn save_png(file: &Path, screen: &Screen) {
     let Ok(out) = std::fs::File::create(file) else {
         eprintln!("cannot write {}", file.display());
@@ -270,8 +269,8 @@ fn main() {
 
     survey.marks = marks.map(|report| std::fs::read_to_string(report).unwrap_or_default());
     survey.screens = screen.is_some();
-    // The instructions run at each call, to set beside the TypeScript
-    // engine's where the two clocks part.
+    // The instructions run at each call, to find where a run's clock parts
+    // from another's.
     survey.counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
 
     let mut system = survey.system().expect("a display mode winbox.js knows");
@@ -375,9 +374,8 @@ fn main() {
     if shell {
         winbox_win16::progman::start_shell(&mut system, &path)
             .expect("Program Manager's registers");
-        // The run goes on for its seconds, as the TypeScript engine's
-        // survey runs one, not over once the shell is left alone: the
-        // shell is a task as any other here.
+        // The run goes on for its seconds, as the survey runs one, not over
+        // once the shell is left alone: the shell is a task as any other here.
         system.shell_task = None;
     } else {
         winbox_win16::survey::start(&mut system, executable, &path)

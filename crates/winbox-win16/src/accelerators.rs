@@ -1,5 +1,5 @@
-//! Accelerator tables: keys that stand for commands, as winbox.js's
-//! `accelerators.ts` keeps them. A table is a resource of five-byte entries
+//! Accelerator tables: keys that stand for commands. A table is a resource
+//! of five-byte entries
 //! -- a flag byte, the key and the command -- the last with bit 80h of its
 //! flags set. With `FVIRTKEY` the key is a virtual key, pressed with the
 //! shift keys the flags name; without it, a character, as `WM_CHAR` carries

@@ -1,8 +1,7 @@
 //! A run-length encoded DIB, `BI_RLE8` or `BI_RLE4`, set into a bitmap of
 //! the display's or drawn on the screen as the display driver's routine of
 //! run lengths does it (`rle_runs`): GDI hands the driver the DIB as it is.
-//! **Recorded** by `rledib` on the VGA and the 256-colour display. The
-//! TypeScript engine's `rle-dib.ts`.
+//! **Recorded** by `rledib` on the VGA and the 256-colour display.
 //!
 //! * `SetDIBits`: the driver's `DeviceBitmapBits`, with the bitmap's
 //!   rectangle to clip to, so nothing is clipped. On the VGA (`VGA.DRV`

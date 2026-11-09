@@ -4,8 +4,7 @@
 //! `DumpIcon` (`USER.EXE` seg12 `01bb`) into the file. For the group files
 //! the pm probes recorded whole, and the installation's own on each
 //! display's drive of the oracle's (local; nothing held where not there).
-//! Ported from `test/run/group_icon_test.ts` (phase 1b of
-//! `kb/guides/retire-typescript.md`), whose page-code cases stay there.
+//! The page-code cases are `test/run/group_icon_test.ts`'s.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};

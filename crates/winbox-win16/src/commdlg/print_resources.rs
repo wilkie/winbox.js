@@ -1,7 +1,7 @@
 //! COMMDLG's Print and Print Setup dialogs, and Print Setup's portrait and
 //! landscape icons: WinBox keeps them itself, as it keeps COMMDLG, and no
 //! Windows file is shipped. Made to match the Windows 3.1 the recordings are
-//! made on, from its `COMMDLG.DLL`. As `print-resources.ts`.
+//! made on, from its `COMMDLG.DLL`.
 
 /// COMMDLG's dialog 1538, Print.
 pub(crate) const PRINT_TEMPLATE: &str = concat!(

@@ -1,5 +1,5 @@
 //! An MDI client's scroll bars: shown when its children reach past its
-//! edges, and scrolling them -- winbox.js's `mdi-scroll.ts`.
+//! edges, and scrolling them.
 //!
 //! **Read out of `USER.EXE`** (seg15 `0276`, `053f`, `06b3`), and
 //! **recorded** by `mdiscrl`, a document window moved past each edge of its

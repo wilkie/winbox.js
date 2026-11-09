@@ -1,6 +1,6 @@
 //! VER's names of languages: its string table's strings, by their numbers,
 //! as `VER.DLL` holds them (its `RT_STRING` resources 1, 65-67, 129, 130,
-//! 193 and 257). As `src/win16/ver/languages.ts`.
+//! 193 and 257).
 
 /// String nought's: the name of a language VER has none for.
 pub const UNKNOWN_LANGUAGE: &str = "Unknown Language";

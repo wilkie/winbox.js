@@ -1,5 +1,5 @@
 //! Windows staying up once the last program has ended, as the page keeps
-//! it (`Session::stay_up`), as the TypeScript engine's `Win16` stays: the
+//! it (`Session::stay_up`): the
 //! last program ends as the others do, its windows taken away, its code
 //! told -- 255 for one that faulted -- and the next runs on the same
 //! machine. And each program in a directory of its own, as KERNEL keeps one

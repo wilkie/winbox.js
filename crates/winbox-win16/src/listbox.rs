@@ -1,9 +1,7 @@
 //! The list box: its items and their order, its selection, the keys and
 //! the mouse, its scrolling, what it tells its parent, and an owner-drawn
-//! one -- winbox.js's `listbox.ts`, with what `control-classes.ts` does
-//! around it: the strings its messages carry, its making (`initList`), its
-//! whole rows (`integralHeight`) and what it asks of the desktop and its
-//! parent (`listHost`).
+//! one -- with the strings its messages carry, its making, its whole rows
+//! and what it asks of the desktop and its parent.
 //!
 //! **Read out of `USER.EXE`** -- the window procedure is seg35 `0100`, with
 //! seg38 for making one, seg43 for its items and scroll bar -- and
@@ -12,10 +10,8 @@
 //! `COMMDLG.DLL`'s file lists are, driven with messages, keys and clicks.
 //!
 //! Its rows, its highlight and its focus rectangle are the desktop's
-//! drawing (`control_pixels.rs`); an owner's `WM_DRAWITEM` is sent as the
-//! TypeScript engine sends it.
-//! `LB_DIR` and `LB_ADDFILE`, which fill a list from the disk, are
-//! `dlgdir.rs`'s.
+//! drawing (`control_pixels.rs`). `LB_DIR` and `LB_ADDFILE`, which fill a
+//! list from the disk, are `dlgdir.rs`'s.
 
 use crate::call::Stop;
 use crate::control_host::{WM_DRAWITEM, WM_MEASUREITEM, bytes_of, text_of, widened};
@@ -195,8 +191,8 @@ fn signed(value: u32) -> i32 {
 /// that does not itself start with `[` passes over an item's leading `[` or
 /// `[-`.
 ///
-/// Both are put in capitals as the TypeScript engine's strings are, a
-/// character to a byte read as Latin-1 and capitalised as Unicode has it:
+/// Both are put in capitals a character to a byte, read as Latin-1 and
+/// capitalised as Unicode has it:
 /// `ß` becomes `SS`, and `ÿ` and `µ` capitals outside Latin-1 -- so `ß`
 /// finds an item that starts `ss`.
 fn find_in(items: &[String], start: i32, text: &[u8], exact: bool) -> i32 {
@@ -287,7 +283,7 @@ impl System {
         let height = self.list_shape(index).client_height;
         // A row is never 0 high -- made from a font's height, or 1 to 255 by
         // `LB_SETITEMHEIGHT` -- but held to 1 here and in the divisions
-        // below, where the TypeScript engine would divide by nought.
+        // below, so as never to divide by nought.
         let row = self.list_state(index).height.max(1);
         let whole = height / row;
 
@@ -338,8 +334,7 @@ impl System {
         let top = self.list_state(index).top;
         let shown = top != 0 || most != 0;
         // Scrolled with nothing to scroll -- items taken away under it -- the
-        // TypeScript engine's percentage is infinite, which `SetScrollPos`
-        // takes as 0.
+        // position is 0, as `SetScrollPos` takes an infinite percentage.
         let position = if !shown {
             None
         } else if top == 0 || most == 0 {

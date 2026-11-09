@@ -1,6 +1,6 @@
 //! The clipboard: one for the system, opened by a window at a time, holding
 //! a block for each format put on it, and a chain of viewers told when it
-//! changes. winbox.js's `clipboard.ts`.
+//! changes.
 //!
 //! **Recorded** by `clip`, with an owner, a viewer and a second viewer:
 //!

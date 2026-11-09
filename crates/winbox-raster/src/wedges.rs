@@ -25,7 +25,7 @@
 //!   `Pie` fill them and draw them closed, as `Polygon` does.
 //!
 //! Every point list this makes was checked against GDI's own code, run on
-//! the TypeScript engine's processor, over every ellipse from 1 to 40 by 1
+//! an emulated processor, over every ellipse from 1 to 40 by 1
 //! to 40.
 
 use crate::curves::{Point, quarter};

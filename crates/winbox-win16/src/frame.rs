@@ -1,7 +1,6 @@
-//! What USER draws around a window, as winbox.js's `frame.ts` draws it: its
-//! border or sizing frame, its caption, the system menu, minimize and
-//! maximize boxes, its menu bar and its scroll bars -- the non-client area
-//! -- into the screen's pixels.
+//! What USER draws around a window: its border or sizing frame, its
+//! caption, the system menu, minimize and maximize boxes, its menu bar and
+//! its scroll bars -- the non-client area -- into the screen's pixels.
 //!
 //! Every rule here is read off the `chrome` probe's captures:
 //!

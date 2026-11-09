@@ -1,8 +1,7 @@
 //! USER's "Print To File" box: `GetFilePortName`, ordinal 343, which a
 //! printer's driver calls for the port `FILE:`. **Read out** of `USER.EXE`
 //! (seg1 `9c7c`, the box's procedure `9d0f`, the message helper `9cca`, its
-//! dialog 10) and **recorded** by `filport`. As
-//! `src/win16/user/print-to-file.ts`, which says more of each step.
+//! dialog 10) and **recorded** by `filport`.
 //!
 //! The dialog is WinBox's own, laid out from its controls: no Windows file
 //! is shipped and none of its bytes is copied here.
@@ -390,7 +389,7 @@ mod tests {
         assert_eq!(template.caption, "Print To File");
         assert_eq!(template.items.len(), 4);
         assert!(template.items.iter().any(|item| item.id == ID_NAME));
-        // As `test/win16/user_shell_dialogs_test.ts`: its items in order.
+        // Its items in order.
         assert_eq!(
             template
                 .items

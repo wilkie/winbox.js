@@ -1,8 +1,7 @@
 //! The DPMI host a Windows program finds behind INT 31h: standard mode's
 //! DOSX.EXE, or 386 enhanced mode's WIN386 (`kb/topics/dpmi-functions.md`,
 //! `kb/guides/enhanced-mode.md`). Each function is answered as the
-//! machine's mode's host answers it. The twin of the TypeScript engine's
-//! `src/dos/dpmi.ts`, which cites the read-out: DOSX's table at 2A80h of
+//! machine's mode's host answers it. The read-out: DOSX's table at 2A80h of
 //! its protected-mode segment (image 6342h), its handlers answering with
 //! the carry clear (2B92h), set with AX as it was (2B8Ch), or set with AX
 //! nought (2B87h); WIN386's answers as the probes recorded them
@@ -46,7 +45,7 @@ const HOST_CODE_INDEX: u16 = 0x1c;
 const HOST_STACK_INDEX: u16 = 0x1d;
 const SCRATCH_INDICES: [u16; 4] = [0x10, 0x11, 0x12, 0x13];
 
-/// Where in the host's code each stub is (as `dpmi.ts`).
+/// Where in the host's code each stub is.
 const EXCEPTION_DEFAULTS: u16 = 0x1133;
 const EXCEPTION_RETURN: u16 = 0x140c;
 const VECTOR_DEFAULTS: u16 = 0x2000;
@@ -324,8 +323,7 @@ impl System {
         self.dpmi_describe(at, base, limit, access);
     }
 
-    /// The host's code and stack, made as a program first needs them (as
-    /// `dpmi.ts`'s `#host`).
+    /// The host's code and stack, made as a program first needs them.
     fn dpmi_host(&mut self) {
         if self.dpmi.ready {
             return;
@@ -381,7 +379,7 @@ impl System {
     }
 
     /// A descriptor's bytes written, and taken at once by any segment
-    /// register holding it, as the TypeScript engine's processor forgets
+    /// register holding it, so the processor forgets
     /// what it kept of it.
     fn dpmi_write_descriptor(&mut self, selector: u16, bytes: [u8; 8]) {
         let at = self.dpmi_entry(selector);
@@ -410,7 +408,7 @@ impl System {
         self.dpmi_write_descriptor(((index as u16) << 3) | 7, [0, 0, 0, 0, 0, 0xf2, 0, 0]);
     }
 
-    /// Whether WIN386 answers for a selector (as `dpmi.ts`'s `#valid`).
+    /// Whether WIN386 answers for a selector.
     fn dpmi_valid(&self, selector: u16) -> bool {
         let index = usize::from(selector >> 3);
 
@@ -437,7 +435,7 @@ impl System {
         None
     }
 
-    /// Windows ends: DOSX faults in its own code (as `dpmi.ts`'s `#fault`).
+    /// Windows ends: DOSX faults in its own code.
     fn dpmi_host_fault(&mut self, why: &str) -> Event {
         self.dpmi.fault = Some(format!("{DOSX_FAULT} ({why})"));
         self.ended = true;
@@ -617,7 +615,7 @@ impl System {
 
     // --- 0000h-000Dh ---
 
-    /// 0000h (as `dpmi.ts`'s `#allocate`).
+    /// 0000h, allocate descriptors.
     fn dpmi_allocate(&mut self, count: u16) -> Option<Event> {
         let count = usize::from(count.max(1));
         let index = if count == 1 {

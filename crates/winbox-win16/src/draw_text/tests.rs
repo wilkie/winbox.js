@@ -1,5 +1,4 @@
-//! USER's text drawing held to what Windows drew: `drawtext`, as the
-//! TypeScript engine's replay draws it into a bitmap compatible with the
+//! USER's text drawing held to what Windows drew: `drawtext`, drawn into a bitmap compatible with the
 //! screen, and `tabtext`, drawn on the screen itself.
 
 use std::path::{Path, PathBuf};

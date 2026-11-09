@@ -1,7 +1,7 @@
-//! A JavaScript number's arithmetic, where the TypeScript engine's outline
-//! code leans on it: the scaler's arithmetic was measured through that
-//! engine, so where it rounds a half, takes a sign or truncates to
-//! thirty-two bits, this does exactly the same.
+//! A JavaScript number's arithmetic, where the outline code leans
+//! on it: the scaler's arithmetic was measured through a JavaScript engine,
+//! so where it rounds a half, takes a sign or truncates to thirty-two bits,
+//! this does exactly the same.
 
 /// `Math.round`: to the nearest whole number, a half upward.
 pub fn round(value: f64) -> f64 {

@@ -1,5 +1,4 @@
 //! `COMMDLG`'s file name parser, and `GetFileTitle`, which answers with it.
-//! As `src/win16/commdlg/parse-file.ts`.
 //!
 //! **Read out of `COMMDLG.DLL`** seg2 `5664`, and **recorded** by `ftitle`.
 //! The parser walks a name and answers where its last part starts and where

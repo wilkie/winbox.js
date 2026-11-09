@@ -6,10 +6,9 @@
 //! A name is a string, compared without regard to case, or an atom, given
 //! with nought in the pointer's upper word. Not measured: whether a string
 //! and the atom Windows makes of it find the same property, which they do on
-//! Windows by the documentation and do not here, as in the TypeScript
-//! engine.
+//! Windows by the documentation and do not here.
 //!
-//! Kept, as the TypeScript engine keeps them, on whatever object the handle
+//! Kept on whatever object the handle
 //! stands for -- a window, or anything else a handle names -- in the order
 //! each name was first set.
 
@@ -113,7 +112,7 @@ pub(super) fn remove_prop(system: &mut System, args: &mut Args) -> Result<Answer
 /// A property's name written for a procedure to read, in a block of USER's
 /// own of 256 bytes, made the first time: at most 255 of its characters
 /// and then its nought -- a longer name's 256th character in the nought's
-/// place, as the TypeScript engine writes it.
+/// place.
 fn name_block(system: &mut System, name: &[u8]) -> u32 {
     let far = if let Some(far) = system.user_calls.prop_name {
         far

@@ -1,6 +1,5 @@
-//! The standard controls as USER paints them, as winbox.js's `controls.ts`
-//! and `desktop.ts` (`paintControl`, `#controlEnvironment`, the focus
-//! rectangles) paint them: what a control's own window procedure does with
+//! The standard controls as USER paints them, with the focus
+//! rectangles: what a control's own window procedure does with
 //! `WM_PAINT`, onto its client area where it shows.
 //!
 //! Read off the `chrome` probe's `controls` window, one of each on each of
@@ -15,7 +14,7 @@
 //! colours it replaces -- the brush for the window colour, or a scroll
 //! bar's colour, and the text colour for the window's text -- and the
 //! background colour its text is drawn on. A push button and a scroll bar
-//! draw no text on it (`ctlcolor.ts`).
+//! draw no text on it.
 
 use winbox_raster::{DeviceBitmap, matched_index};
 
@@ -427,7 +426,7 @@ impl System {
     /// `paint_control` where it is painted at once, outside its
     /// `WM_PAINT`: an edit control's text changed, a scroll bar's thumb
     /// moved. The one thing that stops painting -- a font given it that is
-    /// no font, where the TypeScript engine throws -- is let pass here.
+    /// no font -- is let pass here.
     pub fn repaint_control(&mut self, index: usize) {
         let _ = self.paint_control(index);
     }
@@ -558,8 +557,8 @@ impl System {
                 return Ok(());
             }
             // Its shaft, with both arrows off, is its parent's class
-            // background -- which the TypeScript engine's desktop windows
-            // are made without, so it is the window colour (`noscroll`).
+            // background -- which the desktop's windows are made without,
+            // so it is the window colour (`noscroll`).
             // What painting cuts a held page back to stays with the press.
             "SCROLLBAR" => {
                 let mut place = crate::control_pixels::scroll_paint(control.scroll.as_ref())
@@ -1036,7 +1035,7 @@ pub fn draw_focus_rect(
     };
     let ink = index(state.text_color, 0);
     // A device context's background is white until one is set: the
-    // TypeScript engine's surface begins so, and its fallback is never
+    // surface begins so, and a fallback is never
     // reached. SimTower's realized palette has white elsewhere than its
     // last index.
     let ground = index(

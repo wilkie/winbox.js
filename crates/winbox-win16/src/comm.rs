@@ -23,10 +23,8 @@
 //!   the line rises, which with nothing connected is never. Restoring the
 //!   state does not release it (**recorded**).
 //!
-//! The time a byte takes on the line is kept on the machine's clock, as the
-//! TypeScript engine keeps it too (`comm.ts`); on the host's own, as that
-//! engine once kept it, how much had gone after the program's own waits
-//! hung on the host's speed and load. Here a run does the same whatever the
+//! The time a byte takes on the line is kept on the machine's clock, not the
+//! host's, so a run does the same whatever the
 //! host, as every other time of the machine's does. The transmitter's
 //! interrupt is looked for where MMSYSTEM's timer events are (`interrupts.rs`,
 //! `engine.rs`): between slices of the task's instructions, and as time
@@ -685,8 +683,7 @@ impl System {
 
     /// What of the transmitters' interrupts has come due, taken: looked at
     /// between slices of the task's instructions, and as time passes while
-    /// it waits, as the TypeScript engine's `setTimeout` comes between its
-    /// slices.
+    /// it waits.
     pub(crate) fn poll_comm(&mut self) {
         for index in 0..self.comm.com.len() {
             let Some((_, due)) = self.comm.com[index].timer else {

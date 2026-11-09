@@ -5,7 +5,7 @@
 //! in its data segment as the driver keeps them, so that what a program
 //! sees of them -- their handles, which are where each is kept -- is as it
 //! is on Windows. **Read out** of `SYSTEM.DRV` seg1 and **recorded** by
-//! `sysdrv`. As `src/win16/system-driver.ts`.
+//! `sysdrv`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.

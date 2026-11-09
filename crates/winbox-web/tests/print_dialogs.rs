@@ -4,8 +4,7 @@
 //! the `vgaprint` installation has -- an `Apple LaserWriter Plus` on `LPT1:`
 //! with Windows' PostScript driver -- put on the drive and in `WIN.INI`, as
 //! `prdlg` writes it. Each is run with `COMMDLG.DLL` on the drive, where the
-//! dialog's code is WinBox's own, and with none, where everything is. As
-//! `test/win16/print_dialogs_test.ts`.
+//! dialog's code is WinBox's own, and with none, where everything is.
 //!
 //! The host's time is the test's own, as in `moves.rs`.
 

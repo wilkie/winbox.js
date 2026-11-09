@@ -1,6 +1,5 @@
 //! Scrolling what is drawn: `ScrollWindow`, `ScrollWindowEx` and
 //! `ScrollDC`, through the visible region, as `USER.EXE` seg13 does it.
-//! Twin of the TypeScript engine's `scroll-window.ts`.
 //!
 //! **Read out**, `ScrollDC`'s body (seg13 `178d`), on a context:
 //!

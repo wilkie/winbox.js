@@ -1,7 +1,6 @@
 //! The screen as a host shows it: its palette indices turned into colours,
-//! as winbox.js's `Presenter` turns them, with the cursor drawn over a copy
-//! of them as the display driver draws it (`cursor-api.ts`'s
-//! `cursorOnScreen` and `withCursor`).
+//! with the cursor drawn over a copy of them as the display driver draws
+//! it.
 
 use winbox_raster::CursorImage;
 
@@ -169,9 +168,8 @@ impl System {
         (width, height, self.coloured(&screen, &indices))
     }
 
-    /// The screen's pixels as they are, with no cursor over them, as the
-    /// TypeScript engine's survey keeps a box of USER's as it comes up;
-    /// none before there is a screen.
+    /// The screen's pixels as they are, with no cursor over them, as a box
+    /// of USER's is kept as it comes up; none before there is a screen.
     pub fn screen_rgb_bare(&self) -> Option<(usize, usize, Vec<u32>)> {
         let screen = self.screen.as_ref()?;
         let (width, height) = (screen.width() as usize, screen.height() as usize);

@@ -19,11 +19,11 @@ import {
  * `WINBOX_BASE=layers`: the asset bundle's base for a display split into a
  * stack of layers (`kb/formats/layer.md`), as programs installed in turn
  * would make one, each layer made over all those beneath it, and flattened
- * (`flattenStack`) onto the run's FAT16 volume (`run-probe.ts`). What a
- * program sees must be what it sees on `WINBOX_BASE=assets`, the same base
- * made on the volume directly; `test/layers/sweep_test.ts` holds every probe
- * to that. The Rust harness's twin is `tests/support/layered.rs`, which puts
- * the same stack together with `HostDrive::layered`.
+ * (`flattenStack`) onto the run's FAT16 volume. What a program sees must be what it sees on
+ * `WINBOX_BASE=assets`, the same base made on the volume directly;
+ * `crates/winbox-win16/tests/layers_sweep.rs` holds every probe to that. The
+ * Rust harness's `tests/support/layered.rs` puts the same stack together
+ * with `HostDrive::layered`.
  *
  * The stack, the lowest first:
  *

@@ -14,7 +14,7 @@ import { bareDisks, bundle, bundleDrive } from '../assets/built.js';
  * What the page makes of what is dropped on it, and the asset bundle's base
  * it puts on C: (`kb/topics/asset-bundle.md`): a bundle made from the disks
  * in the browser is the one `pnpm assets` makes, and the page's drive on
- * its base is the TypeScript harness's, sector for sector. Those two are
+ * its base is `bundleDrive`'s, sector for sector. Those two are
  * skipped without the media under `oracle/.cache`, or the bundle made into
  * `oracle/build/assets`.
  */
@@ -142,7 +142,7 @@ const haveMedia = existsSync(join(CACHE, 'floppies'));
 
 (made ? describe : describe.skip)("the page's drive on the bundle's base", () => {
   for (const display of ['vga', 'ega', 'vga256']) {
-    it(`is the TypeScript harness's, sector for sector, on ${display}`, async () => {
+    it(`is the bundle drive's, sector for sector, on ${display}`, async () => {
       if (!made!.displays.includes(display)) {
         return;
       }

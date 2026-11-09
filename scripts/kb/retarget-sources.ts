@@ -1,14 +1,14 @@
 /**
  * Points each page's `source:` at the Rust engine: the file of the function
- * its export's arm names (`rustdoc.ts`), where it named a file of the
- * TypeScript engine under `src/win16`. An export that is no function has no
+ * its export's arm names (`rustdoc.ts`), where it named a file under
+ * `src/win16`. An export that is no function has no
  * arm: one of KERNEL's constants is answered by `linker.rs`
  * (`kernel_constant`), and a place in a module's data by `exported_data.rs`,
  * as `call::answered` tells them apart and `kb/data/winbox-exports.json`
  * marks them. A page whose export is none of these keeps its line and is
  * listed, not guessed at.
  *
- * Run once as the TypeScript engine was retired (2026-11-08):
+ * Run once on 2026-11-08:
  *
  *   npx vite build --config scripts/kb/vite.config.ts --ssr scripts/kb/retarget-sources.ts \
  *     && node dist/kb-build/retarget-sources.js

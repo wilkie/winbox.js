@@ -5,8 +5,7 @@
 //! program's calls are linked to these stubs (`linker.rs`), and the
 //! knowledge base's tables are written from it (`tests/exports.rs`).
 //!
-//! Written by `scripts/rust/modules.ts` from the TypeScript engine's export
-//! tables until 2026-11-08, and kept by hand since. An export a function
+//! Kept by hand. An export a function
 //! answers (`call::implementation`) is marked `stub: false`; `call::tests`
 //! holds the two to each other.
 

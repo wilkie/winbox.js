@@ -330,7 +330,7 @@ fn map_virtual_key_of(code: u16, kind: u8) -> u16 {
 // its tables, `ToAscii`, `OemKeyScan` and `GetKeyNameText`. **Read out of
 // `KEYBOARD.DRV`** (the US driver the installation has) and **recorded** by
 // `kbdrv`. The driver's state is kept in its data segment where the driver
-// keeps it (seg11). As `src/win16/keyboard/driver.ts`, which says more.
+// keeps it (seg11).
 
 const TYPE: u16 = 0x0c;
 const SUBTYPE: u16 = 0x0f;

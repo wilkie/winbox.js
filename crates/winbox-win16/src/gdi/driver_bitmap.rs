@@ -1,8 +1,7 @@
 //! The VGA's own drawing on a memory bitmap of its format, as `VGA.DRV`
 //! draws one for GDI's helpers (`driver_helpers.rs`): `RealizeObject`,
 //! `BitBlt`, `Output`, `ExtTextOut` and `StrBlt`, `GetCharWidth`,
-//! `DeviceBitmapBits` and `DIBScreenBlt`. The twin of
-//! `src/win16/gdi/driver-bitmap.ts`.
+//! `DeviceBitmapBits` and `DIBScreenBlt`.
 //!
 //! A bitmap is GDI's `BITMAP` for drivers in the program's memory: four
 //! planes of a bit (the word at 8 is 104h), a plane's row after another's

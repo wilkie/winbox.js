@@ -150,9 +150,8 @@ export interface Installed {
 /**
  * A stamp as a DOS directory entry keeps it: to two seconds, an odd second
  * the even one before it. A program sees no more of a file's or a folder's
- * stamp; the TypeScript engine's FAT volume keeps no more, where the Rust
- * engine's drive held in memory keeps the second DOS's clock gave it. As
- * `dos_stamp`.
+ * stamp; a FAT volume keeps no more, where the Rust engine's drive held in
+ * memory keeps the second DOS's clock gave it. As `dos_stamp`.
  */
 export function dosStamp(seconds: number) {
   return seconds - (((seconds % 2) + 2) % 2);

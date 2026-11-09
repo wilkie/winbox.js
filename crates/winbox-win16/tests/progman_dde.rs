@@ -2,7 +2,6 @@
 //! Program Manager, run with `PROGMAN.EXE` taken off the installation so
 //! that WinBox's answers, held to what Windows wrote with Microsoft's --
 //! its DDE, what its commands change, its group files and `PROGMAN.INI`.
-//! As `test/win16/progman_dde_test.ts`.
 //!
 //! WinBox's frame is hidden, by the owner's decision, and so every group's
 //! window with it: a `windows` record's visibility is left out
@@ -52,8 +51,8 @@ fn hidden(function: &str, result: &str) -> String {
         .join(";")
 }
 
-/// The records left out of each probe, with why, shared with the
-/// TypeScript engine's test (`test/win16/progman-dde-gaps.json`): a
+/// The records left out of each probe, with why
+/// (`test/win16/progman-dde-gaps.json`): a
 /// function's name leaves out all of its records, `function(args)` those
 /// with those arguments, and `function(args)#n` the nth of them.
 fn gaps_of(name: &str) -> Vec<String> {

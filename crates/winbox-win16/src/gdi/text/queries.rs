@@ -2,9 +2,7 @@
 //! `GetKerningPairs`, `GetCharABCWidths` and `GetOutlineTextMetrics`. What
 //! the engine reads out of the file is `winbox_raster::truetype_queries`;
 //! this is GDI's part -- the device context, the pixel size, the character
-//! set, the mapping. The TypeScript engine's twin is
-//! `src/win16/gdi/outline-queries.ts`, where each function's read-out is
-//! told.
+//! set, the mapping.
 //!
 //! **Recorded** by `ttquery`: the TrueType faces Windows 3.1 installs at a
 //! few sizes, into a window's device context and a memory one, and the

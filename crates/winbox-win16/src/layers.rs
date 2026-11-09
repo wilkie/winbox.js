@@ -11,9 +11,8 @@
 //! a cache folder of the host's for `HostDrive::layered` to put together,
 //! which must show the same.
 //!
-//! The TypeScript engine's twin is `src/layers/layer.ts`; the two give the
-//! same ids, the same flattened listing and the same zip bytes
-//! (`test/layers/stack.json`, `tests/layers.rs`).
+//! The ids, the flattened listing and the zip bytes are held to
+//! `test/layers/stack.json` (`tests/layers.rs`).
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -460,8 +459,8 @@ impl Layer {
     }
 }
 
-/// A manifest's text, as the exchange zip holds it: as the TypeScript
-/// engine's `JSON.stringify(manifest, null, 2)`, and a line feed.
+/// A manifest's text, as the exchange zip holds it: pretty-printed JSON
+/// indented two spaces, and a line feed.
 pub fn manifest_text(manifest: &Manifest) -> Result<Vec<u8>, String> {
     let mut text = serde_json::to_vec_pretty(manifest).map_err(|error| error.to_string())?;
 
@@ -782,8 +781,7 @@ fn media_name(path: &str) -> Option<String> {
 /// it; media on another drive, `A:\`, drop nothing of C:. What is kept,
 /// and the paths dropped. The installer's media are
 /// discarded once it has installed, as the owner chose: only its own top is
-/// kept. The TypeScript engine's twin is `dropMedia`
-/// (`src/layers/install.ts`).
+/// kept.
 pub fn drop_media(changes: &[Change], media: &[String]) -> (Vec<Change>, Vec<String>) {
     let media: Vec<String> = media.iter().filter_map(|path| media_on_c(path)).collect();
     let mut kept = Vec::new();
@@ -909,9 +907,8 @@ impl Layer {
 
 /// A stamp as a DOS directory entry keeps it: to two seconds, an odd second
 /// the even one before it. A program sees no more of a file's or a
-/// folder's stamp; the TypeScript engine's FAT volume keeps no more, where
-/// the Rust engine's drive held in memory keeps the second DOS's clock gave
-/// it. As `dosStamp`.
+/// folder's stamp; the drive held in memory keeps the second DOS's clock
+/// gave it.
 pub fn dos_stamp(seconds: i64) -> i64 {
     seconds - seconds.rem_euclid(2)
 }

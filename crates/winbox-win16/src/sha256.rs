@@ -1,5 +1,5 @@
 //! SHA-256 (FIPS 180-4), WinBox's own: what names a layer's blobs and
-//! makes a layer's id (`layers.rs`), the hash the TypeScript engine takes
+//! makes a layer's id (`layers.rs`), the hash the page takes
 //! from the browser's `crypto.subtle.digest('SHA-256', ...)`. Held to the
 //! standard's vectors here and to `crypto.subtle`'s hashes in
 //! `test/layers/stack.json` (`tests/layers.rs`).
@@ -218,8 +218,7 @@ pub fn sha256(data: &[u8]) -> [u8; 32] {
     hash.finish()
 }
 
-/// The sha256 of some bytes in hex, lower case, as the TypeScript engine
-/// writes it.
+/// The sha256 of some bytes in hex, lower case.
 pub fn sha256_hex(data: &[u8]) -> String {
     use std::fmt::Write;
 

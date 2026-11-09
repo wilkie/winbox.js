@@ -26,7 +26,7 @@
 //! Not followed: while Windows starts, before the shell's `InitTask`, the
 //! list is the system directory and then Windows' alone (data `0aea`,
 //! chosen at seg1 `542f`). The first program winbox.js runs stands for one
-//! started from the shell. As `search.ts`.
+//! started from the shell.
 
 use crate::system::System;
 

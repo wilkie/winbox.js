@@ -1,6 +1,5 @@
-//! `GetPhysicalFontHandle`: the handle of the font GDI realized for a
-//! device context, the global block its `FONTINFO` is in. The twin of
-//! `src/win16/gdi/physical-font.ts`, where the reading out is.
+//! `GetPhysicalFontHandle`: the handle of the font GDI realized for a device
+//! context, the global block its `FONTINFO` is in.
 
 use crate::call::{Answer, Args, Implementation, Stop};
 use crate::system::System;

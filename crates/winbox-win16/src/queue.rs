@@ -1,5 +1,5 @@
-//! A program's messages, in the order Windows gives them, as winbox.js's
-//! `queue.ts` keeps them: what was posted to its queue first; then the
+//! A program's messages, in the order Windows gives them, as winbox.js keeps
+//! them: what was posted to its queue first; then the
 //! quit; then the mouse's and the keyboard's (`quitin`); then, with nothing
 //! queued, `WM_PAINT` for a window due to be painted; then `WM_TIMER` for
 //! a timer that has come due. Neither of the last two is ever queued --
@@ -1389,7 +1389,7 @@ pub fn post_app_message(system: &mut System, args: &mut Args) -> Result<Answer, 
     }
 
     // To the task's own queue (`USER.EXE` seg1 `a7e8`, `23a0`-`23c8`), with
-    // no window, as `userwin.ts` posts it (`thswch`).
+    // no window (`thswch`).
     let Some(slot) = system.slot_of(task) else {
         return Ok(Answer::Word(0));
     };
@@ -1415,8 +1415,8 @@ pub fn get_queue_status(system: &mut System, args: &mut Args) -> Result<Answer, 
         return Ok(Answer::Dword(0));
     };
 
-    // Asked after the task, the desktop is made, as the TypeScript engine
-    // makes it when it looks for windows due a paint.
+    // Asked after the task, the desktop is made, as it is when
+    // looking for windows due a paint.
     system.raster();
 
     let mut now = if queue.messages.is_empty() {

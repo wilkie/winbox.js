@@ -1,7 +1,7 @@
 //! Things done at set places in a run, each named by the instructions the
 //! program has run by then: a key pressed, the mouse moved or pressed, or
 //! the screen kept. The
-//! TypeScript engine's corpus survey presses a program's keys and takes its
+//! corpus survey presses a program's keys and takes its
 //! screens between its frames, which may come between two of the program's
 //! calls, and notes where -- the instructions run, the calls made and the
 //! clock's time -- so a run here can do the same at the same place
@@ -30,7 +30,7 @@ pub enum MarkAction {
 #[derive(Debug, Clone)]
 pub struct CallMark {
     pub instructions: u64,
-    /// The calls made by then, as the other engine counted them.
+    /// The calls made by then, as a survey counts them.
     pub calls: usize,
     /// The clock's time there, in milliseconds: while the program waits
     /// with no call to make, the mark comes when the time does.
@@ -45,7 +45,7 @@ pub struct CallMarks {
     /// The screen's palette indices at each `Shot`.
     pub shots: Vec<Vec<u8>>,
     /// The accessibility tree at each `Shot`, as JSON (`accessible_tree.rs`),
-    /// to set beside the TypeScript engine's at the same place.
+    /// to set beside the one a report holds for the same place.
     pub trees: Vec<String>,
 }
 
@@ -113,8 +113,8 @@ impl System {
     }
 
     /// Palette indices of the screen's as a host shows them now, the cursor
-    /// over them: as the TypeScript engine's survey shows each screen it
-    /// kept, with the cursor and the colours as the run ended.
+    /// over them: as the survey shows each screen it kept, with the cursor
+    /// and the colours as the run ended.
     pub fn shown_indices(&mut self, indices: &[u8]) -> (usize, usize, Vec<u32>) {
         let screen = self.screen_bitmap();
         let (width, height) = (screen.width() as usize, screen.height() as usize);

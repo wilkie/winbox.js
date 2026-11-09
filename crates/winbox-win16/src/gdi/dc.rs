@@ -4,10 +4,7 @@
 //! context and the screen's are made here; a window's comes with windows.
 //!
 //! A handle that stands for something other than a device context is
-//! answered here as no device context is. The TypeScript engine reads and
-//! sets the field on whatever object the handle stands for, a pen or a
-//! window, and answers what that object has, its own default else; nothing
-//! recorded turns on it.
+//! answered here as no device context is; nothing recorded turns on it.
 
 use crate::call::{Answer, Args, Stop};
 use crate::handles::{Kind, Object};
@@ -331,8 +328,8 @@ pub(crate) fn create_dc_call(system: &mut System, args: &mut Args) -> Result<Ans
     Ok(Answer::Word(create_dc(system, &driver)?))
 }
 
-/// A device context given back. Any handle that stands for something is
-/// let go, as the TypeScript engine lets it.
+/// A device context given back. Any handle that stands for something is let
+/// go.
 pub fn delete_dc(system: &mut System, hdc: u16) -> bool {
     if system.handles.resolve(hdc).is_none() {
         return false;
@@ -579,9 +576,8 @@ pub(crate) fn select_object_call(system: &mut System, args: &mut Args) -> Result
 /// for a new device context (`bkcolor`). `80000000h` for no device
 /// context.
 ///
-/// The TypeScript engine also keeps the colour a palette's `COLORREF`
-/// stands for in the device context's palette as it is set; here the
-/// colour is to be looked up from the `COLORREF` when drawing comes, which
+/// The colour a palette's `COLORREF` stands for is not looked up as it is
+/// set; it is looked up from the `COLORREF` when drawing comes, which
 /// differs only where another palette is selected between.
 pub fn set_bk_color(system: &mut System, hdc: u16, colorref: u32) -> u32 {
     let Some(state) = state_of(system, hdc) else {

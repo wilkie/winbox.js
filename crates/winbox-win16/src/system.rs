@@ -64,7 +64,7 @@ impl KeptModule {
 /// it, as the asset bundle's has none of most: WinBox's stand-in carries
 /// its file's version, as `COMMDLG`'s does
 /// (`commdlg::EXPECTED_WINDOWS_VERSION`). KERNEL's own is the Windows
-/// version (`expected_windows_version`). As `KEPT_VERSIONS` in `module.ts`.
+/// version (`expected_windows_version`).
 pub fn kept_version(name: &str) -> Option<u16> {
     match name {
         crate::commdlg::NAME => Some(crate::commdlg::EXPECTED_WINDOWS_VERSION),
@@ -102,8 +102,7 @@ pub type ModalInput = (u16, u16, i16, i16, u32);
 /// The mode Windows runs in: standard mode, DOSX's, as every recording but
 /// those in `oracle/fixtures/enhanced/` was made; or 386 enhanced mode,
 /// WIN386's (`kb/guides/enhanced-mode.md`). KERNEL learns which as it
-/// starts and answers by it (`KRNL386.EXE` seg1 `aa76`-`aa90`). As the
-/// TypeScript engine's `WindowsMode`.
+/// starts and answers by it (`KRNL386.EXE` seg1 `aa76`-`aa90`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Mode {
     /// Standard mode, `win /s`.
@@ -189,14 +188,12 @@ pub struct System {
     /// logged, its index in `log` that less this.
     pub log_from: usize,
     /// How many calls the run is to make, where it is to stop as the
-    /// program makes the next: the corpus comparison runs as far as the
-    /// TypeScript engine's run went.
+    /// program makes the next.
     pub calls_until: Option<usize>,
     /// Shown each call before it is made: its module, its name and where
     /// its arguments begin on the stack (the last pushed first), for a
     /// harness to act at a program's call -- as the probes' harness swaps
-    /// a disc as `imgswap` writes its record asking for it. As the
-    /// TypeScript engine's `onCall`.
+    /// a disc as `imgswap` writes its record asking for it.
     pub call_watch: Option<fn(&mut System, &'static str, &'static str, u32)>,
     /// Keys pressed and screens kept at set calls (`call_marks.rs`).
     pub call_marks: crate::call_marks::CallMarks,
@@ -214,7 +211,7 @@ pub struct System {
     pub box_hand: Option<crate::sys_error_box::BoxHand>,
     /// While USER's system error box is up, the host's mouse and keyboard
     /// as messages for it -- each its message, `wParam` and point on the
-    /// screen -- in place of the windows' (`raster-input.ts`'s `modal`).
+    /// screen -- in place of the windows'.
     pub modal_input: Option<std::collections::VecDeque<ModalInput>>,
     /// How many procedures the engine has called into that have not
     /// returned.
@@ -828,8 +825,7 @@ impl System {
     /// `0ed9`-`0edc`, `1271`-`1279`), a Windows 2 program marked to run in
     /// protected mode; a file whose own flags have 2000h is refused (seg2
     /// `0ebd`-`0ec2`). No file of the installation, the probes or the
-    /// corpus has it. Nought for a kept module with no file. As
-    /// `moduleFlag2000` in `module.ts`.
+    /// corpus has it. Nought for a kept module with no file.
     pub fn module_flag_2000(&mut self, handle: u16) -> u16 {
         self.executable_of(handle).map_or(0, |executable| {
             if executable.header.os2_flags & 2 == 0 {
@@ -889,10 +885,9 @@ impl System {
             // the module from the instance (`GetExePtr`), whichever task
             // asks. Recorder, about to play a macro back, asks for the path
             // of the window active as it was recorded, from its own task.
-            // Nought is the task asking's own, as the TypeScript engine's
-            // `GetModuleFilename` answers it, not that of a window of no
-            // instance -- Microsoft Setup's `_MSTEST.EXE` looks for its
-            // libraries beside itself so.
+            // Nought is the task asking's own, as `GetModuleFilename` answers it,
+            // not that of a window of no instance -- Microsoft Setup's
+            // `_MSTEST.EXE` looks for its libraries beside itself so.
             _ if handle != 0
                 && let Some(slot) = self.slot_of(handle).or_else(|| {
                     self.windows
@@ -1163,9 +1158,8 @@ impl System {
 mod tests {
     use super::*;
 
-    /// The TypeScript engine's `test/emulator/clock_test.ts`, "gives the
-    /// date from the epoch": the clock starts at 6 April 1992, 9:00, and
-    /// 61 seconds of instructions on it read 9:01:01.
+    /// The clock starts at 6 April 1992, 9:00, and 61 seconds of
+    /// instructions on it read 9:01:01.
     #[test]
     fn gives_the_date_from_the_epoch() {
         let mut system = System::new();

@@ -1,6 +1,6 @@
 //! Program Manager's groups (`src/groups.rs`, `kb/formats/grp.md`), held to
 //! `test/layers/groups.json`, which `test/layers/groups_test.ts` holds the
-//! TypeScript engine to as well: groups made by Program Manager's
+//! page's group code to as well: groups made by Program Manager's
 //! operations, read into the model and written again byte for byte and
 //! laid out afresh; commands stored and read back; `PROGMAN.INI` read as
 //! start-up reads it and written as `CreateGroup` writes it; the groups of

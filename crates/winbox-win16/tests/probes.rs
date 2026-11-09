@@ -20,8 +20,7 @@ use support::{Step, VK_RETURN, VK_TAB, answers, hand, recorded, root, run, run_w
 /// What a program writes to a disk image is kept apart from it, sector by
 /// sector (`Overlay`): after `imgwrite` has written all over its floppy, the
 /// images the probes mount are as they were committed, and the image as
-/// written -- what `--write-back` keeps -- holds what it wrote. As
-/// `image_writes_test.ts`.
+/// written -- what `--write-back` keeps -- holds what it wrote.
 #[test]
 fn image_probes_leave_their_images_as_they_were() {
     let images = root().join("oracle/probes/images");

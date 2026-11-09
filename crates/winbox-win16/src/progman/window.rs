@@ -1,6 +1,5 @@
 //! A group's window procedure, `GROUPWNDPROC` (seg2 `19b2`), as
-//! `PROGMAN.EXE`'s answers what a hidden group's window is sent. As
-//! `src/win16/progman/window.ts`.
+//! `PROGMAN.EXE`'s answers what a hidden group's window is sent.
 //!
 //! WinBox's groups are real MDI children of its MDI client, the frame
 //! hidden by the owner's decision, so USER places, minimizes, maximizes,

@@ -4,8 +4,7 @@
 //! default parameters), each at the offset `DDEML.DLL`'s data segment (seg3,
 //! 604 bytes) has it, each with the code that reads it; the dialog
 //! `TERMDIALOG` is laid out from its controls. Where `DDEML.DLL` is on disk
-//! the tests build both and compare them with the file's. As
-//! `src/win16/ddeml/resources.ts`.
+//! the tests build both and compare them with the file's.
 
 use super::{
     D_CLASS_CLIENT, D_CLASS_DMG, D_CLASS_FRAME, D_CLASS_HOLDING, D_CLASS_MONITOR, D_CLASS_SERVER,

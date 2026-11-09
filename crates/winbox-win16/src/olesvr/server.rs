@@ -17,7 +17,7 @@
 //! object was given; and what each client asked of an item as that
 //! client's property on the item's window. USER's `EnumProps` and
 //! `EnumChildWindows` walk them, calling the internal exports as the file
-//! does. As `src/win16/olesvr/server.ts`.
+//! does.
 
 use crate::commdlg::api::{Arg, text};
 use crate::engine::GuestArg;

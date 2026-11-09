@@ -1,7 +1,6 @@
 //! What USER's controls with a state of their own -- the edit control, the
 //! list box, the combo box and the scroll bar control -- ask of the desktop
-//! and of their parents, as winbox.js's `control-classes.ts` gives it them:
-//! their fonts' measures, a device context for an owner to draw an item in,
+//! and of their parents: their fonts' measures, a device context for an owner to draw an item in,
 //! guest memory for the owner-draw structures, and their messages to their
 //! parents.
 //!
@@ -31,7 +30,7 @@ pub(crate) const WM_COMPAREITEM: u16 = 0x0039;
 pub(crate) const LETTERS: &[u8] = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /// What a control's font is to it: the font, realised, and its metrics, as
-/// `raster-desktop.ts`'s `fontOf` reads them back from `GetTextMetrics`.
+/// `GetTextMetrics` gives them back.
 #[derive(Debug, Clone)]
 pub struct ControlFont {
     pub font: LogicalFont,
@@ -109,8 +108,8 @@ pub struct Controls {
     /// box's edit control.
     pub focus_going: Option<u16>,
     /// What a control's procedure works on once its window is destroyed
-    /// under it -- by its parent, told of a change -- as the TypeScript
-    /// engine works on the window it holds, which no longer shows.
+    /// under it -- by its parent, told of a change -- a record of the
+    /// window it held, which no longer shows.
     pub detached: crate::windows::Window,
 }
 

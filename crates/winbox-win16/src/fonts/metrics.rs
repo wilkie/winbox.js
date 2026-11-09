@@ -260,8 +260,8 @@ pub fn outline_metrics(font: &LogicalFont, outline: &Outline) -> TextMetric {
     } else {
         outline.x_ppem / x_base
     };
-    // `head`'s box, as `GetTextMetrics` reads it directly; a face without the
-    // table, which the TypeScript engine would throw at, measures nought.
+    // `head`'s box, as `GetTextMetrics` reads it directly; a face without
+    // the table measures nought.
     let box_width = face.signed("head", 40).unwrap_or(0.0) - face.signed("head", 36).unwrap_or(0.0);
     let bold = smeared > 0.0;
     let flag = |asked: Option<bool>| u8::from(asked.unwrap_or(false)) * 0xff;

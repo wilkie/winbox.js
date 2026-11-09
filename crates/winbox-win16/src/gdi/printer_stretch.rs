@@ -1,7 +1,6 @@
-//! What Windows' GDI draws itself for a printer's driver that cannot
-//! stretch or take a DIB: bitmaps of its own, stretched and converted by
-//! GDI, copied with the driver's `BitBlt`. The twin of
-//! `src/win16/gdi/printer-stretch.ts`.
+//! What Windows' GDI draws itself for a printer's driver that cannot stretch
+//! or take a DIB: bitmaps of its own, stretched and converted by GDI, copied
+//! with the driver's `BitBlt`.
 //!
 //! Followed for a printer of one plane of one bit. Not followed: a
 //! printer's context as the source of a stretch, a printer of colours,

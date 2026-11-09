@@ -1,22 +1,17 @@
 //! The x86 execution core, in Rust.
 //!
-//! winbox.js's core is JavaScript (`src/emulator/core`), held to hardware
-//! test vectors. This one, compiled to WebAssembly, runs beside it on the
-//! same machine state (`src/emulator/wasm-core.ts`), and natively on its
-//! own (`winbox-win16`). It interprets every instruction the JavaScript
-//! core does, as it does, flags and all, so that the conformance suites
-//! read the same through either (`WINBOX_CORE=wasm`), and the same again
-//! through this core alone, with nothing to fall back on
-//! (`tests/conformance.rs`). It decodes every instruction each time it
-//! runs and computes the flags eagerly: interpreter against interpreter.
+//! It is held to hardware test vectors, flags and all, with nothing to fall
+//! back on (`tests/conformance.rs`). Compiled to WebAssembly it runs in the
+//! page, and natively it runs on its own (`winbox-win16`). It decodes every
+//! instruction each time it runs and computes the flags eagerly: an
+//! interpreter.
 //!
-//! Anything else stops the run before the instruction, with nothing
-//! changed, for the host: an opcode the JavaScript core has no form of
-//! either, or one that loads what the host keeps -- the descriptor tables,
-//! the control registers -- ([`Exit::Unimplemented`]), a fault or an
-//! interrupt where the host takes them ([`Exit::Fault`], and
-//! `Unimplemented` of the `INT`), or memory or a segment load only the host
-//! can answer for ([`Exit::Host`]).
+//! Some instructions stop the run before the instruction, with nothing
+//! changed, for the host: an opcode with no form here, or one that loads
+//! what the host keeps -- the descriptor tables, the control registers --
+//! ([`Exit::Unimplemented`]), a fault or an interrupt where the host takes
+//! them ([`Exit::Fault`], and `Unimplemented` of the `INT`), or memory or a
+//! segment load only the host can answer for ([`Exit::Host`]).
 
 /// Why a run stopped.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,7 +121,7 @@ const IF: u16 = 0x0200;
 const DF: u16 = 0x0400;
 const OF: u16 = 0x0800;
 
-/// The bits of FLAGS the JavaScript core keeps, as it reads them back: the
+/// The bits of FLAGS the core keeps, as it reads them back: the
 /// arithmetic flags, TF, IF, DF, OF, IOPL and NT; bit 1 reads as one.
 const FLAGS_KEPT: u16 = 0x7fd5;
 
@@ -205,13 +200,13 @@ pub struct Cpu<B: Bus> {
     pub fpu: Option<X87>,
     /// Whether the host answers the I/O ports: `IN` and `OUT` then stop the
     /// run before the instruction, as [`Exit::Unimplemented`] of its
-    /// opcode, for the host to run it. Off, as the JavaScript core has
-    /// them, `OUT` is passed over and `IN` stops the run.
+    /// opcode, for the host to run it. Off, `OUT` is passed over and
+    /// `IN` stops the run.
     pub ports: bool,
     /// Where the interrupt table is, where the host lets this core take
     /// interrupts itself: in real mode a fault, `INT`, `INT 3` and `INTO`
-    /// then push FLAGS, CS and IP and go through the table's entry, as the
-    /// JavaScript core's `raiseInterrupt` does for a vector no host claims.
+    /// then push FLAGS, CS and IP and go through the table's entry, for a
+    /// vector no host claims.
     /// `None`, or protected mode, leaves every one to the host: a fault
     /// stops the run as [`Exit::Fault`], an interrupt as
     /// [`Exit::Unimplemented`] of its opcode.
@@ -248,8 +243,8 @@ pub struct Cpu<B: Bus> {
     esp_based: bool,
 }
 
-/// The one-byte opcodes the operand-size prefix does not change, as the
-/// JavaScript core lists them: byte operands, AL, short jumps, the flags,
+/// The one-byte opcodes the operand-size prefix does not change:
+/// byte operands, AL, short jumps, the flags,
 /// and the loops, which the address size governs. Under the prefix they run
 /// as without it.
 const SIZELESS: [u8; 91] = [
@@ -376,7 +371,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// Whether a descriptor may be looked at through a selector, the current
-    /// privilege nought as the JavaScript core's 386 has it: a conforming
+    /// privilege nought: a conforming
     /// code segment always, else one whose DPL is at least the selector's
     /// RPL.
     fn visible(access: u8, selector: u16) -> bool {
@@ -393,7 +388,7 @@ impl<B: Bus> Cpu<B> {
         }
     }
 
-    /// A segment register loaded, as the JavaScript core loads one with no
+    /// A segment register loaded with no
     /// checks -- `POP`, `LES` and `LDS`, the far transfers: in real mode,
     /// the selector times sixteen; in protected mode, its descriptor's base
     /// and limit.
@@ -419,8 +414,7 @@ impl<B: Bus> Cpu<B> {
 
     /// The segment a selector names, for the register `index`.
     ///
-    /// In protected mode, read from its table as the JavaScript core reads
-    /// it. A segment this core cannot check accesses to by an upper limit
+    /// In protected mode, read from its table. A segment this core cannot check accesses to by an upper limit
     /// alone -- the null selector, one not present, one that expands down
     /// -- is given no room, so that any access stops the run and the host
     /// faults. Where the host would fault at the load itself, past a table's
@@ -512,7 +506,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// Where an access is, by linear address. A 16-bit address wraps within
-    /// its 64 KiB, as the JavaScript core's `translateAddress` wraps it; a
+    /// its 64 KiB; a
     /// 32-bit one does not, and an access that runs past the limit faults.
     fn linear(&self, segment: usize, offset: u32, size: u32) -> Result<u32, Exit> {
         self.linear_sized(segment, offset, size, self.address32)
@@ -539,8 +533,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// The fault for an access through `segment` past its limit. In real
-    /// mode, as the JavaScript core's `raiseSegmentFault` and `throughStack`
-    /// tell it: a stack fault where the access went through SS -- the
+    /// mode, a stack fault where the access went through SS -- the
     /// operand's own segment register where the access is through the
     /// selector it holds, and otherwise any access through the selector SS
     /// holds -- and a general protection fault else. In protected mode the
@@ -750,8 +743,7 @@ impl<B: Bus> Cpu<B> {
         Ok(value)
     }
 
-    /// The next byte of the instruction. IP wraps round past `FFFFh`, as the
-    /// JavaScript core's does; an instruction that goes on past it was
+    /// The next byte of the instruction. IP wraps round past `FFFFh`; an instruction that goes on past it was
     /// fetched past CS's limit, a general protection fault from its start
     /// (`fetchedPastLimit`). One that ends exactly at the end is whole.
     fn fetch8(&mut self) -> Result<u8, Exit> {
@@ -766,8 +758,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// The next word of the instruction, as [`Self::fetch8`]: one that
-    /// would run past the limit is a fault of the access, as the JavaScript
-    /// core's `codeAt` leaves it to a checked read.
+    /// would run past the limit is a fault of the access, left to a checked read.
     fn fetch16(&mut self) -> Result<u16, Exit> {
         if self.wrapped {
             return Err(Exit::Fault(13));
@@ -865,8 +856,7 @@ impl<B: Bus> Cpu<B> {
         ))
     }
 
-    /// A ModR/M byte with 32-bit addressing, as the JavaScript core reads
-    /// it: a SIB byte for an r/m of 100b, whose base of 101b with a mode of
+    /// A ModR/M byte with 32-bit addressing: a SIB byte for an r/m of 100b, whose base of 101b with a mode of
     /// nought is a displacement alone, and whose index of 100b scales the
     /// base instead (the 80386 suite's tests); EBP- and ESP-based forms
     /// through SS; the offset wrapping at 4 GiB.
@@ -1108,9 +1098,8 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// Whether a repeated compare ends on the flags it left: REPE on
-    /// unequal, REPNE on equal. With both prefixes, as the JavaScript core
-    /// has it: under the address-size prefix (`executeString`) REPE's rule
-    /// alone, and otherwise either rule.
+    /// unequal, REPNE on equal. With both prefixes, under the
+    /// address-size prefix REPE's rule alone, and otherwise either rule.
     fn repeat_ends(&self) -> bool {
         let zero = self.flags & ZF != 0;
         let (equal, unequal) = (self.repeat & REPE != 0, self.repeat & REPNE != 0);
@@ -1279,8 +1268,8 @@ impl<B: Bus> Cpu<B> {
 
     /// A rotate or shift of a value of `bits` bits by a count, by its kind
     /// as a `ModRM` reg field gives it -- `ROL`, `ROR`, `RCL`, `RCR`, `SHL`,
-    /// `SHR`, `SHL` again and `SAR` -- with the flags the JavaScript core
-    /// leaves, which are the hardware vectors'. A count of nought, after its
+    /// `SHR`, `SHL` again and `SAR` -- with the flags the hardware
+    /// vectors show. A count of nought, after its
     /// mask to five bits, leaves the flags alone.
     fn shift(&mut self, kind: usize, value: u32, count: u8, bits: u32) -> u32 {
         let count = u32::from(count & 0x1f);
@@ -1516,8 +1505,8 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// The two-byte opcodes, `0F` and one more, of words. Those that load
-    /// the descriptor tables or the control registers, and `0F` forms the
-    /// JavaScript core has none of, stop the run.
+    /// the descriptor tables or the control registers, and `0F` forms with no form
+    /// here, stop the run.
     #[allow(clippy::too_many_lines)]
     fn two_byte(&mut self) -> Result<(), Exit> {
         let opcode = self.fetch8()?;
@@ -1569,7 +1558,7 @@ impl<B: Bus> Cpu<B> {
             // VERR and VERW: ZF whether the segment could be read, or
             // written, at the current privilege -- code only if readable,
             // only data writable; presence not checked. LLDT reads its
-            // operand into a field the JavaScript core never reads again.
+            // operand into a field that is never read again.
             0x00 => {
                 let (reg, place) = self.modrm()?;
 
@@ -1615,8 +1604,8 @@ impl<B: Bus> Cpu<B> {
                 }
             }
             // SMSW, where the host has given the word. SGDT and SIDT store
-            // a word of nought, as the JavaScript core's do, from a field it
-            // never sets; the loads of the tables and of the machine status
+            // a word of nought, from a field
+            // never set; the loads of the tables and of the machine status
             // word are the host's.
             0x01 => {
                 let (reg, place) = self.modrm()?;
@@ -1627,7 +1616,7 @@ impl<B: Bus> Cpu<B> {
                     _ => return Err(Exit::Unimplemented(0x0f)),
                 }
             }
-            // CLTS: the JavaScript core keeps no task-switched flag to clear.
+            // CLTS: no task-switched flag is kept to clear.
             0x06 => {}
             // IMUL Gv, Ev: the low word kept, flags as F7 /5's.
             0xaf => {
@@ -1639,7 +1628,7 @@ impl<B: Bus> Cpu<B> {
             0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(opcode)?,
             0xa4 | 0xa5 | 0xac | 0xad => self.double_shift(opcode)?,
             // LSS, LFS and LGS: a far pointer, from memory only, the segment
-            // loaded as the JavaScript core loads one, unchecked; a register
+            // loaded unchecked; a register
             // operand is an undefined opcode.
             0xb2 | 0xb4 | 0xb5 => {
                 let (reg, place) = self.modrm()?;
@@ -1664,13 +1653,12 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// The bit instructions, of a word or, under the operand-size prefix, a
-    /// double word, as the JavaScript core runs them: BT, BTS, BTR and BTC
+    /// double word: BT, BTS, BTR and BTC
     /// test a bit into CF and leave it, set it, clear it or turn it over;
     /// BSF and BSR find the lowest or highest bit set, ZF set when there is
     /// none and the register then left. A bit number in a register reaches
     /// past a memory operand, signed, whole operands at a time; one given in
-    /// the instruction is taken modulo the size. `BA`'s /0 to /3 do nothing,
-    /// as in the JavaScript core.
+    /// the instruction is taken modulo the size. `BA`'s /0 to /3 do nothing.
     fn bits(&mut self, opcode: u8) -> Result<(), Exit> {
         let size: u32 = if self.wide { 32 } else { 16 };
         let (reg, mut place) = self.modrm()?;
@@ -1746,7 +1734,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// SHLD and SHRD, of a word or, under the operand-size prefix, a double
-    /// word, as the JavaScript core runs them: the destination and the source
+    /// word: the destination and the source
     /// twice over shifted as one, so that a word's count past 16 goes on into
     /// the source again; a count of nought reads the operand and changes
     /// nothing. CF the last bit out, OF where the sign changed, AF left.
@@ -1920,7 +1908,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// Whether LOCK may come before the instruction, read from its bytes
-    /// ahead: as the JavaScript core's `lockable` has it, a read-modify-write
+    /// ahead: a read-modify-write
     /// of memory -- the ALU's forms with memory as their destination, but
     /// for CMP; XCHG; NOT and NEG; INC and DEC; BTS, BTR and BTC.
     fn lockable(&self, opcode: u8) -> Result<bool, Exit> {
@@ -2020,7 +2008,7 @@ impl<B: Bus> Cpu<B> {
         }
 
         /* MOV to a segment register reads a word whatever the operand size,
-         * as the JavaScript core's does under the prefix. */
+         * under the prefix too. */
         if self.wide && (SIZELESS.contains(&opcode) || opcode == 0x8e) {
             self.wide = false;
         }
@@ -2162,9 +2150,8 @@ impl<B: Bus> Cpu<B> {
             // OUT, to a port in the instruction or to DX, where the host
             // answers the ports.
             0xe6 | 0xe7 | 0xee | 0xef if self.ports => return Err(Exit::Unimplemented(opcode)),
-            // NOP; WAIT, with nothing to wait for, as the JavaScript core's
-            // does nothing; and OUT to DX, the JavaScript core having no
-            // ports to write.
+            // NOP; WAIT, with nothing to wait for, which
+            // does nothing; and OUT to DX, with no ports to write.
             0x90 | 0x9b | 0xee | 0xef => {}
             0xb8..=0xbf => {
                 self.regs[usize::from(opcode & 7)] = self.fetch16()?;
@@ -2512,7 +2499,7 @@ impl<B: Bus> Cpu<B> {
             0xcf => self.iret(false)?,
             0xc8 => self.enter(2)?,
             0x9c => self.push(self.flags_word())?,
-            // POPF, as the JavaScript core's 386 loads FLAGS at privilege
+            // POPF loads FLAGS at privilege
             // nought (`load_flags`).
             0x9d => {
                 let value = self.pop()?;
@@ -2558,12 +2545,12 @@ impl<B: Bus> Cpu<B> {
                 self.ip = self.ip.wrapping_add(displacement);
             }
             0xf5 => self.flags ^= CF,
-            // CLI and STI: at the JavaScript core's privilege, nought,
+            // CLI and STI: at privilege nought,
             // always allowed.
             0xfa => self.flags &= !IF,
             0xfb => self.flags |= IF,
             // OUT to a port in the instruction, which is passed over; IN
-            // the JavaScript core has no form of.
+            // has no form here.
             0xe6 | 0xe7 => {
                 self.fetch8()?;
             }
@@ -3207,7 +3194,7 @@ mod tests {
 
     #[test]
     fn stops_at_an_unimplemented_opcode() {
-        // nop; in al, dx -- which the JavaScript core has no form of
+        // nop; in al, dx -- which has no form here
         let mut cpu = machine(&[0x90, 0xec]);
 
         assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xec)));

@@ -9,9 +9,8 @@
 //! `GGO_METRICS` fills the metrics alone and `GGO_BITMAP` the bitmap as
 //! well: one bit a pixel, the top row first, each row padded to a
 //! doubleword, the answer the bitmap's size. `GGO_NATIVE` -- the outline as
-//! curves -- is not implemented in the TypeScript engine and fails, and so
-//! it does here. The matrix is read but only the identity has been
-//! recorded, and it is what is drawn.
+//! curves -- is not implemented and fails. The matrix is read but only the
+//! identity has been recorded, and it is what is drawn.
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;

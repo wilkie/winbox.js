@@ -1,5 +1,5 @@
 //! KERNEL's calls about a code segment, a module's heap, and a few that
-//! answer little. As `kernel/code-calls.ts`, which cites the read-outs.
+//! answer little.
 
 use winbox_machine::index_for;
 
@@ -61,7 +61,7 @@ fn segment_of(system: &mut System, proc: u32) -> Option<GlobalBlock> {
 /// The module a procedure is in, as USER finds a hook's (`USER.EXE` seg1
 /// `7cd4`-`7cf7`): the module whose segment it is, through a thunk, as
 /// `GetCodeInfo` finds it; else the module `GetExePtr` finds for its
-/// selector; else nought. As `code-calls.ts`'s `moduleOfProc`.
+/// selector; else nought.
 pub(crate) fn module_of_proc(system: &mut System, proc: u32) -> u16 {
     match segment_of(system, proc) {
         Some(block) if block.owner != 0 => block.owner,

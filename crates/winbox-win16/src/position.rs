@@ -1,7 +1,6 @@
 //! A window moved, sized, shown, hidden or brought forward on the raster
-//! desktop, as winbox.js's `positionRaster` does it: what `SetWindowPos`
-//! does, and `MoveWindow` and `BringWindowToTop` through it; and the active
-//! window asked for and set (`placement.ts`).
+//! desktop: what `SetWindowPos` does, and `MoveWindow` and
+//! `BringWindowToTop` through it; and the active window asked for and set.
 //!
 //! A child's place is in its parent's client area, as a program gives it.
 //! It is done in two halves (`defer`): `WM_WINDOWPOSCHANGING`, and
@@ -173,8 +172,7 @@ impl System {
     /// the new client area cut to the old moved there (`1010`). Drawn with
     /// the list (`end_placing`): that much copied, and the rest of its old
     /// region and its new -- its frame, and what of the client area is not
-    /// kept -- made due through its parent (`swpframe`). The TypeScript
-    /// engine's `frameChanged`.
+    /// kept -- made due through its parent (`swpframe`).
     pub(crate) fn frame_changed(&mut self, index: usize) -> Result<(), Stop> {
         let client_of = |system: &Self| {
             let window = system.windows[index].as_ref().expect("a window");
@@ -217,7 +215,7 @@ impl System {
     /// Its whole frame due as a region of it, where its frame is due and
     /// not all of it, after the list that changed its frame or size was
     /// drawn (`swpframe`); due all over, `WM_NCPAINT` with 1 (seg7
-    /// `08de`-`08f0`; `swpunc`). The TypeScript engine's `frameDue`.
+    /// `08de`-`08f0`; `swpunc`).
     pub(crate) fn frame_due(&mut self, index: usize) {
         if let Some(window) = self.windows[index].as_mut() {
             window.frame_region =
@@ -359,10 +357,9 @@ const CS_HREDRAW: u16 = 0x0002;
 
 /// Which of a window's old client area's bits `SetWindowPos` keeps, from
 /// what its procedure answered `WM_NCCALCSIZE` (`USER.EXE` seg7
-/// `0f67`-`0f84`, `10a7`-`1153`; `calcKept` in `window-state.ts`, where it
-/// is told at length): none for what `move_with_bits` keeps of itself, the
-/// old client area's corner at the new one's, for an answer of nought or
-/// one below 10h or above 400h. Otherwise the second rectangle is where they
+/// `0f67`-`0f84`, `10a7`-`1153`): none for what `move_with_bits` keeps of
+/// itself, the old client area's corner at the new one's, for an answer of
+/// nought or one below 10h or above 400h. Otherwise the second rectangle is where they
 /// go and the third where they come from; `WVR_HREDRAW` or `CS_HREDRAW` with
 /// the width changed, or `WVR_VREDRAW` or `CS_VREDRAW` with the height,
 /// keeps nothing; `WVR_ALIGNRIGHT` and `WVR_ALIGNBOTTOM` move the second's
@@ -1263,8 +1260,7 @@ impl System {
     /// `9350`-`9359`, `9a76`-`9a79`) -- the second block, of two at `A3Ch`, is
     /// handed out instead, whatever is asked and whoever has it
     /// (`00c0`-`00cd`): entries 4 and 5 here. Answers the block's first
-    /// entry, none for a block of its own. The TypeScript engine's
-    /// `takeDeferSlots`.
+    /// entry, none for a block of its own.
     pub(crate) fn take_defer_slots(&mut self, count: i32) -> Option<usize> {
         if self.user_calls.in_sys_error_box {
             return Some(SECOND_BLOCK);
@@ -1288,8 +1284,7 @@ impl System {
     /// Where `ShowWindow`'s own `SetWindowPos` leaves the bits of a window
     /// going, in the block's first entry where it is free: its whole
     /// window unmoved, else its client area as it kept it, from its corner
-    /// (seg7 `1028`-`104c`, `10e3`-`1153`). The TypeScript engine's
-    /// `noteShownSlot`.
+    /// (seg7 `1028`-`104c`, `10e3`-`1153`).
     pub(crate) fn note_shown_slot(&mut self, index: usize, client_was: [i32; 4], same_place: bool) {
         let first = if self.user_calls.in_sys_error_box {
             SECOND_BLOCK
@@ -1492,7 +1487,7 @@ pub fn is_zoomed(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 const SECOND_BLOCK: usize = 4;
 
 /// The entry of a block a call's `index`th window has, none past the
-/// block's end. The TypeScript engine's `slotIn`.
+/// block's end.
 fn slot_in(taken: Option<usize>, index: usize) -> Option<usize> {
     let first = taken?;
     let size = if first == SECOND_BLOCK { 2 } else { 4 };

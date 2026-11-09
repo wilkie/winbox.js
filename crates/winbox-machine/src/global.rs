@@ -111,7 +111,7 @@ impl Figures {
     /// KERNEL growing its descriptor table, which it does in enhanced mode
     /// alone as its free selectors fall under 100h (`KRNL386.EXE` seg1
     /// `1ed4`-`1f0d`), and is not followed: WinBox's selectors are not
-    /// KERNEL's. As `memory-model.ts`'s.
+    /// KERNEL's.
     pub const ENHANCED: Self = Self {
         free: 0x038f_5c60,
         largest: 0x0386_8000,

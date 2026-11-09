@@ -124,7 +124,7 @@ fn file_entry(engine: &Engine, ordinal: u16) -> u32 {
 /// one. The object the file makes is used through its own table
 /// thereafter, as any object is (`objects::call_method`), in a document
 /// of WinBox's, whose block the file lays out as WinBox does (`olemem`).
-/// Else WinBox's own answer. As `index.ts`'s `fileFirst`.
+/// Else WinBox's own answer.
 async fn or_file(
     o: &Ole<'_>,
     ordinal: u16,

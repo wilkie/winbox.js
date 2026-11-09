@@ -8,7 +8,7 @@
 //!
 //! Every probe is made for Windows 3.0, and its recording tells neither; the
 //! same probe marked 3.10 in its header tells them, and nothing else of its
-//! records moves. As `test/win16/combo_selend_test.ts`.
+//! records moves.
 //!
 //! Skipped where the probes are not built.
 
@@ -115,8 +115,7 @@ fn tells_selendok_before_closeup_for_a_row_pressed() {
 /// taken from it, its list down, to another combo box cancels before
 /// `CBN_CLOSEUP`, as a click away does, and taken from one with its list put
 /// away cancels alone; and `CB_SHOWDROPDOWN` with nought cancels before
-/// `CBN_CLOSEUP`. The TypeScript engine's test drove these steps through its
-/// replay's adapter; here the probe is run whole, as it was recorded.
+/// `CBN_CLOSEUP`. The probe is run whole, as it was recorded.
 #[test]
 fn tells_selendcancel_before_closeup_for_the_focus_taken_away_and_cb_showdropdown() {
     let notes = |version| {

@@ -5,9 +5,9 @@ import { type Plan } from './drive.js';
 
 /**
  * What programs write on C:, kept: the drive's changes against the drive as
- * the page planned it from what was dropped (`planDrive`). Each engine tells
- * its own -- the TypeScript engine's FAT16 volume here (`Fat16Changes`), the
- * Rust engine's drive held in memory in `crates/winbox-machine`
+ * the page planned it from what was dropped (`planDrive`). Each kind of drive
+ * tells its own -- a FAT16 volume here (`Fat16Changes`), the Rust engine's
+ * drive held in memory in `crates/winbox-machine`
  * (`MemoryDrive::changes_from`) -- in the same form and the same order, and
  * each puts them back the same way on a drive made afresh (`applyChanges`),
  * so a program sees the same disk on either.
@@ -35,7 +35,7 @@ export interface ChangedDrive {
 /**
  * Changes in the order they are put back on a drive made afresh from the
  * plan they were told against: what is gone first, then the folders, each
- * before what is in it, then the files -- the order both engines tell them
+ * before what is in it, then the files -- the order the engine tells them
  * in, kept here too, so that changes from anywhere are put back the same.
  */
 export function orderChanges(changes: Change[]) {
@@ -109,7 +109,7 @@ function sameBytes(one: Uint8Array, other: Uint8Array) {
   return true;
 }
 
-/* ---- the TypeScript engine's FAT16 volume ---- */
+/* ---- a FAT16 volume ---- */
 
 /** An entry of a directory, as `FAT16Directory.list` reads it. */
 interface Listed {
@@ -129,8 +129,8 @@ interface Marked {
 const LAST = 0xfff7;
 
 /**
- * The changes on a FAT16 volume, the TypeScript engine's C: drive, against
- * the drive as it was filled from the plan. Marked once it is filled
+ * The changes on a FAT16 volume against the drive as it was filled from the
+ * plan. Marked once it is filled
  * (`mark`), before the changes kept are put back: what each entry said is
  * kept, and the disk notes from then on which sectors are written
  * (`Disk.track`). A file is changed where its entry is not as it was -- made,

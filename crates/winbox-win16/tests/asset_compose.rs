@@ -1,8 +1,8 @@
-//! The base of C: composed from the asset bundle for each display, as the
-//! TypeScript engine composes it: every placed file what Setup put on the
-//! oracle's installation for that display, byte for byte, and the whole
-//! listing -- paths, sizes, CRCs and stamps -- the one
-//! `test/assets/compose_test.ts` holds the TypeScript composer to.
+//! The base of C: composed from the asset bundle for each display: every
+//! placed file what Setup put on the oracle's installation for that
+//! display, byte for byte, and the whole listing -- paths, sizes, CRCs and
+//! stamps -- the one `test/assets/compose_test.ts` holds the page's
+//! composer to.
 //!
 //! The bundle is made by `pnpm assets` into `oracle/build/assets`, and the
 //! installations are the oracle's; a checkout has neither until the oracle
@@ -37,7 +37,7 @@ fn crc32(data: &[u8]) -> u32 {
 }
 
 #[test]
-fn composed_as_setup_laid_it_out_and_as_the_typescript_engine_composes_it() {
+fn composed_as_setup_laid_it_out() {
     let assets = root().join("oracle/build/assets");
     let Ok(manifest) = std::fs::read_to_string(assets.join("winbox-assets.json")) else {
         return;

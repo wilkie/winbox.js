@@ -1,6 +1,5 @@
 //! The multiple document interface: a frame window, an `MDIClient` window
-//! filling its client area, and document windows inside that --
-//! winbox.js's `mdi.ts`.
+//! filling its client area, and document windows inside that.
 //!
 //! **Read out of `USER.EXE`**, segment 15 for the client and the default
 //! procedures and segment 20 for the Window menu. Not measured.
@@ -15,11 +14,10 @@
 //! `DefMDIChildProc` activates a child as it is clicked or focused, closes
 //! it through the client, and maximizes it to the client's area.
 //!
-//! The client's scroll bars are `mdi_scroll.rs`. Not followed, as the
-//! TypeScript engine does not follow them: a maximized child's system menu
-//! and restore button in the frame's menu bar, and the frame's title while
-//! one is; the "More Windows" dialog; arranging minimized children's icons;
-//! and `WM_MENUCHAR`.
+//! The client's scroll bars are `mdi_scroll.rs`. Not followed: a maximized
+//! child's system menu and restore button in the frame's menu bar, and the
+//! frame's title while one is; the "More Windows" dialog; arranging
+//! minimized children's icons; and `WM_MENUCHAR`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -329,11 +327,8 @@ impl System {
     }
 
     /// `DefWindowProc` asked to make a child of a window of the `MDIClient`
-    /// class, as a program's own procedure on a client may ask it. The
-    /// TypeScript engine's `DefWindowProc` makes one there from the
-    /// `MDICREATESTRUCT`, with no identifier and nothing of the client's
-    /// bookkeeping; that is not followed, and stops rather than answer
-    /// nought.
+    /// class, as a program's own procedure on a client may ask it. That is
+    /// not followed: it stops rather than answer nought.
     pub(crate) fn refuse_mdi_create_default(&self, index: usize, message: u16) -> Result<(), Stop> {
         if message != WM_MDICREATE {
             return Ok(());
@@ -456,8 +451,7 @@ impl System {
                         0
                     },
                     // The identifier as a word: one past 0xffff wraps
-                    // round, where the TypeScript engine's number would
-                    // match no child at all.
+                    // round.
                     id: state.first.wrapping_add(index as u16),
                     text: Some(text),
                     popup: None,
@@ -526,9 +520,8 @@ impl Engine {
             WM_CREATE => {
                 // The `CLIENTCREATESTRUCT` the `CREATESTRUCT` points at: the
                 // Window menu and the first child's identifier (seg15
-                // `10ff`). Only the structure USER sends is read, as the
-                // TypeScript engine reads it: a pointer handed on by a
-                // program's own procedure reads as none.
+                // `10ff`). Only the structure USER sends is read: a pointer
+                // handed on by a program's own procedure reads as none.
                 let mut guard = self.system();
                 let system = &mut *guard;
                 let far = match lparam {
@@ -763,10 +756,9 @@ impl Engine {
     /// `WM_MDICREATE` (seg15 `0ddb`): the child made and activated; its
     /// window, or nought.
     ///
-    /// Its class and title are handed to `CreateWindow` as text, as the
-    /// TypeScript engine hands them: the `CREATESTRUCT` the child is sent
-    /// carries no pointer to its class, and its title copied into a block of
-    /// USER's own.
+    /// Its class and title are handed to `CreateWindow` as text: the
+    /// `CREATESTRUCT` the child is sent carries no pointer to its class, and
+    /// its title copied into a block of USER's own.
     #[allow(clippy::too_many_lines)]
     async fn mdi_create(&self, hwnd: u16, far: u32) -> Result<u16, Stop> {
         let (made, maxed) = {

@@ -2,8 +2,7 @@
 //! the screen's pixels, made with the raster desktop at the display's depth
 //! and in its palette; a memory context's selected bitmap; or a window's,
 //! a view of the whole screen from the context's origin, drawn through its
-//! region alone (`desktop.ts`, `#screenView`;
-//! `kb/topics/visible-regions.md`, phase 3).
+//! region alone (`kb/topics/visible-regions.md`, phase 3).
 
 use std::rc::Rc;
 
@@ -29,7 +28,7 @@ impl System {
     /// like every other device context's, made the first time they are
     /// wanted. Another handle on them, which draws on them.
     ///
-    /// They start at index nought, as the TypeScript engine's do; the
+    /// They start at index nought; the
     /// raster desktop paints its background over them as it is made.
     pub fn screen_bitmap(&mut self) -> DeviceBitmap {
         if let Some(screen) = &self.screen {
@@ -74,7 +73,7 @@ impl System {
     /// region by USER's rule -- its client area's, with `DCX_USESTYLE`, or
     /// its whole rectangle's, with `DCX_WINDOW` too, as `GetDC` and
     /// `GetWindowDC` work them out (`window_vis`) -- and while it paints,
-    /// with `clipped`, only within what it paints (`desktop.ts`, `#view`).
+    /// with `clipped`, only within what it paints.
     /// A frame is drawn unclipped: a paint's clip is the client area's.
     pub fn window_part(
         &mut self,

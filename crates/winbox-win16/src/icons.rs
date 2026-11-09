@@ -210,8 +210,7 @@ impl DriverResources {
     /// The display driver's OEM bitmaps, in the display's format: each
     /// `RT_BITMAP` decoded and matched to the display's palette by the
     /// nearest colour, then the grayed arrows where the driver has none. A
-    /// bitmap that cannot be read stops the reading, as it stops the
-    /// TypeScript engine's.
+    /// bitmap that cannot be read stops the reading.
     pub fn read_oem(
         driver: &Executable,
         display: DisplayKind,
@@ -479,8 +478,7 @@ impl System {
         }
 
         // A picture of one plane of a bit on a display of colours is drawn
-        // as a monochrome bitmap is, a set bit white (`iconhand`), as
-        // `icon-block.ts`'s `iconOf`.
+        // as a monochrome bitmap is, a set bit white (`iconhand`).
         let (shown_planes, shown_bits) = self.icon_format();
 
         if planes == 1 && bits == 1 && shown_planes * shown_bits > 1 {

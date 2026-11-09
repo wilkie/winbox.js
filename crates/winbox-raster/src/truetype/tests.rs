@@ -1,6 +1,5 @@
 //! Reading a TrueType font for what it says about itself, and the
-//! interpreter checked against the font's own answers: the TypeScript
-//! engine's `truetype_font_test` and `glyph_hinting_test`.
+//! interpreter checked against the font's own answers.
 //!
 //! The fonts are the installation's, which is built rather than committed;
 //! where it has not been built these say nothing.

@@ -8,8 +8,7 @@
 //!
 //! A page is US Letter at 300 dots an inch, in the sixteen colours.
 //!
-//! Not here, as the TypeScript engine has it: the host told of a document
-//! as it is printed (`onPrinted`). A document printed to a device is kept
+//! Not here: the host told of a document as it is printed. A document printed to a device is kept
 //! in `Printing::printed` for the host to take.
 
 use std::collections::HashMap;
@@ -146,7 +145,7 @@ pub fn with_entries(text: &[u8], entries: &[(&str, &str, &str)]) -> Vec<u8> {
 
     // Split at each line feed, a return before it dropped -- only a return
     // before a line feed: one ending the file with none after it stays on
-    // the last line, as the TypeScript engine's `/\r?\n/` leaves it.
+    // the last line.
     let pieces: Vec<&[u8]> = text.split(|&b| b == b'\n').collect();
     let last = pieces.len() - 1;
     let mut lines: Vec<Vec<u8>> = pieces

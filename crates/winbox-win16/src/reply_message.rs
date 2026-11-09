@@ -1,6 +1,5 @@
 //! A message another task sent, answered early, and asked about. **Read
-//! out of `USER.EXE`** and **recorded** by `replym`. As
-//! `src/win16/user/reply-message.ts`, which says more.
+//! out of `USER.EXE`** and **recorded** by `replym`.
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;

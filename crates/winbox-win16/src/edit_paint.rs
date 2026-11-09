@@ -1,5 +1,4 @@
-//! The edit control's pixels, as winbox.js's `desktop.ts` paints them
-//! (`#paintEdit`, `#paintLines`): its client area in the window colour, its
+//! The edit control's pixels: its client area in the window colour, its
 //! border inside it in the frame colour, and its text from the first
 //! character or line that shows, the selection in the highlight colours --
 //! in the colours its parent answered `WM_CTLCOLOR` with, where it

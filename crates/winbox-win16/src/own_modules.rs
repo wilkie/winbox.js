@@ -3,7 +3,6 @@
 //! (`linker.rs`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`),
 //! `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`), `OLECLI` (`olecli/`) and
 //! `OLESVR` (`olesvr/`).
-//! As `src/win16/own-modules.ts`.
 
 use crate::call::Implementation;
 use crate::loader::Held;
@@ -27,7 +26,7 @@ pub const OWN_WITH_FILE: [&str; 6] = [
 /// never loads it is as before. By its module's name or its file's
 /// (`OLECLI.DLL`), kept now if it is not yet, before its file is looked
 /// for or loaded -- so the file's library, if there is one, is registered
-/// after it under the same name. As `own-modules.ts`'s `keepOnLoad`.
+/// after it under the same name.
 pub(crate) fn keep_on_load(system: &mut System, name: &str) {
     let upper = name.to_ascii_uppercase();
     let own = upper.strip_suffix(".DLL").unwrap_or(&upper);
@@ -42,7 +41,7 @@ pub(crate) fn keep_on_load(system: &mut System, name: &str) {
 
 /// Whether a module's name is one of `crate::kept::ON_LOAD`'s, kept or not
 /// yet: a program started by another, as `OLESVR`'s server is, finds it
-/// to be kept as it is linked. As `own-modules.ts`'s `keptOnLoad`.
+/// to be kept as it is linked.
 pub(crate) fn kept_on_load(name: &str) -> bool {
     crate::kept::ON_LOAD
         .iter()
@@ -85,7 +84,7 @@ pub(crate) fn without_file(
 /// those winbox.js keeps alone, from each file's module reference table:
 /// `VER.DLL` imports `LZEXPAND`, beside KERNEL, USER and KEYBOARD.
 /// `COMMDLG.DLL`, `DDEML.DLL` and `LZEXPAND.DLL` import only KERNEL, GDI,
-/// USER and KEYBOARD. As `library.ts`'s `OWN_IMPORTS`.
+/// USER and KEYBOARD.
 const OWN_IMPORTS: [(&str, &[&str]); 1] = [(crate::ver::NAME, &[crate::lzexpand::NAME])];
 
 /// One of these with no file on the drive, loaded by an import or by

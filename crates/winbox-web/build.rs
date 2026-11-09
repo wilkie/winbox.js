@@ -1,8 +1,8 @@
 //! The engine's run goes deep -- a program's call answered by calling back
 //! into it, which calls again -- so the page's module is given a stack of
 //! 8 MiB, put first, below its statics, where running past its end traps
-//! rather than writing over them. The module keeps its own memory: unlike
-//! the hybrid core's (`winbox-wasm`), it shares none with JavaScript.
+//! rather than writing over them. The module keeps its own memory, and shares
+//! none with JavaScript.
 //!
 //! These are this module's terms alone, so they are given for its own link
 //! here, and not to every WebAssembly build in the workspace.

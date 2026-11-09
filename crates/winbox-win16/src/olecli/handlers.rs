@@ -6,9 +6,7 @@
 //! `DllCreateFromFile`, `DllCreateLinkFromFile`, `DllCreateInvisible` and
 //! `DllLoadFromStream`, given what the client gave its `Ole` function, each
 //! free to call `OLECLI`'s default of the same name, the `Def` exports
-//! (110-117), and to change what it makes. As
-//! `src/win16/olecli/handlers.ts`, where what was measured and read out is
-//! told.
+//! (110-117), and to change what it makes.
 //!
 //! `OLECLI`'s own handler of the class `PBrush`, Paintbrush's, is the `Pb`
 //! exports (800-812), with the same arguments: each calls its default

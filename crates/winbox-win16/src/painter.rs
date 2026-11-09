@@ -1,9 +1,9 @@
 //! How USER paints its own parts of the screen -- frames, captions, scroll
-//! bars, controls -- into a window, as winbox.js's `painter.ts` does:
-//! rectangles of a system colour's brush, lines, the display driver's
-//! bitmaps, and the raised boxes and scroll bars made of them. Coordinates
-//! are the window's; what is outside the window is not painted, and pixels
-//! that are a view of the screen clip the rest (`DeviceBitmap::view`).
+//! bars, controls -- into a window: rectangles of a system colour's brush,
+//! lines, the display driver's bitmaps, and the raised boxes and scroll bars
+//! made of them. Coordinates are the window's; what is outside the window is
+//! not painted, and pixels that are a view of the screen clip the rest
+//! (`DeviceBitmap::view`).
 
 use winbox_raster::DeviceBitmap;
 use winbox_raster::colour_match::DisplayKind;
@@ -46,7 +46,7 @@ const COLOR_BTNHIGHLIGHT: usize = 20;
 /// What painting asks of the display: its driver, which patterns the
 /// brushes, `GetSystemMetrics`, `GetSysColor` and the driver's OEM bitmaps
 /// -- and, for a control, what its parent answered `WM_CTLCOLOR` with,
-/// standing for the system colours it replaces (`ctlcolor.ts`).
+/// standing for the system colours it replaces.
 #[derive(Debug)]
 pub struct PaintEnv<'a> {
     pub system: &'a System,

@@ -1,5 +1,4 @@
-//! GDI's drawing held to what Windows 3.1 recorded, as the TypeScript
-//! engine's replay holds it (`test/oracle/replay.ts`): each record drawn
+//! GDI's drawing held to what Windows 3.1 recorded: each record drawn
 //! through the calls a program makes, on a display, and read back as the
 //! probe read it. `lines`, `dither`, `dither3`, `penmatch`, `curves` and
 //! `mixmode`, on the four displays each was recorded on.
@@ -543,8 +542,8 @@ fn a_handle_with_no_colour_given_as_a_brush_stops_the_program() {
 
     pat_blt(&mut system, hdc, [0, 0, 8, 8], WHITENESS);
 
-    // The TypeScript engine's surface takes the brush's colour as it is
-    // set, and a region has none: it throws.
+    // The surface takes the brush's colour as it is set, and a region has
+    // none: it stops.
     assert!(fill_rect(&mut system, hdc, [0, 0, 2, 2], region).is_err());
     assert!(frame_rect(&mut system, hdc, [0, 0, 2, 2], region).is_err());
     assert!(fill_rgn(&mut system, hdc, region, region).is_err());

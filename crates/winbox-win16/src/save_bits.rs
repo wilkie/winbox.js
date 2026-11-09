@@ -1,7 +1,6 @@
 //! The bits beneath a window of a class with `CS_SAVEBITS`, kept by USER as
 //! the window is shown and put back where it uncovers them (`USER.EXE`
-//! seg13 `1e72`, `211e`, seg1 `0959`). Twin of
-//! `src/win16/user/save-bits.ts`. **Read out**:
+//! seg13 `1e72`, `211e`, seg1 `0959`). **Read out**:
 //!
 //! * **Kept** as `SetWindowPos` places a window with `SWP_SHOWWINDOW` and
 //!   without `SWP_NOREDRAW`, of a class with `CS_SAVEBITS` (seg7

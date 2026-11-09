@@ -1,8 +1,7 @@
 //! The Print Setup dialog's procedure, `PrintSetupDlgProc` (22): COMMDLG's
 //! dialog 1539, from `PrintDlg` or the Print dialog's Setup button -- the
 //! printers from `WIN.INI`, the orientation, and the paper sizes and
-//! sources the driver names (`COMMDLG.DLL` seg3 `307a`). As
-//! `print-setup.ts`.
+//! sources the driver names (`COMMDLG.DLL` seg3 `307a`).
 
 use super::api::{Arg, buffer, text};
 use super::print_dlg::{

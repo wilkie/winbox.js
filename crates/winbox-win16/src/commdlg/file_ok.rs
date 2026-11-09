@@ -1,6 +1,6 @@
 //! OK in the file boxes: the name taken, checked and answered
 //! (`COMMDLG.DLL` seg2 `22e7`), or with several files the names taken
-//! (seg2 `1c16`). As `file-dialogs.ts`.
+//! (seg2 `1c16`).
 
 use super::api::{self, Arg, item, item_text, send, send_item, set_item_text};
 use super::file_dialogs::{

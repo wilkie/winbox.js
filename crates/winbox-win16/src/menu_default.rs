@@ -1,7 +1,6 @@
 //! What `DefWindowProc` does on the raster desktop with the frame's
-//! clicks, the system menu's commands and the keys, as winbox.js's
-//! `DefWindowProc.ts` does it: a press on the menu bar or the system menu
-//! box opens the menu (`menu_loop.rs`), one on the caption or the frame
+//! clicks, the system menu's commands and the keys: a press on the menu bar
+//! or the system menu box opens the menu (`menu_loop.rs`), one on the caption or the frame
 //! moves or sizes the window (`track_loop.rs`), one on a scroll bar follows
 //! it (`scroll_bars.rs`); `WM_SYSCOMMAND` does what the system menu says;
 //! Alt, F10 and Alt with a letter reach the menu.
@@ -395,8 +394,7 @@ impl Engine {
         }
 
         // Not measured: Windows shows the box pressed until the button is
-        // released over it; here, as in the TypeScript engine, the press is
-        // enough.
+        // released over it; here the press is enough.
         if hit == HTMINBUTTON {
             return Ok(Some(
                 self.system_command(hwnd, index, SC_MINIMIZE, 0).await?,

@@ -6,7 +6,7 @@
 //! holds, marked as planned it tells nothing, and what a program writes on
 //! a program's stack is told against that stack and put back on it.
 //!
-//! The plan is the TypeScript page's own, `test/run/stack-plan.json`, of
+//! The plan is the page's own, `test/run/stack-plan.json`, of
 //! `test/layers/stack.json`'s first stack (`test/run/layers_test.ts`).
 
 use std::collections::HashMap;

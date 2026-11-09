@@ -38,8 +38,7 @@ pub struct Bitmap {
     pub dimension: Option<(i16, i16)>,
 }
 
-/// Two are the same bitmap where they share their pixels, as two
-/// TypeScript references to one object are the same.
+/// Two are the same bitmap where they share their pixels.
 impl PartialEq for Bitmap {
     fn eq(&self, other: &Self) -> bool {
         std::rc::Rc::ptr_eq(&self.pixels.indices, &other.pixels.indices)
@@ -79,9 +78,8 @@ pub fn format_of(bitmap: &DeviceBitmap) -> (u16, u16) {
     }
 }
 
-/// How many bytes a bitmap's bits take, every plane of every row. Worked
-/// out as the TypeScript engine works it, so a negative side gives a size
-/// of nought or less.
+/// How many bytes a bitmap's bits take, every plane of every row. Worked out
+/// so that a negative side gives a size of nought or less.
 pub fn bits_size(bitmap: &DeviceBitmap) -> i64 {
     let (planes, bits) = format_of(bitmap);
 
@@ -103,9 +101,8 @@ fn padding_mask(depth: i64, width: i64, column: i64) -> u8 {
     }
 }
 
-/// `at` over `by`, rounded down, as the TypeScript engine's `Math.floor`
-/// rounds it: a bitmap of negative width and height has a negative row
-/// length, and its rows count down from -1, not from nought.
+/// `at` over `by`, rounded down: a bitmap of negative width and height has a
+/// negative row length, and its rows count down from -1, not from nought.
 fn floor_div(at: i64, by: i64) -> i64 {
     let quotient = at / by;
 

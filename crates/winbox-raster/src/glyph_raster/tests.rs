@@ -1,4 +1,4 @@
-//! Filling an outline: the TypeScript engine's `glyph_raster_test`.
+//! Filling an outline, measured against Windows.
 
 // Deliberately: numbers compared and converted as a JavaScript engine's
 // are, since every rule here was measured through one.

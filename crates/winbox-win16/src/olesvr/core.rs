@@ -1,6 +1,6 @@
 //! What WinBox's `OLESVR` stands on: `OLECLI`'s routines for guest memory
 //! and for calls into KERNEL, USER and GDI (`olecli/core.rs`), with its own
-//! data segment and its own state. As `src/win16/olesvr/core.ts`.
+//! data segment and its own state.
 //!
 //! Written from OLE 1.0's documented interface (`ole.h`, the OLE 1.0
 //! programmer's reference: the server API and the DDE protocol) and from

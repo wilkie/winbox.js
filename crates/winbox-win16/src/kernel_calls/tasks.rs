@@ -1,6 +1,5 @@
 //! KERNEL's small calls about tasks and modules, from KERNEL's list of
 //! tasks (`task_order.rs`) and the modules' chain (`toolhelp/modules.rs`).
-//! As `kernel/task-calls.ts` and `kernel/module-calls.ts`.
 
 use winbox_cpu::{DS, DX, ES};
 use winbox_machine::index_for;
@@ -287,8 +286,7 @@ pub(crate) fn exe_ptr(system: &mut System, handle: u16) -> u16 {
     // A module's own handle, odd, its database's (`4e7f`-`4e8d`): any
     // module's, of the chain or loaded from a file. Two programs' modules
     // may have one name -- Lode Runner's `SETUP.EXE` and `_SETUP.EXE` are
-    // both `SETUP` -- and the chain, found by names, holds one of them; the
-    // TypeScript engine keeps only the last of a name.
+    // both `SETUP` -- and the chain, found by names, holds one of them.
     if handle & 1 != 0
         && (chain.iter().any(|module| module.handle == handle)
             || system.modules.iter().any(|module| module.handle == handle))

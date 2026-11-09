@@ -2,8 +2,7 @@
 //! works it out by (`USER.EXE` seg1 `1582`, `1612`, `847b`-`854c`): what a
 //! device context USER hands out may draw on, in the screen's terms, given
 //! to GDI as `SelectVisRgn` and `SetDCOrg` would
-//! (`kb/topics/visible-regions.md`, phase 2). Twin of the TypeScript
-//! engine's `visible-region-rule.ts`.
+//! (`kb/topics/visible-regions.md`, phase 2).
 
 use winbox_raster::ClipRegion;
 
@@ -39,8 +38,7 @@ impl System {
     }
 
     /// The flags `GetDCEx` works a region out by, and the window whose
-    /// region it is (`847b`-`854c`), as `visible-region-rule.ts`'s
-    /// `regionFlags` says: with `DCX_USESTYLE`, the flags from the styles;
+    /// region it is (`847b`-`854c`): with `DCX_USESTYLE`, the flags from the styles;
     /// with `DCX_PARENTCLIP`, the parent's region but where the parent
     /// has `WS_CLIPCHILDREN`, the flags have `DCX_CLIPCHILDREN` or
     /// `DCX_CLIPSIBLINGS`, or one of the two is visible and the other not.
@@ -173,7 +171,7 @@ impl System {
     }
 
     /// A window's visible region by USER's rule (seg1 `1582`), in the
-    /// screen's terms, as `visible-region-rule.ts`'s `windowRegion` says:
+    /// screen's terms:
     /// nothing where it or a window it is in is hidden or minimized, or
     /// where it is within the window `LockWindowUpdate` locked without
     /// `DCX_LOCKWINDOWUPDATE`; else `of`'s client or window rectangle, its

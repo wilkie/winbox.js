@@ -114,10 +114,9 @@ fn pen_colour(pen: &Pen) -> Color {
     Color::rgba(red, green, blue, alpha)
 }
 
-/// `MulDiv` as the TypeScript engine's GDI call has it: each argument a
-/// signed word, the quotient rounded to the nearest, a half away from
-/// nought, held to a signed word.
-// A JavaScript number's division.
+/// `MulDiv`: each argument a signed word, the quotient rounded to the
+/// nearest, a half away from nought, held to a signed word.
+// Deliberately: a double's division.
 #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
 fn mul_div(multiplicand: i32, multiplier: i32, divisor: i32) -> i32 {
     let sign = |value: i32| f64::from(value as i16);

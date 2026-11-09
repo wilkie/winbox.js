@@ -1,7 +1,6 @@
 //! A task's signal handler and its action, as KERNEL keeps them in the
 //! task's database (TDB 24h and 26h), set with `SetSigHandler` and called
-//! by `DoSignal` on Ctrl+Break. As `kernel/signals.ts`, which cites the
-//! read-outs; **recorded** by `kgaps`.
+//! by `DoSignal` on Ctrl+Break. **Recorded** by `kgaps`.
 
 use winbox_cpu::{AX, BX, DI, DS, DX, SI};
 use winbox_machine::segment_selector;

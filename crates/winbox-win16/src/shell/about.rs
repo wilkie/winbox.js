@@ -128,7 +128,7 @@ pub fn shell_string(id: u16) -> Option<&'static str> {
         .map(|&(_, text)| text)
 }
 
-/// The About box's template, read as the TypeScript engine reads it.
+/// The About box's template, read from its hex.
 fn template() -> DialogTemplate {
     let bytes: Vec<u8> = (0..ABOUT_DIALOG.len() / 2)
         .map(|at| u8::from_str_radix(&ABOUT_DIALOG[at * 2..at * 2 + 2], 16).unwrap_or(0))
@@ -137,14 +137,12 @@ fn template() -> DialogTemplate {
     parse_dialog_template(|at| bytes.get(at as usize).copied().unwrap_or(0))
 }
 
-/// A string as bytes, a character to a byte, as the TypeScript engine's
-/// strings are.
+/// A string as bytes, a character to a byte.
 fn latin1(text: &str) -> Vec<u8> {
     text.chars().map(|c| c as u8).collect()
 }
 
-/// A string with its first `pattern` replaced, as JavaScript's `replace`
-/// replaces it.
+/// A string with its first `pattern` replaced.
 fn replaced(format: &[u8], pattern: &[u8], value: &[u8]) -> Vec<u8> {
     match format
         .windows(pattern.len())
@@ -527,7 +525,7 @@ pub fn shell_about(engine: &Engine, mut args: Args) -> Later<'_> {
         // Made with SHELL's own instance, which its entry point keeps at
         // [350h] (`SHELL.DLL` seg1 `0069` calling seg2 `0000`, which stores
         // it at `0010`) and `ShellAbout` hands `DialogBoxParam` (seg9
-        // `002b`): **recorded** by `abouthin`. As `about.ts`.
+        // `002b`): **recorded** by `abouthin`.
         let shell = {
             let system = engine.system();
 

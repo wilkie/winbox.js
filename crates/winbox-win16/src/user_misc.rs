@@ -225,9 +225,8 @@ fn read_rect(system: &System, far: u32) -> Option<Rect> {
     Some(Rect::new(side(0), side(2), side(4), side(6)))
 }
 
-/// A `RECT` the function reads or writes: where the TypeScript engine
-/// reads a null pointer's sides, it throws and the program stops, as it
-/// does here.
+/// A `RECT` the function reads or writes: a null pointer's sides cannot
+/// be read, and the program stops.
 fn rect(system: &System, far: u32) -> Result<Rect, Stop> {
     read_rect(system, far).ok_or(Stop::Unsupported("a null RECT"))
 }
@@ -405,10 +404,7 @@ pub fn ansi_lower_byte(byte: u8) -> u8 {
 /// Answers the pointer it was given, or the converted character.
 ///
 /// A string runs to its nought; the offset wraps within its segment, and a
-/// segment with no nought in it is converted once through. The TypeScript
-/// engine's offset does not wrap and has no end: past the segment's last
-/// byte it reads on into whatever follows, and with no nought anywhere it
-/// does not return. Both are the same for a string inside its segment.
+/// segment with no nought in it is converted once through.
 ///
 /// A pointer whose first byte cannot be read answers nought: USER loads
 /// its selector and reads that byte first, and the fault is taken as a
@@ -600,11 +596,10 @@ pub(crate) fn is_char_lower(system: &mut System, args: &mut Args) -> Result<Answ
 /// nought is a number, not a string, and spells out nothing. A null format
 /// stops the program, its length taken at nought.
 ///
-/// Not done here: a format that cannot be read is turned away by the
-/// TypeScript engine before the call, answering nought and writing nothing
-/// (**recorded** by `badarg`). That check is the engine's, made of every
-/// `LPCSTR` argument, and the Rust engine does not make it yet for any
-/// function; here such a format is read as memory has it.
+/// Not done here: a format that cannot be read is turned away before
+/// the call, answering nought and writing nothing (**recorded** by
+/// `badarg`). That check is made of every `LPCSTR` argument, and the
+/// engine does not make it yet for any function; here such a format is read as memory has it.
 fn wvsprintf(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let output = args.dword(system);
     let format = args.dword(system);
@@ -766,8 +761,8 @@ fn get_input_state(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 
 /// `WN_NOT_SUPPORTED`.
 ///
-/// `WNetGetConnection`'s local name is an `LPCSTR`, which the TypeScript
-/// engine turns away, answering nought, where it cannot be read; the Rust
+/// `WNetGetConnection`'s local name is an `LPCSTR`, which is turned
+/// away, answering nought, where it cannot be read; the
 /// engine does not check it yet (see `wvsprintf`), and answers this.
 const WN_NOT_SUPPORTED: u16 = 1;
 
@@ -1172,8 +1167,7 @@ mod tests {
     }
 
     /// `AnsiUpperBuff` with a count of nought converts the whole segment,
-    /// wrapping within it, and answers nought, as the TypeScript engine's
-    /// `length & 0xffff` does.
+    /// wrapping within it, and answers nought.
     #[test]
     fn ansi_buffer_of_nought_is_the_segment() {
         let mut system = System::new();

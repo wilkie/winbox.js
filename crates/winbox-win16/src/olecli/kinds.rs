@@ -4,7 +4,7 @@
 //! `OLECLI`'s exports. Their calls into GDI, USER and KERNEL are the ones
 //! `OLECLI.DLL` makes, each seen with its arguments as WinBox ran the file
 //! (the probes' runs); their answers **recorded** by `olestat` and
-//! **measured** by `olemem`. As `src/win16/olecli/kinds.ts`.
+//! **measured** by `olemem`.
 
 use crate::commdlg::api::{Arg, buffer};
 

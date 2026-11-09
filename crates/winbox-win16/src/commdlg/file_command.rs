@@ -1,6 +1,5 @@
 //! The file boxes' `WM_COMMAND` (`COMMDLG.DLL` seg2 `31f4`): OK, Cancel,
-//! Help, and what each list, combo box and the name tell the box. As
-//! `file-dialogs.ts`.
+//! Help, and what each list, combo box and the name tell the box.
 
 use super::api::{self, Arg, item, item_text, list_text, send, send_item, set_item_text, text};
 use super::file_dialogs::{

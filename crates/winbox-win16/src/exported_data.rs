@@ -1,6 +1,5 @@
 //! Exports that are data, not code: what a program finds at the address
-//! `GetProcAddress` gives for one, or its import is bound to. As
-//! `exported-data.ts`, which tells where Windows has each: bytes laid where
+//! `GetProcAddress` gives for one, or its import is bound to. Where Windows has each: bytes laid where
 //! the export's stub would be, as a table in code is -- each system
 //! module's `__GP` -- or a place in the module's own data segment, as
 //! KERNEL's `THHOOK` and GDI's `FTrapping0` are.

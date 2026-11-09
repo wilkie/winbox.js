@@ -2,7 +2,7 @@
 //! Widget Workshop's disc (`corpus/manifest.json`, `widget`), its image as
 //! D:, on the oracle's 256-colour installation, `D:\INSTALL.EXE` started as
 //! Windows started as `WIN D:\INSTALL.EXE` starts it -- Program Manager,
-//! Microsoft's, the shell -- its keys pressed when the TypeScript engine's
+//! Microsoft's, the shell -- its keys pressed when the fixture's
 //! clock pressed them (`test/layers/widget-layer.json`'s `stepMarks`).
 //!
 //! What it wrote on C: is Windows' install's under DOSBox
@@ -11,12 +11,11 @@
 //! registration database, whose node table Windows ends with one free entry
 //! more. As a layer (`install_into_layer`), it is `widget-layer.json`'s, the
 //! file's text to the byte, its keys kept as the file has them;
-//! `WIDGET_LAYER_WRITE=1` writes the file from this run, as
-//! `widget_test.ts` did.
+//! `WIDGET_LAYER_WRITE=1` writes the file from this run.
 //!
 //! Skipped without the disc (`node scripts/corpus/fetch.mjs widget`), the
-//! oracle's installation or the fixtures, and unless `WIDGET_INSTALL=1`, as
-//! `widget_test.ts` is: five minutes in a debug build, twenty seconds in a
+//! oracle's installation or the fixtures, and unless `WIDGET_INSTALL=1`:
+//! five minutes in a debug build, twenty seconds in a
 //! release one (`WIDGET_INSTALL=1 cargo test --release -p winbox-win16
 //! --test install_widget`).
 
@@ -49,7 +48,7 @@ fn listed(entries: &serde_json::Value) -> BTreeMap<String, (u64, String)> {
         .collect()
 }
 
-/// The order of `widget-layer.json`'s keys, as `widget_test.ts` wrote them.
+/// The order of `widget-layer.json`'s keys.
 const LAYER_ORDER: &[&str] = &[
     "stepMarks",
     "layer",
@@ -121,7 +120,7 @@ fn widget_workshops_install_from_its_cd() {
     system.files.mount('D', disc);
 
     // The drives DOSBox gives the oracle's Windows beside C:: an empty
-    // floppy drive and its own Z:, as the TypeScript engine's run has them.
+    // floppy drive and its own Z:, as the fixture's run has them.
     for (letter, removable) in [('A', true), ('Z', false)] {
         let folder = drives.with_extension(letter.to_string());
 
@@ -202,9 +201,9 @@ fn widget_workshops_install_from_its_cd() {
     }
 
     // The file but for one difference, the stamp of `WINDOWS` (and so the
-    // layer's id, a hash of its entries): 18 seconds later here than on the
-    // TypeScript engine's FAT drive, which moved it at an earlier change
-    // made in the folder. Which change is not yet followed; every file and
+    // layer's id, a hash of its entries): 18 seconds later here than in the
+    // fixture, whose FAT drive moved it at an earlier change made in the
+    // folder. Which change is not yet followed; every file and
     // every other stamp agree.
     let excused = |text: &str| -> String {
         let mut value: serde_json::Value = serde_json::from_str(text).unwrap();

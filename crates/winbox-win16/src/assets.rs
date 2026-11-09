@@ -5,10 +5,6 @@
 //! Setup put them, `WIN.INI` and `SYSTEM.INI` as Setup wrote them, and
 //! `REG.DAT` made from `SETUP.REG` as Setup makes it.
 //!
-//! The TypeScript engine's twin is `src/assets/compose.ts`; the two give
-//! the same placements, byte for byte (`tests/asset_compose.rs` and
-//! `test/assets/compose_test.ts` hold both to one listing).
-//!
 //! Only data: no code of Windows' is placed. The bundle's modules are not
 //! files on C: at all.
 
@@ -386,9 +382,9 @@ pub struct StoredEntry<'a> {
     pub time: u16,
 }
 
-/// A zip archive of stored entries -- no compression -- as the
-/// TypeScript engine's `writeStoredZip` (`src/assets/zip.ts`) writes one,
-/// byte for byte: each entry a local header, the name and the data; then
+/// A zip archive of stored entries -- no compression -- as the maker
+/// (`src/assets/zip.ts`) writes one, byte for byte: each entry a local
+/// header, the name and the data; then
 /// the central directory and the end record. No extra fields, no
 /// comments, names in ASCII.
 ///
@@ -664,7 +660,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn dos_stamps_read_as_the_typescript_engine_reads_them() {
+    fn dos_stamps_read_as_dos_dates_and_times() {
         // 10 March 1992, 3:10:00, as the setup disks' files are stamped.
         assert_eq!(dos_seconds(0x186a, 0x1940), 700_197_000);
         assert_eq!(dos_seconds(0x0021, 0), 315_532_800);

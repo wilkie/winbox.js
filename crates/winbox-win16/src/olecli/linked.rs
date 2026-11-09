@@ -6,7 +6,7 @@
 //! **recorded** by the probes `oledde` (a server that writes down each
 //! message it is sent), `olepbd` (the same server as the class `PBrush`)
 //! and `olepbr` (Paintbrush). Nothing here is taken from the code of
-//! `OLECLI.DLL`. As `src/win16/olecli/linked.ts`.
+//! `OLECLI.DLL`.
 //!
 //! An object's conversation is a list of steps: each posts one message and
 //! waits for the server's answer -- `WM_DDE_ACK`, the data asked for, or

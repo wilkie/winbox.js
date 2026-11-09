@@ -5,8 +5,7 @@
 //! leaned a row pair at a time where italic was. And the solid rectangle
 //! the ground behind text, a rule and a prefix's underline are drawn as.
 
-// Deliberately: a JavaScript number's precision, as the TypeScript
-// engine's drawing has it.
+// Deliberately: a JavaScript number's precision.
 #![allow(clippy::cast_precision_loss)]
 
 use crate::bitmap_font::{BitmapFontEntry, Measure};
@@ -28,14 +27,12 @@ pub struct DrawOptions {
 }
 
 /// A strike's region too big to take: its width or height is negative, as
-/// a negative character extra can make it, where the TypeScript engine's
-/// typed array of that length throws.
+/// a negative character extra can make it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NegativeRegion;
 
-/// A rectangle filled solid, as the TypeScript engine's `BitmapContext`
-/// fills one: its corner rounded, every pixel of it set through the
-/// context, which keeps it to the pixels, the clip and the device
+/// A rectangle filled solid: its corner rounded, every pixel of it set
+/// through the context, which keeps it to the pixels, the clip and the device
 /// context's clip region, and matches the colour to the palette.
 pub fn fill_rect(
     context: &mut IndexedContext,
@@ -63,8 +60,7 @@ fn round(value: f64) -> f64 {
 
 /// A string drawn with a strike, its cell's corner at `x, y`.
 ///
-/// The way the TypeScript engine's `BitmapFontEntry.draw` draws it: the
-/// region the string covers is taken out of the context as colours, each
+/// The region the string covers is taken out of the context as colours, each
 /// glyph's ink written into it, and the whole region put back a pixel at a
 /// time -- so every pixel of it is matched to the palette again, inked or
 /// not, and the region is marked as written.
@@ -92,7 +88,7 @@ fn round(value: f64) -> f64 {
 ///
 /// # Errors
 ///
-/// A region of negative size, which the TypeScript engine cannot make.
+/// A region of negative size.
 pub fn draw_strike(
     entry: &BitmapFontEntry,
     context: &mut IndexedContext,

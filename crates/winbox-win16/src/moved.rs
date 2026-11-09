@@ -1,6 +1,6 @@
 //! A window moved, sized or put elsewhere in the order of windows as
-//! `SetWindowPos` does it, as the TypeScript engine's `desktop.ts` does:
-//! what it keeps of what it showed, and what is due a paint after.
+//! `SetWindowPos` does it: what it keeps of what it showed, and what is due
+//! a paint after.
 //!
 //! **Recorded** by `swpbits`, a pop-up moved over a window beneath it:
 //!
@@ -425,8 +425,7 @@ impl System {
     /// `stale` the entry kept from the call before; with `nccalc`, nowhere
     /// with `SWP_NOCOPYBITS` or to be drawn again, else the client area as
     /// `WM_NCCALCSIZE` kept it, `kept` (`nccalc`). The rectangle it went by
-    /// is answered, for the entry. Drawn with the list (`end_placing`). The
-    /// TypeScript engine's `moveWithBits`.
+    /// is answered, for the entry. Drawn with the list (`end_placing`).
     #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
     pub(crate) fn move_with_bits(
         &mut self,
@@ -573,7 +572,7 @@ impl System {
     /// screen as it was, for the bits a `CS_SAVEBITS` window saves as it is
     /// shown (`0b75`-`0bde`). Lists begun within a list are of it. Every
     /// context's bounds are taken back first for the records USER keeps
-    /// (`057a`). The TypeScript engine's `beginPlacing`.
+    /// (`057a`).
     pub(crate) fn begin_placing(&mut self, windows: &[usize]) {
         if let Some(list) = self.placing.as_mut() {
             list.depth += 1;
@@ -731,8 +730,6 @@ impl System {
     ///   every window was shown and is of a program made before 3.10
     ///   (`all_shown`; counted by the windows themselves where not given),
     ///   else `RDW_ALLCHILDREN`.
-    ///
-    /// The TypeScript engine's `endPlacing`.
     #[allow(clippy::too_many_lines)]
     pub(crate) fn end_placing(&mut self, all_shown: Option<bool>) {
         let Some(list) = self.placing.as_mut() else {

@@ -24,8 +24,8 @@ pub const THUNKS: usize = 512;
 /// one (`own_modules.rs`).
 const STUBS_ONLY: [&str; 6] = crate::own_modules::OWN_WITH_FILE;
 
-/// A string argument as the TypeScript engine reads one: nought for a null
-/// pointer, a number where its segment is nought, else the string.
+/// A string argument: nought for a null pointer, a number where its segment
+/// is nought, else the string.
 enum Name {
     Null,
     Number(u16),
@@ -109,7 +109,7 @@ pub(crate) fn module_usage(system: &System, handle: u16) -> u16 {
             system.kept[kept].usage as u16
         }
         Some(Object::Task(program)) => system.running_instances(program) as u16,
-        // Anything else it can name, 1, as the TypeScript engine answers.
+        // Anything else it can name, 1.
         Some(_) => 1,
         None => 0,
     }
@@ -163,8 +163,7 @@ pub fn drive_type(system: &System, drive: i32) -> u16 {
 /// kind in AX, as `GetDriveType` answers it, and in DX the drive, counted
 /// from 1, whose disk this one's letter is another name for -- 1, A:, for
 /// B: where there is one floppy drive and 440Eh fails (`00fb`-`010b`),
-/// else nought. **Recorded** by `sysdrv`: B: `00010000`. As
-/// `GetDriveType.ts`'s `driveInquiry`.
+/// else nought. **Recorded** by `sysdrv`: B: `00010000`.
 pub fn drive_inquiry(system: &System, drive: i32) -> (u16, u16) {
     if !(0..=25).contains(&drive) {
         return (0, 0);
@@ -612,8 +611,7 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         let mut found = None;
 
         for place in places {
-            // A folder of no drive lists nothing, as the TypeScript engine's
-            // finds it: there, and empty.
+            // A folder of no drive lists nothing: it is there, and empty.
             if !place.contains(':') || system.files.folder_exists(&place) {
                 folder_found = true;
             }
@@ -979,8 +977,7 @@ mod kept_tests {
     /// The modules winbox.js keeps are found by their files' names with no
     /// file on the drive: no Windows file is shipped. Each answers its
     /// instance, as `LoadLibrary` answers it (`modhand`): 32 or more. A
-    /// driver it does not keep, with no file, answers an error. As
-    /// `test/win16/kept_modules_test.ts`.
+    /// driver it does not keep, with no file, answers an error.
     #[test]
     fn kept_modules_load_by_their_files_names_from_an_empty_drive() {
         let engine = crate::mmsystem::device_tests::machine();

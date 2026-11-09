@@ -1,8 +1,7 @@
 //! Program Manager's DDE, as `PROGMAN.EXE` seg7 answers it: the frame's
 //! messages 3E0h-3E8h (seg2 `228c`-`2296`) go to its dispatcher (`1416`,
 //! table `155e`), which keeps no state for a conversation, and the frame
-//! answers nought. As `src/win16/progman/dde.ts`
-//! (`kb/topics/program-manager-dde.md`).
+//! answers nought (`kb/topics/program-manager-dde.md`).
 
 use super::commands;
 use super::loaded;

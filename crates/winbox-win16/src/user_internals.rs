@@ -1,7 +1,6 @@
 //! USER's exports for Windows' own components that WinBox answers as a
 //! program calling them sees Windows answer. **Read out** of `USER.EXE`;
-//! as `src/win16/user/internals.ts`, which says more of each, and
-//! `kb/topics/user-internals.md`, the map of them all.
+//! `kb/topics/user-internals.md` is the map of them all.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.

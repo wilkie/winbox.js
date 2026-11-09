@@ -1,8 +1,7 @@
 //! `OLESVR` is WinBox's own (`src/olesvr/`): its probes write what Windows
 //! wrote with `OLESVR.DLL` on the drive -- each import of an export linked
 //! to WinBox's stub -- and with no `OLESVR.DLL` on the drive at all; and
-//! Paintbrush's with neither `OLESVR.DLL` nor `OLECLI.DLL`. As
-//! `test/win16/olesvr_test.ts`.
+//! Paintbrush's with neither `OLESVR.DLL` nor `OLECLI.DLL`.
 
 mod support;
 
@@ -16,7 +15,7 @@ const OLESVR_DLL: &str = "WINDOWS\\SYSTEM\\OLESVR.DLL";
 /// windows and properties its clients are kept on.
 const PROBES: &[&str] = &["olesrv", "olepbr", "oleitem"];
 
-/// `oleitem`'s one known gap (`replay.ts`'s `KNOWN_GAPS`): Windows'
+/// `oleitem`'s one known gap (`support::KNOWN_GAPS`): Windows'
 /// `EnumProps` still lists the property `DELETECLIENTINFO` took from
 /// Item3's window.
 fn unless_gap(records: &[[String; 3]]) -> Vec<[String; 3]> {

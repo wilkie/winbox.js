@@ -1,7 +1,6 @@
 //! A program's run as the corpus's survey makes it, whoever makes it: the
 //! trace example on a host's files, a browser's page, the tests. The keys
-//! a TypeScript engine's survey report says it pressed, pressed where it
-//! did (`stepMarks`); made-up keys and clicks after them (`scripted_input`);
+//! a survey report says it pressed, pressed where it did (`stepMarks`); made-up keys and clicks after them (`scripted_input`);
 //! USER's boxes that let no program run answered with Enter, each kept as
 //! it came up; and each call the program made printed as it was answered,
 //! with why the run stopped and where (`print_trace`).
@@ -44,8 +43,8 @@ pub struct Survey {
     /// Up to how many of USER's boxes that let no program run are answered
     /// with Enter.
     pub boxes: usize,
-    /// A TypeScript engine's survey report, its text: its keys pressed and
-    /// its screens kept where it did (`stepMarks`).
+    /// A survey report, its text: its keys pressed and its screens kept
+    /// where it did (`stepMarks`).
     pub marks: Option<String>,
     /// Made-up keys and clicks, the same for the same seed
     /// (`scripted_input`); given with `marks`, only after the report's
@@ -54,7 +53,7 @@ pub struct Survey {
     /// How many calls there were and only the last twenty printed.
     pub summary: bool,
     /// The instructions run at each call printed beside it, to set beside
-    /// the TypeScript engine's where the two clocks part.
+    /// a report's, to see where two clocks part.
     pub counts: bool,
     /// The screens kept: where the run left it, or at the report's marks.
     pub screens: bool,
@@ -99,9 +98,8 @@ impl Screen {
             .collect()
     }
 
-    /// The screen's pixels as they are, with no cursor over them, as the
-    /// TypeScript engine's survey keeps a box of USER's as it comes up;
-    /// none before there is a screen.
+    /// The screen's pixels as they are, with no cursor over them, as a box of
+    /// USER's is kept as it comes up; none before there is a screen.
     pub fn bare(system: &System) -> Option<Self> {
         let screen = system.screen.as_ref()?;
 
@@ -319,9 +317,8 @@ pub fn hand<T: 'static>(
 }
 
 /// USER's boxes that let no program run, up to `boxes` of them, answered
-/// with Enter as they come up, each kept as it came up, as the TypeScript
-/// engine's survey answers and keeps them (`boxKeys`): none kept before
-/// there is a screen.
+/// with Enter as they come up, each kept as it came up: none kept before there is a
+/// screen.
 fn answer_boxes(system: &mut System, boxes: usize) -> Rc<RefCell<Vec<Option<Screen>>>> {
     if boxes == 0 {
         return Rc::default();
@@ -416,10 +413,9 @@ pub fn call_line(call: &Call, counts: bool) -> String {
     )
 }
 
-/// The keys a TypeScript engine's survey report says it pressed, each with
-/// Alt held where it says so, the mouse's moves, presses and releases
-/// where it kept them (`pointer`), and the
-/// screens it took, each where it did (`stepMarks`): the calls made by
+/// The keys a survey report says it pressed, each with Alt held where it
+/// says so, the mouse's moves, presses and releases where it kept them
+/// (`pointer`), and the screens it took, each where it did (`stepMarks`): the calls made by
 /// then. A key's message has the time it had there. None where the text
 /// is not a report.
 pub fn marks_of(report: &str) -> VecDeque<CallMark> {
@@ -431,8 +427,7 @@ pub fn marks_of(report: &str) -> VecDeque<CallMark> {
         let instructions = mark["instructions"].as_u64().unwrap_or(0);
         let pointer = &mark["pointer"];
         let action = match (mark["key"].as_str(), mark["code"].as_str()) {
-            // The mouse moved, pressed or let go, where a run keeps it
-            // (`run-probe.ts`, `markPointers`).
+            // The mouse moved, pressed or let go, where a run keeps it.
             _ if pointer.is_object() => MarkAction::Pointer(Pointer {
                 kind: match pointer["kind"].as_str() {
                     Some("down") => PointerKind::Down,

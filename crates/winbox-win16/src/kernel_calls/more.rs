@@ -1,9 +1,8 @@
 //! KERNEL's documented small calls that wave one left: the error mode's
 //! byte, a far pointer moved on, `NetBIOS`, a task's handle table, memory in
 //! the first megabyte, a procedure called through an instance, a stack of
-//! the program's own, and files opened and deleted along PATH. As
-//! `kernel/more-calls.ts`, which cites the read-outs; **recorded** by
-//! `kmore`.
+//! the program's own, and files opened and deleted along PATH.
+//! **Recorded** by `kmore`.
 
 use winbox_cpu::{AX, BP, BX, CX, DS, DX, ES, SP, SS};
 use winbox_machine::{Descriptors, FIRST_MEGABYTE, LDT_BASE, index_for, segment_selector};

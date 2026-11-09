@@ -1,8 +1,7 @@
 //! USER's `DragObject`, ordinal 464: File Manager's and Program Manager's
 //! drag of an object over windows that may take it. **Read out** of
 //! `USER.EXE` (seg14 `0fbe`, its loop `00f2`-`035b`, its hit test
-//! `0000`-`00ef`) and **recorded** by `dragobj`. As
-//! `src/win16/user/drag-object.ts`, which says more of each step.
+//! `0000`-`00ef`) and **recorded** by `dragobj`.
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::commdlg::api::{Arg, api, buffer, word};

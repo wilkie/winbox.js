@@ -1,7 +1,6 @@
 //! `GetSpoolJob`: GDI's own interface to Print Manager, an option and a
-//! parameter over the spooler's state. The twin of
-//! `src/win16/gdi/GetSpoolJob.ts`, where the read-out is told: seg28
-//! `1802`, **recorded** by `spooljob` and `gdispool`.
+//! parameter over the spooler's state. **Read out** at seg28 `1802`,
+//! **recorded** by `spooljob` and `gdispool`.
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;

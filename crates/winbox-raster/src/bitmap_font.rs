@@ -93,8 +93,7 @@ fn dword_at(bytes: &[u8], at: usize) -> u32 {
 }
 
 /// A string of at most `length` characters, to its nought: one character a
-/// byte. It stops at the resource's end, where the TypeScript engine's
-/// `DataView` throws.
+/// byte. It stops at the resource's end.
 fn string_at(bytes: &[u8], at: usize, length: usize) -> String {
     bytes
         .iter()
@@ -107,8 +106,7 @@ fn string_at(bytes: &[u8], at: usize, length: usize) -> String {
 
 impl FontHeader {
     /// The header at the start of a font resource. A field past the
-    /// resource's end reads as nought, where the TypeScript engine's
-    /// `DataView` throws.
+    /// resource's end reads as nought.
     pub fn read(bytes: &[u8]) -> Self {
         let byte = |at| byte_at(bytes, at);
         let word = |at| word_at(bytes, at);
@@ -252,8 +250,7 @@ impl BitmapFontEntry {
     /// default character where it has not.
     ///
     /// A default character the font does not have either is answered by
-    /// nothing at all, where the TypeScript engine asks for it again without
-    /// end.
+    /// nothing at all.
     fn present(&self, code: u32) -> Option<u32> {
         let header = &self.header;
         let has = |code: u32| {
@@ -433,9 +430,7 @@ const RT_FONT: u16 = 8;
 /// The strikes of a font file: each `FONT` resource of an executable, in the
 /// order its resource table holds them.
 ///
-/// A file that is not an executable gives none. The TypeScript engine reads
-/// one as a single strike, through a constructor that cannot read a stream,
-/// and throws.
+/// A file that is not an executable gives none.
 pub fn read_bitmap_font(bytes: Vec<u8>) -> Vec<BitmapFontEntry> {
     if word_at(&bytes, 0) != 0x5a4d {
         return Vec::new();
@@ -454,13 +449,11 @@ pub fn read_bitmap_font(bytes: Vec<u8>) -> Vec<BitmapFontEntry> {
         .collect()
 }
 
-/// The strike the TypeScript engine's `BitmapFont.fontFor` answers for a
-/// point size.
+/// The strike a point size is answered with.
 ///
 /// It is meant to be the nearest, but the comparison it makes is not that:
 /// a strike replaces the one kept when its distance from the size asked for
-/// is less than its distance from the kept strike's own size. Ported as it
-/// is written, since that is the engine this follows. A file of an eight
+/// is less than its distance from the kept strike's own size. A file of an eight
 /// and a twelve point strike asked for nine answers twelve: the twelve is
 /// three from the request and four from the eight, so it replaces the eight,
 /// which was the nearer.
@@ -560,7 +553,7 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn picks_a_size_as_the_typescript_engine_does() {
+    fn picks_a_size_by_distance_from_the_kept_strike() {
         let sized = |points: u16| {
             let mut bytes = strike();
 

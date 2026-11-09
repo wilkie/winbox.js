@@ -1,15 +1,13 @@
 //! USER's text drawing, which draws with GDI's: text laid out in a
 //! rectangle (`DrawText`), text with its tabs expanded to stops
 //! (`TabbedTextOut`), and text greyed as a disabled control's is
-//! (`GrayString`). Each draws through `TextOut`, as the TypeScript engine's
-//! do, so what `TextOut` draws -- the ground, the glyphs, the rules, the
+//! (`GrayString`). Each draws through `TextOut`, so what `TextOut` draws -- the ground, the glyphs, the rules, the
 //! current position -- each of them draws.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
-// Deliberately: coordinates in a JavaScript number's precision, as the
-// TypeScript engine's are.
+// Deliberately: coordinates are cast to floats where the font draws.
 #![allow(clippy::cast_precision_loss)]
 
 use winbox_cpu::{AX, DS, ES, SS};
@@ -79,8 +77,8 @@ fn strip_prefix(text: &[u8]) -> (Vec<u8>, Option<usize>, usize) {
     (out, index, removed)
 }
 
-/// The rectangle `DrawText` is given, as the structure the TypeScript
-/// engine reads it into: its sides as read, and each side written back to
+/// The rectangle `DrawText` is given, as the structure it is read into: its
+/// sides as read, and each side written back to
 /// the program's memory as it is set, as a word -- unless it is USER's
 /// own, with no address, as a message box measures its text.
 struct DrawRect {
@@ -174,8 +172,7 @@ impl TextOps<System> for Ops {
 
     /// A rectangle in the text colour: a prefix's underline, painted as
     /// `ExtTextOut`'s ground is, in device terms. A device context whose
-    /// text colour has never been set has none to paint with, and stops,
-    /// where the TypeScript engine throws.
+    /// text colour has never been set has none to paint with, and stops.
     fn text_out(&self, system: &mut System, x: i64, y: i64, text: &[u8]) -> Result<(), Stop> {
         text_out(system, self.hdc, x, y, text).map(|_| ())
     }
@@ -646,7 +643,7 @@ pub(crate) fn calc_plain<C: ?Sized>(
 
 /// `DrawText`: nought for a handle that stands for nothing or a null
 /// rectangle. A handle that is no device context's lays nothing out, and
-/// stops once it has text to measure, where the TypeScript engine throws.
+/// stops once it has text to measure.
 ///
 /// # Errors
 ///
@@ -758,7 +755,7 @@ fn draw_text_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     let rect = args.dword(system);
     let format = args.word(system);
     // A null string is none, and one whose segment is nought a number,
-    // which the TypeScript engine lays out as its digits.
+    // which is laid out as its digits.
     let text = match text_argument(system, far) {
         Text::Read(text) => text,
         Text::Refused => return Ok(Answer::Word(0)),

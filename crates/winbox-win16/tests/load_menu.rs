@@ -1,6 +1,6 @@
 //! A menu resource read into a menu (`LoadMenu`): after its header, each
 //! item's flags, its identifier unless it is a pop-up, and its text; `MF_END`
-//! closing the menu it ends. As `test/win16/menus_test.ts`.
+//! closing the menu it ends.
 
 use winbox_win16::System;
 

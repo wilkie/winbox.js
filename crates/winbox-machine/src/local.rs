@@ -2,8 +2,7 @@
 //! arenas, its free list, its information and its handle tables all words
 //! of the segment, where a program finds them. Each routine follows
 //! `KRNL386.EXE`'s, step for step, and cites it: seg2 `28b7`
-//! (`LocalInit`), seg1 `8a28`-`93cc` (the rest). As winbox.js's `Heap`
-//! (`src/win16/heap.ts`).
+//! (`LocalInit`), seg1 `8a28`-`93cc` (the rest).
 //!
 //! * **Arenas.** Each block has an arena before it: the previous arena's
 //!   address, with the block's flags in its two low bits -- 1 in use, 2

@@ -8,8 +8,8 @@
 //!
 //! Every surface here is a device-dependent bitmap -- a memory device
 //! context's, the screen's, or a window's view of the screen -- worked on as
-//! indices in place: the TypeScript engine's other kind, an RGBA canvas of a
-//! page, is not here, and nothing of the raster desktop reaches it.
+//! indices in place. An RGBA canvas of a page is not a surface here, and
+//! nothing of the raster desktop reaches it.
 
 use super::bounds::{accumulate, rect_bounds};
 use std::rc::Rc;
@@ -72,12 +72,12 @@ pub(crate) fn signed(word: u16) -> i32 {
     i32::from(word as i16)
 }
 
-/// The pixels a device context draws on, kept to its clip region within
-/// its visible region (`regions::drawn_through`): the TypeScript engine
-/// keeps the region on the bitmap's own context while the bitmap is the
-/// device context's, which every drawing here reaches the pixels through.
-/// A window's context is a view of the whole screen, and this region is
-/// all that keeps it to what it may draw on.
+/// The pixels a device context draws on, kept to its clip region within its
+/// visible region (`regions::drawn_through`): the region is kept on the
+/// bitmap's own context while the bitmap is the device context's, which
+/// every drawing here reaches the pixels through. A window's context is a
+/// view of the whole screen, and this region is all that keeps it to what it
+/// may draw on.
 pub(crate) fn canvas(system: &mut System, dc: usize) -> Option<DeviceBitmap> {
     let mut bitmap = system.draw_target(dc)?;
 
@@ -265,10 +265,10 @@ fn realised(system: &System, dc: usize, palette: &SharedPalette, paint: Paint) -
         || Color::rgba(red, green, blue, alpha),
         |colorref| dc_colour(system, dc, palette, colorref),
     );
-    // Where the brush was realised, on the screen, less the device
-    // context's corner there -- for a window's client area, its origin,
-    // where `SetDCOrg` may have moved its pixels, as the TypeScript
-    // engine's `screenOrigin` -- nought for a brush not yet realised.
+    // Where the brush was realised, on the screen, less the device context's
+    // corner there -- for a window's client area, its origin, where
+    // `SetDCOrg` may have moved its pixels -- nought for a brush not yet
+    // realised.
     let origin = brush.realised.map_or((0, 0), |(x, y)| {
         let (cx, cy) = if matches!(system.gdi.dcs[dc].bitmap, DcBitmap::Window(_)) {
             super::dc::origin_of(system, dc)
@@ -730,10 +730,9 @@ pub(crate) fn stretch_into(
 
     let mirror_x = dmirror != amirror;
     let mirror_y = dflip != aflip;
-    // A device context whose mode was never set stretches as
-    // `WHITEONBLACK`, though `GetStretchBltMode` answers `BLACKONWHITE`: the
-    // TypeScript engine reads the field it never set as no mode, and takes
-    // that as 2. Kept, as it draws.
+    // A device context whose mode was never set stretches as `WHITEONBLACK`,
+    // though `GetStretchBltMode` answers `BLACKONWHITE`: the field it never
+    // set reads as no mode, which is taken as 2. Kept, as it draws.
     let mode = system.gdi.dcs[dc]
         .state
         .stretch_mode
@@ -757,8 +756,7 @@ pub(crate) fn stretch_into(
             let rows = stretch_map(ah, dh, aw, dw, Axis::Rows, mono);
             let columns = stretch_map(aw, dw, ah, dh, Axis::Columns, mono);
 
-            // A row or column the map has none for reads nothing, as the
-            // TypeScript engine's `undefined` does.
+            // A row or column the map has none for reads nothing.
             for py in 0..dh {
                 let row = rows
                     .get(py as usize)
@@ -997,11 +995,10 @@ pub(crate) enum Given {
 /// What a handle given as a brush paints with; none for a handle that
 /// stands for nothing.
 ///
-/// The TypeScript engine makes whatever the handle stands for the device
-/// context's brush while it paints, and its surface takes the brush's
-/// colour as it is set (`surface.ts`, `set brush`): an object with no
-/// colour -- a region, a bitmap, a font, a palette, a device context --
-/// throws there, and the program stops.
+/// Whatever the handle stands for is made the device context's brush while
+/// it paints, and the surface takes the brush's colour as it is set: an
+/// object with no colour -- a region, a bitmap, a font, a palette, a device
+/// context -- stops the program.
 pub(crate) fn paint_of(system: &System, handle: u16) -> Option<Given> {
     Some(match system.handles.resolve(handle)? {
         crate::handles::Object::Gdi(object) => match &system.gdi.objects[object] {
@@ -1030,7 +1027,7 @@ const NO_COLOUR: Stop = Stop::Unsupported("a handle given as a brush that is no 
 /// fills nothing (`brushind`); no device context, or a handle that stands
 /// for nothing, nothing (USER checks the brush is one before it starts,
 /// seg1 `ac40`). A pen paints as a brush of its colour; anything else
-/// stops the program, as it stops the TypeScript engine's (`paint_of`).
+/// stops the program (`paint_of`).
 pub fn fill_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) -> Result<(), Stop> {
     let (Some(dc), Some(given)) = (dc_of(system, hdc), paint_of(system, brush)) else {
         return Ok(());

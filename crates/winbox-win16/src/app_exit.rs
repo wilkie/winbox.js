@@ -1,7 +1,7 @@
 //! What USER does as a task ends, KERNEL telling it through its signal
 //! procedure, signal 20h with the task's queue and instance (`KRNL386.EXE`
 //! seg1 `1938`-`194d`; `USER.EXE` seg1 `09bc`-`09fb` to `0b71`): **read
-//! out**, **recorded** by `taskend`. As `app-exit.ts`.
+//! out**, **recorded** by `taskend`.
 //!
 //! * Its own hooks taken out (`0be4`, `unhook_task`).
 //! * Each of its windows given its class's own procedure, where its class

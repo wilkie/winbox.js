@@ -1,8 +1,7 @@
-//! DOS's functions, `INT 21h`, as winbox.js's `SyscallManager` answers them:
-//! by AH, else by AX. A function that says it failed by the carry flag
+//! DOS's functions, `INT 21h`: answered by AH, else by AX. A function that says it failed by the carry flag
 //! clears it when it succeeds, and sets it with AX the error when it does
-//! not. A function not answered leaves the registers as they were, as the
-//! TypeScript engine's do; each is kept in `System::unanswered_dos`.
+//! not. A function not answered leaves the registers as they were;
+//! each is kept in `System::unanswered_dos`.
 
 use std::io::SeekFrom;
 
@@ -1100,8 +1099,7 @@ impl System {
     }
 
     /// A file's position moved: CX:DX from its start, from where it is, or
-    /// from its end, the offset signed as DOS takes it. The TypeScript
-    /// engine takes the offset from the end, not adds it.
+    /// from its end, the offset signed as DOS takes it, and a basis past 2 taken as 2.
     fn seek_file(&mut self) -> Result<(), u16> {
         let handle = usize::from(self.cpu.regs[BX]);
         let offset =
@@ -1676,7 +1674,7 @@ mod tests {
 
     /// INT 21h function 2Ah gives the whole year in CX, the month counted
     /// from 1 in DH, the day in DL and the day of the week in AL, Sunday
-    /// nought. As `test/dos/date_test.ts`: 25 September 2026, a Friday.
+    /// nought. Here 25 September 2026, a Friday.
     #[test]
     fn gives_the_year_the_month_from_1_the_day_and_the_weekday() {
         let mut system = System::new();

@@ -1,8 +1,7 @@
 //! A client's documents: `OleRegisterClientDoc` and the calls on the handle
 //! it gives (**recorded** by `olestat`, the block's words **measured** by
 //! `olemem`). A document's handle is the far pointer to its block; the
-//! blocks are kept in a list, each after the one registered before it. As
-//! `src/win16/olecli/docs.ts`.
+//! blocks are kept in a list, each after the one registered before it.
 
 use super::core::{
     DOC_CLASS, DOC_FIRST, DOC_HANDLE, DOC_LAST, DOC_NAME, DOC_NEXT, DOC_PREVIOUS, DOC_SIGNATURE,

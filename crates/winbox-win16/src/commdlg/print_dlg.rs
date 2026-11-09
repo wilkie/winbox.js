@@ -5,7 +5,7 @@
 //! COMMDLG's own exports as it would Microsoft's. **Read out** of
 //! `COMMDLG.DLL` seg3 and **recorded** by `prdlg`; each step is COMMDLG's,
 //! at the address the comments give ([[topic:print-dialogs]] in the
-//! knowledge base). As `print-dlg.ts`.
+//! knowledge base).
 //!
 //! This file holds the call itself and what both dialogs share: the
 //! printers COMMDLG finds in `WIN.INI`, the `DEVNAMES` it makes and checks,

@@ -1,8 +1,7 @@
 //! `OLECLI`'s functions a program calls, each its arguments checked and
 //! then, for an object, the method its table holds called: what ole.h
 //! declares, as the OLE 1.0 programmer's reference describes them, their
-//! answers **recorded** by `olestat` and `olemem`. As
-//! `src/win16/olecli/api.ts`.
+//! answers **recorded** by `olestat` and `olemem`.
 
 use crate::commdlg::api::Arg;
 
@@ -597,8 +596,7 @@ pub(crate) async fn lock_server(ole: &Ole<'_>, object: u32, out: u32) -> R<u16> 
 /// The checks of a call that makes an embedded or linked object of a
 /// class: the document, the name, the out pointer, the protocol
 /// (`StdFileEditing`), then the class in the registration database
-/// (`OLE_ERROR_CLASS` where it is not, **recorded** by `olestat`). As
-/// `api.ts`'s `checkClass`.
+/// (`OLE_ERROR_CLASS` where it is not, **recorded** by `olestat`).
 async fn check_class(
     ole: &Ole<'_>,
     protocol: u32,

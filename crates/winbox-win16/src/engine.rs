@@ -554,7 +554,7 @@ impl Engine {
 
     /// Nothing runs and nothing will until a time comes, so the clock goes
     /// straight to the next timer waiting on it, or on by a frame when none
-    /// is, as winbox.js's runs do (`runFor`); a timer come due wakes the
+    /// is; a timer come due wakes the
     /// task. Whether the run's time is still going.
     pub(crate) async fn pass_time_async(&self) -> bool {
         let wait = {
@@ -612,7 +612,7 @@ impl Engine {
             .filter(|&time| system.clock.is_virtual() && time < system.clock.next_due() + FRAME);
         // What waits past the run's end -- USER's screen saver's look, ten
         // seconds on, can -- is not skipped to: the run goes on a frame at a
-        // time, as the TypeScript engine's does (`run-probe.ts`).
+        // time.
         let beyond = system.clock.is_virtual() && system.clock.next_due() > self.until.get();
         let idle = match marked {
             Some(time) if time > now => Some(system.clock.advance(instructions, time - now)),
@@ -652,8 +652,8 @@ impl Engine {
         system.poll_comm();
         system.poll_sound();
 
-        // Gone past the time given, nothing runs again: the TypeScript
-        // engine's run looks at its time after it skips ahead.
+        // Gone past the time given, nothing runs again: the run looks at its
+        // time after it skips ahead.
         system.clock.now(instructions) < self.until.get()
     }
 

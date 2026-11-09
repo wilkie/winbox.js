@@ -1,10 +1,9 @@
 //! A run-length encoded DIB's bits, `BI_RLE8` or `BI_RLE4`, walked as the
 //! display drivers walk them when they set one into a bitmap or draw it on
-//! the screen: `VGA.DRV`'s export 501 (seg9 `12ec`, the set from `13ff`)
-//! and `SVGA256.DRV`'s seg9 `15ac`. **Recorded** by `gdidmrle`, into a
-//! bitmap's memory with 64 bytes either side, and `rledib`, through
-//! `SetDIBits`, `SetDIBitsToDevice` and `StretchDIBits`. The TypeScript
-//! engine's `rle-runs.ts`.
+//! the screen: `VGA.DRV`'s export 501 (seg9 `12ec`, the set from `13ff`) and
+//! `SVGA256.DRV`'s seg9 `15ac`. **Recorded** by `gdidmrle`, into a bitmap's
+//! memory with 64 bytes either side, and `rledib`, through `SetDIBits`,
+//! `SetDIBitsToDevice` and `StretchDIBits`.
 //!
 //! A pair of bytes at a time: a count and a value, the value's index that
 //! many times -- of four bits its high digit and its low in turn, from the

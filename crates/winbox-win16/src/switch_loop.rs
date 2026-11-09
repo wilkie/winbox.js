@@ -1,4 +1,4 @@
-//! Alt and Tab, Alt and Escape, Alt and F6, as winbox.js's `switch-loop.ts`
+//! Alt and Tab, Alt and Escape, Alt and F6, as winbox.js
 //! has them: `DefWindowProc` sends the active window `WM_SYSCOMMAND` for
 //! each, and carries the command out with a loop of its own that takes the
 //! keys until Alt is let go, showing the window Tab comes to in USER's
@@ -278,7 +278,7 @@ impl System {
     /// `1e3e`), less the visible region of its window's device context,
     /// `GetWindowDC`'s (`8457`; `window_region` with `DCX_WINDOW |
     /// DCX_USESTYLE`), worked out from the windows as USER keeps them, not
-    /// from what the screen shows. The TypeScript engine's `coveredPoints`.
+    /// from what the screen shows.
     fn covered(&self, index: usize) -> Vec<(i32, i32)> {
         use crate::window_vis::{DCX_USESTYLE, DCX_WINDOW};
 
@@ -462,8 +462,7 @@ impl Engine {
         self.system().user_state.key_states[usize::from(VK_SHIFT)] & 0x80 != 0
     }
 
-    /// The loop (seg23 `0932`), with the key that started it, as
-    /// `switch-loop.ts` describes it.
+    /// The loop (seg23 `0932`), with the key that started it.
     #[allow(clippy::too_many_lines)]
     async fn switch_loop(&self, start_key: u16) -> Result<(), Stop> {
         let (active, activations, queue) = {
@@ -715,8 +714,7 @@ impl Engine {
             .await
     }
 
-    /// The box (seg23 `060e`-`0865`), as `switch-loop.ts`'s `showBox`
-    /// draws it.
+    /// The box (seg23 `060e`-`0865`) drawn.
     #[allow(clippy::too_many_lines)]
     async fn show_box(&self, hwnd: u16) -> Result<(), Stop> {
         let (left, top, width, height, base_y, first) = {
@@ -811,8 +809,8 @@ impl Engine {
         Ok(())
     }
 
-    /// `CoolSwitch` off, or a switch by Escape or F6 (seg23 `000e`), as
-    /// `switch-loop.ts`'s `showWindowItself` has it.
+    /// `CoolSwitch` off, or a switch by Escape or F6 (seg23 `000e`): the window
+    /// itself is shown.
     #[allow(clippy::too_many_lines)]
     async fn show_window_itself(
         &self,

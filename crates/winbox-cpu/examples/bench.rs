@@ -7,10 +7,9 @@
 //! on one machine on one day: a change's cost is a ratio. Run it a few
 //! times and take the median; single runs move by several percent.
 //!
-//! The workloads are those the TypeScript engine's benchmark ran
-//! (`bench/cpu.ts`, on the branch `typescript-engine`), the same bytes:
-//! each a straight run of instructions closed by a short jump back to its
-//! top, run for ever with nothing of the host's in between. The same
+//! The workloads are four, `alu`, `memory`, `stack` and `mixed`: each a
+//! straight run of instructions closed by a short jump back to its top, run
+//! for ever with nothing of the host's in between. The same
 //! instructions were timed under the recorder's DOSBox, Windows running
 //! them as the body of a `LOOP` (the `cpurate` probe,
 //! `oracle/fixtures/timings/cpurate.json`); where that recording is

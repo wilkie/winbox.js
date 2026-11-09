@@ -1,4 +1,4 @@
-//! The raster desktop's windows as winbox.js's `desktop.ts` keeps them:
+//! The raster desktop's windows:
 //! their order, which of them shows where, which is active, and what each
 //! is due to have drawn again -- its frame, its erase, its paint, and how
 //! much of it. What is due is what decides the messages a program is sent;
@@ -1357,7 +1357,7 @@ impl System {
     /// sized, its frame changed in place with `SWP_FRAMECHANGED`, as
     /// `SetWindowPos` draws it (`frame_changed`), and nothing else.
     /// `SWP_NOREDRAW` draws as without it (`swpbits`). A window hidden is
-    /// only moved. The TypeScript engine's `place`.
+    /// only moved.
     pub fn place_window(
         &mut self,
         index: usize,
@@ -1418,7 +1418,7 @@ impl System {
     /// (`USER.EXE` seg8 `0843`-`0861`), and what a class's own making does
     /// to its place and style before then -- a combo box's, a dialog's
     /// frame, an MDI client's scroll bars -- goes through no
-    /// `SetWindowPos`. The TypeScript engine's `placeMade`.
+    /// `SetWindowPos`.
     pub fn place_made(
         &mut self,
         index: usize,
@@ -1566,8 +1566,7 @@ impl System {
     /// seg2 `0a1d` moves them: each child whose rectangle meets `rect` (any,
     /// for none), its rectangles and what it is due moved, and then its own
     /// children the same way, by the same rectangle. Nothing is drawn or
-    /// sent; the windows' change is looked at after (`windows_changed`). The
-    /// TypeScript engine's `Desktop.scrollChildren`.
+    /// sent; the windows' change is looked at after (`windows_changed`).
     pub(crate) fn scroll_children_by(
         &mut self,
         parent: usize,
@@ -1625,7 +1624,7 @@ impl System {
     /// window -- `GetUpdateRect` cuts its box to the client area. One due
     /// all of itself stays so. Marked to be erased with `erase`, its frame
     /// drawn with `frame`; a window USER draws itself has its frame drawn
-    /// now. The TypeScript engine's `Desktop.dueThrough`.
+    /// now.
     pub(crate) fn due_through(
         &mut self,
         index: usize,
@@ -1688,8 +1687,7 @@ impl System {
     /// due less the region. All of a window whose frame is still to be
     /// drawn is its client area (`4353`-`4369`), and all it was due then
     /// the whole window (`4371`-`43a6`): what it was due of its frame
-    /// stays, outside its client area. The TypeScript engine's
-    /// `Desktop.validThrough`.
+    /// stays, outside its client area.
     pub(crate) fn valid_through(&mut self, index: usize, region: Option<&ClipRegion>) {
         let shown = self.shown(index);
 
@@ -1915,8 +1913,7 @@ impl System {
     /// A minimized or maximized window no longer one, where it lies: an
     /// icon's title hidden, its placement normal again; the place it had
     /// before, for its caller to put it at (`MinMaximize`, `USER.EXE` seg6
-    /// `1cdd`-`1d39`). `None` where it was neither. The TypeScript engine's
-    /// `leaveToNormal`.
+    /// `1cdd`-`1d39`). `None` where it was neither.
     pub(crate) fn leave_to_normal(
         &mut self,
         index: usize,
@@ -2059,8 +2056,7 @@ impl System {
     /// where it lies among the windows, for the next time it is one: USER
     /// hides it with `ShowWindow(SW_HIDE)` (`USER.EXE` seg6 `1cdd`-`1ce0`,
     /// seg1 `6e25`-`6e9e`) and keeps it in the window's own record until
-    /// the window is destroyed (`minact`). The TypeScript engine's
-    /// `#leaveIcon`.
+    /// the window is destroyed (`minact`).
     pub(crate) fn leave_icon(&mut self, index: usize) {
         if let Some(title) = self.shown(index).icon_title
             && self.shown(title).visible
@@ -2070,7 +2066,7 @@ impl System {
     }
 
     /// A window's icon title while it is an icon: the title kept hidden
-    /// otherwise is none. The TypeScript engine's `shownTitle`.
+    /// otherwise is none.
     pub(crate) fn shown_title(&self, index: usize) -> Option<usize> {
         let shown = self.shown(index);
 

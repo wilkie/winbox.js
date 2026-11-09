@@ -326,10 +326,8 @@ pub(crate) fn get_stock_object_call(system: &mut System, args: &mut Args) -> Res
 /// and a new device context's first font, by the same route, so that the
 /// two cannot come to different conclusions about what the system font is.
 ///
-/// The TypeScript engine realizes the font here, and answers `None` where
-/// its face is not installed; the font is recorded here as its face and
-/// cell, to be realized when the font manager is ported, and is always
-/// there.
+/// The font is recorded here as its face and cell, to be realized when the
+/// font manager is ported, and is always there.
 pub fn stock_font_handle(system: &mut System, index: i16) -> Option<u16> {
     let font = stock_font(index)?;
     let at = stock_handle(index);
@@ -584,9 +582,8 @@ pub(crate) fn is_stock(system: &System, handle: u16, object: usize) -> bool {
 ///
 /// An object selected into a device context is deleted all the same
 /// (`stockdel`); the context keeps its handle, which `SelectObject` gives
-/// back when something else is selected (`deleted`). A bitmap deleted
-/// while it is selected stays the device context's, as it does in the
-/// TypeScript engine.
+/// back when something else is selected (`deleted`). A bitmap deleted while
+/// it is selected stays the device context's.
 ///
 /// It is taken out of any metafile being recorded that holds it, by a
 /// record of its own (`metafile`).
@@ -955,12 +952,10 @@ pub(crate) fn create_font_indirect_call(
 /// arguments -- but for the precisions, which are carried no further and
 /// made nought.
 ///
-/// The quality is carried, where the TypeScript engine's `CreateFont` makes
-/// it nought too: **recorded**, the `font` probe's proof quality requests,
-/// made through `CreateFont`, are answered by strikes that are not
-/// stretched, 72 records on each display -- which the TypeScript engine's
-/// replay agrees with only by handing the quality to `CreateFontIndirect`
-/// itself. With the outline faces answering, the probe now reaches them.
+/// The quality is carried: **recorded**, the `font` probe's proof quality
+/// requests, made through `CreateFont`, are answered by strikes that are not
+/// stretched, 72 records on each display. With the outline faces answering,
+/// the probe now reaches them.
 pub(crate) fn create_font_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let height = args.signed(system);
     let width = args.signed(system);

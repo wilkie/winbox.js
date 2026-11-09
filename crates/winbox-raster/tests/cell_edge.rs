@@ -1,6 +1,6 @@
 //! Where a glyph's ink stops: measurements of Windows read straight out of
 //! the fabricated `glyphs` recordings, with nothing of the engine's in
-//! between. Ported from the TypeScript engine's `test/raster/cell_edge_test.ts`.
+//! between.
 //!
 //! A glyph is drawn into a cell as tall as the font asks for, and ink outside
 //! it is not drawn -- clipped to the cell, not to what is drawn on. A hinted

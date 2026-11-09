@@ -5,7 +5,7 @@
 //! call nought, `CountVoiceNotes` too, however many notes are queued.
 //! Nothing is played. A note is taken to be one of 0, a rest, to 84, as
 //! documented. The task that has it open is kept in the driver's data
-//! where the driver keeps it (`[90h]`). As `src/win16/sound.ts`.
+//! where the driver keeps it (`[90h]`).
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -150,7 +150,7 @@ fn do_beep_call(engine: &Engine, mut args: Args) -> Later<'_> {
 /// played with MMSYSTEM's `sndPlaySound` and `SND_ASYNC`, the names where
 /// the driver keeps them in its data; where that answers nought, the
 /// speaker. What it leaves in AX is no answer. Not followed: the speaker,
-/// which WinBox does not sound. As `sound.ts`'s `DoBeep`.
+/// which WinBox does not sound.
 pub(crate) async fn do_beep(engine: &Engine, kind: u16) -> Result<(), Stop> {
     let data = engine.system().sound_data();
 

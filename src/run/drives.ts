@@ -366,7 +366,7 @@ export async function isKnownMedia(bytes: Uint8Array, known: KnownFiles) {
   return false;
 }
 
-/** An image's volume as the TypeScript engine reads one, for the page to look over. */
+/** An image's volume as its file system reads it, for the page to look over. */
 export async function volumeOf(kind: ImageKind, disk: Disk): Promise<any> {
   return kind === 'iso'
     ? ISO9660.of(disk.bytes, findIn(disk))

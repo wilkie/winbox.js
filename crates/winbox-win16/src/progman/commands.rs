@@ -1,6 +1,5 @@
 //! The execute string's commands carried out, each as `PROGMAN.EXE`'s
-//! handler (seg7, by the table at `0ade`) carries it out. As
-//! `src/win16/progman/commands.ts`.
+//! handler (seg7, by the table at `0ade`) carries it out.
 
 use super::items::{self, Adding};
 use super::loaded;

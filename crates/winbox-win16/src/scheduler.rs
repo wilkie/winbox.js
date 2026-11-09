@@ -155,7 +155,7 @@ pub struct Slot {
     pub wait_timer: Option<TimerId>,
     pub ended: bool,
     /// The code it gave DOS as it ended, where it ended with others left
-    /// to run on; 255 where it faulted, as the TypeScript engine ends one.
+    /// to run on; 255 where it faulted.
     pub exit_code: Option<u8>,
     /// What other tasks sent it, to be taken in order.
     pub sent: VecDeque<Sent>,

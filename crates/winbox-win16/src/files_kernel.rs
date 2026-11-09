@@ -9,7 +9,7 @@ use crate::call::{Answer, Args, Stop};
 use crate::search::{directory_of, has_directory};
 use crate::system::System;
 
-/// `HFILE_ERROR`, as the TypeScript engine answers it.
+/// `HFILE_ERROR`, what the file calls answer for a failure.
 const HFILE_ERROR: u16 = 0xffff;
 
 const OF_DELETE: u16 = 0x0200;
@@ -37,7 +37,7 @@ fn latin1_bytes(text: &str) -> Vec<u8> {
 /// `OpenFile`: a file opened, created, deleted or looked for, as `fuMode`
 /// says, and its `OFSTRUCT` filled; the answer, and the name `OF_PROMPT`
 /// asks USER's box to say it cannot find, which the caller shows (see
-/// `kernel_calls::file_cdr`). As `OpenFile.ts`.
+/// `kernel_calls::file_cdr`).
 pub fn open_file(system: &mut System, args: &mut Args) -> Result<(Answer, Option<String>), Stop> {
     let name = args.dword(system);
     let buffer = args.dword(system);
@@ -358,8 +358,8 @@ fn capital(byte: u8) -> u8 {
 }
 
 /// DOS's error for a path that opened nothing: 3 for its directory not
-/// there, else 2. A directory on no drive mounted counts as there, as the
-/// TypeScript engine's file manager lists it empty.
+/// there, else 2. A directory on no drive mounted counts as there: it
+/// lists empty.
 fn not_there(system: &System, path: &str) -> u16 {
     let Some(directory) = directory_of(path) else {
         return 2;

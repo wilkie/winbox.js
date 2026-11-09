@@ -1,8 +1,7 @@
 /**
  * Expands a file compressed by Microsoft's `COMPRESS` -- the `.??_` files
  * of the Windows 3.1 setup disks -- as `LZEXPAND.DLL`'s `LZCopy` does,
- * without a machine: the same read-out as `src/win16/lzexpand/lz.ts`
- * (`kb/formats/szdd.md`).
+ * without a machine (`kb/formats/szdd.md`).
  *
  * - The header (seg8 `00aa`): fourteen bytes; the signature `SZDD` 88h F0h
  *   27h 33h compared as a string (seg8 `01a2`), so a nought in it ends it

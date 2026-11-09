@@ -1,6 +1,5 @@
 //! The groups an instance has loaded, and what loads, unloads, makes,
-//! renames, writes and deletes them, as `PROGMAN.EXE` seg4 does. As
-//! `src/win16/progman/loaded.ts`.
+//! renames, writes and deletes them, as `PROGMAN.EXE` seg4 does.
 //!
 //! `PROGMAN.EXE` keeps a group as a structure of 14h bytes in its data
 //! segment (seg4 `1d8a`: the next, its MDI child, its block, its items,

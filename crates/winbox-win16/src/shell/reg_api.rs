@@ -39,9 +39,9 @@ pub(crate) enum Mode {
     Create,
 }
 
-/// A key's path, as a call names it: none, or its text. A path the
-/// TypeScript engine cannot take apart -- a number, where the pointer's
-/// segment is nought -- stops the program, as it throws there.
+/// A key's path, as a call names it: none, or its text. A path that
+/// cannot be taken apart -- a number, where the pointer's segment is
+/// nought -- stops the program.
 fn path_argument(system: &System, far: u32) -> Result<Result<Option<Vec<u8>>, Answer>, Stop> {
     Ok(match text_argument(system, far) {
         Text::Null => Ok(None),

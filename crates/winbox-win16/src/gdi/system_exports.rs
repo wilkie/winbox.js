@@ -1,6 +1,5 @@
-//! GDI's small exports for USER and the system: `MakeObjectPrivate`,
-//! `WEP`, `SelectBitmap` and `GDIMoveBitmap`. The TypeScript engine's twin
-//! is `src/win16/gdi/system-exports.ts`, where each read-out is told.
+//! GDI's small exports for USER and the system: `MakeObjectPrivate`, `WEP`,
+//! `SelectBitmap` and `GDIMoveBitmap`.
 //!
 //! **Recorded** by `gdimisc`.
 

@@ -22,7 +22,7 @@
 //!   `IDOK` all the same. A box without Cancel takes Close out of its system
 //!   menu. The owner is disabled while the box is up.
 //!
-//! Not followed, as the TypeScript engine does not: `MB_SYSTEMMODAL` with
+//! Not followed: `MB_SYSTEMMODAL` with
 //! no icon or the hand, which USER shows with `SysErrorBox` instead, not
 //! read out; the system menu's Close taken away; and `MB_TASKMODAL` with no
 //! owner, which disables the task's other windows.
@@ -233,7 +233,7 @@ impl BoxProc {
     }
 }
 
-/// A string argument as the TypeScript engine reads one.
+/// A string argument.
 enum Argument {
     /// One that cannot be read, which turns the call away.
     Refused,
@@ -290,8 +290,8 @@ fn latin1(bytes: &[u8]) -> String {
 }
 
 /// A caption with each `&` taken out from before the character it marks,
-/// as the TypeScript engine's pattern takes it: any character but a line's
-/// end, a carriage return or a line feed.
+/// the character being any but a line's end, a carriage return or a line
+/// feed.
 fn without_marks(text: &[u8]) -> Vec<u8> {
     let mut out = Vec::with_capacity(text.len());
     let mut at = 0;
@@ -590,8 +590,7 @@ impl Engine {
     /// button goes in the middle place, two in the outer places, three in
     /// all three, in the style's order; the default button, where the style
     /// names one it has, with `SEB_DEFBUTTON` (`9b46`-`9b55`). It answers
-    /// the place's `ID` value. **Recorded** by `mbseb`. The TypeScript
-    /// engine's `systemErrorBox`.
+    /// the place's `ID` value. **Recorded** by `mbseb`.
     async fn system_error_box(
         &self,
         text: &[u8],

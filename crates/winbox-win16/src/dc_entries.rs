@@ -8,8 +8,7 @@
 //! `ReleaseDC` and `EndPaint` give it back (seg1 `8805`), and windows
 //! changing make entries stale (seg1 `8aa0`), to be worked out again when
 //! next taken or by USER's hook when next used (seg1 `8a00`).
-//! `kb/topics/visible-regions.md`, phase 4. Twin of the TypeScript
-//! engine's `dc-entries.ts`, where each read-out is told at length.
+//! `kb/topics/visible-regions.md`, phase 4.
 
 use std::collections::HashMap;
 
@@ -348,8 +347,7 @@ impl System {
             }
     }
 
-    /// The flags an entry is taken with (seg1 `8491`-`854c`), as
-    /// `dc-entries.ts`'s `takenFlags` says.
+    /// The flags an entry is taken with (seg1 `8491`-`854c`).
     fn taken_flags(&self, hwnd: u16, flags: u32) -> Taken {
         let mut low = flags & 0xffff;
         let high = flags >> 16;
@@ -439,7 +437,7 @@ impl System {
     }
 
     /// An entry taken for a window by `GetDCEx`'s flags and a region (seg1
-    /// `847b`-`87b7`), as `dc-entries.ts`'s `takeEntry` says: its handle,
+    /// `847b`-`87b7`): its handle,
     /// or nought where the window's class has no context of its own and
     /// `DCX_CACHE` is not given (`85b6`).
     pub fn take_entry(
@@ -687,8 +685,7 @@ impl System {
         self.gdi.dcs[dc].state.brush_org = None;
     }
 
-    /// An entry given back (seg1 `8805`), as `dc-entries.ts`'s
-    /// `releaseEntry` says: nought where it is not in use; a common one's
+    /// An entry given back (seg1 `8805`): nought where it is not in use; a common one's
     /// state set back from USER's copy, its origin and visible region
     /// staying.
     pub fn release_entry(&mut self, hdc: u16, ending: bool) -> bool {
@@ -852,8 +849,7 @@ impl System {
         self.gdi.dcs[dc].hook.flag = true;
     }
 
-    /// The entries a window's change makes stale (seg1 `8aa0`), as
-    /// `dc-entries.ts`'s `makeStale` says: those of the window and every
+    /// The entries a window's change makes stale (seg1 `8aa0`): those of the window and every
     /// window within it; `how` 1 makes it its parent's where the parent has
     /// `WS_CLIPCHILDREN` (4) or the window `WS_CLIPSIBLINGS` (2).
     pub fn make_stale(&mut self, hwnd: u16, how: u32) {
@@ -922,7 +918,7 @@ impl System {
 
     /// Which windows changed since they were last looked at, and the
     /// entries each change makes stale as USER's own callers of seg1 `8aa0`
-    /// would, as `dc-entries.ts`'s `windowsChanged` says: asked wherever
+    /// would: asked wherever
     /// WinBox changes a window's place, order, showing or styles.
     pub fn windows_changed(&mut self) {
         if self.dc_entries.list.is_empty() {

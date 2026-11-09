@@ -3,7 +3,7 @@
 //! flags, the global block -- and DDEML passes the last two about as one
 //! value, `MAKELONG(flags, block)`. The blocks are `GMEM_DDESHARE`, with
 //! DDE's header where the handle has an item. As `DDEML.DLL` seg1 has
-//! them (`14e8`-`19a0`, `63c6`-`699c`). As `src/win16/ddeml/data.ts`.
+//! them (`14e8`-`19a0`, `63c6`-`699c`).
 
 use crate::commdlg::api::Arg;
 

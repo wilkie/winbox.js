@@ -1,7 +1,6 @@
 //! A global block's owner, as KERNEL keeps it in the block's arena:
 //! KERNEL's ordinals 404 and 403, which only KERNEL's own code calls.
-//! **Read out** of `KRNL386.EXE` and **recorded** by `kowner`. As
-//! `src/win16/kernel/block-owner.ts`, which says more of each.
+//! **Read out** of `KRNL386.EXE` and **recorded** by `kowner`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.

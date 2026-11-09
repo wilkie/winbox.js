@@ -1603,8 +1603,8 @@ mod tests {
     use super::*;
     use crate::modules::Kept;
 
-    /// Each export WinBox answers here is one the TypeScript engine
-    /// answers, and no other: its table is `kept.rs`'s.
+    /// Each export WinBox answers here is one `kept.rs` marks as answered,
+    /// and no other.
     #[test]
     fn ours_agree() {
         let kept = Kept::named(NAME).expect("LZEXPAND kept");

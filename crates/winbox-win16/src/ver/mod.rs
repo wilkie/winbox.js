@@ -1512,8 +1512,8 @@ mod tests {
     use super::*;
     use crate::modules::Kept;
 
-    /// Each export WinBox answers here is one the TypeScript engine
-    /// answers, and no other: its table is `kept.rs`'s.
+    /// Each export WinBox answers here is one its table, `kept.rs`'s, does not
+    /// stub, and no other.
     #[test]
     fn ours_agree() {
         let kept = Kept::named(NAME).expect("VER kept");
@@ -1522,7 +1522,7 @@ mod tests {
             assert_eq!(
                 implementation(export.name).is_some(),
                 !export.stub,
-                "{} answered by one engine only",
+                "{} answered against its table",
                 export.name
             );
         }

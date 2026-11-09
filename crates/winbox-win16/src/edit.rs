@@ -1,8 +1,7 @@
 //! The single-line edit control: what it does with the characters, keys and
-//! messages it is sent -- winbox.js's `edit.ts` -- with what both kinds of
+//! messages it is sent -- with what both kinds of
 //! edit control share: their state, the layout of their text for their
-//! font (`desktop.ts`'s `editLayout`), and the clipboard's cut, copy, paste
-//! and clear (`edit-clipboard.ts`).
+//! font, and the clipboard's cut, copy, paste and clear.
 //!
 //! **Recorded** by `editctl`, on four displays, everything sent with
 //! `SendMessage` to two edit controls:
@@ -19,7 +18,7 @@
 //! * the focus arriving tells the parent `EN_SETFOCUS`, and leaving
 //!   `EN_KILLFOCUS`; the selection stays as it was.
 //!
-//! The caret is USER's own drawing, not ported yet: where the control makes,
+//! The caret is USER's own drawing, not done here: where the control makes,
 //! places, shows, hides and destroys it, the place is worked out -- which
 //! scrolls the text -- and the caret itself passed over.
 
@@ -1202,7 +1201,7 @@ impl Engine {
     }
 
     /// An edit control's `WM_CUT`, `WM_COPY`, `WM_PASTE` and `WM_CLEAR`
-    /// (`edit-clipboard.ts`).
+    /// through the clipboard.
     ///
     /// **Recorded** by `editclip`, a single-line and a multi-line control:
     ///

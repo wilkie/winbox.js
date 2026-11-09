@@ -8,9 +8,8 @@ import { layeredBase, splitBase } from './split.js';
 /**
  * The layered base (`WINBOX_BASE=layers`, `split.ts`): the stack flattens
  * to the asset bundle's base, the decoy nowhere. Page code alone; what the
- * probes write on it is held by `crates/winbox-win16/tests/layers_sweep.rs`
- * (and `base_test.ts` while the TypeScript engine is kept). Skipped without
- * the bundle (`pnpm assets`).
+ * probes write on it is held by `crates/winbox-win16/tests/layers_sweep.rs`.
+ * Skipped without the bundle (`pnpm assets`).
  */
 
 const ready = bundle() !== null;
