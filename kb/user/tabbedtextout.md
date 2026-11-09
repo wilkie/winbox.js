@@ -39,7 +39,7 @@ winbox.js agrees with all 68 records of these cases. Both were stubs.
 6. **A tab that ends the string** has its gap painted with an empty `ExtTextOut`, `ETO_OPAQUE` whatever the background mode.
 7. The answer is the width from the start to the last run's end, with the height above it.
 
-[[measured]] [[probe:prtabs]] has it draw through the PostScript driver: no stops, one, one of nought, several with tabs past the last, opaque on grey, a tab at the end, and a font of variable pitch. Every run is an `ExtTextOut` of its own, and the tab at the end of a transparent line still paints its gap white. Both engines agree with all 88 records. [[probe:prnote]]: Notepad prints each line with it, its tabs already turned to spaces.
+[[measured]] [[probe:prtabs]] has it draw through the PostScript driver: no stops, one, one of nought, several with tabs past the last, opaque on grey, a tab at the end, and a font of variable pitch. Every run is an `ExtTextOut` of its own, and the tab at the end of a transparent line still paints its gap white. WinBox agrees with all 88 records. [[probe:prnote]]: Notepad prints each line with it, its tabs already turned to spaces.
 
 ## Implementation
 

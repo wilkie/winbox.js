@@ -19,7 +19,7 @@ topics: [synthetic-bold, turned-text, text-ground-and-rules]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context it is `ExtTextOut` with no options, rectangle or spacing (`GDI.EXE` seg1 `3884`), handed to the driver ([[fn:GDI.ExtTextOut]]). [[measured]] [[probe:prdoc]] and [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context it is `ExtTextOut` with no options, rectangle or spacing (`GDI.EXE` seg1 `3884`), handed to the driver ([[fn:GDI.ExtTextOut]]). [[measured]] [[probe:prdoc]] and [[probe:prdraw]], through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 

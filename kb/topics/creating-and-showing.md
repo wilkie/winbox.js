@@ -51,7 +51,7 @@ Then it hides A, shows it again, and destroys the windows. Mouse messages are le
 
 [[read out]] **A pop-up too.** Once `WM_CREATE` is answered, [[fn:USER.CreateWindow]] tests the style's `WS_MINIMIZE` and `WS_MAXIMIZE` bits and nothing else: it clears the bit and calls the routine `ShowWindow` minimizes and maximizes with, `SW_SHOWMINNOACTIVE` or `SW_SHOWMAXIMIZED`, whatever kind of window it is (`USER.EXE` seg8 `0843`-`0861`). [[measured]] [[probe:popmax]] makes pop-ups with `WS_MAXIMIZE`, on the Super VGA: each is sent its `WM_SIZE` and `WM_MOVE` straight after `WM_CREATE`, as any pop-up is, then the five messages above, and is maximized where `WM_GETMINMAXINFO` offers -- one with no frame, or a border, or a caption, at (-1, -1), 644 by 484; one with a sizing frame at (-4, -4), 648 by 488. An owned pop-up is the same. `IsZoomed` answers TRUE. Shown, each is sent what any window shown is, where it already is.
 
-Widget Workshop's InstallShield Setup of the corpus makes its backdrop `WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_MAXIMIZE` at (0, 0), 640 by 480. Windows puts it at (-1, -1), 644 by 484, and the program fills that client area with its blue-to-black bands and centres its dialogs on that rectangle. winbox.js had maximized only an overlapped window made so, and left the pop-up at (0, 0): every band of the backdrop was a pixel lower and to the right of Windows', and every dialog a pixel up and to the left. Both engines now maximize a pop-up too, and agree with every record of `popmax` but the minimized one's (below).
+Widget Workshop's InstallShield Setup of the corpus makes its backdrop `WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_MAXIMIZE` at (0, 0), 640 by 480. Windows puts it at (-1, -1), 644 by 484, and the program fills that client area with its blue-to-black bands and centres its dialogs on that rectangle. winbox.js had maximized only an overlapped window made so, and left the pop-up at (0, 0): every band of the backdrop was a pixel lower and to the right of Windows', and every dialog a pixel up and to the left. WinBox now maximizes a pop-up too, and agree with every record of `popmax` but the minimized one's (below).
 
 ## Shown
 
@@ -104,7 +104,7 @@ What a window answers `WM_GETMINMAXINFO`, and what USER does with it, is in [[to
 
 What [[probe:popmax]] recorded that neither engine follows yet:
 
-- A pop-up made with `WS_MINIMIZE` is minimized as it is made, as an overlapped one is (seg8 `0843`-`0850`): its first `WM_SIZE` is the whole window, 100 by 50, as an icon's client area is; it goes to the first place among the icons with `SWP_NOZORDER` among the flags, 134h. Both engines minimize only an overlapped window as it is made, and a child neither; a child made with `WS_MAXIMIZE` or `WS_MINIMIZE` is not recorded.
+- A pop-up made with `WS_MINIMIZE` is minimized as it is made, as an overlapped one is (seg8 `0843`-`0850`): its first `WM_SIZE` is the whole window, 100 by 50, as an icon's client area is; it goes to the first place among the icons with `SWP_NOZORDER` among the flags, 134h. WinBox minimizes only an overlapped window as it is made, and a child neither; a child made with `WS_MAXIMIZE` or `WS_MINIMIZE` is not recorded.
 
 ## Not yet measured
 

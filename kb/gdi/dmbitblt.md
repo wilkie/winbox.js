@@ -42,7 +42,7 @@ topics: [gdi-internals, printer-drivers]
 
 On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
 
-`crates/winbox-win16/src/gdi/driver_bitmap.rs`, through `Brute`'s choice (`crates/winbox-win16/src/gdi/driver_helpers.rs`): on the VGA, the Super VGA and the EGA, the bitmap's pixels read and written in the program's memory as the driver addresses them, with no bound, and combined by GDI's own `combine`. [[probe:gdidmdrw]] agrees in both engines on the three.
+`crates/winbox-win16/src/gdi/driver_bitmap.rs`, through `Brute`'s choice (`crates/winbox-win16/src/gdi/driver_helpers.rs`): on the VGA, the Super VGA and the EGA, the bitmap's pixels read and written in the program's memory as the driver addresses them, with no bound, and combined by GDI's own `combine`. [[probe:gdidmdrw]] agrees on the three.
 
 ## Not yet done
 

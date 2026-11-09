@@ -21,4 +21,4 @@ topics: [clip-regions]
 
 ## Implementation
 
-In both engines as [[fn:GDI.RectVisible]]. [[probe:gdimisc]] agrees in both.
+As [[fn:GDI.RectVisible]]. [[probe:gdimisc]] agrees in both.

@@ -34,6 +34,6 @@ topics: [gdi-internals, metafiles]
 
 ## Implementation
 
-In both engines as read out. [[probe:gdiint]] agrees in both.
+As read out. [[probe:gdiint]] agrees in both.
 
 **Recommendation:** done. WinBox's USER does not call it yet from its clipboard.

@@ -22,4 +22,4 @@ topics: [exported-constants]
 
 ## Implementation
 
-A constant in KERNEL's export table, written where a program imports it in both engines. See [[topic:exported-constants]].
+A constant in KERNEL's export table, written where a program imports it. See [[topic:exported-constants]].

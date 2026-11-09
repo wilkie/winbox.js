@@ -15,4 +15,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-Nothing is done in either engine (`nothing`, `crates/winbox-win16/src/kernel_calls/retail.rs`).
+Nothing is done (`nothing`, `crates/winbox-win16/src/kernel_calls/retail.rs`).

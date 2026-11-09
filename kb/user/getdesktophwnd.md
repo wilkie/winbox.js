@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/user.rs
 
 ## Implementation
 
-The same function as `GetDesktopWindow` in both engines' tables.
+The same function as `GetDesktopWindow`' tables.

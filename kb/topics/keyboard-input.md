@@ -59,7 +59,7 @@ Either goes straight to the window's procedure, with the command in `wParam` and
 
 [[measured]] [[probe:accinit]] hands keys to `TranslateAccelerator` for a menu whose items are grayed until its window, told `WM_INITMENUPOPUP`, enables them. All 15 records agree: a second entry for a key whose first is grayed is not tried, a command in a pop-up of a pop-up brings only the bar's pop-up `WM_INITMENUPOPUP`, and a key with no entry answers FALSE.
 
-[[measured]] [[probe:accsys]] gives a window with a bar keys for `SC_CLOSE`, `SC_RESTORE`, `SC_MAXIMIZE`, `SC_MINIMIZE`, `SC_SIZE` and `SC_MOVE`, which only its system menu has, and for `SC_TASKLIST`, which its bar has too. All 39 records agree in both engines.
+[[measured]] [[probe:accsys]] gives a window with a bar keys for `SC_CLOSE`, `SC_RESTORE`, `SC_MAXIMIZE`, `SC_MINIMIZE`, `SC_SIZE` and `SC_MOVE`, which only its system menu has, and for `SC_TASKLIST`, which its bar has too. All 39 records agree.
 
 - Each system command is `WM_INITMENU` with a menu of one item, `WM_INITMENUPOPUP` with a menu of nine and `0,0` in `lParam`, then `WM_SYSCOMMAND` with the command and `0,1`. Restore of a window shown normally is grayed, so it is not sent; nor Maximize and Size while maximized, nor Move, as a maximized window covers the screen.
 - `SC_TASKLIST` is the bar's: `WM_INITMENU` with the bar and `WM_COMMAND`. The system menu is not looked at.
@@ -115,7 +115,7 @@ A key goes to the window with the focus, which in a program like Notepad is a ch
 - **A character typed with Alt**, `WM_SYSCHAR` (`622c`). Tab and Escape are nothing. A space in a child is the parent's: the same `WM_SYSCHAR` is sent to it. [[measured]] From a child two deep, Alt+Space goes to its parent, then to the top-level window, whose `DefWindowProc` opens the system menu. Any other character is `SC_KEYMENU` with it, sent to the window itself. [[measured]] So Alt+F in a child is `WM_SYSCOMMAND` to the child, and the top-level window is sent no `WM_SYSCOMMAND` at all.
 - **`SC_KEYMENU` in a child** (seg1 `04dd`, seg17 `00fe`). The menu is that of the nearest window the child lies in that is not a child, or that has a system menu of its own. [[measured]] It opens as the top-level window's menu: `WM_INITMENU` and the rest go to that window.
 
-[[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. Both engines carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. Both engines now agree with all 20 of [[probe:altchild]]'s records.
+[[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. Both engines carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. WinBox now agrees with all 20 of [[probe:altchild]]'s records.
 
 Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before.
 
@@ -127,13 +127,13 @@ Not measured: a child with a system menu of its own, as an MDI document window h
 - [[read out]] In a dialog, `IsDialogMessage` beeps for a character no control names where the focus wants none, and for `WM_SYSCHAR` with no focus and Alt up ([[topic:dialog-boxes]]).
 - WinBox now beeps at each of these: it plays the `SystemDefault` sound, as `MessageBeep(0)` does.
 
-[[read out]] **Enter in an icon.** `WM_SYSCHAR` with Enter for a minimized window posts it `WM_SYSCOMMAND` with `SC_RESTORE` before anything else is looked at, Alt's bit or not (seg1 `6238`). [[measured]] [[probe:altenter]]: posted with `lParam` nought, for Enter with Alt and without. An icon given `x` with Alt is sent `SC_KEYMENU` as any window is, and a window shown normally given Enter is sent `SC_KEYMENU` with 0Dh. Both engines agree with all 5 records.
+[[read out]] **Enter in an icon.** `WM_SYSCHAR` with Enter for a minimized window posts it `WM_SYSCOMMAND` with `SC_RESTORE` before anything else is looked at, Alt's bit or not (seg1 `6238`). [[measured]] [[probe:altenter]]: posted with `lParam` nought, for Enter with Alt and without. An icon given `x` with Alt is sent `SC_KEYMENU` as any window is, and a window shown normally given Enter is sent `SC_KEYMENU` with 0Dh. WinBox agrees with all 5 records.
 
 ## When a key is given its window
 
 A key does not go to a window as it is pressed. [[read out]] The keyboard driver hands it to USER, which puts it in its system queue, and it is given a window only as a program takes it ([[topic:system-queue]]): the window with the focus then, or with no focus the active window, the key made a system key (`USER.EXE` seg1 `31a3`-`31db`). A key for another program's window ends the look, and that program is woken to take it. F10 is made a system key here, not as it is put in (`3188`), and the `lParam` is made here too, from the event's repeat count, scan code and extended flag and from the key-state table as the key leaves it.
 
-[[measured]] [[probe:sysq]] puts its keys in through `KEYBD_EVENT` and moves the focus before taking them. A key pressed before `SetFocus`, a click that takes the focus, or a `PeekMessage` that only looked goes to the window that has the focus when it is taken; with no focus, the top-level window takes `WM_SYSKEYDOWN` and `WM_SYSCHAR`. Both engines agree with all its records.
+[[measured]] [[probe:sysq]] puts its keys in through `KEYBD_EVENT` and moves the focus before taking them. A key pressed before `SetFocus`, a click that takes the focus, or a `PeekMessage` that only looked goes to the window that has the focus when it is taken; with no focus, the top-level window takes `WM_SYSKEYDOWN` and `WM_SYSCHAR`. WinBox agrees with all its records.
 
 Before this, both engines posted a key to the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed: in Control Panel's Ports Settings, Up, Tab, Down and Enter pressed at once moved the first list's selection both ways and left the second as it was. And a disabled window, or one inside one, with the focus took no keys at all, which USER does not check.
 

@@ -7,7 +7,7 @@ probes: [ttquery, ttqmap]
 
 Four calls ask about the TrueType font selected into a device context rather than draw with it: [[fn:GDI.GetFontData]], [[fn:GDI.GetKerningPairs]], [[fn:GDI.GetCharABCWidths]] and [[fn:GDI.GetOutlineTextMetrics]]. Each asks GDI's TrueType engine, which lives in `GDI.EXE` itself: its entry points are a table at seg47 `001e`, which seg36's stubs `0042` to `00ae` call through. A strike — any font that is not a TrueType one — has none of these answers.
 
-[[measured]] [[probe:ttquery]] asks all four of Arial, Arial Bold and Bold Italic, Times New Roman Italic and Bold, Courier New, Symbol and Wingdings at a few sizes, in a window's device context and a memory one, and of the System font. All 226 records agree in both engines. [[probe:ttqmap]] asks the same under `MM_LOMETRIC`.
+[[measured]] [[probe:ttquery]] asks all four of Arial, Arial Bold and Bold Italic, Times New Roman Italic and Bold, Courier New, Symbol and Wingdings at a few sizes, in a window's device context and a memory one, and of the System font. All 226 records agree. [[probe:ttqmap]] asks the same under `MM_LOMETRIC`.
 
 ## The engine's part
 

@@ -22,4 +22,4 @@ topics: [multimedia-services]
 
 ## Implementation
 
-Both engines answer 1.
+WinBox answers 1.

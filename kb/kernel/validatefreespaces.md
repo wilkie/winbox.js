@@ -19,4 +19,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A retail no-op in both engines (`nothing`), beside [[fn:KERNEL.K329]]. See [[topic:kernel-internals]].
+A retail no-op (`nothing`), beside [[fn:KERNEL.K329]]. See [[topic:kernel-internals]].

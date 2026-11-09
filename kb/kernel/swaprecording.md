@@ -20,4 +20,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-Both engines answer DX:AX as 167h and the flag (`crates/winbox-win16/src/kernel_calls/internals.rs`), with 167h a named constant there. See [[topic:kernel-internals]].
+WinBox answers DX:AX as 167h and the flag (`crates/winbox-win16/src/kernel_calls/internals.rs`), with 167h a named constant there. See [[topic:kernel-internals]].

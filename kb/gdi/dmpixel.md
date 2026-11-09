@@ -38,11 +38,11 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-In both engines as the VGA's driver has it. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. [[probe:gdidm]] agrees in both engines.
+As the VGA's driver has it. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. [[probe:gdidm]] agrees.
 
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 
-On the Hercules and the 256-colour display their own (`herculesPixel` in `pixel`, and the Rust twins), [[probe:gdidmpx]] agreeing in both engines on all three displays.
+On the Hercules and the 256-colour display their own (`herculesPixel` in `pixel`, and the Rust twins), [[probe:gdidmpx]] agreeing on all three displays.
 
 ## Not yet done
 

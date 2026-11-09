@@ -27,7 +27,7 @@ topics: [ellipses, polygon-fill]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context it goes to the driver as `OS_ROUNDRECT` (`GDI.EXE` seg9 `02c4`). The corner is made a size again, no larger than the rectangle; with none it is a rectangle. [[measured]] [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context it goes to the driver as `OS_ROUNDRECT` (`GDI.EXE` seg9 `02c4`). The corner is made a size again, no larger than the rectangle; with none it is a rectangle. [[measured]] [[probe:prdraw]], through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 

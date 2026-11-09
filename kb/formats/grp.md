@@ -116,7 +116,7 @@ Everything read out here is `PROGMAN.EXE`; its group code is segment 4.
 
 Program Manager is Microsoft's, run from the installation, and both engines run its files as above byte for byte ([[probe:pmbare]] on the VGA and the EGA, [[probe:pmfiles]]).
 
-WinBox's own reader and writer is pure code in both engines, `src/layers/groups.ts` and `crates/winbox-win16/src/groups.rs`, for the stand-in and for the list of a kept program's groups on the page and in the native build's `--list` ([[topic:program-manager-dde]], [[format:layer]]):
+WinBox's own reader and writer is pure code, `src/layers/groups.ts` and `crates/winbox-win16/src/groups.rs`, for the stand-in and for the list of a kept program's groups on the page and in the native build's `--list` ([[topic:program-manager-dde]], [[format:layer]]):
 
 - A group file read into a model of the header and the items, each item's command and working directory as Program Manager reads them back, its hot key and minimized flag from its tags, and its icon's header and planes; and written again. The model keeps where each block lay and the order of the tags, so a file Program Manager wrote is written again byte for byte, the checksum included; a model made afresh is laid out as a group made and filled in slot order.
 - The block's operations above, each as read out, for a stand-in to change a group with: a new group, an item made, taken out, the name changed, settings saved, icons refreshed, and the bytes `WriteGroup` writes.

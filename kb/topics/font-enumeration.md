@@ -105,4 +105,4 @@ A program's exported procedure takes its data segment from AX ([[topic:dynamic-l
 - `FontManager.listedEntries` and `trueTypeDirectory` hold them.
 - `readFontResource` in `crates/winbox-raster/src/font_resource.rs` reads a stub's directory entry and names.
 - `fontDirectoryOrder` in `crates/winbox-win16/src/fonts/directory.rs` puts the boot fonts in GDI's order.
-- `chosen` and `enum_font_families` in `crates/winbox-win16/src/gdi/text/enumerate.rs` are the Rust engine's walk. It runs [[probe:enumfam]] itself. It agreed with only 29 records on each display until [[fn:KERNEL.lstrcpyn]] was more than a stub: the probe copies each face, full name and style with it. Now all four displays agree in full in both engines.
+- `chosen` and `enum_font_families` in `crates/winbox-win16/src/gdi/text/enumerate.rs` are the Rust engine's walk. It runs [[probe:enumfam]] itself. It agreed with only 29 records on each display until [[fn:KERNEL.lstrcpyn]] was more than a stub: the probe copies each face, full name and style with it. Now all four displays agree in full.

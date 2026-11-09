@@ -18,4 +18,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-The table entry is USER's own function in both engines.
+The table entry is USER's own function.

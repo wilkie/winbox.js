@@ -22,4 +22,4 @@ topics: [gdi-priority-queue]
 
 ## Implementation
 
-In both engines as read out, on the block itself, so a program reading it sees Windows' words. [[probe:gdipq]] agrees in both.
+As read out, on the block itself, so a program reading it sees Windows' words. [[probe:gdipq]] agrees in both.

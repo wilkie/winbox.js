@@ -5,7 +5,7 @@ summary: What SystemParametersInfo reads and sets in Windows 3.1, action by acti
 probes: [sysparam, sizing, deskwall, deskbrsh, dblrect, spiboot, bdrwidth, langdrv, spiidle, bcast]
 ---
 
-[[fn:USER.SystemParametersInfo]] is how Control Panel's Desktop, Mouse and Keyboard read the settings they show and set the ones chosen. USER keeps each setting in its own data segment, reads them all from `WIN.INI` as it starts, and writes one back only when asked. [[probe:sysparam]] reads every action's setting at the start, sets each with and without `SPIF_UPDATEINIFILE` and `SPIF_SENDWININICHANGE`, reads `WIN.INI` back with [[fn:KERNEL.GetProfileString]] after each, and logs what two windows at the top, one shown and one hidden, are sent meanwhile. Both engines agree with all 116 records.
+[[fn:USER.SystemParametersInfo]] is how Control Panel's Desktop, Mouse and Keyboard read the settings they show and set the ones chosen. USER keeps each setting in its own data segment, reads them all from `WIN.INI` as it starts, and writes one back only when asked. [[probe:sysparam]] reads every action's setting at the start, sets each with and without `SPIF_UPDATEINIFILE` and `SPIF_SENDWININICHANGE`, reads `WIN.INI` back with [[fn:KERNEL.GetProfileString]] after each, and logs what two windows at the top, one shown and one hidden, are sent meanwhile. WinBox agrees with all 116 records.
 
 Before, winbox.js answered only the icons' spacing, their titles' wrapping and their font. Every other action answered FALSE and wrote nothing into the caller's word, so Desktop showed whatever its stack held — a granularity of 8307 and a border of 268 — and nothing the applets set reached `WIN.INI`.
 
@@ -93,7 +93,7 @@ The keys with no section named are `[Windows]`'s. [[measured]] Each row's value 
 - [[measured]] [[probe:langdrv]] brings a driver of its own, LANGDRVD.DLL, which writes down each call and answers so each can be told apart. A null pointer and an empty name answer TRUE with no driver; NOSUCH.DLL answers FALSE, with `SEM_NOOPENFILEERRORBOX`, and writes nothing though asked to; its own loads, and the ten functions call it with the numbers, words and pointers above, the comparison's answer negated; NOSUCH.DLL after it answers FALSE and its driver is loaded again, the functions still calling it; `SYSTEM.INI` then says `LANGDRVD.DLL`; an empty name lets it go and writes an empty one.
 - [[read out]] With no driver, the four `IsChar` functions answer AX as USER's own test leaves it (seg11 `024b`-`027a`): nought, or the character in AL and in AH the high byte of USER's data segment's selector, which the function's entry loads into AX (`0215`). [[measured]] True, with the character in the low byte: 0A61h for `IsCharAlpha('a')` on the recording's installation.
 
-Both engines agree with all 19 records: each loads the driver as a library, calls its ordinal 1 from those ten functions, and answers the `IsChar` functions with its own data segment's selector's high byte.
+WinBox agrees with all 19 records: each loads the driver as a library, calls its ordinal 1 from those ten functions, and answers the `IsChar` functions with its own data segment's selector's high byte.
 
 ### The icons
 
@@ -131,7 +131,7 @@ Both engines agree with all 19 records: each loads the driver as a library, call
 - The sizing codes cover the frame's width: at a width of 1, the two pixels at the edge; the corner's codes reach as far along the edge as at 3.
 - Maximized at a width of 5, the window is at (-6, -6), the frame off the screen.
 
-Both engines agree with all 984 records. They had drawn the pop-up's outer line, and its notches only from the band's second pixel, for every pop-up with a sizing frame and no border, at the default width too.
+WinBox agrees with all 984 records. They had drawn the pop-up's outer line, and its notches only from the band's second pixel, for every pop-up with a sizing frame and no border, at the default width too.
 
 ### The pattern
 
@@ -180,7 +180,7 @@ Both engines agree with all 984 records. They had drawn the pop-up's outer line,
 - 24 bits are each pixel matched on its own, with no dithering. On the VGA it is the driver's rule for the sixteen colours, as for a colour table: the grey of 64 black, of 160 dark grey, orange yellow, the blue bright blue and the green bright green. On the 256-colour display it is the cube's nearest entry, in its slot: the cube realized in the background takes the free slots in its order, an entry the static colours have takes that, and the entries left over when the slots run out -- (224, 224, 192), white's nearest, among them -- the nearest colour there is, the static `C0DCC0`.
 - 16 and 32 bits show what the bitmap's memory held. The probe does not read them: for 32 bits after 24 it was the 24 bits' bitmap, just let go of and given again; for 16 bits, colours of no rule.
 
-WinBox agrees with all 24 records of each display. Control Panel's Desktop given a wallpaper of 24 bits shows it, in both engines' sessions (`crates/winbox-web/tests/sweep_terminal_control.rs`).
+WinBox agrees with all 24 records of each display. Control Panel's Desktop given a wallpaper of 24 bits shows it' sessions (`crates/winbox-web/tests/sweep_terminal_control.rs`).
 
 [[probe:deskbrsh]] fills beside the desktop with a brush of `COLOR_BACKGROUND` of its own, as Windows starts, after `RedrawWindow`, after [[fn:USER.SetSysColors]], and after "(None)" given to `SPI_SETDESKPATTERN`: the program's own brush is dithered throughout, and the desktop's only until the pattern of noughts.
 
@@ -208,7 +208,7 @@ WinBox agrees with all 24 records of each display. Control Panel's Desktop given
 - [[read out]] `MenuShowDelay` is the interval of the timer, -2, a menu's window is given when the mouse comes to an item that opens another menu, which opens it when it fires (seg10 `155e`-`156f`). `MenuHideDelay` and `DragFullWindows` are read and kept, and nothing in USER reads them again: in 3.1 a window is dragged as its outline whatever `DragFullWindows` says.
 - [[read out]] `SM_MENUDROPALIGNMENT` places a menu bar's menu (seg10 `0ad4`-`0b04`): nought at the item's left; else its right edge a pixel past the item's right, the menu's width inside its border taken from the item's left and width, and a border more. [[measured]] With 1 File's menu, 81 pixels wide under an item from 46 to 86, is at 6; a menu opened from it, and one `TrackPopupMenu` places, are where they are with nought, opening to the right where there is room on the left too.
 
-[[measured]] [[probe:spiboot]] runs with a `WIN.INI` of other settings, the preset `oracle/probes/spiboot.settings.ini`, set in the installation's before Windows starts by the recorder (`record.mjs --ini settings`) and by both engines alike: `Beep=no`, `SwapMouseButtons=yes`, thresholds 5 and 9 and a speed of 2, a keyboard speed of 20 and delay of 1, `CursorBlinkRate=300`, `DoubleClickSpeed=700`, a double click 12 by 9, `MenuDropAlignment=1`, `CoolSwitch=0`, a screen saver of 90 seconds active, `BorderWidth=5`, a grid of 2, icons spaced 90 by 80, titles not wrapping, in Arial of 10 points, bold. Every action reads them back as given; `GetSystemMetrics` answers a frame of 6, a smallest window of 106 by 30, the double click's 12 by 9, the spacings, the alignment and the buttons swapped; `GetDoubleClickTime` 700 and `GetCaretBlinkTime` 300; the icons' titles' font -13 high, of weight 700; a window made at (40, 40), 300 by 200, has its client area 6 pixels in; and File's menu is aligned with its item's right. Both engines agree with all 34 records. They had read every setting but `CursorBlinkRate`, keeping 530 whatever it said, and had placed the menu at the item's left.
+[[measured]] [[probe:spiboot]] runs with a `WIN.INI` of other settings, the preset `oracle/probes/spiboot.settings.ini`, set in the installation's before Windows starts by the recorder (`record.mjs --ini settings`) and by both engines alike: `Beep=no`, `SwapMouseButtons=yes`, thresholds 5 and 9 and a speed of 2, a keyboard speed of 20 and delay of 1, `CursorBlinkRate=300`, `DoubleClickSpeed=700`, a double click 12 by 9, `MenuDropAlignment=1`, `CoolSwitch=0`, a screen saver of 90 seconds active, `BorderWidth=5`, a grid of 2, icons spaced 90 by 80, titles not wrapping, in Arial of 10 points, bold. Every action reads them back as given; `GetSystemMetrics` answers a frame of 6, a smallest window of 106 by 30, the double click's 12 by 9, the spacings, the alignment and the buttons swapped; `GetDoubleClickTime` 700 and `GetCaretBlinkTime` 300; the icons' titles' font -13 high, of weight 700; a window made at (40, 40), 300 by 200, has its client area 6 pixels in; and File's menu is aligned with its item's right. WinBox agrees with all 34 records. They had read every setting but `CursorBlinkRate`, keeping 530 whatever it said, and had placed the menu at the item's left.
 
 ## A program's broadcast
 
@@ -220,7 +220,7 @@ A program can send or post a message to every window at the top at once, with `H
 - [[measured]] [[probe:bcast]] makes windows of every kind at the top, of its own and of another program's: shown, hidden, disabled, minimized, owned and shown, owned and hidden, and a child, which is not at the top. Sent, every one at the top was handed it, front to back as `EnumWindows` took them -- owned ones too, and the other program's as a message another task sent, `InSendMessage` true there -- and the call answered 10000h, though each window answered 55. Posted, every one at the top without an owner had it in its queue, and the call answered ABCDh. A child had neither. `WM_WININICHANGE`'s and `WM_DEVMODECHANGE`'s texts came at offset nought of a block that was not the probe's, an empty one too; a null `lParam` came as null. After a hidden window was shown and an owned one destroyed, the order followed.
 - [[measured]] [[fn:USER.EnumWindows]] takes an icon's title too, a window at the top just in front of its icon; the broadcast passes over it.
 
-Both engines agree with all 12 records. Before, both answered nought for -1, sending and posting nothing, and neither enumerated icons' titles. `InSendMessage` answered nought for a message from another task; USER answers its queue's word at 38h (seg1 `3dba`), the sending task's queue while the message is handled (`3ba4`-`3c2d`) and 1 once it is answered with `ReplyMessage` (`3c7e`). winbox.js answers 1, having no queues' handles.
+WinBox agrees with all 12 records. Before, both answered nought for -1, sending and posting nothing, and neither enumerated icons' titles. `InSendMessage` answered nought for a message from another task; USER answers its queue's word at 38h (seg1 `3dba`), the sending task's queue while the message is handled (`3ba4`-`3c2d`) and 1 once it is answered with `ReplyMessage` (`3c7e`). winbox.js answers 1, having no queues' handles.
 
 ## What Control Panel calls
 
@@ -230,7 +230,7 @@ Both engines agree with all 12 records. Before, both answered nought for -1, sen
 - Mouse (seg16) reads the mouse with `SPI_GETMOUSE` and sets it as its slider moves with nothing to write (`058d`); on OK it writes `SwapMouseButtons` as `yes` or `no` and `DoubleClickSpeed` itself, where they changed (`074d`, `07d0`), and sets the mouse with both flags (`07df`). On Cancel it puts back the double-click time with [[fn:USER.SetDoubleClickTime]], the buttons with [[fn:USER.SwapMouseButton]] and the mouse with nothing to write.
 - Keyboard (seg15) reads the speed and the delay (`0099`, `00a8`), sets each as its sliders move with nothing to write, and on OK with `SPIF_UPDATEINIFILE` (`02a9`, `02be`); the delay's slider runs from 3, long, to nought.
 - [[measured]] With these, Control Panel's Desktop shows a granularity of 0, a border of 3 and a delay of 2 minutes, as `WIN.INI` has them; its spin buttons and fast Alt+Tab set `GridGranularity=1`, `BorderWidth=4` and `CoolSwitch=0`. Keyboard's sliders stand at a delay of 2 and a rate of 31, and moved write `KeyboardDelay=3` and `KeyboardSpeed=29`. Mouse writes `MouseThreshold1=2`, `MouseThreshold2=0` and `MouseSpeed=1`. Both engines' sessions follow this, in `crates/winbox-web/tests/sweep_terminal_control.rs`.
-- Desktop given a border width of 1 shrinks Control Panel's window by two pixels each way and draws its frame two pixels across, the outer and inner lines side by side, in both engines' sessions.
+- Desktop given a border width of 1 shrinks Control Panel's window by two pixels each way and draws its frame two pixels across, the outer and inner lines side by side' sessions.
 
 ## Not yet done
 

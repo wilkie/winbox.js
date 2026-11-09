@@ -26,9 +26,9 @@ A window is told the mouse moved when the mouse moves. It is also told when the 
 
 [[read out]] USER makes the same move as a window lets go of the mouse: `ReleaseCapture`, and `SetCapture` with nought, go through one routine (`USER.EXE` seg1 `28cd`), which notes a move due where the mouse had been captured (`28d0`-`28dd`, `52e9`). USER's own controls let go of the mouse so as a press on them is released, and so does a menu's loop as it ends, whether or not a pop-up was shown. Putting in a journal hook makes one too (`7e4a`; [[topic:hooks]]).
 
-[[measured]] [[probe:jrnlrec]]'s journal record hook was handed such a move, at the cursor, after Alt and X in a window whose system menu has no X: the menu's loop started and ended at once, and let go of the mouse. Both engines now make the move as `ReleaseCapture` lets go, as a button, a list box or an edit control lets go, and as every menu's loop ends; before, only a menu's loop that had shown a pop-up made one. Not followed: the loops that move and size a window, and a scroll bar's, which let go of the mouse without one here.
+[[measured]] [[probe:jrnlrec]]'s journal record hook was handed such a move, at the cursor, after Alt and X in a window whose system menu has no X: the menu's loop started and ended at once, and let go of the mouse. WinBox now makes the move as `ReleaseCapture` lets go, as a button, a list box or an edit control lets go, and as every menu's loop ends; before, only a menu's loop that had shown a pop-up made one. Not followed: the loops that move and size a window, and a scroll bar's, which let go of the mouse without one here.
 
-[[measured]] [[probe:alttab]]: Alt and Tab's box shown makes the move too, after the keys already put in and before those put in after; its loop takes it. Both engines make it as the box is shown and taken away, and as the loop lets go of the mouse ([[topic:task-list]]).
+[[measured]] [[probe:alttab]]: Alt and Tab's box shown makes the move too, after the keys already put in and before those put in after; its loop takes it. WinBox makes it as the box is shown and taken away, and as the loop lets go of the mouse ([[topic:task-list]]).
 
 While a journal playback hook plays, the mouse's own moves are lost and the cursor stays where the playback leaves it; the moves USER makes are kept for after ([[topic:system-queue]]).
 

@@ -82,7 +82,7 @@ A window's style can be changed with [[fn:USER.SetWindowLong]], and its menu wit
 
 [[inferred]] As a window is made, its client area is the one `WM_NCCALCSIZE` makes for the style it has then, after `WM_NCCREATE`: Visual Basic's forms change their style in `WM_NCCREATE` (Four Seasons of the corpus), and with the client area laid out before, moving the window a pixel told it `WM_SIZE` once the client flags were followed. winbox.js lays the client area out again there.
 
-Both engines agree with all 312 records. winbox.js does not hand over the `WINDOWPOS`'s pointer. Before, winbox.js laid out the client area again as soon as `GWW_ID` changed, and never as `SWP_FRAMECHANGED` asked, so Clock lost its menu bar and kept its caption; and it sent `WM_NCCALCSIZE` with nought and no structure, which this probe's window procedure reads: on the Rust engine the run went no further.
+WinBox agrees with all 312 records. winbox.js does not hand over the `WINDOWPOS`'s pointer. Before, winbox.js laid out the client area again as soon as `GWW_ID` changed, and never as `SWP_FRAMECHANGED` asked, so Clock lost its menu bar and kept its caption; and it sent `WM_NCCALCSIZE` with nought and no structure, which this probe's window procedure reads: on the Rust engine the run went no further.
 
 ## A client area of the window's own
 
@@ -101,7 +101,7 @@ Both engines agree with all 312 records. winbox.js does not hand over the `WINDO
 - `WM_ERASEBKGND`'s clip box and `WM_PAINT`'s rectangle are the procedure's client area; an empty one is still sent both, for nothing, as the window is shown and as it grows.
 - Its bits: painted in stripes and sized from 200 by 150 to 240 by 170 with `DefWindowProc`'s rectangles, an answer of nought or 800h keeps the old client area's 192 by 123 at the new one's corner; `WVR_ALIGNRIGHT | WVR_ALIGNBOTTOM` keeps bits from 4 pixels right of the old client area's left edge and 23 below its top -- the old frame's edge among them -- at 4 in and 4 down; `WVR_REDRAW` keeps nothing; `WVR_VALIDRECTS` (400h), the second rectangle 40 by 30 at (20, 10) in the new client area and the third the old one's corner 40 by 30, keeps just those.
 
-winbox.js agrees with all 50 records in both engines. It had laid the client area out as the style says whatever the procedure answered, and kept the old client area's bits at the new one's corner whatever it answered: 33 of the 50 records disagreed.
+winbox.js agrees with all 50 records. It had laid the client area out as the style says whatever the procedure answered, and kept the old client area's bits at the new one's corner whatever it answered: 33 of the 50 records disagreed.
 
 - Not yet measured: a procedure's client area kept where USER lays a frame out again without `WM_NCCALCSIZE` -- a scroll bar shown, a menu set -- which winbox.js lays out as the style says where the size or style changed; and where the bits of a window's children go when its own go elsewhere than with its client area.
 

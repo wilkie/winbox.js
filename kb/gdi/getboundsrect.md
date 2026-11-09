@@ -23,4 +23,4 @@ topics: [drawing-bounds]
 
 ## Implementation
 
-In both engines as read out, the visible region's box being the context's bitmap or client area on the screen. [[probe:bounds]] agrees in both.
+As read out, the visible region's box being the context's bitmap or client area on the screen. [[probe:bounds]] agrees in both.

@@ -25,7 +25,7 @@ topics: [line-drawing, display-drivers]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context a line goes as a polyline of two points (`GDI.EXE` seg21 `0726`). A line along an axis across the region's edge is cut to it first. [[measured]] [[probe:prdraw]]: a dashed line, and a line across a clip, through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context a line goes as a polyline of two points (`GDI.EXE` seg21 `0726`). A line along an axis across the region's edge is cut to it first. [[measured]] [[probe:prdraw]]: a dashed line, and a line across a clip, through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 

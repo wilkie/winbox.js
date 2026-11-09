@@ -49,7 +49,7 @@ Each program has been driven as a person at the page drives it, with the mouse a
 
 ## A second sweep: Paintbrush, Write and Cardfile
 
-Paintbrush's dialogs and tools, Write's formatting, finding and files, and Cardfile's cards, views and merging were driven again in depth: `crates/winbox-web/tests/sweep_paint_write_card.rs` keep the sessions. Each failure was in USER, GDI or KERNEL, and was the same in both engines:
+Paintbrush's dialogs and tools, Write's formatting, finding and files, and Cardfile's cards, views and merging were driven again in depth: `crates/winbox-web/tests/sweep_paint_write_card.rs` keep the sessions. Each failure was in USER, GDI or KERNEL, and was the same:
 
 - In Paintbrush's Font box, Tab in a combo box's field went nowhere, and the size, read with `GetDlgItemInt`, was always "not a number": the dialog manager looked for the field among the dialog's own controls, and `GetDlgItemInt` read the combo box's own text, not its field's ([[topic:dialog-boxes]]).
 - Over a dialog's controls the cursor stayed Paintbrush's hourglass: USER's own classes had no cursor ([[topic:cursor]]).

@@ -22,4 +22,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines as read out. With the flag set, GDI calls the hook before the next call that uses the context ([[fn:GDI.SetDCHook]]); on a context USER lends, USER's hook works its visible region out again ([[fn:USER.DCHook]]; [[probe:visfam]], `hook`). [[probe:dcinner]] agrees in both.
+As read out. With the flag set, GDI calls the hook before the next call that uses the context ([[fn:GDI.SetDCHook]]); on a context USER lends, USER's hook works its visible region out again ([[fn:USER.DCHook]]; [[probe:visfam]], `hook`). [[probe:dcinner]] agrees in both.

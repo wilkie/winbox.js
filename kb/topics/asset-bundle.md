@@ -6,7 +6,7 @@ summary: WinBox's asset bundle — the fonts, data files, sounds and the resourc
 
 The asset bundle is step 2 of [[guide:without-windows]]. It holds what programs see of an installed Windows 3.1, and none of the code. It is made from the user's own setup disks and is never shipped. With it, WinBox can lay out a base for drive C: for any display it serves, as Windows' own Setup laid one out.
 
-Both engines start from it alone, as below: the native build, the probe harnesses, and the page, which makes the bundle from the user's disks in the browser and keeps it there.
+WinBox starts from it alone, as below: the native build, the probe harnesses, and the page, which makes the bundle from the user's disks in the browser and keeps it there.
 
 ## The format
 
@@ -109,7 +109,7 @@ An engine started from the bundle has two things where it would have an installa
 
   `WINBOX_BASE=assets cargo test --release -p winbox-win16 --test probes -- --ignored --nocapture survey`
 
-[[measured]] On the bundle's base, `drvres` on the VGA, EGA, Hercules and Super VGA, `chrome` on the same four, `fontboot` with its three presets and `about` write the same records as on the oracle's installation, in both engines; and SHELL's logo read from the bundle is the installation's, pixel for pixel, on all four displays (`crates/winbox-win16/tests/asset_base.rs`).
+[[measured]] On the bundle's base, `drvres` on the VGA, EGA, Hercules and Super VGA, `chrome` on the same four, `fontboot` with its three presets and `about` write the same records as on the oracle's installation; and SHELL's logo read from the bundle is the installation's, pixel for pixel, on all four displays (`crates/winbox-win16/tests/asset_base.rs`).
 
 ## On the page
 
@@ -138,7 +138,7 @@ The media are made into a bundle by the maker `pnpm assets` runs (`makeAssets`),
 
 ## What a program sees differently
 
-Every probe was run on the installation and on the bundle's base, in both engines, and their records set side by side, each occurrence of a call against the same occurrence in the other run. `test/oracle/assets-differences.json` lists each record that differs, by fixture, with its reason, and each engine's sweep holds the runs to it: a difference it does not list fails, and so does one it lists that no longer comes.
+Every probe was run on the installation and on the bundle's base, and their records set side by side, each occurrence of a call against the same occurrence in the other run. `test/oracle/assets-differences.json` lists each record that differs, by fixture, with its reason, and the engine's sweep holds the runs to it: a difference it does not list fails, and so does one it lists that no longer comes.
 
 ```
 ASSETS_SWEEP=1 cargo test --release -p winbox-win16 --test assets_sweep -- --nocapture
@@ -147,7 +147,7 @@ ASSETS_SWEEP=1 npx jest test/assets/sweep_test.ts
 
 Neither runs without `ASSETS_SWEEP=1`. [[measured]] The Rust engine's sweep, every fixture run twice, takes some 100 seconds on eight threads.
 
-[[measured]] 23 fixtures differed in the Rust engine before the Program Manager probes were recorded and WinBox's own Program Manager answered on the base. Since, `ddeinst` and `pmatom` agree there whole, and `pmbare` on both its displays, `pmfiles`, `pmgroups`, `pmraw`, `pmstart`, `pmsyntax` and `progdde` differ as the table says, in both engines. All but `diskfree` are a file the base does not have: each claim checked against what the probe or the program it starts opens, and that the file is on the installation and not on the base.
+[[measured]] 23 fixtures differed in the Rust engine before the Program Manager probes were recorded and WinBox's own Program Manager answered on the base. Since, `ddeinst` and `pmatom` agree there whole, and `pmbare` on both its displays, `pmfiles`, `pmgroups`, `pmraw`, `pmstart`, `pmsyntax` and `progdde` differ as the table says. All but `diskfree` are a file the base does not have: each claim checked against what the probe or the program it starts opens, and that the file is on the installation and not on the base.
 
 | Fixture                                  | The file the base does not have                                                                                             | What comes of it                                                                                                                                                                                                                                   |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

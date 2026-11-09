@@ -22,4 +22,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-In both engines as read out; a null pointer answers 1. WinBox's engine keeps no block at 54h of its own (see [[fn:GDI.EngineRealizeFont]]), so only one a driver left there is freed.
+As read out; a null pointer answers 1. WinBox's engine keeps no block at 54h of its own (see [[fn:GDI.EngineRealizeFont]]), so only one a driver left there is freed.

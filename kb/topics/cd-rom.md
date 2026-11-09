@@ -1,7 +1,7 @@
 ---
 kind: topic
 name: CD-ROM drives
-summary: What a Windows 3.1 program sees of a CD-ROM drive under DOSBox — MSCDEX's register calls with and without a disc, a disc's drive as IOCTL and GetDriveType answer for it, an ISO 9660 image's names, stamps, attributes and room, and a disc as a raw image or a cue sheet of tracks — measured, read out of DOSBox's isoDrive and CDROM_Interface_Image, and followed function by function in both engines.
+summary: What a Windows 3.1 program sees of a CD-ROM drive under DOSBox — MSCDEX's register calls with and without a disc, a disc's drive as IOCTL and GetDriveType answer for it, an ISO 9660 image's names, stamps, attributes and room, and a disc as a raw image or a cue sheet of tracks — measured, read out of DOSBox's isoDrive and CDROM_Interface_Image, and followed function by function.
 probes: [mscdex, imgcd, drvioctl, imgbin, imgcue, imgcue2, imgtrk, imgswap]
 ---
 
@@ -12,7 +12,7 @@ Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then 
 - [[measured]] [[probe:mscdex]], with no disc: 1500h answers AL FFh -- installed -- BX 0 drives, CX as it was; 150Bh answers AX 0 and BX ADADh for every drive; 150Ch BX 0217h, version 2.23; 1100h AL FFh.
 - [[measured]] [[probe:imgcd]], a disc as D:: 1500h BX 1, CX 3 (D:, from nought for A:); 150Bh AX 5AD8h for D:, nought for the others.
 - [[read out]] DOSBox installs its own MSCDEX whether or not a disc is mounted (`dos_mscdex.cpp` 1312-1322).
-- Both engines answer these four as DOSBox does, a drive removable and remote counted a CD-ROM ([[topic:drives-and-disks]], "MSCDEX").
+- WinBox answers these four as DOSBox does, a drive removable and remote counted a CD-ROM ([[topic:drives-and-disks]], "MSCDEX").
 
 ## The drive
 
@@ -54,12 +54,12 @@ Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then 
 
 - An ISO 9660 image is `IsoVolume` (`crates/winbox-machine/src/files/iso.rs`) and `ISO9660` (`src/file-systems/iso9660.ts`), each `isoDrive`'s functions by their names: the track found as `LoadIsoFile` finds it, records copied over one another, the 2,048 iterators taken and let go in turn, `lookup`, `FindFirst`, `FindNext`, `GetFileAttr`, `isoFile`'s reads and seeks. Its search is begun by `Volume::find_first` / `ISO9660.findFirst` and carried on through the iterator its record names (`find_from`).
 - WinBox's DOS follows `DOS_MakeName` on an image's drive, a disc's or a FAT's (`dos_name` and `make_name_error` in `crates/winbox-win16/src/dos.rs`), and opens the name it made; a disc's file opened to write alone is refused, and why a file is not opened is told as `DOS_OpenFile` tells it (`open_path`, `open_error`).
-- Both harnesses mount a probe's `iso` images (`image_volume`, `imageDrive`). [[probe:imgcd]] agrees wholly, 91 of 91 records, and [[probe:drvioctl]] 64 of 64, in both engines; [[probe:mscdex]] still 31 of 31.
+- Both harnesses mount a probe's `iso` images (`image_volume`, `imageDrive`). [[probe:imgcd]] agrees wholly, 91 of 91 records, and [[probe:drvioctl]] 64 of 64; [[probe:mscdex]] still 31 of 31.
 - MSCDEX counts a drive removable and remote a CD-ROM, so a disc mounted answers 1500h and 150Bh as `imgcd` recorded.
 - A disc's image is a `CdImage` (`crates/winbox-machine/src/files/cue.rs`, `src/file-systems/cue.ts`), `CDROM_Interface_Image`'s functions by their names: `set_device` / `setDevice` a cue sheet first, then one data track (`load_iso_file`); `load_cue_sheet` line by line as `getline` and `>>` read it; `add_track`; `get_track`; `read_sector`; each file a `BinaryFile` whose failed read fails it for good. An audio track's file is kept and not read, and its length not measured: a track after one is marked not `known`, and no sector is found past it. `IsoVolume::open` / `ISO9660.of(bytes, find)` take a function finding a sheet's files by the names it gives them: both harnesses look beside the sheet, in `oracle/probes/images/`, as `record.mjs` copies them there.
-- [[probe:imgbin]], [[probe:imgcue]], [[probe:imgcue2]] and [[probe:imgtrk]] agree wholly, 91 of 91 records each, in both engines.
+- [[probe:imgbin]], [[probe:imgcue]], [[probe:imgcue2]] and [[probe:imgtrk]] agree wholly, 91 of 91 records each.
 - What a user with discs of their own should know: a sheet of one or more `BINARY` files whose first track is the data track, `MODE1/2352` or `MODE2/2352` -- the common rips, one `.bin` or a `.bin` to a track -- mounts; a lone `.bin` of 2,352-byte sectors mounts as it is. A sheet DOSBox refuses is refused, its line and why said: `line 3: GAME.BIN not found`, `line 1: DOSBox knows no command "ï»¿FILE"` (a byte-order mark; save the sheet without one), `DOSBox knows no track type "MODE2/2048"`. Where the data track is not first -- an enhanced CD, audio first -- there is no volume at sector 16, and the disc is refused as DOSBox refuses it. Audio tracks are not played.
-- The native build mounts a disc as `--mount D:GAME.ISO`, `--mount D:game.cue` or `--mount D:game.bin` (`open_disc`, `crates/winbox-native/src/mounts.rs`), read from its file as sectors are asked for, a sheet's files found as `GetRealFileName` finds them: as named, from the working folder, then beside the sheet. The page mounts a disc from its Drives strip, at the first free letter after the hard disks', takes a `.cue` with the files it names dropped or chosen with it, and remembers a kept program's ([[topic:drives-and-disks]], "The page's drives"); [[probe:imgcd]] reads it there on both engines.
+- The native build mounts a disc as `--mount D:GAME.ISO`, `--mount D:game.cue` or `--mount D:game.bin` (`open_disc`, `crates/winbox-native/src/mounts.rs`), read from its file as sectors are asked for, a sheet's files found as `GetRealFileName` finds them: as named, from the working folder, then beside the sheet. The page mounts a disc from its Drives strip, at the first free letter after the hard disks', takes a `.cue` with the files it names dropped or chosen with it, and remembers a kept program's ([[topic:drives-and-disks]], "The page's drives"); [[probe:imgcd]] reads it there.
 
 ## Installing from a disc
 
@@ -70,7 +70,7 @@ The corpus's `widget` is Maxis' Widget Workshop (1996), a hybrid disc of Mac and
 - [[measured]] The tutorial's sounds, `WID00.AIF` to `WID49.AIF`, are installed as 478 or 510 bytes: the disc's associated-file records, the Mac resource forks, which DOSBox lists under the same names as the files, and `isoDrive` finds first (`readDirEntry` does not look at the associated bit). Both engines read the disc so, and copy the same bytes.
 - [[measured]] It installs so from the image as D: (`crates/winbox-win16/tests/install_widget.rs`): Microsoft's Program Manager the shell, the keys pressed at the clock's marks, every file Windows wrote byte for byte but `REG.DAT` ([[topic:registration-database]], "Not yet done"). Its layer, made with the media `D:\`, drops nothing. The survey (`corpus/reports/widget.json`, alike to its stop) types the same keys; its screens show what Windows' show at each step, Setup's dialogs alike to the eye, but for two: when Win32s' setup says it has failed, Windows still shows InstallShield's blue window behind it where WinBox shows the desktop, and the minimized Program Manager's title at the end is two lines in Windows, one in WinBox.
 
-What the install needed, found on the way and now in both engines:
+What the install needed, found on the way and now:
 
 - [[measured]] A disc's file read whole: `SETUP.EXE` reads files of more than 64 KB from the disc in one read, which each engine cut at 64 KB (`DiscFile.read`, `IsoVolume::read`, now in pieces).
 - [[measured]] [[probe:biosmem]]: `INT 12h` answers 640 KB, and the CMOS's equipment and memory registers through ports 70h and 71h are DOSBox's (14h 26h, 15h-16h 640 KB, 17h-18h and 30h-31h 15,360 KB), which Setup reads before its dialogs (`crates/winbox-win16/src/cmos.rs`).
@@ -90,7 +90,7 @@ DOSBox swaps a drive's discs -- `IMGMOUNT D A.ISO B.ISO` -- with its swap key, C
 - [[measured]] The drive's current folder is kept, `D:\SUB1`, though the second disc has no `SUB1` (`CycleAllDisks`); a relative search there (`D:*.*`) answers error 3, and `SUB1` itself error 2 (4300h).
 - [[measured]] The rest is the second disc's own: its label (`SWAPDISC.2`), its listing, its files by name (`ONLY1.TXT` error 2, `ONLY2.TXT` 21h). What is the drive's stays: 36h, IOCTL 4408h-440Eh, `GetDriveType`'s 4, MSCDEX's 150Bh and 1500h answer as before.
 
-Both engines do the same (`DiscFile`, `crates/winbox-machine/src/files/iso.rs` and `Files::swap` and `FileManager.swap` hand each disc's file open on the drive the disc swapped in, `give_disc` / `giveDisc`), and [[probe:imgswap]] agrees wholly, 96 of 96, in both. Neither the native build nor the page needs more: each swaps through `Files::swap` or `FileManager.swap`. A disc taken out (WinBox's own, [[topic:drives-and-disks]]) leaves a file open on it nothing to read, as a sector not read: DOSBox has no such drive.
+WinBox does the same (`DiscFile`, `crates/winbox-machine/src/files/iso.rs` and `Files::swap` and `FileManager.swap` hand each disc's file open on the drive the disc swapped in, `give_disc` / `giveDisc`), and [[probe:imgswap]] agrees wholly, 96 of 96, in both. Neither the native build nor the page needs more: each swaps through `Files::swap` or `FileManager.swap`. A disc taken out (WinBox's own, [[topic:drives-and-disks]]) leaves a file open on it nothing to read, as a sector not read: DOSBox has no such drive.
 
 ## Not yet done
 
@@ -98,9 +98,9 @@ Both engines do the same (`DiscFile`, `crates/winbox-machine/src/files/iso.rs` a
 - `DOS_MakeName` on a folder's drive, C: among them: both engines take any name there, cut nothing and refuse nothing, where DOSBox does as on an image.
 - MSCDEX's calls that take a buffer (1501h, 1505h, 150Dh, 150Fh, 1510h), which through Windows need DPMI's real-mode calls and memory below 1 MB.
 - CD audio: an audio track is kept, never played; MSCDEX's audio calls and the lengths of tracks in `WAVE`, `MP3` or `OGG` files, which DOSBox measures through `SDL_sound`. A track after such a file has no start known here, where DOSBox has one.
-- A disc of audio tracks alone, which DOSBox mounts as a drive with no files labelled `Audio_CD` (`drive_iso.cpp` 167-174): both engines refuse it.
+- A disc of audio tracks alone, which DOSBox mounts as a drive with no files labelled `Audio_CD` (`drive_iso.cpp` 167-174): WinBox refuses it.
 - `GetRealFileName`'s last try, a sheet's file named as a DOS path through DOSBox's own mounted folders: the native build has no counterpart for an image of the host's, and the page matches the files dropped with the sheet by name (and by the name's last part), without regard to case, where DOSBox on Linux minds it.
 - An image of 2 GB or more: DOSBox's offsets are `int`, both engines' wider.
-- Widget Workshop's last two screens (Installing from a disc, above): InstallShield's window gone before Win32s' setup's error in both engines, and a minimized window's title on one line where Windows wraps it.
+- Widget Workshop's last two screens (Installing from a disc, above): InstallShield's window gone before Win32s' setup's error, and a minimized window's title on one line where Windows wraps it.
 - Win32 programs from a disc, Widget Workshop's `WIDGET.EXE` among them: neither engine has Win32s, nor the DOS session `WinExec` starts for a PE file without it.
 - What MSCDEX says of a disc swapped: its media-changed answer is the device driver's (1510h's IOCTL input, through `GetMediaStatus`, which answers `getSwapRequest()` -- FFh once after the swap key, else 01h, `dos_mscdex.cpp` 806-815), a buffer call neither engine makes. Unrecorded.

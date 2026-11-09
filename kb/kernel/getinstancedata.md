@@ -22,7 +22,7 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-Both engines find a program's or a library's data segment from its instance and copy the bytes.
+WinBox finds a program's or a library's data segment from its instance and copy the bytes.
 
 Not yet done:
 

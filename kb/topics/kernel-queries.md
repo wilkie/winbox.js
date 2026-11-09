@@ -5,7 +5,7 @@ summary: KERNEL's calls about tasks, modules and selectors — its list of tasks
 probes: [ktask, ktask2, thtask, kmore, kevent, reshand, kbreak, mmtaskc, gfreeal]
 ---
 
-KERNEL keeps a database for each task and each module, and many of its small calls just read or write a word of one. Others write a descriptor directly, or do nothing at all in the retail build. Each is [[read out]] of `KRNL386.EXE` and recorded by [[probe:ktask]], which reaches each call by its ordinal through `GetProcAddress`. Both engines agree with all its records but one, KERNEL's own prefix.
+KERNEL keeps a database for each task and each module, and many of its small calls just read or write a word of one. Others write a descriptor directly, or do nothing at all in the retail build. Each is [[read out]] of `KRNL386.EXE` and recorded by [[probe:ktask]], which reaches each call by its ordinal through `GetProcAddress`. WinBox agrees with all its records but one, KERNEL's own prefix.
 
 ## The tasks
 
@@ -37,7 +37,7 @@ winbox.js keeps these beside its own tasks (`crates/winbox-win16/src/task_order.
 
 ## Code segments and the heap
 
-[[fn:KERNEL.GetCodeHandle]] follows a `MakeProcInstance` thunk to its procedure and answers the handle of the code segment it is in, its selector in DX (seg1 `48fa`-`4924`). [[fn:KERNEL.GetCodeInfo]] copies that segment's entry in its module's table, for an address or for a module's handle and a segment's number (seg1 `48bd`-`48f7`). [[fn:KERNEL.GetHeapSpaces]] counts a module's local heap as `LocalCountFree` does (seg2 `1e4d`-`1e98`). [[measured]] [[probe:ktask2]], which agrees in both engines with all its records.
+[[fn:KERNEL.GetCodeHandle]] follows a `MakeProcInstance` thunk to its procedure and answers the handle of the code segment it is in, its selector in DX (seg1 `48fa`-`4924`). [[fn:KERNEL.GetCodeInfo]] copies that segment's entry in its module's table, for an address or for a module's handle and a segment's number (seg1 `48bd`-`48f7`). [[fn:KERNEL.GetHeapSpaces]] counts a module's local heap as `LocalCountFree` does (seg2 `1e4d`-`1e98`). [[measured]] [[probe:ktask2]], which agrees with all its records.
 
 [[fn:KERNEL.SetTaskSignalProc]] exchanges the procedure KERNEL signals for a task (TDB 2Ah). [[fn:KERNEL.SetSwapAreaSize]], [[fn:KERNEL.MemoryFreed]], [[fn:KERNEL.GetLastDiskChange]], [[fn:KERNEL.GlobalLRUOldest]] and [[fn:KERNEL.GlobalLRUNewest]] answer as KERNEL does where nothing is swapped or discarded. [[fn:KERNEL.NoHookDosCall]] is `Dos3Call`'s.
 
@@ -53,7 +53,7 @@ A task's database counts its events at 6. [[fn:KERNEL.PostEvent]] counts one up;
 
 ## The rest of the documented calls
 
-[[measured]] [[probe:kmore]], which agrees whole in both engines:
+[[measured]] [[probe:kmore]], which agrees whole:
 
 - [[fn:KERNEL.GetLPErrMode]] answers a far pointer to the byte at 32Ah of KERNEL's data, one while KERNEL passes a program's DOS call on.
 - [[fn:KERNEL.LONGPTRADD]] moves a pointer on by moving its selector's base, and each of a block's selectors after it.

@@ -14,7 +14,7 @@ topics: [printer-drivers]
 ## Observed behaviour
 
 - [[measured]] The PostScript driver asks it as it enables a device, and the device is enabled ([[probe:prdlg]], [[probe:pric]]).
-- [[measured]] [[probe:pric]] asks the PostScript driver for Arial at -40. The driver realizes it through the engine with a `FONTINFO` to fill, and [[fn:GDI.GetTextMetrics]] and `GetTextFace` answer from it. Both engines agree with all 200 records.
+- [[measured]] [[probe:pric]] asks the PostScript driver for Arial at -40. The driver realizes it through the engine with a `FONTINFO` to fill, and [[fn:GDI.GetTextMetrics]] and `GetTextFace` answer from it. WinBox agrees with all 200 records.
 
 ## Inside Windows
 
@@ -28,7 +28,7 @@ topics: [printer-drivers]
 - [[read out]] Last, the engine's context is set to the font at its escapement ([[fn:GDI.EngineSetFontContext]], `2557`), and bit 1 of what that answers becomes bit 5 of byte 33h.
 - The `TEXTXFORM` is made from the header (`21b6`). Its height is the cell's and its width the average. Its escapement and orientation are the escapement. Its weight, italic, underline and strike-out are the header's, and the rest is nought.
 
-- [[measured]] [[probe:prtteng]]: the fields beyond the header for Arial, Wingdings, Wingdings slanted by GDI and Arial turned agree in both engines: the slot (0 and 12, `WIN.INI`'s order), the em of 2048 units, the spot sizes, the offset, and byte 33h. [[probe:prtt]]'s PostScript driver writes the underline's place and thickness into the document, 50 and -100 in thousandths of the em.
+- [[measured]] [[probe:prtteng]]: the fields beyond the header for Arial, Wingdings, Wingdings slanted by GDI and Arial turned agree: the slot (0 and 12, `WIN.INI`'s order), the em of 2048 units, the spot sizes, the offset, and byte 33h. [[probe:prtt]]'s PostScript driver writes the underline's place and thickness into the document, 50 and -100 in thousandths of the em.
 
 ## Implementation
 

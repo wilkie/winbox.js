@@ -81,9 +81,9 @@ The flags: `FR_DOWN` 1, `FR_WHOLEWORD` 2, `FR_MATCHCASE` 4, `FR_FINDNEXT` 8, `FR
 ## In WinBox
 
 - `crates/winbox-win16/src/commdlg/find_replace.rs` and `crates/winbox-win16/src/commdlg/guest_calls.rs`. The dialogs' procedures are `COMMDLG`'s exports 13 and 14, given to USER at their stubs' addresses.
-- Each call the dialogs make into USER, GDI and KERNEL is made as a program makes it, through `api.rs`, in the same order in both engines ([[topic:common-dialogs]]).
+- Each call the dialogs make into USER, GDI and KERNEL is made as a program makes it, through `api.rs`, in the same order ([[topic:common-dialogs]]).
 - The templates are `COMMDLG`'s, kept as WinBox's own (`crates/winbox-win16/src/commdlg/templates.rs`); a template is put in global memory as `LoadResource` would.
-- [[measured]] [[probe:findrepl]], 629 of 629 records, agrees in both engines, run whole. Notepad's Find runs with no `COMMDLG.DLL` on the drive (`notepads_find_works_with_no_commdlg_file`).
+- [[measured]] [[probe:findrepl]], 629 of 629 records, agrees, run whole. Notepad's Find runs with no `COMMDLG.DLL` on the drive (`notepads_find_works_with_no_commdlg_file`).
 
 ## Not yet done
 

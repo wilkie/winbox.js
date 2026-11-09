@@ -1,13 +1,13 @@
 ---
 kind: topic
 name: DPMI's functions
-summary: What a Windows program gets from INT 31h in each mode — standard mode's DOSX.EXE, read out function by function from its table, with its refusals, its no-ops and the faults that end Windows; 386 enhanced mode's WIN386, as the probes recorded it — and how WinBox answers each, in both engines.
+summary: What a Windows program gets from INT 31h in each mode — standard mode's DOSX.EXE, read out function by function from its table, with its refusals, its no-ops and the faults that end Windows; 386 enhanced mode's WIN386, as the probes recorded it — and how WinBox answers each.
 probes: [enhmode, dpmildt, dpmimem, dpmirm, dpmiexc, dpmigro, dpmigrw, dpminul, dpmiout]
 ---
 
 A Windows program runs on a DPMI host, and can call it itself through INT 31h: the descriptor table, memory, interrupt vectors, exception handlers, calls into real mode and watchpoints. Standard mode's host is `DOSX.EXE`; 386 enhanced mode's is WIN386's virtual machine manager ([[guide:enhanced-mode]]). Few programs call it: KERNEL, which is WinBox, makes most of the calls a program needs. SimTower's 000Bh and 000Ch are the corpus's ([[topic:global-and-local-memory]], "Descriptors through DPMI"), and WATCOM's Win386 supervisor asks 0400h.
 
-Every probe below was recorded in both modes (`record.mjs --mode enhanced`), and every function is answered in both engines by the machine's mode (`crates/winbox-win16/src/dpmi.rs`).
+Every probe below was recorded in both modes (`record.mjs --mode enhanced`), and every function is answered by the machine's mode (`crates/winbox-win16/src/dpmi.rs`).
 
 ## DOSX's table
 

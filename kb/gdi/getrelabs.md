@@ -21,4 +21,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines, the mode and the fill mode as a dword. [[probe:dcinner]] agrees in both.
+The mode and the fill mode as a dword. [[probe:dcinner]] agrees in both.

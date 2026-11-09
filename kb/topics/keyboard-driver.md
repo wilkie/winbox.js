@@ -9,7 +9,7 @@ probes: [kbdrv, kbenable]
 
 ## WinBox's own
 
-WinBox's keyboard module answers them all from the US driver's own tables, made from the installation by `scripts/oracle/keyboard-tables.mjs` ([[guide:without-windows]]). [[measured]] [[probe:kbdrv]] calls every export a program would, and both engines agree with all its records.
+WinBox's keyboard module answers them all from the US driver's own tables, made from the installation by `scripts/oracle/keyboard-tables.mjs` ([[guide:without-windows]]). [[measured]] [[probe:kbdrv]] calls every export a program would, and WinBox agrees with all its records.
 
 - [[read out]] The driver's state is kept in the module's data where the driver keeps it: the type at 0Ch, the Alt numbers [[fn:KEYBOARD.ToAscii]] keeps at 128h and 129h, the SysRq flags at 130h, what [[fn:KEYBOARD.Inquire]] copies at 131h.
 - [[read out]] USER enables the driver as Windows starts, which reads the keyboard's type from `SYSTEM.INI` ([[fn:KEYBOARD.NewTable]]); WinBox lays the state out as the driver is first called.

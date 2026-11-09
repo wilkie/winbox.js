@@ -76,7 +76,7 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`crates/winbox-win16/src/gdi/engine_glyphs.rs`: the extent, with the `FONTINFO` given, which a driver hands on from its own `ExtTextOut`. `crates/winbox-win16/src/gdi/engine_text.rs`: the drawing, the cache laid out from named constants as GDI lays it, its glyphs the rasterizer's ([[fn:GDI.EngineGetGlyphBmp]]'s). The turned string's opaque background and the driver's `StrBlt` path for a driver without `RC_GDI20_OUTPUT` are drawn as read out (`turnedGround`, `byStrBlt`). The count is cut as read out where the stack pointer is known, `EngineExtTextOut`'s (`stackCut`, `stack_cut`); a context of a driver named `MGXWMF.DRV` is flagged as `CreateDC` flags it. [[probe:prttxt]], [[probe:prttx2]] and [[probe:prttstk]] agree in every record, in both engines.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`: the extent, with the `FONTINFO` given, which a driver hands on from its own `ExtTextOut`. `crates/winbox-win16/src/gdi/engine_text.rs`: the drawing, the cache laid out from named constants as GDI lays it, its glyphs the rasterizer's ([[fn:GDI.EngineGetGlyphBmp]]'s). The turned string's opaque background and the driver's `StrBlt` path for a driver without `RC_GDI20_OUTPUT` are drawn as read out (`turnedGround`, `byStrBlt`). The count is cut as read out where the stack pointer is known, `EngineExtTextOut`'s (`stackCut`, `stack_cut`); a context of a driver named `MGXWMF.DRV` is flagged as `CreateDC` flags it. [[probe:prttxt]], [[probe:prttx2]] and [[probe:prttstk]] agree in every record.
 
 ## Not yet done
 

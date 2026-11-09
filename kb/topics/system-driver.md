@@ -9,7 +9,7 @@ probes: [sysdrv]
 
 ## WinBox's own
 
-WinBox keeps a module of its own under the driver's name ([[guide:without-windows]]): it answers each export as the driver does, with KERNEL's and USER's own answers where the driver's are theirs. [[measured]] [[probe:sysdrv]] calls every export, and both engines agree with all 31 records.
+WinBox keeps a module of its own under the driver's name ([[guide:without-windows]]): it answers each export as the driver does, with KERNEL's and USER's own answers where the driver's are theirs. [[measured]] [[probe:sysdrv]] calls every export, and WinBox agrees with all 31 records.
 
 - [[read out]] The timers are kept in the module's data where the driver keeps them, from 18h, so that a handle -- the place's offset -- is what a program gets on Windows. Four places are held by Windows' own as a program starts: COMM.DRV's, DISPLAY's cursor check, KERNEL's and USER's ([[fn:SYSTEM.CreateSystemTimer]]). WinBox does not call those.
 - A program's timer is called at interrupt time, as MMSYSTEM's timer events are ([[topic:multimedia-timer]]): between two of the task's instructions, with AX its handle and DS the driver's data, for each 54.9254-millisecond tick passed.

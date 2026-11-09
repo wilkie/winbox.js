@@ -26,8 +26,8 @@ source: crates/winbox-win16/src/gdi/printer_output.rs
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context a pen or a brush is realized by the driver's `RealizeObject` (`GDI.EXE` seg1 `26e5`, `256f`). A pen's width is made device units, `MulDiv` by the viewport's extent over the window's (`2640`). A brush's `LOGBRUSH` has the background's physical colour after it, and its origin goes as a fifth argument (`2304`, `23a1`). A font is realized as it is first drawn or measured with (seg3 `0a68`). [[measured]] [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context a pen or a brush is realized by the driver's `RealizeObject` (`GDI.EXE` seg1 `26e5`, `256f`). A pen's width is made device units, `MulDiv` by the viewport's extent over the window's (`2640`). A brush's `LOGBRUSH` has the background's physical colour after it, and its origin goes as a fifth argument (`2304`, `23a1`). A font is realized as it is first drawn or measured with (seg3 `0a68`). [[measured]] [[probe:prdraw]], through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 
-Both engines refuse a bitmap for any context that is not a memory context. In the Rust engine that is a `Dc` without `memory` (`crates/winbox-win16/src/gdi/bitmaps.rs`). A WinG context is a memory context in both.
+WinBox refuses a bitmap for any context that is not a memory context. In the Rust engine that is a `Dc` without `memory` (`crates/winbox-win16/src/gdi/bitmaps.rs`). A WinG context is a memory context in both.

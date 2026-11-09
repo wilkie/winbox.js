@@ -117,7 +117,7 @@ Whether the menu bar and the scroll bars were laid out is the window's own flags
 - A maximized window answers as any other, its frame's codes off the screen. Hidden and disabled windows answer as when shown. A child's caption, boxes and frame answer as a window's at the top.
 - A window with `WS_DLGFRAME` and `WS_THICKFRAME` but no border, or with `WS_EX_DLGMODALFRAME` and `WS_THICKFRAME`, has a sizing frame's codes on its outer four pixels, `HTBORDER` inside them, and its client area five pixels in.
 
-winbox.js answers from the read-out in both engines alike (`hitTest` in `hit_test` in `crates/winbox-win16/src/raster_input.rs`), and agrees with all 176 records on each display. The look's `WM_SETCURSOR`, a press's `WM_NCLBUTTONDOWN` -- the caption, its boxes, the menu bar, the frame's edges for the loop that sizes a window ([[topic:window-states]]) -- and the sizing cursors all go by its answer, so there is one geometry. A thin border's pixel, which winbox.js answered `HTBORDER` before, is now `HTNOWHERE`, and a press there is thrown away, as on Windows.
+winbox.js answers from the read-out alike (`hitTest` in `hit_test` in `crates/winbox-win16/src/raster_input.rs`), and agrees with all 176 records on each display. The look's `WM_SETCURSOR`, a press's `WM_NCLBUTTONDOWN` -- the caption, its boxes, the menu bar, the frame's edges for the loop that sizes a window ([[topic:window-states]]) -- and the sizing cursors all go by its answer, so there is one geometry. A thin border's pixel, which winbox.js answered `HTBORDER` before, is now `HTNOWHERE`, and a press there is thrown away, as on Windows.
 
 ## Where a hidden window lies
 

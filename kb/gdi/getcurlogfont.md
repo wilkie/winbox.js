@@ -20,4 +20,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines, the handle of the font selected; nought for a handle that is no device context, where Windows would read whatever the handle's block held. [[probe:dcinner]] agrees in both.
+The handle of the font selected; nought for a handle that is no device context, where Windows would read whatever the handle's block held. [[probe:dcinner]] agrees in both.

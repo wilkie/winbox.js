@@ -31,6 +31,6 @@ topics: [gdi-internals, printing]
 
 ## Implementation
 
-In both engines as read out (`crates/winbox-win16/src/gdi/spooler.rs`). What Print Manager does with the job is Print Manager's. [[probe:gdispool]] agrees in both.
+As read out (`crates/winbox-win16/src/gdi/spooler.rs`). What Print Manager does with the job is Print Manager's. [[probe:gdispool]] agrees in both.
 
 **Recommendation:** done.

@@ -22,4 +22,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines the mode is kept with the rest of what `SaveDC` saves, and a metafile's context records it. [[probe:dcinner]] agrees in both.
+The mode is kept with the rest of what `SaveDC` saves, and a metafile's context records it. [[probe:dcinner]] agrees in both.

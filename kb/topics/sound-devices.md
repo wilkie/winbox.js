@@ -19,7 +19,7 @@ The oracle also has an installation with a Sound Blaster. What its Ad Lib driver
 
 ## Before a driver hears of it
 
-[[measured]] [[probe:mmnodev]] calls every waveform, MIDI and auxiliary function the way MMSYSTEM refuses it, on the installation with no sound driver and on the one with the Sound Blaster. Both engines agree with all 170 of its records on each.
+[[measured]] [[probe:mmnodev]] calls every waveform, MIDI and auxiliary function the way MMSYSTEM refuses it, on the installation with no sound driver and on the one with the Sound Blaster. WinBox agrees with all 170 of its records on each.
 
 - [[measured]] Every call on a handle given 1234h, or nought, answers `MMSYSERR_INVALHANDLE` (5) on both installations -- but [[fn:MMSYSTEM.waveOutMessage]] and its kin, which answer nought -- and leaves the words it would have written as they were.
 - [[measured]] Device 5 answers `MMSYSERR_BADDEVICEID` (2) on both. The mapper's number answers `MMSYSERR_NODRIVER` (6) where no mapper is installed: every kind with no sound driver, MIDI input and the auxiliary devices with the Sound Blaster. A size of nought for capabilities answers nought.
@@ -51,7 +51,7 @@ The media control interface sits above the devices. A program opens a device by 
 
 ## Command tables
 
-An MCI command table is an `RCDATA` resource listing commands and their keywords, which MCI reads to parse a command string. [[measured]] [[probe:mmcmd]] loads tables of its own with [[fn:MMSYSTEM.mciLoadCommandResource]], frees them with [[fn:MMSYSTEM.mciFreeCommandResource]], and opens and closes a waveaudio device between. Both engines agree with all 23 records.
+An MCI command table is an `RCDATA` resource listing commands and their keywords, which MCI reads to parse a command string. [[measured]] [[probe:mmcmd]] loads tables of its own with [[fn:MMSYSTEM.mciLoadCommandResource]], frees them with [[fn:MMSYSTEM.mciFreeCommandResource]], and opens and closes a waveaudio device between. WinBox agrees with all 23 records.
 
 - [[measured]] The first table a program loads is 1: MMSYSTEM's `core` table is loaded first and is nought. A resource with no command, or none of the name, answers FFFFh. A number freed is given again.
 - [[measured]] Opening a waveaudio device loads MCIWAVE's own table and, unless a table of type 20Ah is loaded already, MMSYSTEM's `waveaudio` table; neither can be freed while the device is open. Closing frees both.

@@ -25,6 +25,6 @@ topics: [keyboard-input, menus, system-queue]
 - [[measured]] A key pressed with Alt is `WM_SYSKEYDOWN` with bit 29, and what it types is `WM_SYSCHAR`: Alt and F types `f`, 66h.
 - [[measured]] F10 alone is `WM_SYSKEYDOWN` and `WM_SYSKEYUP`, without bit 29.
 
-winbox.js agrees with all of [[probe:altchild]]'s records, on both engines. The browser's keys go the same way as a program's: both engines make a key a system key by the rules above.
+winbox.js agrees with all of [[probe:altchild]]'s records. The browser's keys go the same way as a program's: WinBox makes a key a system key by the rules above.
 
 BL, the scan code, goes into bits 16 to 23 of `lParam`, and bit 0 of BH, an extended key, into bit 24 (`4b87`, `4c00`); both go into the event a journal record hook is handed ([[topic:system-queue]]). The browser's keys carry none. Not modelled: the character a key types is the US keyboard's, unshifted unless Shift is down, for the letters, the digits, Space and the keys that type a control character.

@@ -22,4 +22,4 @@ topics: [small-queries]
 
 ## Implementation
 
-In both engines as read out, the mark kept with the object; a handle of no object answers nought. What the mark keeps the object from in Windows -- `DeleteObject` and the task's clean-up -- is not followed: WinBox does not free a task's objects as it ends. [[probe:gdimisc]] agrees in both.
+As read out, the mark kept with the object; a handle of no object answers nought. What the mark keeps the object from in Windows -- `DeleteObject` and the task's clean-up -- is not followed: WinBox does not free a task's objects as it ends. [[probe:gdimisc]] agrees in both.

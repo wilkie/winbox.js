@@ -12,7 +12,7 @@ source: crates/winbox-win16/src/kernel_calls/file_cdr.rs
 
 ## Observed behaviour
 
-[[probe:openfile]] calls `OpenFile` with each of its actions and records the answer and the whole `OFSTRUCT`, filled with EEh before each call. Both engines agree with all 38 records.
+[[probe:openfile]] calls `OpenFile` with each of its actions and records the answer and the whole `OFSTRUCT`, filled with EEh before each call. WinBox agrees with all 38 records.
 
 - [[measured]] **The answer is DOS's handle, whatever the action.** With the probe's own file open as handle 5, a file opened is 6, and 7 while another is held open. `OF_EXIST` answers 6 too, the handle it opened and closed, and so does `OF_DELETE`, and `OF_CREATE | OF_EXIST`. winbox.js had answered 1 for `OF_EXIST`. Failing, the answer is `HFILE_ERROR`, -1. `OF_PARSE` answers nought.
 - [[measured]] **The structure of a file opened** (and of a name parsed): `cBytes` is the length of the path and 8, the offset of the path's nought, not the structure's size: 28 for `C:\ORACLE\OFTEST.DAT`. `fFixedDisk` is 1 on drive C:. `nErrCode` is nought. The four reserved bytes are the file's date and time as DOS's function 5700h gives them, the date's word first. `szPathName` is the path made whole, in capitals.

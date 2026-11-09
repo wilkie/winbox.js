@@ -21,4 +21,4 @@ topics: [small-queries]
 
 ## Implementation
 
-In both engines as read out. [[probe:gdimisc]] agrees in both.
+As read out. [[probe:gdimisc]] agrees in both.

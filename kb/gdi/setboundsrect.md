@@ -30,4 +30,4 @@ topics: [drawing-bounds]
 
 ## Implementation
 
-In both engines as read out, with every call that draws taking what it draws in into the bounds ([[topic:drawing-bounds]]). [[probe:bounds]] agrees in both.
+As read out, with every call that draws taking what it draws in into the bounds ([[topic:drawing-bounds]]). [[probe:bounds]] agrees in both.

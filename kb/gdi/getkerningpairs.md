@@ -34,4 +34,4 @@ A pair whose first glyph no code reaches would give GDI an empty string, and its
 
 ## Implementation
 
-As read out, in both engines ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s amounts are a larger font's.
+As read out ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s amounts are a larger font's.

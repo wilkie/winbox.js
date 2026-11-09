@@ -14,7 +14,7 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Observed behaviour
 
-- [[measured]] [[probe:kbdrv]] names every scan code, plain and extended, and both engines agree with every record.
+- [[measured]] [[probe:kbdrv]] names every scan code, plain and extended, and WinBox agrees with every record.
 - A key that types a printable character is that character: `A`, `1`, `\`. The others are named from the driver's lists: `Esc`, `Backspace`, `Num 7`, `Right Shift`; extended `Num Enter`, `Right Ctrl`, `Home`, `Delete`. Scan code 54h is `<00>`, 60h to 67h `F11` to `F18`.
 - With bit 25, "don't care", the right Shift, Ctrl and Alt are named as the left.
 - At most the size given is written, the null among it; the answer is how many characters were copied, but where the name did not fit, the size itself: Backspace in 9 bytes is `Backspac` and 9. A size of 1 writes the null alone and answers 1; nought writes nothing and answers nought.

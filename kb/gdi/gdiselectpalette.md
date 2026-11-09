@@ -24,4 +24,4 @@ USER's `SelectPalette` (`USER.EXE` seg6 `00a2`) passes the background where it w
 
 ## Implementation
 
-In both engines as read out, and USER's `SelectPalette` passes it the background as USER does ([[topic:palettes]]). [[probe:dcinner]] agrees in both on the VGA and the 256-colour display, and [[probe:palreal]] still does.
+As read out, and USER's `SelectPalette` passes it the background as USER does ([[topic:palettes]]). [[probe:dcinner]] agrees in both on the VGA and the 256-colour display, and [[probe:palreal]] still does.

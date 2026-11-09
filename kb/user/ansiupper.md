@@ -30,4 +30,4 @@ topics: [string-collation]
 
 ## Implementation
 
-Subtracts 0x20 from `a`–`z` and from 0xE0–0xFE except 0xF7, leaving everything else. 0xFF is left alone for want of a measurement. A pointer whose first byte the descriptors do not reach answers nought, in both engines.
+Subtracts 0x20 from `a`–`z` and from 0xE0–0xFE except 0xF7, leaving everything else. 0xFF is left alone for want of a measurement. A pointer whose first byte the descriptors do not reach answers nought.

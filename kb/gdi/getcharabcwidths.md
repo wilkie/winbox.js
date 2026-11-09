@@ -29,4 +29,4 @@ topics: [truetype-queries]
 
 ## Implementation
 
-As read out, in both engines, the box and advance being `GetGlyphOutline`'s ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s widths are a larger font's.
+As read out, the box and advance being `GetGlyphOutline`'s ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s widths are a larger font's.

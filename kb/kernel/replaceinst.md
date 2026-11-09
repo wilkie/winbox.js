@@ -20,4 +20,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A retail no-op in both engines, popping six bytes (`nothing`). See [[topic:kernel-internals]].
+A retail no-op, popping six bytes (`nothing`). See [[topic:kernel-internals]].

@@ -66,7 +66,7 @@ Windows can be recorded on one: Microsoft's Super VGA 256-colour driver, `SVGA25
 
 ## GDI's half of selecting and realizing
 
-USER's `SelectPalette` and `RealizePalette` are thin: each decides what USER decides and hands the rest to GDI's own export, which a program may call too. [[measured]] [[probe:dcinner]] calls GDI's on the VGA and the 256-colour display, and both engines agree with every record.
+USER's `SelectPalette` and `RealizePalette` are thin: each decides what USER decides and hands the rest to GDI's own export, which a program may call too. [[measured]] [[probe:dcinner]] calls GDI's on the VGA and the 256-colour display, and WinBox agrees with every record.
 
 - [[read out]] GDI keeps two palettes in its data segment: the one last selected for the foreground, `[480h]`, and the one last realized, `[482h]` (`GDI.EXE` seg22). No palette is the foreground one until one is selected for it.
 - [[read out]] [[fn:GDI.GDISelectPalette]] selects a palette for the foreground or the background. For the foreground, a palette not already GDI's foreground palette becomes it, and none is then the one realized last.

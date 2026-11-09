@@ -22,7 +22,7 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-Both engines swap the pointer in the heap's information, as KERNEL does.
+WinBox swaps the pointer in the heap's information, as KERNEL does.
 
 Not yet done:
 

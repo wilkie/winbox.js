@@ -24,7 +24,7 @@ topics: [dynamic-data-exchange]
 - `WM_USER + CBh`: 1, that it is a client's; with 1, the instance.
 - `WM_USER + CEh`, `CFh`, `D1h`: end it, `DdeEnableCallback`'s command, and a termination left from a synchronous transaction.
 
-[[measured]] [[probe:ddemgmt]]'s conversations, made, queried and ended, agree with Windows in both engines; so do [[probe:ddelist]]'s second acknowledgements, to a conversation alone and in a list.
+[[measured]] [[probe:ddemgmt]]'s conversations, made, queried and ended, agree with Windows; so do [[probe:ddelist]]'s second acknowledgements, to a conversation alone and in a list.
 
 ## Implementation
 

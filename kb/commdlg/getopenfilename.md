@@ -13,7 +13,7 @@ topics: [common-dialogs, file-dialogs]
 
 ## Observed behaviour
 
-[[probe:ofnopen]] opens the box with a hook in a folder of its own, `C:\ORACLE\OFN`, holding `A.TXT`, `B.TXT`, `README`, `C.DOC`, `D.TX` and the folders `SUB` and `ANOTHER`. Its filter is `Text (*.txt)`, `Documents` (`*.doc`) and `All Files`, chosen 2, with a custom filter `Mine` (`*.tx`). It records the controls, what the hook is sent, and the box's state after each of sixteen steps a timer takes. [[probe:ofnerr]] records what the call refuses and the flags it leaves. Both engines agree with all of both probes' records.
+[[probe:ofnopen]] opens the box with a hook in a folder of its own, `C:\ORACLE\OFN`, holding `A.TXT`, `B.TXT`, `README`, `C.DOC`, `D.TX` and the folders `SUB` and `ANOTHER`. Its filter is `Text (*.txt)`, `Documents` (`*.doc`) and `All Files`, chosen 2, with a custom filter `Mine` (`*.tx`). It records the controls, what the hook is sent, and the box's state after each of sixteen steps a timer takes. [[probe:ofnerr]] records what the call refuses and the flags it leaves. WinBox agrees with all of both probes' records.
 
 **The box** ([[measured]]):
 
@@ -59,7 +59,7 @@ topics: [common-dialogs, file-dialogs]
 
 ## Implementation
 
-In both engines, a function at a time as the file runs it, each call into KERNEL, USER and GDI made as the file makes it ([[topic:file-dialogs]]):
+A function at a time as the file runs it, each call into KERNEL, USER and GDI made as the file makes it ([[topic:file-dialogs]]):
 
 - `crates/winbox-win16/src/commdlg/file_dialogs.rs` (the start), `crates/winbox-win16/src/commdlg/file_init.rs` (the procedure, `WM_INITDIALOG`, the subclasses), `crates/winbox-win16/src/commdlg/file_command.rs` (the controls), `crates/winbox-win16/src/commdlg/file_ok.rs` (OK), `crates/winbox-win16/src/commdlg/file_lists.rs` (the lists, the drives, the boxes, the rows), `crates/winbox-win16/src/commdlg/pictures.rs`.
 - `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `file_init.rs`, `file_command.rs`, `file_ok.rs`, `file_lists.rs`, `pictures.rs`, `resources.rs`.

@@ -28,4 +28,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-**Not applicable (c): only `ExitKernel` reaches it.** It undoes what KERNEL did to a real DOS beneath it; WinBox has none, and nothing to give back. Both engines answer a call as a bare return, AX and DX as they were (`nothing` in `retail::nothing`). See [[topic:kernel-internals]].
+**Not applicable (c): only `ExitKernel` reaches it.** It undoes what KERNEL did to a real DOS beneath it; WinBox has none, and nothing to give back. WinBox answers a call as a bare return, AX and DX as they were (`nothing` in `retail::nothing`). See [[topic:kernel-internals]].

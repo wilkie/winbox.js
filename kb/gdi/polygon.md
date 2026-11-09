@@ -26,7 +26,7 @@ topics: [polygon-fill, line-drawing, display-drivers]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context (`GDI.EXE` seg24 `0254`, `0396`), the last point is left off where it is the first, and fewer than two draw nothing and answer 1. The points are mapped and closed, and go to the driver as `OS_ALTPOLYGON` or `OS_WINDPOLYGON` where `dpPolygonalCaps` has `PC_POLYGON` or `PC_WINDPOLYGON`. [[measured]] [[probe:prdraw]] fills a star both ways through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context (`GDI.EXE` seg24 `0254`, `0396`), the last point is left off where it is the first, and fewer than two draw nothing and answer 1. The points are mapped and closed, and go to the driver as `OS_ALTPOLYGON` or `OS_WINDPOLYGON` where `dpPolygonalCaps` has `PC_POLYGON` or `PC_WINDPOLYGON`. [[measured]] [[probe:prdraw]] fills a star both ways through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 

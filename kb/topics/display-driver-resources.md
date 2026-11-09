@@ -86,10 +86,10 @@ With no `OEMBIN`, there is no "Windows Default" to choose. The scheme on the VGA
 ## In winbox.js
 
 - **Rust engine.** A kept module's resources are its file's (`Owner::Kept` in `crates/winbox-win16/src/resources.rs`). `DISPLAY`'s file is the display's own driver (`kept_path`). Before, `GetModuleFileName` answered `VGA.DRV` on every display.
-- **What works.** `FindResource`, `LoadResource`, `LockResource` and `SizeofResource` work on `DISPLAY`'s handle in both engines. `GetProcAddress` of 450 answers nought on the drivers without it, and on `SVGA256.DRV`, `8514.DRV` and `XGA.DRV` the entry, which answers as the driver does (`Display::resource_id`).
+- **What works.** `FindResource`, `LoadResource`, `LockResource` and `SizeofResource` work on `DISPLAY`'s handle. `GetProcAddress` of 450 answers nought on the drivers without it, and on `SVGA256.DRV`, `8514.DRV` and `XGA.DRV` the entry, which answers as the driver does (`Display::resource_id`).
 - **USER's start-up read.** Both engines read the display driver's `OEMBIN` as USER does, once as Windows starts: the one `GetDriverResourceID` answers 1 with, else 1. They take its two thumbs, icon and cursor sizes, Kanji window and borders into the display's metrics, and its 19 colours and the two USER adds as the default colours. `oembinValues`, called from `displayResources`; `oembin_values` and `take_display_oembin` in `crates/winbox-win16/src/display.rs`, called as the first program is loaded. The resource is 2001 on `8514s` and `xga640`, and 1 on every other display. Without the driver's file, as in tests with no installation, the tables per display stand; on all seven drivers they agree with `OEMBIN` 1 exactly, so no probe's answer moved.
 - [[measured]] [[probe:drvres]]: 208 of 208 records on four displays in the Rust engine. [[probe:chrome]], [[probe:sizing]], [[probe:syscol]] and `devcaps` on the 256-colour display agree as before.
-- [[measured]] Control Panel's Color lists "Windows Default" first and writes its colours to `WIN.INI`, in both engines' sessions.
+- [[measured]] Control Panel's Color lists "Windows Default" first and writes its colours to `WIN.INI`' sessions.
 
 ## `GetDriverResourceID`
 
@@ -102,7 +102,7 @@ With no `OEMBIN`, there is no "Windows Default" to choose. The scheme on the VGA
 
 [[read out]] A number plus 2000 can pass 7FFFh, and the OEM bitmaps' do: 32754 becomes 34754. KERNEL finds a number with its top bit set as the resource numbered by the low fifteen bits, so 34754 is found as 1986. The drivers keep the small set of OEM bitmaps there, at 1966 to 1999.
 
-Both engines follow it ([[topic:display-drivers]]):
+WinBox follows it ([[topic:display-drivers]]):
 
 - the `OEMBIN` USER reads as it starts;
 - the OEM bitmaps USER draws with, and `LoadBitmap(NULL, ...)`, keyed by the numbers USER asks for (`bitmapsAsAsked`, `Display::as_asked`);
@@ -113,4 +113,4 @@ Both engines follow it ([[topic:display-drivers]]):
 
 - **The other metrics.** The scroll bars' widths and heights, the caption's, the menu's and the sizing boxes' come from the OEM bitmaps' sizes and the system font, not from `OEMBIN`; both engines still take them from the recorded or read-out tables.
 - **`GetDriverResourceID` on the 256-colour display** is not recorded. `SVGA256.DRV` answers every number as it is at 96 dots an inch, so nothing a program sees there moves.
-- **`OEMBIN` 3 and "FONTS".** GDI makes its stock fonts from them; both engines make the stock fonts from a table of their own, recorded on the VGA ([[probe:text]]). [[read out]] The first entry, Terminal, is 20 rows by 10 in the 8514/a's `OEMBIN` 3 where the VGA's "FONTS" has 12 by 8; the XGA's `OEMBIN` 3 has it 10 rows by 20.
+- **`OEMBIN` 3 and "FONTS".** GDI makes its stock fonts from them; WinBox makes the stock fonts from a table of their own, recorded on the VGA ([[probe:text]]). [[read out]] The first entry, Terminal, is 20 rows by 10 in the 8514/a's `OEMBIN` 3 where the VGA's "FONTS" has 12 by 8; the XGA's `OEMBIN` 3 has it 10 rows by 20.

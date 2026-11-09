@@ -31,7 +31,7 @@ Six probes record what this page reads out, each logging the order of the window
 - [[probe:zcbtins]]: a window made with a `WH_CBT` hook naming the window to put it after.
 - [[probe:zmark]]: the mark to be made topmost or not that `SWP_NOOWNERZORDER` leaves on a window it does not place.
 
-Both engines agree with every record of all six.
+WinBox agrees with every record of all six.
 
 ## The last topmost window
 
@@ -141,8 +141,8 @@ Both engines had made a window put after `#32771` topmost, made only the window 
 
 ## Not yet done
 
-- `MinMaximize` is followed step by step only where [[probe:zminim]], [[probe:minact]] and [[probe:showmin]] look: a window that shows minimized, an icon restored or maximized at the top, and the activation after `SW_MINIMIZE`. Maximizing, minimizing a hidden window or a child, and `ShowWindow` of a hidden window (but `SW_SHOWNA`) are still each engine's older paths in `showRaster` (`show_raster`): they list a window's family with `familyOf` and put it up through `Desktop.show`, which follow the records but not this page's steps. `ActivateWindow` puts the window up in the desktop's list (`Desktop.activate`) before its own `SetWindowPos`, and a press's bringing forward (`bringingForward`) asks and tells its family by hand. `DestroyWindow`'s hiding is `SetWindowPos`'s, 97h, in both engines.
-- `MinMaximize`'s `SW_MINIMIZE` and `SW_SHOWMINNOACTIVE` add `SWP_NOACTIVATE` only where a window is active (`1b65`-`1b6c`); both engines always do.
+- `MinMaximize` is followed step by step only where [[probe:zminim]], [[probe:minact]] and [[probe:showmin]] look: a window that shows minimized, an icon restored or maximized at the top, and the activation after `SW_MINIMIZE`. Maximizing, minimizing a hidden window or a child, and `ShowWindow` of a hidden window (but `SW_SHOWNA`) are still the engine's older paths in `showRaster` (`show_raster`): they list a window's family with `familyOf` and put it up through `Desktop.show`, which follow the records but not this page's steps. `ActivateWindow` puts the window up in the desktop's list (`Desktop.activate`) before its own `SetWindowPos`, and a press's bringing forward (`bringingForward`) asks and tells its family by hand. `DestroyWindow`'s hiding is `SetWindowPos`'s, 97h.
+- `MinMaximize`'s `SW_MINIMIZE` and `SW_SHOWMINNOACTIVE` add `SWP_NOACTIVATE` only where a window is active (`1b65`-`1b6c`); WinBox always does.
 
 ## In winbox.js
 

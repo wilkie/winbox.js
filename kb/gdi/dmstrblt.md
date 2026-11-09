@@ -27,7 +27,7 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-`DMExtTextOut` with nought for the last three, in both engines (`crates/winbox-win16/src/gdi/driver_helpers.rs`). [[probe:gdidmdrw]] agrees.
+`DMExtTextOut` with nought for the last three (`crates/winbox-win16/src/gdi/driver_helpers.rs`). [[probe:gdidmdrw]] agrees.
 
 On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
 

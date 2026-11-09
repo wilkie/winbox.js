@@ -34,7 +34,7 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out. [[probe:gdidmdrw]] agrees in both engines on the three.
+`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out. [[probe:gdidmdrw]] agrees on the three.
 
 On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
 

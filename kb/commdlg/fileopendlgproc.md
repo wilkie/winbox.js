@@ -29,7 +29,7 @@ No program calls it. [[fn:COMMDLG.GetOpenFileName]] gives its far address to `Di
 | `WM_DRAWITEM`       | a row of the folders or drives, its picture beside it (seg2 `4e8a`); answers 1                                                                                                  |
 
 - [[read out]] Anything else answers nought.
-- [[measured]] [[probe:ofnopen]] records what the hook is sent, before `WM_INITDIALOG` too, and the box after sixteen steps: both engines agree with all its records ([[topic:file-dialogs]]).
+- [[measured]] [[probe:ofnopen]] records what the hook is sent, before `WM_INITDIALOG` too, and the box after sixteen steps: WinBox agrees with all its records ([[topic:file-dialogs]]).
 
 ## Nuances
 

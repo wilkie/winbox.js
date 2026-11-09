@@ -24,4 +24,4 @@ topics: [device-context-internals, clip-regions]
 
 ## Implementation
 
-In both engines, the clip region, moved by the context's origin on the screen -- the one [[fn:GDI.SetDCOrg]] set, where it set one -- as a region object the context keeps and refreshes each time it is asked; nought where there is none. A program changing that region does not change the clip region, as it would in Windows. [[probe:dcinner]] agrees in both.
+The clip region, moved by the context's origin on the screen -- the one [[fn:GDI.SetDCOrg]] set, where it set one -- as a region object the context keeps and refreshes each time it is asked; nought where there is none. A program changing that region does not change the clip region, as it would in Windows. [[probe:dcinner]] agrees in both.

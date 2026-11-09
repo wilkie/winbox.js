@@ -26,6 +26,6 @@ topics: [gdi-internals]
 
 ## Implementation
 
-An exact no-op in both engines, popping its word.
+An exact no-op, popping its word.
 
 **Recommendation:** done.

@@ -4,7 +4,7 @@ name: 386 enhanced mode
 summary: A design for a second, separately measured mode of WinBox — Windows 3.1's 386 enhanced mode beside the standard mode the oracle and both engines run today — what a program can see of the difference, how the oracle records it, what WinBox has to build in phases, and the decisions still open.
 ---
 
-This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode in both engines and both front ends, the first of phase 2's answers and phase 3, the DPMI host's functions, are built (2026-11-07), and phase 4's Win386 programs and libraries (2026-11-08); the rest is not. It follows the model of [[guide:launcher]].
+This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode and both front ends, the first of phase 2's answers and phase 3, the DPMI host's functions, are built (2026-11-07), and phase 4's Win386 programs and libraries (2026-11-08); the rest is not. It follows the model of [[guide:launcher]].
 
 The oracle's Windows and both engines run in standard mode (`win /s`): DOSX.EXE is the DPMI host and KRNL386.EXE the kernel. Some programs refuse to run there. Lode Runner: The Legend Returns' setup loads Sierra's `SMACKE16.DLL`, a WATCOM Win386 library. The Win386 supervisor asks DPMI's version (INT 31h function 0400h) and, unless BX's bit 0 says a 32-bit host, shows "Not running on a 386 DPMI implementation" and loads nothing. Real Windows 3.1 in standard mode refuses it the same way, on the owner's disc. Widget Workshop's `WIDGET.EXE` is a Win32 program and needs Win32s, which needs enhanced mode ([[topic:win32s]], [[topic:cd-rom]]). On 2026-11-07 the owner decided to plan 386 enhanced mode as a second mode, measured on its own, with this page first.
 
@@ -130,7 +130,7 @@ Before phase 1, WinBox answered as standard mode does, and as only part of stand
 
 ### Phase 0: the oracle (done, 2026-11-07)
 
-`record.mjs --mode enhanced`, the fixtures under `oracle/fixtures/enhanced/`, [[probe:enhmode]] recorded in both modes, and the sweep of every plain VGA probe above. Nothing in either engine changed.
+`record.mjs --mode enhanced`, the fixtures under `oracle/fixtures/enhanced/`, [[probe:enhmode]] recorded in both modes, and the sweep of every plain VGA probe above. Nothing changed.
 
 ### Phase 1: a machine's mode (done, 2026-11-07)
 
@@ -140,7 +140,7 @@ Before phase 1, WinBox answered as standard mode does, and as only part of stand
 - **The replay.** A recording in `oracle/fixtures/enhanced/` is replayed on a machine in enhanced mode, under its folder's name: `enhanced/<name>` in `kb/data/conformance.json`, in the conformance suite's test names, in `KNOWN_GAPS` (`enhanced/<probe>:<function>` before `<probe>:<function>`) and in the Rust replay's trials (`crates/winbox-win16/tests/conformance.rs`), which holds every one of them to its records or a named gap.
 - **Measured:** nothing a standard-mode machine answers changed but INT 2Fh 1686h (below); the corpus is unchanged.
 
-**Registered.** `enhanced/winflags`, `enhanced/dpmiver` and `enhanced/about` agree whole in both engines. `enhanced/freemem` agrees but for `GetFreeSpace`, as in standard mode (the program's own segments). [[probe:enhmode]] is run whole in both modes: in standard mode 92 of its 99 records agree, in enhanced 89 of 106, in both engines; what is left is 000Dh's descriptors, DOS's version and the interrupt flag (phase 3, below), the segments' limits and `GetFreeSpace` as above, and in enhanced mode WIN386's devices. [[probe:galimit]] in enhanced mode agrees but for three records (KERNEL's descriptor table growing, [[topic:global-and-local-memory]], "How much there is"), and `kconst` but for the order of the first megabyte's selectors. Those two are not registered yet: the knowledge base's pages hold every fixture of a probe to their "exact", and those pages were measured in standard mode.
+**Registered.** `enhanced/winflags`, `enhanced/dpmiver` and `enhanced/about` agree whole. `enhanced/freemem` agrees but for `GetFreeSpace`, as in standard mode (the program's own segments). [[probe:enhmode]] is run whole in both modes: in standard mode 92 of its 99 records agree, in enhanced 89 of 106; what is left is 000Dh's descriptors, DOS's version and the interrupt flag (phase 3, below), the segments' limits and `GetFreeSpace` as above, and in enhanced mode WIN386's devices. [[probe:galimit]] in enhanced mode agrees but for three records (KERNEL's descriptor table growing, [[topic:global-and-local-memory]], "How much there is"), and `kconst` but for the order of the first megabyte's selectors. Those two are not registered yet: the knowledge base's pages hold every fixture of a probe to their "exact", and those pages were measured in standard mode.
 
 ### Phase 2: the answers that follow the mode
 
@@ -148,7 +148,7 @@ Before phase 1, WinBox answered as standard mode does, and as only part of stand
 
 - **Measured by:** [[probe:dpmiver]], [[probe:winflags]] and [[probe:enhmode]] in both modes, then the sweep's other differing probes one by one: [[probe:freemem]] and [[probe:galimit]] for memory, [[probe:mmtime]] and [[probe:sysdrv]] for TIMER, [[probe:kintrnl]] for WinOldAp's hooks, [[probe:selalias]] for `AllocSelector`. Where only selector numbers and stack offsets differ, WinBox follows them only if a program is found to depend on them.
 
-**The first answers (done, 2026-11-07),** in both engines, by the machine's mode:
+**The first answers (done, 2026-11-07),**, by the machine's mode:
 
 - `GetWinFlags` and `__WINFLAGS`: `0C29h` in enhanced mode, `WF_ENHANCED|WF_PAGING` for `WF_STANDARD`, the coprocessor's bit still the machine's (`winFlags`, `System::win_flags`). What reads them follows: the About box's mode line ([[probe:about]]), and MMSYSTEM's stacks, whose read-out branches on `WF_ENHANCED` already ([[topic:multimedia-services]]).
 - INT 2Fh: 1600h AX `0A03h` and 1683h AX `1600h`, BX 1, in enhanced mode, left in standard mode; 1686h AX nought in both modes, as [[probe:enhmode]] recorded in both (before, WinBox left it); 1684h none for every device, as WinBox has none of WIN386's; 160Ah left (`multiplexInterrupt`, `multiplex_interrupt`).
@@ -160,8 +160,8 @@ Before phase 1, WinBox answered as standard mode does, and as only part of stand
 
 DPMI 0.9's functions, each as its mode's host answers it: DOSX's table in standard mode, with its refusals, its no-ops and the faults that end Windows, and WIN386's answers in enhanced. Most of them are the same in both, so this phase serves standard mode as much as enhanced. Today's programs reach DPMI through KERNEL, which WinBox is, so few call INT 31h themselves. SimTower's 000Bh and 000Ch are the exception, and the Win386 supervisor is the next.
 
-- **Built,** in both engines, by the machine's mode (`crates/winbox-win16/src/dpmi.rs`): every function of DOSX's table as its handler does it, read out, and every function WIN386 was recorded answering, as recorded ([[topic:dpmi-functions]]). Descriptors come from the list KERNEL's come from. A program's exception handlers and protected-mode vectors are called by the processor's faults and `INT`s before WinBox's own, on the host's stack, returning to stubs of the host's code; a call into real mode reaches a callback of the program's or an interrupt WinBox's DOS or BIOS answers. Where DOSX faults, the session ends.
-- **Measured by:** [[probe:enhmode]] whole in both modes, and [[probe:dpmildt]], [[probe:dpmimem]], [[probe:dpmirm]], [[probe:dpmiexc]], [[probe:dpmigro]], [[probe:dpmigrw]], [[probe:dpminul]] and [[probe:dpmiout]], each recorded in both modes and replayed whole in both engines. The last four agree whole; the rest but for what the topic's "Not yet done" names. The corpus is unchanged: SimTower's 000Bh and 000Ch are answered as before.
+- **Built,**, by the machine's mode (`crates/winbox-win16/src/dpmi.rs`): every function of DOSX's table as its handler does it, read out, and every function WIN386 was recorded answering, as recorded ([[topic:dpmi-functions]]). Descriptors come from the list KERNEL's come from. A program's exception handlers and protected-mode vectors are called by the processor's faults and `INT`s before WinBox's own, on the host's stack, returning to stubs of the host's code; a call into real mode reaches a callback of the program's or an interrupt WinBox's DOS or BIOS answers. Where DOSX faults, the session ends.
+- **Measured by:** [[probe:enhmode]] whole in both modes, and [[probe:dpmildt]], [[probe:dpmimem]], [[probe:dpmirm]], [[probe:dpmiexc]], [[probe:dpmigro]], [[probe:dpmigrw]], [[probe:dpminul]] and [[probe:dpmiout]], each recorded in both modes and replayed whole. The last four agree whole; the rest but for what the topic's "Not yet done" names. The corpus is unchanged: SimTower's 000Bh and 000Ch are answered as before.
 - [[inferred]] WinBox's memory is not paged. Locking, page attributes and the paging file's size are answered as the hosts answer them, without a pager behind them, as WinBox's other machine figures are.
 
 ### Phase 4: 32-bit programs (Win386 first)
@@ -169,12 +169,12 @@ DPMI 0.9's functions, each as its mode's host answers it: DOSX's table in standa
 What the Win386 supervisor and the programs it runs need, measured one call at a time with the Win386 probes ([[topic:win386]]):
 
 1. **Build support (done, 2026-11-08).** `build-probes.mjs` builds `oracle/probes/win386/*.c` with `wcc386`, links them `system win386` and binds each with `wbind`, a library `<name>.dll.c` with `wbind -d` (`buildWin386`), into `oracle/build/win386/`; a source defining `PROBE_WIN16` is a 16-bit program. `fetch-toolchain.mjs` extracts `binw/win386.ext`, `binw/w386dll.ext` and `lib386/` with the rest, from the Open Watcom 2.0 package it already fetches. `record.mjs` reads that folder only with `--mode enhanced`, and refuses a Win386 probe named without it: a plain run never meets the supervisor's box.
-2. **The supervisor's calls (done).** Read out from the bound supervisor and made again one at a time by [[probe:w386dpmi]]; what it leaves the 32-bit code recorded by [[probe:w386env]]. WIN386 answers every one; both engines answer as it does, with phase 3's host.
+2. **The supervisor's calls (done).** Read out from the bound supervisor and made again one at a time by [[probe:w386dpmi]]; what it leaves the 32-bit code recorded by [[probe:w386env]]. WIN386 answers every one; WinBox answers as it does, with phase 3's host.
 3. **The processor (done).** A 32-bit stack (the B bit) in the Rust core, which left it to its host; segments of 4 GiB in the Rust core; a linear address wrapping at 4 GiB. Held to the hardware vectors, all 941 of the 80386's files and the 80286's, as before.
-4. **A library as well as a program (done).** [[probe:w386lib]] loads a Win386 library of its own and calls its 32-bit code. Lode Runner's setup, on the owner's disc, now loads `SMACKE16.DLL` and draws Sierra Setup's main menu in both engines; on the way, `GetProcAddress` compares a name as KERNEL does, `FindResource` reads `#164` as a number, and the Rust engine's `GetExePtr` takes a module's own handle where two modules share a name ([[topic:win386]]).
+4. **A library as well as a program (done).** [[probe:w386lib]] loads a Win386 library of its own and calls its 32-bit code. Lode Runner's setup, on the owner's disc, now loads `SMACKE16.DLL` and draws Sierra Setup's main menu; on the way, `GetProcAddress` compares a name as KERNEL does, `FindResource` reads `#164` as a number, and the Rust engine's `GetExePtr` takes a module's own handle where two modules share a name ([[topic:win386]]).
 5. **Win32s** after that, a project of its own ([[topic:win32s]]): `W32SYS.DLL` refuses anything but enhanced mode with virtual memory.
 
-**Registered.** `enhanced/w386ver`, `enhanced/w386dpmi` and `enhanced/w386lib` agree whole in both engines; `enhanced/w386env` but for its GS's limit, a program's data segment's ([[topic:global-and-local-memory]], "Not yet done").
+**Registered.** `enhanced/w386ver`, `enhanced/w386dpmi` and `enhanced/w386lib` agree whole; `enhanced/w386env` but for its GS's limit, a program's data segment's ([[topic:global-and-local-memory]], "Not yet done").
 
 ### Out of scope: DOS sessions
 

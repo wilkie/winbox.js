@@ -29,7 +29,7 @@ The documentation relied on:
 
 What WinBox's does not do yet is left to the file where it is on the drive (`fileFirst`, `or_file`): [[fn:OLECLI.OleLockServer]] and [[fn:OLECLI.OleUnlockServer]] of an object not WinBox's. The object the file makes is used through its own method table thereafter, as every `Ole` function uses an object, in a document of WinBox's. With no file, those are refused.
 
-It is kept only once a program loads it (`keepOnLoad`, `own_modules::keep_on_load`): a kept module takes two descriptors, and one kept as Windows starts would move every selector every program is given. A session that never loads OLE is as it was. What the file does as it loads -- the seven clipboard formats of OLE's protocol, its two window classes `OleDocWndClass` and `OleSrvrWndClass`, thirteen atoms -- WinBox's does as a program first calls it, the same in both engines. Its data goes with its library.
+It is kept only once a program loads it (`keepOnLoad`, `own_modules::keep_on_load`): a kept module takes two descriptors, and one kept as Windows starts would move every selector every program is given. A session that never loads OLE is as it was. What the file does as it loads -- the seven clipboard formats of OLE's protocol, its two window classes `OleDocWndClass` and `OleSrvrWndClass`, thirteen atoms -- WinBox's does as a program first calls it, the same. Its data goes with its library.
 
 ### Documents and objects
 

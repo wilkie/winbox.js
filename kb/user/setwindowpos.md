@@ -107,7 +107,7 @@ _Saved bits._ [[read out]] A window placed with `SWP_SHOWWINDOW` and without `SW
 - **What a change uncovers is drawn again.** A window brought up from beneath another is sent `WM_NCPAINT` and `WM_ERASEBKGND` at once, and `WM_PAINT` for that other's place. A window sent to the bottom leaves each window it covered the same.
 - **Children without `WS_CLIPSIBLINGS` are not drawn again** for being put in front of their brothers or behind: they draw over one another.
 
-winbox.js agrees with all 72 records of `swpbits` and all 78 of `swporder` on both engines. Both engines had repainted a moved window whole. Worse, they had held its paint to its old place, so a window dragged by its caption showed only where its old and new places met. Of the windows to go after, they had followed only `HWND_TOP`.
+winbox.js agrees with all 72 records of `swpbits` and all 78 of `swporder`. Both engines had repainted a moved window whole. Worse, they had held its paint to its old place, so a window dragged by its caption showed only where its old and new places met. Of the windows to go after, they had followed only `HWND_TOP`.
 
 ### Showing a window
 
@@ -118,7 +118,7 @@ winbox.js agrees with all 72 records of `swpbits` and all 78 of `swporder` on bo
 - **It is drawn at once**: `WM_NCPAINT` with 1 and `WM_ERASEBKGND` come before `WM_WINDOWPOSCHANGED`.
 - **Already where it was asked to go, it is told so**: `WM_WINDOWPOSCHANGED` has `SWP_NOZORDER` added, though `WM_WINDOWPOSCHANGING` did not (seg7 `0e09`-`0e38`, `1184`).
 
-winbox.js agrees with these records on both engines. It had made every window shown so active, and brought it to the very front. [[topic:creating-and-showing]] has what is not yet followed.
+winbox.js agrees with these records. It had made every window shown so active, and brought it to the very front. [[topic:creating-and-showing]] has what is not yet followed.
 
 ## Implementation
 

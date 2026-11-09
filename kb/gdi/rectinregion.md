@@ -22,4 +22,4 @@ topics: [regions]
 
 ## Implementation
 
-In both engines as read out; the caller is the module whose code segment called. [[probe:regions]] and [[probe:gdimisc]] agree in both.
+As read out; the caller is the module whose code segment called. [[probe:regions]] and [[probe:gdimisc]] agree in both.

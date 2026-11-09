@@ -30,4 +30,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-**Not applicable (c): only Windows' own end reaches it.** Both engines answer a call as WinBox's own end of the session, as its `ExitWindows` ends it: the calling task ended (`ExitKernel` in `exit_kernel` in `crates/winbox-win16/src/kernel_calls/internals.rs`). The code to leave DOS with, and the restart for 43h, have no DOS or machine beneath WinBox to go to. See [[topic:kernel-internals]].
+**Not applicable (c): only Windows' own end reaches it.** WinBox answers a call as WinBox's own end of the session, as its `ExitWindows` ends it: the calling task ended (`ExitKernel` in `exit_kernel` in `crates/winbox-win16/src/kernel_calls/internals.rs`). The code to leave DOS with, and the restart for 43h, have no DOS or machine beneath WinBox to go to. See [[topic:kernel-internals]].

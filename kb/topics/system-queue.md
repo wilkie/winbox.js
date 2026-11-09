@@ -24,7 +24,7 @@ probes:
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
 
-Everything here is [[read out]] of `USER.EXE` unless marked; the offsets are seg1's. [[probe:sysq]], [[probe:jrnlrec]], [[probe:jrnlplay]] and [[probe:inhook]] put their input in through USER's own `KEYBD_EVENT` and `MOUSE_EVENT`, as the drivers do, before taking any of it, and both engines agree with all 32 of their records.
+Everything here is [[read out]] of `USER.EXE` unless marked; the offsets are seg1's. [[probe:sysq]], [[probe:jrnlrec]], [[probe:jrnlplay]] and [[probe:inhook]] put their input in through USER's own `KEYBD_EVENT` and `MOUSE_EVENT`, as the drivers do, before taking any of it, and WinBox agrees with all 32 of their records.
 
 ## Putting an event in
 
@@ -111,7 +111,7 @@ A press that may not be a double click -- in the client area of a class without 
 - A width of 1, or of nought, or a height of 1: the half is nought, the rectangle empty, and no press is a double click, not even at the same point. A width of 5 is 4's.
 - Through `MOUSE_EVENT`, at once, at the same point: a double click; two pixels to the right: not.
 
-Both engines agree with all 16 records. Before, a press was made a double click as it was put in -- by the page's own count of clicks, or by `MOUSE_EVENT` at the same point within the time -- whatever window it came to.
+WinBox agrees with all 16 records. Before, a press was made a double click as it was put in -- by the page's own count of clicks, or by `MOUSE_EVENT` at the same point within the time -- whatever window it came to.
 
 ## Hooks on the way
 
@@ -183,13 +183,13 @@ The computer-based training hooks, `WH_CBT`, are told as a key or a mouse event 
 - A click on `A` with no mouse hook: nothing. With one: the press and the release, each told `c6` with its message, `A`, `HTCLIENT` and the point (129, 123), after the mouse hook has it with nought and before `A` is handed it.
 - The mouse hook answering 1 for the press as it is looked at: the CBT hook is told of the press there and then.
 
-Both engines agree with all eleven records. Before, the CBT hooks were kept and never called.
+WinBox agrees with all eleven records. Before, the CBT hooks were kept and never called.
 
 ### While USER's system error box is up
 
 [[read out]] [[fn:USER.SysErrorBox]] sets the word at `0E0h` (`9350`-`9359`), makes the desktop window the system-modal window, and gives it the capture and the focus (`9392`-`93d3`); its loop takes each message with `PeekMessage` for the desktop window, `PM_REMOVE | PM_NOYIELD` (`9759`-`9768`). So while it is up the keyboard and mouse hooks are not called and the CBT hooks are told of nothing skipped (`32de`, `2e6e`), the journal hooks are not called (the system-modal window, `4e42`), and the message hooks are handed each message the box takes, as `PeekMessage` hands any ([[topic:hooks]]). The word is put back as the box goes (`9a79`).
 
-[[measured]] [[probe:sebhook]] puts in a keyboard, a mouse, a CBT and a message hook for its own task and a journal record hook, and calls `SysErrorBox`; Enter is pressed at the box from outside. While it is up only the message hook is called, with `WM_KEYDOWN` and `WM_KEYUP`, code nought; the box answers 1. X pressed through `KEYBD_EVENT` once it is gone: the journal hook, the keyboard hook, the CBT hook's `HCBT_KEYSKIPPED` and the message hook, for the press and for the release, as before it. Both engines agree with all three records. winbox.js's box takes the keyboard and the mouse from the page straight; it now hands each message to the message hooks before it reads it, a key's `lParam` as the key would have had, a press's the point.
+[[measured]] [[probe:sebhook]] puts in a keyboard, a mouse, a CBT and a message hook for its own task and a journal record hook, and calls `SysErrorBox`; Enter is pressed at the box from outside. While it is up only the message hook is called, with `WM_KEYDOWN` and `WM_KEYUP`, code nought; the box answers 1. X pressed through `KEYBD_EVENT` once it is gone: the journal hook, the keyboard hook, the CBT hook's `HCBT_KEYSKIPPED` and the message hook, for the press and for the release, as before it. WinBox agrees with all three records. winbox.js's box takes the keyboard and the mouse from the page straight; it now hands each message to the message hooks before it reads it, a key's `lParam` as the key would have had, a press's the point.
 
 ### The hardware hooks
 
@@ -267,7 +267,7 @@ So the program that took an event lets the input go at its next look where nothi
 - Letting go: 1, no message; the focus, the active window and the capture `W` again, no system-modal window, the clip as it was, and no task locked. Then `C` answers.
 - `EnableHardwareInput(0)` answers 1, and X put in reaches no window. Locked to `L` meanwhile, X reaches `L`; let go, it is lost again. `EnableHardwareInput(1)` answers nought, and X reaches `W`.
 
-Before, all five were stubs in both engines.
+Before, all five were stubs.
 
 ## Keys the queue takes for itself
 

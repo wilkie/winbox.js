@@ -22,4 +22,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-Both engines walk the free list in the segment, as KERNEL does.
+WinBox walks the free list in the segment, as KERNEL does.

@@ -23,4 +23,4 @@ winbox.js had answered the colour before in its own form, -1 for white. It agree
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context (`GDI.EXE` seg1 `1476`), the driver's `ColorInfo` makes the colour physical, and GDI keeps that in the `DRAWMODE` (`1526`). A hatched brush selected is selected again where the physical colour changed, and so realized for it (`1556`-`1575`). `SetTextColor` keeps the text's the same way (`14dc`). [[measured]] [[probe:prdraw]]: text on grey and a hatched brush through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context (`GDI.EXE` seg1 `1476`), the driver's `ColorInfo` makes the colour physical, and GDI keeps that in the `DRAWMODE` (`1526`). A hatched brush selected is selected again where the physical colour changed, and so realized for it (`1556`-`1575`). `SetTextColor` keeps the text's the same way (`14dc`). [[measured]] [[probe:prdraw]]: text on grey and a hatched brush through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].

@@ -33,4 +33,4 @@ topics: [kernel-internals, dynamic-link-libraries]
 
 ## Implementation
 
-**Implemented (a).** Both engines answer the handle in AX and its block's selector in DX, or nought (`PatchCodeHandle` in `crates/winbox-win16/src/kernel_calls/internals.rs`). WinBox's loader patches each code segment's prologues as it loads the module, as KERNEL's loader calls this for each segment it loads (`patchPrologues`, `patch_prologues`), so a call finds nothing left to patch. See [[topic:kernel-internals]].
+**Implemented (a).** WinBox answers the handle in AX and its block's selector in DX, or nought (`PatchCodeHandle` in `crates/winbox-win16/src/kernel_calls/internals.rs`). WinBox's loader patches each code segment's prologues as it loads the module, as KERNEL's loader calls this for each segment it loads (`patchPrologues`, `patch_prologues`), so a call finds nothing left to patch. See [[topic:kernel-internals]].

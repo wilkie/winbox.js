@@ -18,7 +18,7 @@ No program calls it. [[fn:COMMDLG.FindText]] gives its far address to `CreateDia
 - [[read out]] It finds its data by the dialog's property A000h, four bytes holding the structure's address (`COMMDLG.DLL` seg5 `037c`). With the property, a message goes first to the program's hook, and an answer not nought is the procedure's answer.
 - [[read out]] `WM_INITDIALOG` sets the dialog up from the structure's flags and text, gives the hook the message last, and shows the dialog with `SW_SHOWNORMAL` ([[topic:find-and-replace]]).
 - [[read out]] `WM_COMMAND` from Find Next writes the structure and sends the owner `FINDMSGSTRING`'s message; Cancel ends the dialog; Help sends the owner `HELPMSGSTRING`'s message; the text's `EN_CHANGE` enables Find Next. `WM_CLOSE` is taken as Cancel.
-- [[measured]] [[probe:findrepl]] records what the owner is told, what the hook is given, and every control's state as the dialog is used with the keys: every record is as read out, and both engines agree with all 629.
+- [[measured]] [[probe:findrepl]] records what the owner is told, what the hook is given, and every control's state as the dialog is used with the keys: every record is as read out, and WinBox agrees with all 629.
 
 ## Nuances
 

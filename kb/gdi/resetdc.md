@@ -24,4 +24,4 @@ topics: [device-context-internals, printing]
 
 ## Implementation
 
-In both engines, nought: for the display's contexts as Windows answers, and for WinBox's own printer, which answers no `QUERYESCSUPPORT`. A Windows printer driver's from the drive is not followed and answers nought too ([[topic:device-context-internals]]). [[probe:dcinner]] agrees in both.
+Nought: for the display's contexts as Windows answers, and for WinBox's own printer, which answers no `QUERYESCSUPPORT`. A Windows printer driver's from the drive is not followed and answers nought too ([[topic:device-context-internals]]). [[probe:dcinner]] agrees in both.

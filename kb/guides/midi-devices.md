@@ -130,7 +130,7 @@ Synthesis can't be checked against a recording of Windows: DOSBox's synthesizers
 ## The order of the work
 
 1. **Read out `MPU401.DRV`** and record the probes: what it writes, under each setup.
-2. **The MPU-401 port** in both engines, with the recorder sink, until the bytes agree with DOSBox's.
+2. **The MPU-401 port**, with the recorder sink, until the bytes agree with DOSBox's.
 3. **The SoundFont sink**, since it needs nothing of Roland's or Microsoft's, and the mixer that adds its audio to the speaker's.
 4. **The MT-32 sink**, with ROM identification.
 5. **Host MIDI**, native, then Web MIDI.

@@ -40,9 +40,9 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out; a compressed DIB set as export 501 sets it (`rleSet`, `rle_set`, walking as `crates/winbox-win16/src/gdi/rle_runs.rs` walk), and got answers nought. [[probe:gdidmdrw]] agrees in both engines on the three, and [[probe:gdidmrle]] on the VGA.
+`crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out; a compressed DIB set as export 501 sets it (`rleSet`, `rle_set`, walking as `crates/winbox-win16/src/gdi/rle_runs.rs` walk), and got answers nought. [[probe:gdidmdrw]] agrees on the three, and [[probe:gdidmrle]] on the VGA.
 
-On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. A null translation table is read as noughts. [[probe:gdidmdib]], a translation table of its own, agrees in both engines: a get of 1, 4, 8 and 24 bits from both formats, and a set of 24 bits through `DeviceColorMatch`. A compressed DIB set by `15ac`'s walk (`rleSet`, `rle_set`), [[probe:gdidmrle]] agreeing in both engines.
+On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. A null translation table is read as noughts. [[probe:gdidmdib]], a translation table of its own, agrees: a get of 1, 4, 8 and 24 bits from both formats, and a set of 24 bits through `DeviceColorMatch`. A compressed DIB set by `15ac`'s walk (`rleSet`, `rle_set`), [[probe:gdidmrle]] agreeing.
 
 ## Not yet done
 

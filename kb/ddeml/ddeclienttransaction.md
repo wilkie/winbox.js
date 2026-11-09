@@ -14,7 +14,7 @@ topics: [ddeml-transactions, program-manager-dde]
 
 ## Observed behaviour
 
-[[probe:ddexact]] makes every kind of transaction against a DDEML server of its own, synchronously and asynchronously; [[probe:progdde]] sends Program Manager its execute strings and requests through it. Both engines agree with all 92 records of [[probe:ddexact]], WinBox's own DDEML answering.
+[[probe:ddexact]] makes every kind of transaction against a DDEML server of its own, synchronously and asynchronously; [[probe:progdde]] sends Program Manager its execute strings and requests through it. WinBox agrees with all 92 records of [[probe:ddexact]], WinBox's own DDEML answering.
 
 - [[measured]] A request answers a data handle; a poke, an execute, an advise start or stop answers 1; anything refused, busy or timed out answers nought, with the reason in [[fn:DDEML.DdeGetLastError]]: `DMLERR_NOTPROCESSED`, `DMLERR_BUSY`, `DMLERR_DATAACKTIMEOUT` and the like. The table is on [[topic:ddeml-transactions]].
 - [[measured]] `pdwResult` gets the acknowledgement's status in its low word, and its high word is left as it was: AAAAAAAAh becomes AAAA8000h for a poke acknowledged. A request answered with data does not write it.

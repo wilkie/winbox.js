@@ -88,7 +88,7 @@ probes: [ofnopen, ofnerr, ftitle]
 
 ## WinBox's own
 
-The file dialogs are WinBox's own, with [[fn:COMMDLG.GetFileTitle]] and [[fn:COMMDLG.CommDlgExtendedError]]. [[probe:ofnopen]], [[probe:ofnerr]] and [[probe:ftitle]] record them, and both engines agree with all their records.
+The file dialogs are WinBox's own, with [[fn:COMMDLG.GetFileTitle]] and [[fn:COMMDLG.CommDlgExtendedError]]. [[probe:ofnopen]], [[probe:ofnerr]] and [[probe:ftitle]] record them, and WinBox agrees with all their records.
 
 - **The templates are WinBox's own**: Open and Save As's box, 1536, and the box for several files, 1537, built into the engines with COMMDLG's strings. A program's template, named or by handle, is used in their place as COMMDLG uses one.
 - **The procedures** are WinBox's stubs for entries 6 and 7, `FileOpenDlgProc` and `FileSaveDlgProc`, and the subclasses of the folders' list and OK are entries 29 and 31, `dwLBSubclass` and `dwOKSubclass`. A program that asks [[fn:KERNEL.GetProcAddress]] for them gets those.

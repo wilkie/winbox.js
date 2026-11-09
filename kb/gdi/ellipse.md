@@ -27,7 +27,7 @@ topics: [ellipses, polygon-fill, non-square-pixels]
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context the curves go to the driver (`GDI.EXE` seg9 `02c4`). The corners are mapped and put in order, and the right and bottom are brought in by one. A driver whose `dpCurveCaps` has what the curve, the pen and the brush need is given `OS_ELLIPSE` with the corners, or `OS_CIRCLE` where the sides are as long by the aspects and it has `CC_CIRCLES` (`05ff`). [[measured]] [[probe:prdraw]]: an ellipse inside its frame and a circle through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context the curves go to the driver (`GDI.EXE` seg9 `02c4`). The corners are mapped and put in order, and the right and bottom are brought in by one. A driver whose `dpCurveCaps` has what the curve, the pen and the brush need is given `OS_ELLIPSE` with the corners, or `OS_CIRCLE` where the sides are as long by the aspects and it has `CC_CIRCLES` (`05ff`). [[measured]] [[probe:prdraw]]: an ellipse inside its frame and a circle through the PostScript driver; WinBox agrees. See [[topic:printer-drivers]].
 
 ## Implementation
 

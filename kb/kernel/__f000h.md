@@ -19,4 +19,4 @@ topics: [exported-constants]
 
 ## Implementation
 
-The selector is one of the nine below the interrupt descriptor table's, which no block is given, and its base is in the megabyte winbox.js keeps for the first megabyte at FFE00000h. Both engines write it where a program imports it, as KERNEL's loader writes a constant. See [[topic:exported-constants]].
+The selector is one of the nine below the interrupt descriptor table's, which no block is given, and its base is in the megabyte winbox.js keeps for the first megabyte at FFE00000h. WinBox writes it where a program imports it, as KERNEL's loader writes a constant. See [[topic:exported-constants]].

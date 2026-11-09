@@ -7,7 +7,7 @@ probes: [tasklist, hotkey, prtsc, alttab]
 
 Windows 3.1 has no task bar. A program is switched to from the Task List, a dialog box of its own program, `TASKMAN.EXE`, which `DefWindowProc` starts when a window is sent `WM_SYSCOMMAND` with `SC_TASKLIST`. Control and Escape ask for it, and so does a double click on the desktop. A window may also be given a **hot key**, a key that switches to it from anywhere. Alt and Tab goes round the programs, showing each in a box while Alt is held, and Alt and Escape sends the active one to the back. Print Screen copies the screen to the clipboard.
 
-These are keys USER's system queue takes for itself ([[topic:system-queue]]): it looks at them as a program comes to them, before it gives them a window. Everything here is [[read out]] of `USER.EXE` unless marked; offsets are seg1's. [[probe:tasklist]], [[probe:hotkey]] and [[probe:prtsc]] put their keys in through `KEYBD_EVENT`, as the keyboard driver does, and both engines agree with all of their records.
+These are keys USER's system queue takes for itself ([[topic:system-queue]]): it looks at them as a program comes to them, before it gives them a window. Everything here is [[read out]] of `USER.EXE` unless marked; offsets are seg1's. [[probe:tasklist]], [[probe:hotkey]] and [[probe:prtsc]] put their keys in through `KEYBD_EVENT`, as the keyboard driver does, and WinBox agrees with all of their records.
 
 ## Keys the queue takes for itself
 
@@ -50,7 +50,7 @@ The desktop window's procedure (seg1 `9e6b`) hands a double click on it, `WM_LBU
 - Arrange Icons, `W` minimized and moved to (300, 300): `W` back at (21, 408).
 - The left button pressed and let go twice over the desktop at (630, 10): the Task List at (350, 0), kept on the screen.
 
-A message sent from another program ends the dialog. The dialog's loop takes nothing in between, and finds the dialog ended once the message is answered. [[inferred]] The loop waits with `WaitMessage` (seg25 `0899`), and what makes the wait return then is not read out; both engines end their wait there.
+A message sent from another program ends the dialog. The dialog's loop takes nothing in between, and finds the dialog ended once the message is answered. [[inferred]] The loop waits with `WaitMessage` (seg25 `0899`), and what makes the wait return then is not read out; WinBox ends their wait there.
 
 ## SwitchToThisWindow
 
@@ -91,7 +91,7 @@ USER copies a window, or the screen, to the clipboard as a bitmap (seg41 `06b0`)
 
 ## Alt and Tab, Alt and Escape
 
-Everything here is [[read out]] of `USER.EXE` unless marked; offsets are seg23's unless named. [[probe:alttab]] puts its keys and the mouse in through `KEYBD_EVENT` and `MOUSE_EVENT`, writes what seven windows at the top are handed, and reads the screen with [[fn:GDI.GetPixel]] from a message filter hook while the loop runs. Both engines agree with all 534 of its records.
+Everything here is [[read out]] of `USER.EXE` unless marked; offsets are seg23's unless named. [[probe:alttab]] puts its keys and the mouse in through `KEYBD_EVENT` and `MOUSE_EVENT`, writes what seven windows at the top are handed, and reads the screen with [[fn:GDI.GetPixel]] from a message filter hook while the loop runs. WinBox agrees with all 534 of its records.
 
 ### The command
 
