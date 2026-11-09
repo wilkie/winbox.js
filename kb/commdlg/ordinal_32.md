@@ -27,4 +27,4 @@ topics: [common-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 32 is it has no arm in WinBox (`crates/winbox-win16/src/commdlg/mod.rs`); the entry's `retf` pops 2 bytes. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's own dialogs set the cursor as it does with a helper of their own, `wait_cursor` in the Rust engine, which skips the same case of the Open or Save As box being made. WinBox always has a mouse, so it never shows or hides the cursor.
+Not WinBox's own: ordinal 32 is a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`, popping 2 bytes, as the entry's `retf` does), with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's own dialogs set the cursor as it does with a helper of their own, `wait_cursor` in the Rust engine, which skips the same case of the Open or Save As box being made. WinBox always has a mouse, so it never shows or hides the cursor.

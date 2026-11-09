@@ -24,4 +24,4 @@ topics: [common-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 44 is it has no arm in WinBox (`crates/winbox-win16/src/commdlg/mod.rs`); the entry's `retf` pops 0 bytes. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's.
+Not WinBox's own: ordinal 44 is a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`, popping 0 bytes, as the entry's `retf` does), with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's.

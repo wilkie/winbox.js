@@ -16,4 +16,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-Not WinBox's own: it has no arm in `crates/winbox-win16/src/lzexpand/mod.rs`. WinBox's own LZEXPAND does what it does where LZEXPAND does it, in its own code ([[topic:compressed-files]]).
+Not WinBox's own: a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`), with no arm in `crates/winbox-win16/src/lzexpand/mod.rs`. WinBox's own LZEXPAND does what it does where LZEXPAND does it, in its own code ([[topic:compressed-files]]).

@@ -17,4 +17,4 @@ topics: [version-information]
 
 ## Implementation
 
-Not WinBox's own: no arm in `crates/winbox-win16/src/ver/mod.rs`; the entry pops 14 bytes. WinBox's own VER does what it does where VER does it, in its own code.
+Not WinBox's own: a stub in WinBox's table (`crates/winbox-win16/src/kept.rs`, named `Unknown`, popping 14 bytes), with no arm in `crates/winbox-win16/src/ver/mod.rs`. WinBox's own VER does what it does where VER does it, in its own code.
