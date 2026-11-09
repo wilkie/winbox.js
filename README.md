@@ -14,8 +14,16 @@ The goals are many but mainly focused around:
 
 ## Development
 
-The project is written in TypeScript, built with [Vite](https://vite.dev/), and
-managed with [pnpm](https://pnpm.io/). You will need **Node 22 or newer**; the
+WinBox's engine -- the processor, DOS, Windows' modules and the raster -- is
+written in Rust, in the crates under `crates/`. The page that runs it in a
+browser is written in TypeScript (React and MUI), built with
+[Vite](https://vite.dev/) and managed with [pnpm](https://pnpm.io/), and so
+are the scripts of the oracle, the knowledge base and the asset bundle.
+
+You need a Rust toolchain (`rustup`; `rust-toolchain.toml` pins the version
+and adds the `wasm32-unknown-unknown` and `x86_64-pc-windows-gnu` targets),
+`wasm-bindgen-cli` 0.2.129 in `~/.cargo/bin` (`cargo install
+wasm-bindgen-cli --version 0.2.129`), and **Node 22.12 or newer**; the Node
 version is pinned in `.nvmrc`, so with `nvm` installed you can run:
 
 ```shell
@@ -31,18 +39,17 @@ pnpm install
 ```
 
 To run real Windows 3.1 programs in a browser, start the dev server, with hot
-module replacement:
+module replacement for the page:
 
 ```shell
 pnpm dev
 ```
 
-The page runs programs on the Rust engine built for WebAssembly. `pnpm dev`
-builds it first (`pnpm build:web`, which needs a Rust toolchain with the
-`wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129 in
-`~/.cargo/bin`) where it has not been built, or where the crates have changed
-since; `pnpm build:web` alone builds it again. Where it is not built, the page
-says so on its status line and runs nothing.
+The page runs programs on the Rust engine built for WebAssembly
+(`crates/winbox-web`). `pnpm dev` builds it first (`pnpm build:web`) where it
+has not been built, or where the crates have changed since; `pnpm build:web`
+alone builds it again. Where it is not built, the page says so on its status
+line and runs nothing.
 
 Then open `/run.html` on it and drop zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
 memory with 8.3 names, and every Windows program on it gets a Run button. A zip
@@ -62,7 +69,7 @@ programs on every visit, where Open puts it on C: and Forget lets it go (see
 made, each item with its icon from the group file and its command line. What programs write on C: -- changes to WIN.INI, a
 game's high scores, a saved document -- is kept there too, as the changes
 against what was dropped (each kept program's apart, and on the bundle's base
-each display's), and put back on either engine each time the page is opened,
+each display's), and put back each time the page is opened,
 until Forget changes clears them. Disk and CD images (`.img`, `.iso`, or a
 `.cue` dropped with the `.bin` files it names) dropped beside Windows become drives, in the Drives strip: floppies dropped together
 are one set at A:, swapped with Next and Eject, a hard disk image D:, a CD the
@@ -71,8 +78,7 @@ installs into a layer, what programs write to a disk is saved only as a new
 file (Save image…), and a kept program remembers its CD (see
 `kb/topics/drives-and-disks.md`). Nothing is uploaded. As a
 program runs, the page lists every API function it called, marking the ones
-that reach no implementation yet, and its most recent calls with their
-arguments.
+that reach no implementation yet.
 
 With an installation or the bundle present, the page draws windows as Windows
 does, from the display driver's resources and Windows' fonts, on one
@@ -82,23 +88,24 @@ make no windows. A
 screen reader is not given the pixels. It gets a mirror of USER's windows
 beside the canvas: each window named by its caption, its menu bar and open
 menus, and its controls as buttons, check boxes, text boxes and lists. The
-mirror follows what has the keyboard. `src/win16/user/accessible-tree.ts` says
-what each window becomes.
+mirror follows what has the keyboard. `crates/winbox-win16/src/accessible_tree.rs`
+says what each window becomes.
 
 ## Building
 
-To build a web bundle:
+To build the web version:
 
 ```shell
 pnpm build
+pnpm preview    # serves it, at http://localhost:4173/run.html
 ```
 
-This produces `winbox.js` in the `dist` directory: the web bundle, a single
-file holding the emulator, which sets `window.Win16`. It is emitted with a
-source map.
-
-The Vite configuration is within `vite.config.ts`, and the bundle's entry is
-`src/shim.ts`.
+`pnpm build` builds the engine (`pnpm build:web`), then the page, `run.html`
+and its scripts, bundled by Vite into `dist/web`, with the engine's module
+(`winbox_web.js` and its `.wasm`) copied in at `target/winbox-web/`, where the
+page loads it from. The folder is served as it is, from the root of a site;
+`vite.config.ts` holds the configuration. Other builds write beside it
+(`dist/kb`, `dist/assets`) and it leaves them alone.
 
 ### Native
 
@@ -221,167 +228,150 @@ without a hand on the mouse (`crates/winbox-native/src/script.rs`).
 `--seamless-log` writes, frame by frame, which host windows were made,
 shown and taken away and which rectangles each was shown.
 
-### Task running
+### Commands
 
-Builds, lints, typechecks and tests are wired into
-[Turbo](https://turborepo.com/), which runs them in parallel and caches results.
-Repeating an unchanged task is close to instant:
-
-```shell
-pnpm turbo run lint typecheck test build
-```
-
-The individual tasks are also plain scripts, if you prefer:
-
-| Command           | What it does                                                                  |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `pnpm dev`        | Dev server, with the page at `/run.html`, the engine built first where needed |
-| `pnpm build`      | Production bundle into `dist/`                                                |
-| `pnpm typecheck`  | `tsc --noEmit` over `src`, `test` and `e2e`                                   |
-| `pnpm lint`       | ESLint over the TypeScript sources                                            |
-| `pnpm lint:fix`   | ESLint with autofix                                                           |
-| `pnpm format`     | Prettier over the repository                                                  |
-| `pnpm test`       | Jest unit tests                                                               |
-| `pnpm test:e2e`   | Playwright browser tests                                                      |
-| `pnpm bench`      | CPU throughput benchmark                                                      |
-| `pnpm build:docs` | API documentation into `docs/`                                                |
+| Command                       | What it does                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| `pnpm dev`                    | Dev server, with the page at `/run.html`, the engine built first where needed |
+| `pnpm build`                  | The web version, engine and page, into `dist/web`                             |
+| `pnpm preview`                | Serves `dist/web`                                                             |
+| `pnpm build:web`              | The engine for WebAssembly, into `target/winbox-web`                          |
+| `pnpm build:native`           | The native front end (`build:native:windows` for Windows)                     |
+| `pnpm typecheck`              | `tsc --noEmit` over `src`, `test` and `e2e`                                   |
+| `pnpm lint`                   | ESLint over the TypeScript sources                                            |
+| `pnpm format`                 | Prettier over the repository                                                  |
+| `pnpm test`                   | Jest: the page's tests, and the scripts' and the knowledge base's             |
+| `pnpm test:e2e`               | Playwright browser tests of the page                                          |
+| `pnpm test:conformance`       | The Rust core against the hardware vectors                                    |
+| `pnpm kb`                     | The knowledge base's site, into `dist/kb`                                     |
+| `pnpm assets`                 | WinBox's asset bundle, from the setup disks under `oracle/`                   |
+| `pnpm test:rust`, `lint:rust` | `cargo test --workspace`; clippy and `cargo fmt --check`                      |
 
 ## Documentation
 
-To create a web-based HTML version of the documentation:
+The engine's API documentation is Rust's own:
 
 ```shell
-pnpm build:docs
+cargo doc --workspace --no-deps --open
 ```
 
-This creates an HTML document and associated files in the `docs` directory.
-If you open the `index.html` file in your local web browser, you can access a
-searchable version of the project documentation.
-
-This documentation is all parsed from the comment blocks that start with a slash
-and two asterisks (`/**`) and are all already accessible in the code themselves.
+What Windows 3.1 does, as measured and read out, is the knowledge base
+(`kb/`): `pnpm kb` builds it into `dist/kb`, and
+[KNOWLEDGE_BASE_SPEC.md](KNOWLEDGE_BASE_SPEC.md) says how.
 
 ## Testing
 
-There are two suites. Unit tests for the emulator run in
-[Jest](https://jestjs.io/) under Node:
+The engine's tests are Rust's:
+
+```shell
+cargo test --workspace
+```
+
+The oracle's replay runs every probe recorded under real Windows
+(`oracle/fixtures`) on the engine and holds each function's records to
+Windows' (`crates/winbox-win16/tests/conformance.rs`). It is a release-profile
+run, its trials in parallel; a full run writes `kb/data/conformance.json`, the
+report the knowledge base reads. Plain `cargo test --workspace` runs a sample
+of it.
+
+```shell
+cargo test --release -p winbox-win16 --test conformance            # every fixture
+cargo test --release -p winbox-win16 --test conformance -- strings # one probe
+cargo test --release -p winbox-win16 --test probes -- --ignored --nocapture survey
+```
+
+The corpus of Windows programs (`corpus/README.md`) is run on the engine and
+held to its reports:
+
+```shell
+cargo build --release -p winbox-win16 --example trace --example corpus
+target/release/examples/corpus
+```
+
+The page has its own tests. Unit tests run in [Jest](https://jestjs.io/)
+under Node:
 
 ```shell
 pnpm test
+pnpm test test/run/page_view_test.ts    # one file
+pnpm test -t 'name'                     # one test by name
 ```
 
 Browser-level tests run in [Playwright](https://playwright.dev/) against
-`run.html`, in both Chromium and Firefox:
+`run.html` on the dev server, in both Chromium and Firefox:
 
 ```shell
 pnpm exec playwright install    # once, to fetch the browsers
 pnpm test:e2e
+pnpm test:e2e --ui              # Playwright's UI mode
 ```
-
-> **Known failure:** the emulator unit suite is currently red, and was already
-> red before the TypeScript migration. The ALU moved onto the CPU core
-> (`I286`/`I386`), but the `MockCPU` helper still constructs `new ALU(cpu)` with
-> the `CPU` wrapper, and `CPU#alu` is never assigned. Nearly every ALU and
-> `cpu_execute` test therefore throws on `this._cpu._flags`. Pointing the helper
-> at `cpu.core` recovers roughly 200 of them; the rest need a closer look at
-> where flag state should live.
 
 ### CPU conformance
 
-The emulator is measured against hardware. The
+The processor is measured against hardware. The
 [SingleStepTests 80286 suite](https://github.com/SingleStepTests/80286) records
 the complete register, flag and memory state before and after each instruction,
-captured from a real Harris N80C286. Our core is put into the recorded initial
-state, executes one instruction, and is compared against what the silicon did.
+captured from a real Harris N80C286, and the
+[80386 suite](https://github.com/SingleStepTests/80386) does the same for the 386. The core is put into the recorded initial state, executes one
+instruction, and is compared against what the silicon did
+(`crates/winbox-cpu/tests/conformance.rs`).
 
-The vectors are ~310 MiB and are not committed, so fetch them first:
+The vectors are not committed, so fetch them first:
 
 ```shell
-pnpm test:conformance:fetch       # a representative subset, ~135 MiB
+pnpm test:conformance:fetch                             # the 80286's, a representative subset
+node scripts/fetch-cpu-tests.mjs --cpu 386 --all        # the 80386's
 pnpm test:conformance
 ```
 
-`node scripts/fetch-cpu-tests.mjs --all` fetches everything, `--list` shows what
-the suite publishes, and naming opcodes fetches only those.
+`node scripts/fetch-cpu-tests.mjs --all` fetches all of the 80286's, `--list`
+shows what the suite publishes, and naming opcodes fetches only those.
 
-The run writes `test/conformance/report.md` with a per-opcode table and a
-representative failure for each kind, and checks every opcode against
-`test/conformance/baseline.json`. The core does not pass these tests yet, so the
-baseline is what guards against regression: passing fewer than the recorded
-count fails the run. Re-record after an improvement:
+Each file's count of vectors passed is held to a baseline from a full run,
+`crates/winbox-cpu/tests/baseline286.json` and `baseline386.json`: passing
+fewer than the recorded count fails the run. Re-record after an improvement:
 
 ```shell
 CONFORMANCE_UPDATE=1 pnpm test:conformance
 ```
 
-Regression checking only applies when `CONFORMANCE_SAMPLE` matches the sample
-the baseline was recorded at, since pass rates are not uniform across an
-opcode's vectors.
+`CONFORMANCE_SAMPLE` changes how many vectors of each file are run; a run at
+another sample than its baseline's is not held to it.
 
 ### Benchmarking
 
 ```shell
-pnpm bench
+cargo run --release -p winbox-cpu --example bench
 ```
 
-This runs four workloads through the execution core in both real and protected
-mode and reports instructions per second. The absolute numbers mean nothing on
-their own — they move with the machine, the Node version and what else is
-running — but the ratio between two runs is what tells you whether a change to
-the core cost anything. Run-to-run spread is around six percent, so treat
-anything smaller than that as noise, and take a median of three runs before
-believing a result.
-
-### Filtering tests
-
-To run a single file or a single name:
-
-```shell
-pnpm test test/emulator/alu_test.ts
-pnpm test -t 'should detect zero'
-```
-
-### Reproducing a test run
-
-Tests draw their operands from a seeded generator, and the seed is printed at
-the start of every run:
-
-```
-Random seed: 2748491327 (re-run with WINBOX_TEST_SEED=2748491327 to reproduce)
-```
-
-Each test re-seeds from its own name, so a test draws the same values whether it
-runs alone or in the middle of the full suite — `pnpm test -t 'name'` reproduces
-exactly what CI saw.
-
-Jest also has a watch mode that re-runs affected tests as you edit:
-
-```shell
-pnpm test:watch
-```
-
-For the browser suite, Playwright's UI mode is the equivalent:
-
-```shell
-pnpm test:e2e --ui
-```
+This runs four workloads through the core in both real and protected mode and
+prints instructions a millisecond, beside DOSBox's for the same instructions
+where its recording is there (`kb/topics/timing.md`). The absolute numbers
+mean nothing on their own -- they move with the machine and what else is
+running -- but the ratio between two runs tells you whether a change to the
+core cost anything. Run it a few times and take the median; `BENCH_MS` sets
+each run's length.
 
 ## Code style
 
-Formatting is handled by [Prettier](https://prettier.io/) and is not something
-to think about; run `pnpm format` or let your editor do it on save.
+Rust is formatted by `rustfmt` and linted by clippy, with warnings as errors
+(`cargo fmt`, `pnpm lint:rust`). The TypeScript is formatted by
+[Prettier](https://prettier.io/) (`pnpm format`, or your editor on save) and
+linted by ESLint, which reports no warnings or errors on a clean tree.
+`tsconfig.json` runs with `strict` and `noImplicitAny` off, left from the
+page's conversion from JavaScript.
 
-ESLint currently reports a large number of _warnings_. These are migration debt
-from the mechanical JavaScript to TypeScript conversion (unused variables,
-`var`, dead stores) and are deliberately not errors, so that a clean `pnpm lint`
-still means something in CI. Errors are reserved for newly introduced problems.
+## History
 
-Likewise, `tsconfig.json` runs with `strict` and `noImplicitAny` off. Class
-members carry `declare` annotations that the migration generated, and are typed
-`any`. Tightening these one flag and one module at a time is the intended path.
+WinBox's first engine was written in TypeScript. It was retired on 2026-11-08,
+the Rust engine having taken over every check it held
+(`kb/guides/retire-typescript.md`); its last form is kept on the branch
+`typescript-engine`.
 
-## Documentation
+## Further reading
 
-- [ARCHITECTURE.md](ARCHITECTURE.md) — how the emulator is put together.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — how the engine is put together.
 - [FONTS.md](FONTS.md) — what Windows 3.1 does with fonts, as measured against the real thing.
 - [oracle/README.md](oracle/README.md) — the pipeline that measures it.
+- [corpus/README.md](corpus/README.md) — the programs it is tried against.
+- `kb/` — the knowledge base, built with `pnpm kb`.
