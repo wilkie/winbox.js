@@ -1,5 +1,4 @@
-//! TOOLHELP's stack trace (`TOOLHELP.DLL` seg1 `0f1c`-`11cb`). As
-//! `toolhelp/stack.ts`.
+//! TOOLHELP's stack trace (`TOOLHELP.DLL` seg1 `0f1c`-`11cb`).
 
 use winbox_machine::index_for;
 

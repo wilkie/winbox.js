@@ -1,7 +1,7 @@
 //! The file boxes' procedures, `FileOpenDlgProc` and `FileSaveDlgProc`
 //! (`COMMDLG.DLL` seg2 `42a3`, `446a`), their `WM_INITDIALOG` (seg2
 //! `1153`), and the subclassed folders' list and OK button (seg2 `10a5`,
-//! `100f`). As `file-dialogs.ts`.
+//! `100f`).
 
 use super::api::{self, Arg, item, send, send_item, set_item_text, text};
 use super::file_dialogs::{

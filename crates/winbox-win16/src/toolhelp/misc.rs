@@ -1,5 +1,4 @@
-//! TOOLHELP's `WEP`, `TimerCount`, `MemManInfo` and `TerminateApp`. As
-//! `toolhelp/misc.ts`, which cites the read-outs.
+//! TOOLHELP's `WEP`, `TimerCount`, `MemManInfo` and `TerminateApp`.
 
 use super::structures::structure;
 use crate::call::{Answer, Args, Later, Stop};

@@ -1,8 +1,8 @@
-//! The keyboard on the raster desktop, as winbox.js's `raster-input.ts`
-//! gives it to the windows: a key the host names turned into the virtual
-//! key Windows' keyboard driver would give, posted to the queue of the
-//! program whose window has the focus -- or, with none, is active -- and
-//! what it typed kept for `TranslateMessage`.
+//! The keyboard on the raster desktop, as it is given to the windows: a key
+//! the host names turned into the virtual key Windows' keyboard driver
+//! would give, posted to the queue of the program whose window has the
+//! focus -- or, with none, is active -- and what it typed kept for
+//! `TranslateMessage`.
 //!
 //! Nothing here calls into a program: each message is posted, as the input
 //! queue posts it. Which keys are system keys is measured by `altchild`,
@@ -42,8 +42,7 @@ pub struct Key {
 /// has them: the named keys, and the keys that are not letters, digits or
 /// named as the US keyboard driver gives them -- `KEYBOARD.DRV`'s table of
 /// a virtual key for each scan code, at file offset `12ee`, read at the scan
-/// code each of these keys sends. `ContextMenu` is `VK_MENU`, as the
-/// TypeScript engine's table has it.
+/// code each of these keys sends. `ContextMenu` is `VK_MENU`.
 const VIRTUAL_KEYS: &[(&str, u16)] = &[
     ("Enter", 0x0d),
     ("NumpadEnter", 0x0d),

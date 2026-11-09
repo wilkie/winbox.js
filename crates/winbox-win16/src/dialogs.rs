@@ -1,5 +1,4 @@
-//! Dialog boxes on the raster desktop, as winbox.js's `dialogs.ts` and
-//! `dialog-items.ts` make them: made from a template, run modal or
+//! Dialog boxes on the raster desktop: made from a template, run modal or
 //! modeless, and driven from the keyboard by `IsDialogMessage`.
 //!
 //! Measured by the `dialogs` probe on four displays:

@@ -6,11 +6,6 @@
 //! edge the way `CalcLine` does -- a curve cut into chords as GDI cuts it
 //! (`scan_walk`) -- fills the runs the walk pairs up, and rescues dropouts
 //! as simple dropout control does, stubs excepted where the font asks.
-//!
-//! The TypeScript engine keeps a second method beside this, which computes
-//! where the outline crosses each scanline exactly, for comparison; it draws
-//! with it only where a developer sets `WB_ANALYTIC` in Node, and it is not
-//! here.
 
 // Deliberately: numbers compared and converted as a JavaScript engine's
 // are, since every rule here was measured through one.
@@ -206,9 +201,7 @@ pub fn fill_walked(contours: &[Contour], options: FillOptions) -> Filled {
 
     let mut lists = Lists::new();
     // A coordinate enters the walk as `ToInt32` makes one, not-a-number as
-    // nought. A deliberate difference: the TypeScript engine hands its walk
-    // the number itself, whose comparisons then find it unordered before its
-    // shifts make nought of it. Only a point a program named past the end of
+    // nought. Only a point a program named past the end of
     // its zone is not-a-number, and the walk here is integers throughout.
     let sub = |value: f64| i64::from(js::int32(js::round(value * 64.0)));
     let mut ends = Endpoints::new();

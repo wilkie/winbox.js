@@ -3,7 +3,7 @@
 //! WinBox runs `OLECLI.DLL` from the drive): the seven clipboard formats of
 //! OLE's protocol registered, its two window classes, the atoms of the
 //! names its conversations and streams use, and the screen's resolution
-//! asked for. As `src/win16/olecli/start.ts`.
+//! asked for.
 
 use crate::commdlg::api::{Arg, text};
 

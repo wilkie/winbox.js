@@ -3,7 +3,7 @@
 //! reads it -- **read out of `SHELL.DLL`** (seg6) and **recorded** by
 //! `dragq`: the offset of the names at 0, the point at 2, whether outside
 //! the client area at 6, then the names, each ended by a nought, a nought
-//! after them. As `src/win16/shell/drag.ts`.
+//! after them.
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;

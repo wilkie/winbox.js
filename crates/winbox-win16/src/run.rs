@@ -12,10 +12,10 @@ use crate::system::System;
 const SLICE: u64 = 500;
 
 /// INT 2Fh 1600h's AX in 386 enhanced mode: AL 3, AH 0Ah, Windows 3.10
-/// (`dpmiver`). As `dos.ts`.
+/// (`dpmiver`).
 const WINDOWS_VERSION: u16 = 0x0a03;
 /// INT 2Fh 1683h's BX in 386 enhanced mode: the system virtual machine's
-/// number (`enhmode`). As `dos.ts`.
+/// number (`enhmode`).
 const SYSTEM_VIRTUAL_MACHINE: u16 = 1;
 /// What stopped a run.
 pub(crate) enum Event {
@@ -91,8 +91,7 @@ impl System {
                     self.cpu.loaded = 0;
                 }
                 // An interrupt the host answers. The `INT` is an instruction
-                // run, as the TypeScript engine's processor counts it --
-                // once what it does is done, which is when it counts it.
+                // run, counted once what it does is done.
                 Exit::Unimplemented(0xcd) => {
                     let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
                     let vector = self.cpu.bus.read8(at + 1);
@@ -224,9 +223,8 @@ impl System {
 
     /// Each task waiting with a timeout -- in `GetMessage`, for its timer
     /// -- whose time has come, woken, the earliest first, between two
-    /// slices, as the TypeScript engine's scheduler ticks its clock
-    /// (`clock.tick`): it has the processor as the task running gives it
-    /// up. `Engine::time_passed` wakes them so once time passes with every
+    /// slices, as the task running gives up the processor.
+    /// `Engine::time_passed` wakes them so once time passes with every
     /// task waiting.
     pub(crate) fn wake_due_waits(&mut self) {
         let instructions = self.instructions;
@@ -323,7 +321,7 @@ impl System {
     /// none of WIN386's devices. 160Ah is not answered in either mode.
     ///
     /// Any other function changes nothing: no other resident program is
-    /// here to answer. As `dos.ts`'s `multiplexInterrupt`.
+    /// here to answer.
     fn multiplex_interrupt(&mut self) {
         use winbox_cpu::{AX, BX, CX};
 
@@ -372,8 +370,8 @@ impl System {
     /// `INT 25h` and `26h`, a volume's sectors read or written by number,
     /// as File Manager reads a drive's boot sector to tell a RAM drive
     /// (`WINFILE.EXE` seg6 `09e3`). These drives are files, not sectors:
-    /// each answers as the TypeScript engine's does a drive with no disk
-    /// under it (`absoluteDisk`), AX 8002h and the carry set, which File
+    /// each answers as a drive with no disk under it does, AX 8002h and the
+    /// carry set, which File
     /// Manager takes for no RAM drive. Unlike every other interrupt, these
     /// return with the flags still on the stack, which the caller pops (DOS
     /// as documented).

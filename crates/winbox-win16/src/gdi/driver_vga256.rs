@@ -1,8 +1,7 @@
 //! The 256-colour display's own routines on a memory bitmap, as
 //! `SVGA256.DRV` makes and draws them for GDI's helpers
 //! (`driver_helpers.rs`): its bitmaps a byte a pixel, each byte an index of
-//! the palette, or one plane of a bit. The twin of
-//! `src/win16/gdi/driver-vga256.ts`, where each routine's read-out is told.
+//! the palette, or one plane of a bit.
 //!
 //! **Read out** of `SVGA256.DRV`; **recorded** by `gdidmdrw` on that
 //! display.
@@ -759,8 +758,8 @@ pub fn bit_blt(
     1
 }
 
-/// A monochrome copy within one bitmap going back (seg1 `0a2c` and the
-/// code it makes), as `monoBackward` in the TypeScript.
+/// A monochrome copy within one bitmap going back (seg1 `0a2c` and the code
+/// it makes).
 #[allow(clippy::too_many_arguments)]
 fn mono_backward(
     system: &mut System,
@@ -869,8 +868,8 @@ const OS_END_SCANS: u16 = 0x51;
 
 /// `Output` (`SVGA256.DRV` seg1 `12e2`): a polyline (seg6 `010c`) and
 /// scanlines (seg8 `00c9`); 50h answers 1 and 51h nought, drawing nothing
-/// (seg8 `01b2`, `0222`); any other style nought. Not followed, as in
-/// `driver-vga256.ts`: what the driver keeps between 50h and 51h.
+/// (seg8 `01b2`, `0222`); any other style nought. Not followed: what the
+/// driver keeps between 50h and 51h.
 #[allow(clippy::too_many_arguments)]
 pub fn output(
     system: &mut System,
@@ -1388,8 +1387,7 @@ const OFF_SCAN: u16 = 0x8000;
 /// What `Pixel` answers for a pixel got: `FF00h` in DX (seg7 `01da`, `01e7`).
 const GOT: u32 = 0xff00_0000;
 
-/// `Pixel` (`SVGA256.DRV` seg7 `0048`) on a memory bitmap, as in
-/// `driver-vga256.ts`.
+/// `Pixel` (`SVGA256.DRV` seg7 `0048`) on a memory bitmap.
 pub fn pixel(
     system: &mut System,
     device: u32,
@@ -1455,8 +1453,7 @@ pub fn pixel(
     0
 }
 
-/// `ScanLR` (`SVGA256.DRV` seg4 `0154`) on a memory bitmap, as in
-/// `driver-vga256.ts`.
+/// `ScanLR` (`SVGA256.DRV` seg4 `0154`) on a memory bitmap.
 pub fn scan_lr(system: &System, device: u32, x: u16, y: u16, physical: u32, style: u16) -> u16 {
     let bitmap = read_bitmap(system, device);
 

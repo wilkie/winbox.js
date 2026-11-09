@@ -1,6 +1,5 @@
 //! A dialog box template, as a resource holds one or a program builds one
-//! in memory for `DialogBoxIndirect`, as winbox.js's `dialog-template.ts`
-//! reads it: the dialog, then each control.
+//! in memory for `DialogBoxIndirect`: the dialog, then each control.
 //!
 //! The dialog: its style (a long), how many controls, its place and size in
 //! dialog units (four words), its menu, its window class and its caption --

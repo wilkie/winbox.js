@@ -1,9 +1,8 @@
 //! A MIDI file's length as `MCISEQ.DRV` counts it: to its last event before
 //! the end of its longest track, the end's own delta not counted, **read
 //! out** of the driver (seg3 `19a2`-`1b78`, `17e6`, `1aba`-`1b1c`) and
-//! **recorded** by `seqlen` in each time format. As
-//! `test/win16/seqlen_test.ts`; the crate's `sequencer.rs` tests hold the
-//! read-out's rules (`a_file_is_as_long_as_its_last_event_before_its_end`,
+//! **recorded** by `seqlen` in each time format. The crate's `sequencer.rs`
+//! tests hold the read-out's rules (`a_file_is_as_long_as_its_last_event_before_its_end`,
 //! `times_are_counted_as_mciseq_counts_them`).
 
 mod support;

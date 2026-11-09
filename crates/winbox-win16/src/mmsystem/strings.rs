@@ -409,8 +409,7 @@ mod tests {
         assert_eq!(string(0x0c), None);
     }
 
-    /// MMSYSTEM carries its own strings, with no installation. As
-    /// `test/win16/kept_modules_test.ts`.
+    /// MMSYSTEM carries its own strings, with no installation.
     #[test]
     fn its_own_strings_with_no_installation() {
         assert_eq!(

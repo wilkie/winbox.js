@@ -1,6 +1,5 @@
 //! `GetOpenFileName` and `GetSaveFileName`: COMMDLG's Open and Save As
-//! boxes, and the procedures they run, WinBox's own. As
-//! `src/win16/commdlg/file-dialogs.ts`.
+//! boxes, and the procedures they run, WinBox's own.
 //!
 //! **Read out of `COMMDLG.DLL`** seg2, and **recorded** by `ofnerr` and
 //! `ofnopen`: the common start (`09eb`), `FileOpenDlgProc` and

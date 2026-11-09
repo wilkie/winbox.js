@@ -1,7 +1,6 @@
-//! What USER draws for a menu that is open, as winbox.js's `menus.ts` and
-//! `desktop.ts` draw it: a pop-up -- pulled down from the menu bar or the
-//! system menu box, or put up by `TrackPopupMenu` -- in a window of its own
-//! on top of every other, and the item selected in it.
+//! What USER draws for a menu that is open: a pop-up -- pulled down from the
+//! menu bar or the system menu box, or put up by `TrackPopupMenu` -- in a
+//! window of its own on top of every other, and the item selected in it.
 //!
 //! Read off the `menus` probe's captures on four displays, one File menu of
 //! every kind of item, a pop-up and the system menu:

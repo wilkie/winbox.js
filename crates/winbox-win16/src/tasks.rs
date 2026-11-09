@@ -1,5 +1,5 @@
 //! Programs started from other programs, and tasks giving each other the
-//! processor, as winbox.js's `WinExec.ts` and `Scheduler` have them:
+//! processor, as winbox.js's `Scheduler` has them:
 //! `WinExec`, `LoadModule`, `Yield` and `DirectedYield`; a message sent to
 //! another task's window, run by that task; and a task's end.
 
@@ -388,9 +388,8 @@ impl System {
     /// but given what `WinExec` gives `LoadModule` -- its command line and
     /// its show command -- and, for its current directory, the one
     /// `ShellExecute` made current as it was started (`directory`, its
-    /// drive's letter first); its own folder where none is given. The
-    /// TypeScript engine's twin is `Win16.run`'s `commandLine`, `show` and
-    /// `directory`. Its task's handle.
+    /// drive's letter first); its own folder where none is given. Its
+    /// task's handle.
     ///
     /// # Errors
     ///
@@ -634,8 +633,7 @@ impl Engine {
     /// read: found as KERNEL looks for it, or, for `PROGMAN.EXE` and
     /// `MMTASK.TSK` found nowhere, WinBox's own. The instance in the low
     /// word, or an error below 32; the new task in the high, `LoadModule`'s
-    /// DX (`KRNL386.EXE` seg2 `1d4f`), nought where none was. As
-    /// `WinExec.ts`'s `startNamed`.
+    /// DX (`KRNL386.EXE` seg2 `1d4f`), nought where none was.
     pub(crate) async fn start_named(
         &self,
         name: &str,

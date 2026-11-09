@@ -261,8 +261,8 @@ pub struct Strike {
 }
 
 /// A strike chosen for a request: how many times over it is drawn each way,
-/// and what it cost the mapper. A vector font's cost is not a number, as the
-/// TypeScript engine's is `undefined` -- it compares as nothing does.
+/// and what it cost the mapper. A vector font's cost is not a number -- it
+/// compares as nothing does.
 #[derive(Debug, Clone)]
 pub struct Chosen {
     pub entry: Rc<BitmapFontEntry>,
@@ -1552,8 +1552,7 @@ impl FontManager {
         // **Recorded**, 41 requests of the `font` sweep on an EGA.
         let (entry, mut scale, cost) = match (best, smallest) {
             (Some(best), _) => best,
-            // A strike kept as the smallest without a cost, as the
-            // TypeScript engine's `smallest` carries none; it is kept only
+            // A strike kept as the smallest without a cost; it is kept only
             // where a best is too.
             (None, Some((entry, times, _))) => (entry, times, 0.0),
             (None, None) => return None,
@@ -1737,10 +1736,9 @@ impl System {
     /// GDI's fonts, loaded from the installation the first time they are
     /// wanted.
     ///
-    /// The TypeScript engine loads them at boot, before the first program is
-    /// loaded; here they are loaded when first asked for, from the same files.
-    /// The two differ only where a program changes the installation's fonts
-    /// or profiles before it first asks for a font.
+    /// They are loaded when first asked for, not at boot, so a program that
+    /// changes the installation's fonts or profiles before it first asks for
+    /// a font finds the changed ones.
     pub fn fonts(&mut self) -> &FontManager {
         self.fonts.get_or_insert_with(|| boot(&self.files))
     }

@@ -1,7 +1,6 @@
-//! A menu, open, as winbox.js's `menu-loop.ts` runs it: what
-//! `DefWindowProc` does when a window's menu bar or system menu box is
-//! pressed, or `WM_SYSCOMMAND` asks for its menu from the keyboard, and
-//! what `TrackPopupMenu` does.
+//! A menu, open, as it is run: what `DefWindowProc` does when a window's
+//! menu bar or system menu box is pressed, or `WM_SYSCOMMAND` asks for its
+//! menu from the keyboard, and what `TrackPopupMenu` does.
 //!
 //! As in Windows, a menu is modal. The loop takes the program's messages
 //! itself until the menu closes: the mouse and the keys drive the menu, and
@@ -13,7 +12,7 @@
 //! How the menu is drawn open is measured (see `menu_popup.rs`); how it is
 //! driven from the keyboard, as far as `WM_MENUSELECT` and Escape, is
 //! `altchild`'s; from the mouse, not yet. Where a submenu opens, and how a
-//! menu that would leave the screen is moved, are the TypeScript engine's.
+//! menu that would leave the screen is moved, are `sub_place`'s.
 
 use std::collections::HashMap;
 
@@ -174,8 +173,7 @@ const MC_EXECUTE: u32 = 2;
 const MC_SELECT: u32 = 3;
 
 /// Where a pop-up opened from another goes (`USER.EXE` seg10 `0b70`-
-/// `0c15`; `subPlace` in `menu-loop.ts`, where it is told at length): its
-/// left edge `OBM_MNARROW`'s width in from the right end of the item it
+/// `0c15`): its left edge `OBM_MNARROW`'s width in from the right end of the item it
 /// opens from, its top a border above the item's; left of the one it opens
 /// from where it would run off the screen's right or the one before it
 /// went left; ending where the item starts where it would run off the
@@ -276,10 +274,9 @@ fn mnemonic(text: Option<&str>) -> String {
 }
 
 /// The item a key names by its mnemonic, the first that is not a
-/// separator. The key is the whole `wParam`, as `String.fromCharCode` takes
-/// it in the TypeScript engine: a code past 0xff is its own character, not
-/// its low byte's, and a lone surrogate, which no item's text holds, names
-/// none.
+/// separator. The key is the whole `wParam`: a code past 0xff is its own
+/// character, not its low byte's, and a lone surrogate, which no item's text
+/// holds, names none.
 fn item_by_letter(items: &[MenuItem], code: u16) -> Option<usize> {
     let letter = upper(char::from_u32(u32::from(code))?);
 
@@ -586,7 +583,7 @@ impl Run<'_> {
     }
 
     /// A pop-up's window, a window of USER's class `#32768` (`USER.EXE`
-    /// seg10 `09b7`-`0a62`; `popupWindow` in `menu-loop.ts`): the first
+    /// seg10 `09b7`-`0a62`): the first
     /// pop-up of the menu bar or the system menu in USER's own, where that is
     /// not showing already, owned by the menu's window; every other in one
     /// made for it, owned by the menu's window but for `TrackPopupMenu`'s,

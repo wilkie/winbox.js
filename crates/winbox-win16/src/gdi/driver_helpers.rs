@@ -1,12 +1,11 @@
 //! GDI's device-independent helpers for drivers, ordinals 201 to 220, and
-//! GDI's `ScanLR`. The twin of `src/win16/gdi/driver-helpers.ts`, where
-//! the read-outs are told: `GDI.EXE` seg13, each `DM` routine a jump to
-//! `Brute` (seg13 `0171`), which calls the display driver's routine of the
-//! same offset for a memory bitmap and answers nought and the
-//! offset for any other device; `VGA.DRV`'s `ColorInfo`, `Pixel`,
-//! `ScanLR` and `EnumObj` for a memory bitmap here, and its drawing in
-//! `driver_bitmap.rs`, on the VGA, the Super VGA and the EGA; the
-//! Hercules's in `driver_hercules.rs` and the 256-colour display's in
+//! GDI's `ScanLR`. **Read out** of `GDI.EXE` seg13, each `DM` routine a jump
+//! to `Brute` (seg13 `0171`), which calls the display driver's routine of
+//! the same offset for a memory bitmap and answers nought and the offset for
+//! any other device; `VGA.DRV`'s `ColorInfo`, `Pixel`, `ScanLR` and
+//! `EnumObj` for a memory bitmap here, and its drawing in
+//! `driver_bitmap.rs`, on the VGA, the Super VGA and the EGA; the Hercules's
+//! in `driver_hercules.rs` and the 256-colour display's in
 //! `driver_vga256.rs`.
 //!
 //! **Recorded** by `gdidm`, `gdidmdrw`, `gdiint` and `scanscr`.
@@ -355,14 +354,13 @@ const FT_ACCELERATOR: i32 = 0x0f;
 const TC_EA_DOUBLE: u16 = 0x0200;
 const TC_IA_ABLE: u16 = 0x0400;
 
-/// `DMExtTextOut`'s taking off (seg13 `0011`-`0072`), as in
-/// `driver-helpers.ts`: where the `TEXTXFORM` asks for emboldening or
-/// italics the display can make and the device of `[063Eh]` cannot
-/// (`TC_EA_DOUBLE` and `TC_IA_ABLE` of each `dpText`), the weight made 400
-/// or the italic flag nought and the bit cleared. Answers what to put back
-/// after the call (`00b9`-`00d4`): the accelerator, the weight and the
-/// italic flag. `[063Eh]` before any text, the display's. **Recorded** by
-/// `prttstk`.
+/// `DMExtTextOut`'s taking off (seg13 `0011`-`0072`): where the `TEXTXFORM`
+/// asks for emboldening or italics the display can make and the device of
+/// `[063Eh]` cannot (`TC_EA_DOUBLE` and `TC_IA_ABLE` of each `dpText`), the
+/// weight made 400 or the italic flag nought and the bit cleared. Answers
+/// what to put back after the call (`00b9`-`00d4`): the accelerator, the
+/// weight and the italic flag. `[063Eh]` before any text, the display's.
+/// **Recorded** by `prttstk`.
 fn taken_off(system: &mut System, form: u32) -> Option<(u16, u16, u8)> {
     use driver_bitmap::{read8, read16, write8, write16};
 

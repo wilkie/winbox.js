@@ -159,7 +159,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     })
 }
 
-/// A string argument as the TypeScript engine reads one: `None` for a null
+/// A string argument as a call reads one: `None` for a null
 /// pointer, a number's digits where the segment is nought.
 pub(crate) fn lpcstr(system: &System, far: u32) -> Option<Vec<u8>> {
     match (far >> 16, far & 0xffff) {
@@ -169,7 +169,7 @@ pub(crate) fn lpcstr(system: &System, far: u32) -> Option<Vec<u8>> {
     }
 }
 
-/// Bytes as the TypeScript engine's strings hold them, a character each.
+/// Bytes as a string of characters, a character each.
 pub(crate) fn text_of(bytes: &[u8]) -> String {
     bytes.iter().map(|&byte| char::from(byte)).collect()
 }

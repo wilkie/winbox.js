@@ -48,7 +48,6 @@ fn os_fixup(kind: u16, coprocessor: bool) -> Option<(u16, u16)> {
 /// shift of 3 (`__AHSHIFT`, `__AHINCR`); `__WINFLAGS` is what `GetWinFlags`
 /// answers; and the selectors KERNEL makes for the first megabyte's fixed
 /// places, the file's paragraphs (`kconst`; `first_megabyte_selector`).
-/// As `kernel/constants.ts`'s.
 pub(crate) fn kernel_constant(ordinal: u16, win_flags: u16) -> Option<u16> {
     let paragraph = match ordinal {
         113 => return Some(3),
@@ -170,7 +169,7 @@ impl System {
     /// stub, or KERNEL's number; else KERNEL's `UndefDynlink`, as KERNEL's
     /// loader binds an import whose module, name or ordinal it cannot find
     /// (`KRNL386.EXE` seg1 `73b9`-`73f8`): the program runs, and is ended
-    /// only if it makes the call (`undefdl`). As `linker.ts`.
+    /// only if it makes the call (`undefdl`).
     fn imported(&mut self, from: &str, target: &Target) -> Value {
         match self.bound(from, target) {
             Some(value) => value,
@@ -322,7 +321,7 @@ mod tests {
 
     /// A chain of fixups: each site holds the offset of the next, the last
     /// `FFFFh`. The Towers from `HANOI.EXE` of the corpus links 1152 sites in
-    /// one. As `test/win16/relocation_chain_test.ts`.
+    /// one.
     #[test]
     fn a_relocation_chain_is_followed_to_its_end_however_long_it_is() {
         let mut system = System::new();
@@ -352,8 +351,7 @@ mod tests {
     /// A relocation record's ADDITIVE flag (4) adds, whatever its kind:
     /// Catz's `CATZ.WAD` imports `CATZDLL`'s variables by ordinal so (flags
     /// 5) -- `mov [es:0x2],dx`, the selector's half of a far pointer that
-    /// `CATZDLL` keeps at 66h in its segment. As
-    /// `test/win16/relocation_flags_test.ts`; `winbox-ne` reads the flag
+    /// `CATZDLL` keeps at 66h in its segment. `winbox-ne` reads the flag
     /// (`reads_a_relocations_additive_flag_whatever_its_type`).
     #[test]
     fn an_additive_relocation_adds_an_imported_variable_to_the_field_the_code_names() {

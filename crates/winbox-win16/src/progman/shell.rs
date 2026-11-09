@@ -2,8 +2,7 @@
 //! (`PROGMAN.EXE` seg3 `0e15`-`0ee3`): as the shell, the programs
 //! `WIN.INI`'s `load=` and `run=` name (`0221`, `0142`); then its command
 //! line, the program Windows was started with (`0e23`-`0ec5`); each
-//! started by `ShellExecute` in its own directory (seg5 `01b3`). As
-//! `src/win16/progman/shell.ts`.
+//! started by `ShellExecute` in its own directory (seg5 `01b3`).
 //!
 //! Not yet done: the box for a program that could not be started (seg1
 //! `00ec`, with strings of `PROGMAN.EXE`'s own), `MinOnRun`'s minimizing of

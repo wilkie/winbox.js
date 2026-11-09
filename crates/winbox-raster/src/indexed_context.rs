@@ -11,8 +11,8 @@ use crate::colour_match::{DisplayKind, matched_index};
 /// Pixels' palette indices, shared: a view's are its parent's.
 pub type Indices = Rc<RefCell<Vec<u8>>>;
 
-/// A palette shared by everything that holds it, as the TypeScript engine's
-/// `DevicePalette` objects are: an entry changed in place is seen by all.
+/// A palette shared by everything that holds it: an entry changed in place is
+/// seen by all.
 pub type SharedPalette = Rc<RefCell<DevicePalette>>;
 
 /// Whether a pixel may be written.
@@ -42,8 +42,7 @@ impl Marks {
 }
 
 /// How many pixels `width` by `height` holds, worked out wide; none where
-/// either is negative, where the TypeScript engine's typed array of that
-/// length would throw.
+/// either is negative.
 fn area(width: i32, height: i32) -> usize {
     usize::try_from(i64::from(width.max(0)) * i64::from(height.max(0))).unwrap_or(0)
 }
@@ -81,9 +80,6 @@ pub struct ImageData {
 /// shows -- which is how a window covered by another cannot draw over it.
 /// What such a context writes is marked on the screen's context, where it
 /// is shown from.
-///
-/// The TypeScript engine's context is a `BitmapContext`, whose lines, glyphs
-/// and fills all come down to `setPixel`; those are not part of this one.
 pub struct IndexedContext {
     pub width: i32,
     pub height: i32,
@@ -124,7 +120,7 @@ pub struct IndexedContext {
 
     /// Whether these pixels are another context's, and where this one's
     /// start in the context that keeps the marks: summed down a chain of
-    /// views, where the TypeScript engine's `ownerX` and `ownerY` are each
+    /// views: `owner_x` and `owner_y` are each
     /// view's offset in its own owner and are added as the marks are passed
     /// up. Kept private, so that nothing sets one alone.
     owned: bool,
@@ -147,7 +143,7 @@ impl fmt::Debug for IndexedContext {
 
 impl Clone for IndexedContext {
     /// Another handle on the same context: its pixels and its marks are
-    /// shared, as a TypeScript reference to it would share them.
+    /// shared.
     fn clone(&self) -> Self {
         Self {
             width: self.width,

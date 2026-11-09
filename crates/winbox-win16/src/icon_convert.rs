@@ -2,7 +2,6 @@
 //! resource, read into its block by KERNEL's own handler, made USER's own
 //! block in place (`icons.rs`'s layout). **Read out of `USER.EXE`** seg12
 //! and **recorded** by `iconhand` on the VGA and the 256-colour display.
-//! The twin of `src/win16/user/icon-convert.ts`.
 //!
 //! The work is done in the block, as USER does it: what it writes lands at
 //! the offsets it writes them, and every byte it does not write is the
@@ -132,8 +131,8 @@ fn needed(
         }
 }
 
-/// Rows of a bit a pixel made another size (seg12 `0bd1`-`0de8`), as
-/// `icon-convert.ts`'s `fitRows`: an icon's hotspot its middle, a cursor's
+/// Rows of a bit a pixel made another size (seg12 `0bd1`-`0de8`): an
+/// icon's hotspot its middle, a cursor's
 /// moved with its picture; halved across (seg5 `050f`), reduced down (seg5
 /// `056e`), or stretched by GDI's monochrome stretcher in `COLORONCOLOR`
 /// (`087a`). Its end: where a colour picture goes.
@@ -425,7 +424,7 @@ pub struct DisplayFormat<'a> {
 
 /// A Windows 3 module's icon or cursor, a device-independent bitmap -- a
 /// cursor's after its hotspot's two words -- made USER's block in place
-/// (seg12 `1138`-`15c6`), as `icon-convert.ts`'s `convertDib`. `bytes` is
+/// (seg12 `1138`-`15c6`). `bytes` is
 /// the block as KERNEL's own handler left it, `length` the resource's size.
 #[allow(clippy::too_many_lines)]
 pub fn convert_dib(
@@ -611,7 +610,7 @@ fn finish(mut block: Vec<u8>, size: usize, end: usize) -> Converted {
 }
 
 /// A Windows 2 module's icon or cursor, made USER's block in place (seg12
-/// `0e4c`-`0fee`), as `icon-convert.ts`'s `convertOld`.
+/// `0e4c`-`0fee`).
 pub fn convert_old(bytes: &[u8], length: usize, metrics: IconMetrics) -> Converted {
     let icon = bytes.first() == Some(&1);
     let independent = bytes.get(1).is_some_and(|&byte| byte != 0);

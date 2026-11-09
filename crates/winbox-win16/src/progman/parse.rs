@@ -1,6 +1,5 @@
 //! An execute string read as `PROGMAN.EXE` reads it (seg7 `001c`-`030b`),
-//! before any command in it is carried out. As
-//! `src/win16/progman/parse.ts`.
+//! before any command in it is carried out.
 //!
 //! The string is the client's block, and is read in place: a `]`-less name
 //! is ended with a nought written over what follows it and put back, and

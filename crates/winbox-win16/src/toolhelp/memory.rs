@@ -1,5 +1,4 @@
-//! `MemoryRead` and `MemoryWrite` (`TOOLHELP.DLL` seg1 `29c4`-`2d68`). As
-//! `toolhelp/memory.ts`.
+//! `MemoryRead` and `MemoryWrite` (`TOOLHELP.DLL` seg1 `29c4`-`2d68`).
 
 use winbox_machine::index_for;
 
@@ -8,8 +7,7 @@ use super::local::selector_of;
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;
 
-/// How many bytes from `offset` a selector reaches, and its base; see
-/// `reach` in `memory.ts`.
+/// How many bytes from `offset` a selector reaches, and its base.
 fn reach(system: &mut System, handle: u16, offset: u32, count: u32) -> (u32, u32) {
     let selector = selector_of(handle);
     let Some(descriptor) = system.peek_descriptor(selector) else {

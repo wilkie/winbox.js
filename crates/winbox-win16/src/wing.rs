@@ -1,7 +1,7 @@
 //! WinG, Microsoft's 1994 library for drawing fast into device-independent
 //! bitmaps, given away for Windows 3.1: a program draws into a bitmap's
 //! bits itself and blits them to its window. Answered here for `WING.DLL`,
-//! with no file of it on the disk, as winbox.js's `wing.ts` answers it.
+//! with no file of it on the disk.
 //!
 //! **Recorded** by `wingapi` and `wingprof` on the 256-colour display with
 //! WinG installed (`install-wing.mjs`):
@@ -29,8 +29,7 @@
 //! Not followed: `WinGCreateHalftoneBrush`, whose dither is recorded but not
 //! worked out; it makes no brush.
 //!
-//! The TypeScript engine's bitmap is a view of the memory itself. Here the
-//! pixels are a bitmap's own, made to agree with the memory around every
+//! The pixels are a bitmap's own, made to agree with the memory around every
 //! call -- read from it before, where the program changed it, and written
 //! back after, where the call drew -- which no program can tell apart.
 

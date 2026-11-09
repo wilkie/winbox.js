@@ -5,13 +5,13 @@
 //! from the catch buffer and returns from the `Catch` that filled it, so
 //! the `RETF` it reaches is `Catch`'s; its own two arguments are six bytes.
 //!
-//! The buffer is kept as the TypeScript engine keeps it: nine words, the
+//! The buffer is nine words, the
 //! return address, the stack pointer less the eight bytes of the return
 //! address and the argument, BP, SI, DI, DS, a nought and SS -- but each
 //! written a byte on from the last rather than a word, so each but the last
 //! keeps only its low byte, under the next, and the ten bytes are read back
-//! as they were written. Ported as it is: no probe has recorded what
-//! KERNEL's own buffer holds.
+//! as they were written. No probe has recorded what KERNEL's own buffer
+//! holds.
 
 use winbox_cpu::{BP, DI, DS, SI, SP, SS};
 

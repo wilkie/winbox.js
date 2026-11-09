@@ -551,8 +551,7 @@ fn frame_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         kept.intersect(&region.offset(dx, dy))
     });
     let frame = allocate(system, region.subtract(&inner));
-    // A brush that stops the program leaves the frame's handle taken, as
-    // the TypeScript engine's throw leaves it.
+    // A brush that stops the program leaves the frame's handle taken.
     let answer = fill_rgn(system, hdc, frame, brush)?;
 
     system.handles.free(frame);
@@ -870,17 +869,16 @@ fn rect_visible(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// A rectangle in order, its right and bottom moved on a pixel where the
 /// module whose code called was made for Windows 3.00 or before, as
 /// `RectVisible` and `RectInRegion` do (`GDI.EXE` seg1 `29fc`-`2a0b`,
-/// `2aab`-`2abd`, `2af6`). As `grownForOld` in `RectVisible.ts`.
+/// `2aab`-`2abd`, `2af6`).
 fn grown_for_old(system: &System, [left, top, right, bottom]: [i32; 4]) -> [i32; 4] {
     let more = i32::from(caller_expected_version(system).is_some_and(|version| version <= 0x300));
 
     [left, top, right + more, bottom + more]
 }
 
-/// The Windows version the module whose code called was made for: the
-/// return address's segment found among the running task's program and
-/// its libraries; none for WinBox's own code. As `callerExpectedVersion`
-/// in `RectVisible.ts`.
+/// The Windows version the module whose code called was made for: the return
+/// address's segment found among the running task's program and its
+/// libraries; none for WinBox's own code.
 fn caller_expected_version(system: &System) -> Option<u16> {
     let stack = system.cpu.segments[winbox_cpu::SS].base;
     let sp = u32::from(system.cpu.regs[winbox_cpu::SP]);

@@ -1,7 +1,6 @@
 //! The language driver: a library whose ordinal 1 USER hands its string
 //! functions to while it is loaded. **Read out** of `USER.EXE`, and
-//! **recorded** by `langdrv`; the TypeScript engine's `language-driver.ts`
-//! is the same.
+//! **recorded** by `langdrv`.
 //!
 //! * As USER starts, `SYSTEM.INI`'s `[boot] LANGUAGE.DLL` is loaded where it
 //!   names one (seg3 `1ff5`-`2065`); the installation the recordings are

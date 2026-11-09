@@ -10,7 +10,7 @@
 //! before the probe. Kept as task handles, beside the scheduler's tasks,
 //! with what each task's database holds that is kept nowhere else: the
 //! task that made it (TDB 22h), its priority (TDB 8), its events (TDB 6),
-//! its queue (TDB 20h). As `task-order.ts`.
+//! its queue (TDB 20h).
 
 use winbox_machine::segment_selector;
 

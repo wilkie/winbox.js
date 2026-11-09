@@ -1,6 +1,6 @@
 //! Locking the input to one window, as a debugger does: `LockInput`, and
 //! the `LockMyTask` and `EnableHardwareInput` it is built on, with KERNEL's
-//! `LockCurrentTask` beneath; as winbox.js's `lock-input.ts` has them.
+//! `LockCurrentTask` beneath.
 //! **Read out** of `USER.EXE` seg1, and **recorded** by `lockinp`.
 
 use crate::call::{Answer, Args, Later, Stop};

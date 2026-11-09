@@ -1,13 +1,12 @@
-//! Which fault the TypeScript engine's processor raises for an instruction
-//! the Rust core left to its host.
+//! Which fault a 386 raises for an instruction the Rust core left to its
+//! host.
 //!
 //! The Rust core runs what it can check by a segment's upper limit alone:
 //! an access through the null selector, a segment not present or one that
 //! expands down is given no room, and stops the run as `Fault(13)`; a
 //! segment load the part checks, or one past the end of its table, stops it
-//! as `Host`. In the TypeScript engine the JavaScript core then runs the
-//! instruction itself, and raises the fault the part raises (`i386.ts`
-//! `raiseSegmentFault`, `loadSegmentRegister`, `retrieveDescriptor`):
+//! as `Host`. The fault the part raises for the instruction is then named
+//! here:
 //!
 //! * An access through the null selector, `#GP` (13); through a segment not
 //!   present, `#NP` (11); past the limit of one that is, through the stack
@@ -19,12 +18,12 @@
 //!   anything but writable data, `#GP`; a segment not present, `#NP`, and
 //!   for SS `#SS`. `POP`, `LES` and the rest load without those checks.
 //!
-//! The Rust engine has no second core to run the instruction, so it reads
-//! the instruction here -- its prefixes, its operands' addresses, what it
+//! The core does not run the instruction on, so it is read
+//! here -- its prefixes, its operands' addresses, what it
 //! pushes and pops -- to find the access that ran outside its segment, or
-//! the selector it loads, and names the fault the JavaScript core would
+//! the selector it loads, and names the fault the part would
 //! raise. Where that cannot be told -- a segment that expands down, which
-//! the JavaScript core checks the other way and may not fault on at all,
+//! is checked the other way and may not fault on at all,
 //! two accesses that would raise different faults, or a stop for another
 //! reason -- the answer is `None`, and the run stops as it did.
 
@@ -64,7 +63,7 @@ struct Decoded {
 }
 
 impl System {
-    /// The fault the TypeScript engine's processor raises for the
+    /// The fault the processor raises for the
     /// instruction at CS:IP, where the Rust core stopped with `exit`.
     pub(crate) fn fault_vector(&self, exit: Exit) -> Option<u8> {
         if !self.cpu.protected {
@@ -80,8 +79,8 @@ impl System {
         }
     }
 
-    /// The fault, as `fault_vector`, and its error code, as the JavaScript
-    /// core raises it: a selector's, its low two bits cleared, where a load
+    /// The fault, as `fault_vector`, and its error code, as the processor
+    /// raises it: a selector's, its low two bits cleared, where a load
     /// faults on what it loads; nought for the null selector into SS and
     /// for an access outside a segment.
     pub(crate) fn fault_with_code(&self, exit: Exit) -> Option<(u8, u16)> {
@@ -100,8 +99,8 @@ impl System {
 
     /// Whether the instruction at CS:IP addresses in 32 bits: its code
     /// segment's D bit, turned over by an address-size prefix. KERNEL's
-    /// reading of its bytes goes through the JavaScript core's
-    /// `translateAddress`, which wraps an offset in 64 KiB unless it is.
+    /// reading of its bytes goes through the processor's address
+    /// translation, which wraps an offset in 64 KiB unless it is.
     pub(crate) fn addresses_in_32_bits(&self) -> bool {
         self.decode()
             .map_or(self.cpu.segments[CS].big, |decoded| decoded.address32)
@@ -109,7 +108,7 @@ impl System {
 
     /// A byte of the instruction, by its offset from the start; `None`
     /// past the code segment's limit. The offset wraps in 64 KiB in 16-bit
-    /// code, as the JavaScript core's fetch wraps it.
+    /// code, as the processor's fetch wraps it.
     fn code(&self, at: u16) -> Option<u8> {
         let segment = self.cpu.segments[CS];
         let offset = u32::from(self.cpu.ip) + u32::from(at);
@@ -340,8 +339,8 @@ impl System {
         }
     }
 
-    /// Whether an access went through the stack, as the JavaScript core
-    /// tells (`i386.ts` `throughStack`): it is given the selector, not the
+    /// Whether an access went through the stack, as the part
+    /// tells: it is given the selector, not the
     /// register. Where the instruction names a register for its memory
     /// operand and that register holds the selector, by whether that
     /// register is SS; otherwise -- a push or a pop, a string, a `moffs`
@@ -746,7 +745,7 @@ mod tests {
 
     #[test]
     fn a_string_past_a_ds_that_is_the_stack_is_a_stack_fault() {
-        // lodsb: the JavaScript core tells the stack by the selector.
+        // lodsb: the stack is told by the selector.
         let mut system = machine(&[0xac], DATA, DATA);
 
         system.cpu.regs[SI] = 0x20;
@@ -816,9 +815,8 @@ mod tests {
         assert_eq!(system.fault_vector(Exit::Host), Some(13));
     }
 
-    /// The TypeScript engine's protected-mode faults
-    /// (`test/emulator/protected_mode_test.ts`, "faults", "accesses that do
-    /// not go through a `ModRM` operand" and "expand-down segments"): what a
+    /// Protected-mode faults, including accesses that do not go through a
+    /// `ModRM` operand and expand-down segments: what a
     /// 386 is specified to raise, as the core stops and this module names
     /// the fault. Each runs one instruction, which the core must stop.
     fn raised(system: &mut System) -> Option<u8> {
@@ -913,8 +911,8 @@ mod tests {
     #[test]
     #[ignore = "finding: `decode` reads the instruction's bytes only within CS's limit, \
                 so for a fetch that runs past it `fault_vector` answers None and the \
-                engine stops (`processor_stop`) where the 80386 raises #GP(0) and the \
-                TypeScript engine 13 (Intel 386 manual, instruction fetch past the limit)"]
+                engine stops (`processor_stop`) where the 80386 raises #GP(0) \
+                (Intel 386 manual, instruction fetch past the limit)"]
     fn faults_when_instruction_fetch_runs_past_the_code_segment() {
         // mov al, [bp] -- three bytes in a segment with room for two.
         let mut system = machine(&[0x8a, 0x46, 0x00], DATA, DATA);

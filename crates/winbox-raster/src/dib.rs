@@ -38,8 +38,7 @@ pub struct Dib {
 const BI_RLE8: u32 = 1;
 const BI_RLE4: u32 = 2;
 
-/// A byte of the bitmap, 0 past its end, as the TypeScript engine's reads
-/// past the end come to once they are stored as pixels.
+/// A byte of the bitmap, 0 past its end.
 fn byte(bytes: &[u8], at: usize) -> u8 {
     bytes.get(at).copied().unwrap_or(0)
 }
@@ -100,8 +99,8 @@ pub fn decode_dib(bytes: &[u8]) -> Result<Dib, String> {
         ));
     }
 
-    // A height of -2147483648 has no size as a 32-bit height: the TypeScript
-    // engine's `Math.abs` makes it 2147483648 rows, which this refuses.
+    // A height of -2147483648 has no size as a 32-bit height: its
+    // magnitude is 2147483648 rows, which this refuses.
     let height = i32::try_from(raw_height.unsigned_abs())
         .map_err(|_| format!("a bitmap {raw_height} high is not read here"))?;
     let pixel_count = usize::try_from(i64::from(width) * i64::from(height))
@@ -277,8 +276,7 @@ fn decode_rle(
             }
             1 => break,
             2 => {
-                // A move past the end of the bytes ends the bitmap, as the
-                // TypeScript engine's line, made no number, ends its loop.
+                // A move past the end of the bytes ends the bitmap.
                 let (Some(&across), Some(&up)) = (bytes.get(at), bytes.get(at + 1)) else {
                     break;
                 };

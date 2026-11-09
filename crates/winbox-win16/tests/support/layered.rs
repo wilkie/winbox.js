@@ -5,7 +5,7 @@
 //! materialised once into a cache folder of the host's (`materialise_stack`).
 //! What a program sees must be what it sees on `WINBOX_BASE=assets`, the
 //! same base in one folder; `tests/layers_sweep.rs` holds every probe to
-//! that. The TypeScript harness's twin is `test/layers/split.ts`.
+//! that.
 //!
 //! The stack, the lowest first:
 //!

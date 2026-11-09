@@ -6,8 +6,7 @@
 //! leaves every caller's stack wrong by the difference -- a stub declared as
 //! taking nothing, called with a word, returns into the word.
 //! `scripts/oracle/argument-sizes.mjs` reads the right size out of the
-//! installation's own module, and this holds every table to it. As
-//! `test/win16/argument_sizes_test.ts`.
+//! installation's own module, and this holds every table to it.
 //!
 //! Skipped where the oracle's installation is not built, or where Node, which
 //! the script runs on, is not there.

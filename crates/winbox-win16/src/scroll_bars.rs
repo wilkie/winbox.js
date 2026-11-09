@@ -1,8 +1,7 @@
 //! Scroll bars: a window's own, the ones `WS_VSCROLL` and `WS_HSCROLL` give
 //! it, and the scroll bar control -- a range and a position for each, which
 //! the thumb shows, its arrows turned off and on, and a press on it
-//! followed until the button is let go. winbox.js's `scroll-bars.ts` and
-//! `scroll-track.ts`.
+//! followed until the button is let go.
 //!
 //! **Read out of `USER.EXE`** (seg18 `0d67`, `0ed9`, `0f16`, `1900`):
 //!
@@ -24,8 +23,7 @@
 //! What a bar looks like -- its arrows, its thumb, a part held down, the
 //! dragged thumb's outline -- is the painter's (`painter.rs`): the bar's
 //! state keeps what is held for it, and a held page and a dragged thumb's
-//! outline are drawn on the window as the press goes, as `scroll-track.ts`
-//! draws them.
+//! outline are drawn on the window as the press goes.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -119,8 +117,7 @@ impl ScrollState {
 /// The part of a bar held down: 0 and 1 the arrows, 2 and 3 the pages
 /// before and after the thumb, 4 the thumb; its run along the bar; whether
 /// it is drawn pressed; and a dragged thumb's outline, where it is drawn.
-/// The painter's own, as the TypeScript engine's bar and its painting
-/// share one object: what painting cuts back, the press goes on with.
+/// The painter's own, so that a bar and its painting share one object: what painting cuts back, the press goes on with.
 pub use crate::painter::ScrollTrack;
 
 /// A window's own bars, each made with the range 0 to 100 at 0 the first
@@ -151,8 +148,8 @@ impl WindowScroll {
     }
 }
 
-/// Where the parts of a bar are along it, as the desktop lays them out
-/// (`painter.ts`'s `scrollGeometry`): an arrow at each end, as long as the
+/// Where the parts of a bar are along it, as the desktop lays them out:
+/// an arrow at each end, as long as the
 /// driver's arrow bitmap but no more than half the bar less a border; the
 /// thumb at the position's share of the room the track leaves it, rounded
 /// as `MulDiv` rounds. None for a bar too short to have arrows.
@@ -814,8 +811,8 @@ impl Engine {
     }
 
     /// The part held as painting the bar last left it: a page cut back to
-    /// the thumb that has come into it. The TypeScript engine's press and
-    /// its bar's painting share one record of it.
+    /// the thumb that has come into it. A press and its
+    /// bar's painting share one record of it.
     fn sync_track(&self, press: &Press, track: &mut ScrollTrack) {
         let mut system = self.system();
         let state = if press.control {

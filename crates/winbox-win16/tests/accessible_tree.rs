@@ -1,8 +1,7 @@
 //! The desktop's windows as a screen reader is given them: the tree
-//! `accessible_tree_json` makes of USER's windows. The TypeScript engine's
-//! `test/raster/aria_mirror_test.ts` held its own tree to these; the page's
-//! half of that test, the elements the mirror keeps, stays there and is
-//! given committed trees.
+//! `accessible_tree_json` makes of USER's windows. The page's half of the
+//! test, the elements the mirror keeps (`test/raster/aria_mirror_test.ts`),
+//! is given committed trees.
 //!
 //! A window with a menu bar and one of each control, as that test made it:
 //! an overlapped window, `Notepad - (Untitled)`, with `&File` and `&Edit`,

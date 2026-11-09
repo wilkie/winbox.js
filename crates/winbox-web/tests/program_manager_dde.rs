@@ -3,7 +3,7 @@
 //! `DDEINST.EXE` -- connecting to `PROGMAN` and sending `[CreateGroup]`, two
 //! `[AddItem]`s and `[ShowGroup]`. The group's window shows, its file holds
 //! its two items, and `PROGMAN.INI` names the file, with `DDEML.DLL` on the
-//! drive and with none. As `test/win16/ddeml_test.ts`'s `ddeinst`.
+//! drive and with none.
 
 use std::cell::Cell;
 use std::path::{Path, PathBuf};

@@ -1,5 +1,4 @@
 //! TOOLHELP's walk of USER's classes (`TOOLHELP.DLL` seg1 `28b0`-`29c1`).
-//! As `toolhelp/classes.ts`.
 
 use super::structures::structure;
 use crate::call::{Answer, Args, Stop};

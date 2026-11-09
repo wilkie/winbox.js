@@ -63,9 +63,8 @@ const RT_FONTDIR: u16 = 0x8007;
 /// The other resource a stub has that is not a path.
 const RT_FONT: u16 = 0x8008;
 
-/// The stub's bytes, read where they are there. Where the TypeScript
-/// engine's `DataView` throws on a read past the end, this answers nothing
-/// and the file is not one.
+/// The stub's bytes, read where they are there. A read past the end
+/// answers nothing and the file is not one.
 struct Bytes<'a>(&'a [u8]);
 
 impl Bytes<'_> {
@@ -89,9 +88,9 @@ fn latin1(bytes: &[u8]) -> String {
 
 /// A path's file name: what follows the last `\` or `/` on its first line.
 ///
-/// The TypeScript engine strips `^.*[\\/]`, and `.` does not match a line
-/// break: only the first line's separators count, and everything up to the
-/// last of them goes, whatever follows the break.
+/// Only the first line's separators count, as with the pattern `^.*[\\/]`, in which
+/// `.` does not match a line break: everything up to the last of them goes,
+/// whatever follows the break.
 fn file_name(path: &str) -> &str {
     let line = path.find(['\n', '\r']).unwrap_or(path.len());
 
@@ -135,10 +134,8 @@ pub fn read_font_resource(bytes: &[u8]) -> Option<FontResource> {
 
         for _ in 0..count {
             // The shift count taken modulo 32, as JavaScript's `<<` takes it.
-            // Its result is unsigned here where JavaScript's is a signed 32
-            // bit number: a shift that carries a bit into the sign makes the
-            // TypeScript engine's offset negative and its reads past it throw,
-            // and here the entry lies past the file's end and is passed over.
+            // Its result is unsigned: a shift that carries a bit into the
+            // sign puts the entry past the file's end, and it is passed over.
             let offset = (u32::from(view.word(at)?) << (shift & 31)) as usize;
             let length = (u32::from(view.word(at + 2)?) << (shift & 31)) as usize;
 

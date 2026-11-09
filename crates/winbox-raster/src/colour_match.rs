@@ -25,7 +25,7 @@ use crate::DevicePalette;
 /// colours it shows, whether it is the EGA, with its own greys, and whether
 /// it is the 8514/a or the XGA, with their own tenth static colour. The
 /// default, a display of sixteen colours that is neither, is the VGA's,
-/// which is what the TypeScript engine takes where it is given no display.
+/// which is what is taken where no display is given.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DisplayKind {
     pub colors: u32,

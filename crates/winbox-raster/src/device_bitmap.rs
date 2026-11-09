@@ -11,10 +11,8 @@ use crate::indexed_context::{Clip, IndexedContext, Indices, SharedPalette};
 thread_local! {
     /// The palettes of each depth, the EGA's, and the 8514/a's and the
     /// XGA's: one of each, shared by every bitmap made without a palette of
-    /// its own, as the TypeScript engine's `DevicePalette.MONO`, `SIXTEEN`,
-    /// `EGA`, `TWO_FIFTY_SIX` and `TWO_FIFTY_SIX_IBM` are. A palette
-    /// realized on a 256-colour display changes that one in place, for
-    /// everything that holds it.
+    /// its own. A palette realized on a 256-colour display changes that one
+    /// in place, for everything that holds it.
     static SHARED: [SharedPalette; 5] = [
         Rc::new(RefCell::new(DevicePalette::mono())),
         Rc::new(RefCell::new(DevicePalette::sixteen())),
@@ -72,10 +70,9 @@ pub struct Shape {
 /// colours only when something asks for them.
 ///
 /// A clone shares the bitmap's pixels, its palette and its context's marks
-/// with the bitmap, as a TypeScript reference to it would; what is set on
-/// one afterwards -- a rebinding, a context's base, stride, clip or display
-/// -- is not seen by the other, where through a TypeScript reference it
-/// would be.
+/// with the bitmap; what is set on one
+/// afterwards -- a rebinding, a context's base, stride, clip or display --
+/// is not seen by the other.
 #[derive(Debug, Clone)]
 pub struct DeviceBitmap {
     width: i32,
@@ -107,8 +104,8 @@ impl DeviceBitmap {
     ) -> Self {
         let palette = palette.unwrap_or_else(|| palette_for_depth(depth));
         let indices = indices.unwrap_or_else(|| {
-            // Worked out wide, as the TypeScript engine's product is a
-            // double that cannot wrap; none for a negative one.
+            // Worked out wide, so that it cannot wrap; none for a
+            // negative one.
             Rc::new(RefCell::new(vec![
                 0;
                 usize::try_from(
@@ -154,7 +151,7 @@ impl DeviceBitmap {
         let context = &mut view.context;
 
         context.display = parent.context.display;
-        // The parent's width, not its stride, as the TypeScript engine has it.
+        // The parent's width, not its stride.
         context.base = top as isize * parent.width as isize + left as isize;
         context.stride = parent.width as isize;
         context.clip = clip;

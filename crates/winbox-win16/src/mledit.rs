@@ -1,6 +1,6 @@
 //! The multi-line edit control, Notepad's: its lines, how it breaks them,
 //! the keys between them, its scrolling and what it answers about its
-//! lines -- winbox.js's `mledit.ts`.
+//! lines.
 //!
 //! **Read out of `USER.EXE`**, segment 30 and what it calls, and
 //! **recorded** by `mledit` on four displays: a borderless control with
@@ -172,8 +172,7 @@ pub fn format_rect(layout: &LinesLayout) -> FormatRect {
     let right = layout.width - across;
     let bottom = layout.height - down;
     // A font is never 0 high, nor 0 wide on average; the divisions here and
-    // below are held to 1 where the TypeScript engine would divide by
-    // nought.
+    // below are held to 1, so as never to divide by nought.
     let visible = ((bottom - top) / layout.height1.max(1)).max(0);
 
     FormatRect {
@@ -474,7 +473,7 @@ impl Lines {
         let count = self.state.starts.len() as i32;
         // Never over nought -- at least two lines, or a widest line of at
         // least two average widths -- but 0 if it were, which is what
-        // `SetScrollPos` makes of the TypeScript engine's `NaN`.
+        // `SetScrollPos` makes of a `NaN`.
         let mul_div = |a: i32, b: i32, c: i32| {
             if c == 0 {
                 0
@@ -603,8 +602,7 @@ pub struct PaintRow {
 }
 
 impl System {
-    /// What the multi-line control lays its lines out by
-    /// (`desktop.ts`'s `linesLayout`).
+    /// What the multi-line control lays its lines out by.
     pub(crate) fn lines_layout(&mut self, index: usize) -> Result<LinesLayout, Stop> {
         let single = self.edit_layout(index)?;
         let widths = (0..=255u8)

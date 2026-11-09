@@ -223,9 +223,9 @@ pub(crate) fn create_dibitmap_call(system: &mut System, args: &mut Args) -> Resu
 /// of its scan lines from the bits, with the header and colour table from
 /// `info`, and how many rows that is. `None` when it cannot be read.
 ///
-/// The TypeScript engine's `dibAt`, as `SetDIBits` uses it: with no
-/// palette of the program's selected, so its colour table is colours, and
-/// matched by the display driver's rule (`dibmap`).
+/// As `SetDIBits` uses it: with no palette of the program's selected, so its
+/// colour table is colours, and matched by the display driver's rule
+/// (`dibmap`).
 pub(crate) fn dib_at(
     system: &System,
     info: u32,
@@ -314,9 +314,8 @@ pub(crate) fn dib_drawn(
         i64::from(dword(system, info, 20))
     };
 
-    // A negative size, of a negative width, reads nothing, as an array of
-    // a negative length is an empty one in the TypeScript engine; the DIB
-    // is still decoded from its header alone.
+    // A negative size, of a negative width, reads nothing; the DIB is still
+    // decoded from its header alone.
     bytes.extend(huge_read(system, bits, usize::try_from(size).unwrap_or(0)));
 
     let dib = decode_dib(&bytes).ok()?;

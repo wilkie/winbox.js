@@ -17,8 +17,7 @@
 //!   the shell window (3), it posts the third to the shell's own. It passes
 //!   each call on.
 //!
-//! SHELL's hook is a procedure of winbox.js's own (`hooks::HookProc::Host`),
-//! as the TypeScript engine's is a function.
+//! SHELL's hook is a procedure of winbox.js's own (`hooks::HookProc::Host`).
 
 use std::future::Future;
 use std::pin::Pin;

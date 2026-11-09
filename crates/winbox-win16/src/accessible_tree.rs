@@ -1,5 +1,4 @@
-//! USER's windows as an accessibility tree, as winbox.js's
-//! `accessible-tree.ts` makes it: what a screen reader is given in place of
+//! USER's windows as an accessibility tree: what a screen reader is given in place of
 //! the pixels the raster desktop draws. Windows 3.1 had no accessibility
 //! interface, so nothing here is measured; it is a mapping, and these are
 //! its choices. Each is the nearest ARIA role to what the window is to
@@ -22,13 +21,12 @@
 //! is open, or the window with the focus. The page's types for it are
 //! `src/run/accessible-tree.ts`.
 //!
-//! The tree is serialised as the TypeScript engine's `JSON.stringify` writes
-//! its own, so a page's mirror (`aria-mirror.ts`) takes either alike: the
-//! same keys, in camel case and in the same order, and a field with nothing
-//! to say left out. A window's key is its place on the desktop, as the
-//! TypeScript engine's `DesktopWindow.id` is: its index here and one more,
-//! as a pixel's owner is (`desktop.rs`), so a window keeps its key from one
-//! frame to the next.
+//! The tree is serialised as `JSON.stringify` writes an object, so a page's
+//! mirror (`aria-mirror.ts`) takes it as it is: the keys in camel case and
+//! in a fixed order, and a field with nothing to say left out. A window's
+//! key is its place on the desktop: its index here and one more, as a
+//! pixel's owner is (`desktop.rs`), so a window keeps its key from one frame
+//! to the next.
 
 use serde::Serialize;
 
@@ -69,9 +67,8 @@ impl Serialize for Checked {
     }
 }
 
-/// A node of the tree. Its fields are in the order the TypeScript engine's
-/// object literals give theirs, which no node's order contradicts, so each
-/// node is written as `JSON.stringify` writes it.
+/// A node of the tree. Its fields are in the one order no node's order
+/// contradicts, so each node is written as `JSON.stringify` writes it.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessibleNode {
@@ -211,7 +208,7 @@ fn accelerator(text: &str) -> Option<String> {
     Some(written)
 }
 
-/// A window's key, as the TypeScript engine's is from its `id`.
+/// A window's key, from its index: `w` and the index counted from 1.
 fn key_of(index: usize) -> String {
     format!("w{}", index + 1)
 }
@@ -474,8 +471,8 @@ impl Builder<'_> {
 }
 
 impl System {
-    /// The desktop's windows as an accessibility tree, as the TypeScript
-    /// engine's `accessibleTree` makes it: hidden windows left out, and a
+    /// The desktop's windows as an accessibility tree: hidden windows left
+    /// out, and a
     /// minimized window's content; the windows at the top in the desktop's
     /// order, the topmost first, and children in theirs.
     pub fn accessible_tree(&self) -> AccessibleTree {
@@ -526,8 +523,7 @@ impl System {
         AccessibleTree { nodes, focus }
     }
 
-    /// The accessibility tree as JSON, as `JSON.stringify` writes the
-    /// TypeScript engine's.
+    /// The accessibility tree as JSON, as `JSON.stringify` writes it.
     pub fn accessible_tree_json(&self) -> String {
         serde_json::to_string(&self.accessible_tree()).unwrap_or_default()
     }
@@ -563,7 +559,7 @@ mod tests {
     }
 
     #[test]
-    fn a_window_and_its_controls_are_written_as_the_typescript_engine_writes_them() {
+    fn a_window_and_its_controls_are_written_as_json_stringify_writes_them() {
         let mut system = System::new();
 
         system.windows.push(Some(Window {

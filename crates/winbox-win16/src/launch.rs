@@ -2,8 +2,7 @@
 //! Program Manager groups, as one list each front end reads, and for each
 //! item what running it does -- the program found as Program Manager and
 //! SHELL find it, or why there is none -- as pure code: no task, no disk.
-//! The TypeScript engine's twin is `src/layers/launch.ts`, which says what
-//! each part follows; the two are held to `test/layers/launch.json`.
+//! The cases in `test/layers/launch.json` hold it.
 //!
 //! - `launch_groups`: for each kept program, in the order given, the groups
 //!   its install made, in Program Manager's start-up order (`groups_from`),
@@ -65,7 +64,7 @@ pub struct KeptStack<'a> {
 
 /// A flattened stack's files, and which its program's own layers carry:
 /// the native front end's library and the tests read a stack so
-/// (`flatFiles` in TypeScript).
+/// (`flat_files`).
 #[derive(Debug)]
 pub struct FlatFiles<'a> {
     files: BTreeMap<&'a str, &'a [u8]>,

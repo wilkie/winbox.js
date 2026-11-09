@@ -1,5 +1,4 @@
-//! TOOLHELP's walk of the modules (`TOOLHELP.DLL` seg1 `0a90`-`0ca7`). As
-//! `toolhelp/modules.ts`.
+//! TOOLHELP's walk of the modules (`TOOLHELP.DLL` seg1 `0a90`-`0ca7`).
 
 use super::structures::structure;
 use crate::call::{Answer, Args, Stop};

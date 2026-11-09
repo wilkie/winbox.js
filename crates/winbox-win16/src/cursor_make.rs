@@ -1,8 +1,7 @@
 //! Cursors made from bits, copied and destroyed. **Read out of `USER.EXE`**
 //! (seg12) and **recorded** by `curmake`. A cursor made is a block laid out
 //! as an icon's: the hotspot, the size, the mask's bytes a row, the planes
-//! and bits a pixel, then the mask and the picture as given. As
-//! `src/win16/user/cursor-make.ts`, which says more of each.
+//! and bits a pixel, then the mask and the picture as given.
 
 use winbox_machine::handle_for;
 

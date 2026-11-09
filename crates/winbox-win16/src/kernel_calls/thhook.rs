@@ -1,6 +1,6 @@
 //! KERNEL's variables that `THHOOK` points a reader at, and the global
-//! heap's own block that `GlobalMasterHandle` answers. As
-//! `kernel/thhook.ts`, which cites the read-outs; **recorded** by `kgaps`.
+//! heap's own block that `GlobalMasterHandle` answers. **Recorded** by
+//! `kgaps`.
 
 use winbox_machine::segment_selector;
 

@@ -1,8 +1,8 @@
 //! GDI drawing a string of a TrueType font for a printer's driver:
 //! `EngineExtTextOut` given a count of nought or more (`GDI.EXE` seg1
 //! `669a`, into `6223`), through the cache of glyphs GDI keeps at a
-//! `FONTINFO`'s 54h. The twin of `src/win16/gdi/engine-text.ts`; the
-//! reading out of each piece is there and in `kb/gdi/engineexttextout.md`.
+//! `FONTINFO`'s 54h. The reading out of each piece is in
+//! `kb/gdi/engineexttextout.md`.
 
 use crate::call::{Answer, Stop, call_named};
 use crate::engine::{Engine, GuestArg};

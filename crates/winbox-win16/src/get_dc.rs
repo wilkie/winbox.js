@@ -1,8 +1,6 @@
 //! `GetDC`, `GetWindowDC`, `GetDCEx` and `ReleaseDC`: USER's device
-//! context entries lent and given back (`dc_entries`), as the TypeScript
-//! engine's `GetDC.ts`, `GetWindowDC.ts`, `get-dc-ex.ts` and `ReleaseDC.ts`
-//! have them. A window's own context, which USER draws through itself,
-//! stays its own (`window_dc`).
+//! context entries lent and given back (`dc_entries`). A window's own
+//! context, which USER draws through itself, stays its own (`window_dc`).
 
 use crate::call::{Answer, Args, Stop};
 use crate::gdi::dc::DcBitmap;

@@ -3,7 +3,7 @@
 //! `DdeEnableCallback`, `DdeGetLastError`, the string handles' calls, the
 //! instance's window (`DMGWNDPROC`), the one place every callback is made
 //! (`5832`), and the queue of callbacks waiting (`4e66`, `5b60`), as
-//! `DDEML.DLL` seg1 has them. As `src/win16/ddeml/instance.ts`.
+//! `DDEML.DLL` seg1 has them.
 
 use crate::commdlg::api::Arg;
 

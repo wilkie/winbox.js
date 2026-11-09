@@ -514,8 +514,7 @@ pub fn load_bitmap(system: &mut System, instance: u16, name: Option<&MenuName>) 
             return 0;
         }
 
-        // The name's low word, as the TypeScript engine takes it: a name
-        // given as text, or none, is nought.
+        // The name's low word: a name given as text, or none, is nought.
         let id = match name {
             Some(MenuName::Number(id)) => *id,
             _ => 0,
@@ -539,8 +538,7 @@ pub fn load_bitmap(system: &mut System, instance: u16, name: Option<&MenuName>) 
         return system.bitmap_handle(copy);
     }
 
-    // No name is looked for as the number nought, as the TypeScript
-    // engine's `findResource` takes a null key.
+    // No name is looked for as the number nought.
     let mut name = name.cloned().unwrap_or(MenuName::Number(0));
 
     // Asked of the display driver's own instance, a number goes through the
@@ -854,8 +852,8 @@ mod tests {
         assert_ne!(select_object(&mut system, memory, plain), 0);
     }
 
-    /// With no module, a name given as text, or none, is the number nought,
-    /// as the TypeScript engine takes the name's low word.
+    /// With no module, a name given as text, or none, is the number nought:
+    /// the name's low word is taken.
     #[test]
     fn takes_a_system_bitmaps_name_as_its_low_word() {
         let mut system = System::new();

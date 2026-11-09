@@ -2,8 +2,7 @@
 //! it -- Write's Character ▸ Fonts, Paintbrush's Text ▸ Fonts, File
 //! Manager's Options ▸ Font and Clock's Settings ▸ Set Font -- used as a
 //! person at the page uses it, with `COMMDLG.DLL` on the drive and without
-//! it, when WinBox's own `ChooseFont` runs alone. As
-//! `test/win16/font_accessories_test.ts`.
+//! it, when WinBox's own `ChooseFont` runs alone.
 //!
 //! The host's time is the test's own, as in `accessories.rs`.
 

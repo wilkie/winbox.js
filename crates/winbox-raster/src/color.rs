@@ -4,9 +4,9 @@
 
 /// A colour, `0xAARRGGBB`.
 ///
-/// The word is unsigned here. The TypeScript engine's `value` and
-/// `a8r8g8b8` are the signed 32-bit number its shifts make, negative for any
-/// colour with alpha 0x80 or more -- every opaque one; the bits are the same.
+/// The word is unsigned here, not the signed 32-bit number a JavaScript shift
+/// makes, which is negative for any colour with alpha 0x80 or more -- every
+/// opaque one; the bits are the same.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {
     value: u32,
@@ -48,8 +48,8 @@ impl Color {
 
     /// Halfway, or `amount` of the way, to another colour; opaque. Each
     /// channel is made a 32-bit whole number, cut towards nought, and shifted
-    /// into place with the others combined by OR, as the TypeScript engine's
-    /// bit operations on its fractions do: an `amount` outside 0 to 1 that
+    /// into place with the others combined by OR, as bit
+    /// operations on fractions do: an `amount` outside 0 to 1 that
     /// takes a channel below 0 or past 255 spills into its neighbours.
     #[must_use]
     pub fn mix(&self, secondary: &Self, amount: f64) -> Self {

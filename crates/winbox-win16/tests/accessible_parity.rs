@@ -1,21 +1,20 @@
-//! The accessibility tree the Rust engine makes, held to the TypeScript
-//! engine's at the same places of the same runs
-//! (`test/raster/accessible-trees`, which `accessible_parity_test.ts`
-//! writes): Notepad with its menus open and closed, Clock, a dialog of
+//! The accessibility tree the Rust engine makes, held to the trees kept at
+//! the same places of the same runs (`test/raster/accessible-trees`):
+//! Notepad with its menus open and closed, Clock, a dialog of
 //! buttons, an edit control and the rest as the keyboard moves through it,
 //! one of each of USER's controls, and a program of the corpus.
 //!
 //! Each file names what was run, for how long, and its places, as a
 //! corpus's report names them (`stepMarks`): the survey presses the keys
 //! there and keeps a tree at each other place (`call_marks.rs`), each to
-//! be the TypeScript engine's to the character. A window's key is the
+//! be the kept one to the character. A window's key is the
 //! desktop's number for it in both, from the order the windows are made,
 //! not a handle, so nothing is set aside before they are compared.
 //!
 //! Each file is also this run's text to the byte: its run, its places and
 //! its count of calls as the file has them (the places are what the run
 //! is given), and the trees kept. `WINBOX_TREES=write` writes the trees
-//! from this run, as `accessible_parity_test.ts` did.
+//! from this run.
 //!
 //! Without the oracle's installation, the probes or the corpus's
 //! programs, what is not here passes with nothing to check.
@@ -31,8 +30,7 @@ use winbox_win16::survey::{self, Survey};
 
 use support::{Setup, installed, root};
 
-/// The order of a trees' file's keys, as `accessible_parity_test.ts`
-/// wrote them.
+/// The order of a trees' file's keys.
 const ORDER: &[&str] = &[
     "run",
     "seconds",
@@ -144,8 +142,8 @@ fn made(run: &serde_json::Value) -> Option<(System, String, Vec<u8>)> {
 fn kept(text: &str) -> Option<Vec<String>> {
     let file: serde_json::Value = serde_json::from_str(text).unwrap();
     let (mut system, path, bytes) = made(&file["run"])?;
-    // As long as the TypeScript engine's run, whose frames may take it past
-    // its seconds: to its last place, and half a second more.
+    // As long as the kept run, whose frames may take it past its seconds:
+    // to its last place, and half a second more.
     let last = file["stepMarks"]
         .as_array()
         .unwrap()
@@ -167,7 +165,7 @@ fn kept(text: &str) -> Option<Vec<String>> {
 }
 
 #[test]
-fn the_trees_are_the_typescript_engines() {
+fn the_trees_are_the_kept_ones() {
     let mut checked = 0;
 
     for entry in std::fs::read_dir(trees()).unwrap().flatten() {

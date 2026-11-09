@@ -1,7 +1,7 @@
 //! What a task starts with and asks for first, as the `environ` and
-//! `localgro` probes recorded it. As `test/win16/task_test.ts`; its local
-//! heap's other cases are `winbox-machine`'s `local.rs` tests, and its
-//! `RegisterWindowMessage` case `user.rs`'s.
+//! `localgro` probes recorded it. Its local heap's other cases are
+//! `winbox-machine`'s `local.rs` tests, and its `RegisterWindowMessage` case
+//! `user.rs`'s.
 
 mod support;
 

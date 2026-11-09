@@ -1,15 +1,12 @@
-//! The pixels of the controls that keep state of their own, as winbox.js's
-//! `desktop.ts` draws them for `control-classes.ts`: a list box's rows,
-//! its highlight, its focus rectangle and its scrolling (`listText`,
-//! `scrollClient`, `listFocus`, `listErase`), a combo box's button and
-//! field (`paintCombo`), and the scroll bar control (`controls.ts`'s
-//! `paintControl`). The edit control's are `edit_paint.rs`.
+//! The pixels of the controls that keep state of their own: a list box's
+//! rows, its highlight, its focus rectangle and its scrolling, a combo
+//! box's button and field, and the scroll bar control. The edit control's
+//! are `edit_paint.rs`.
 //!
 //! What a control's parent answered `WM_CTLCOLOR` stands, as for the
 //! buttons and static text (`control_paint.rs`), for the system colours it
 //! replaces; a list box's scrolling and a combo box's own painting are
-//! drawn in the system colours whatever was answered, as the TypeScript
-//! engine draws them.
+//! drawn in the system colours whatever was answered.
 
 use std::rc::Rc;
 
@@ -160,8 +157,8 @@ impl System {
 
     /// A window's own bars' held pages, as painting its frame has just cut
     /// them back: along the bars as the frame drew them, around the client
-    /// area it left (`client`, what `paint_frame` answers). The TypeScript
-    /// engine's painter cuts the press's own record as it draws a bar, so
+    /// area it left (`client`, what `paint_frame` answers). The
+    /// painter cuts the press's own record as it draws a bar, so
     /// the length is the painted bar's, which shares its outer line with
     /// the window's edge only where there is an edge -- not
     /// `scroll_bar_rect`'s, which for a window without edges but with a
@@ -306,7 +303,7 @@ impl System {
     /// Moves a list box's client pixels down by `dy`, clearing rows `from`
     /// to `to` in the window colour, as `ScrollWindow` and the erase after
     /// it do -- in the system's window colour, not what the parent
-    /// answered, as the TypeScript engine clears them.
+    /// answered.
     pub fn list_scroll_client(&mut self, index: usize, dy: i32, from: i32, to: i32) {
         let Some(bitmap) = self.window_view(index) else {
             return;

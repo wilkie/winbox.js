@@ -1,6 +1,5 @@
 //! KERNEL's calls that do nothing in the retail Windows 3.1, and its small
-//! answers of what a debugger is told, each as `KRNL386.EXE` has it. As
-//! `kernel/retail.ts`.
+//! answers of what a debugger is told, each as `KRNL386.EXE` has it.
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;

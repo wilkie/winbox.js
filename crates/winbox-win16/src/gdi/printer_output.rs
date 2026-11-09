@@ -1,8 +1,7 @@
-//! Drawing on a printer driver's device context, as Windows' GDI hands it
-//! to the driver: the pens and brushes realized by the driver's
-//! `RealizeObject`, the colours by its `ColorInfo`, and the figures and
-//! the text by its `Output` and `ExtTextOut`. The twin of
-//! `src/win16/gdi/printer-output.ts`.
+//! Drawing on a printer driver's device context, as Windows' GDI hands it to
+//! the driver: the pens and brushes realized by the driver's
+//! `RealizeObject`, the colours by its `ColorInfo`, and the figures and the
+//! text by its `Output` and `ExtTextOut`.
 //!
 //! What GDI keeps of a context in its own heap -- the `DRAWMODE` at +44h,
 //! the realized pen and brush, the `TEXTXFORM` -- is kept here in a block
@@ -1628,10 +1627,9 @@ pub async fn driver_text_extent(
 }
 
 /// `GetCharWidth` on a driver's context (`GDI.EXE` seg3 `15cb`, into
-/// `2098`): the driver's `GetCharWidth` asked, and each width two more for
-/// a bold the device cannot make and half the height less one more for a
-/// slant, carried into the context's units under a mapping mode. As
-/// `driverCharWidth` in `printer-output.ts`.
+/// `2098`): the driver's `GetCharWidth` asked, and each width two more for a
+/// bold the device cannot make and half the height less one more for a
+/// slant, carried into the context's units under a mapping mode.
 ///
 /// # Errors
 ///

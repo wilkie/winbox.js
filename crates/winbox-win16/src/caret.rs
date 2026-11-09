@@ -1,4 +1,4 @@
-//! The caret, as winbox.js's `caret.ts` keeps it: one for the whole system,
+//! The caret: one for the whole system,
 //! owned by a window, shown by inverting a rectangle of that window's
 //! client area and blinking on a timer.
 //!
@@ -9,8 +9,7 @@
 //!
 //! The blink is a system timer: `WM_SYSTIMER`, 118h, which a program's loop
 //! takes and dispatches like any message and which calls the caret's own
-//! procedure. The TypeScript engine's replay keeps a virtual clock on which
-//! it never runs; this engine's clock is the instructions run, as every
+//! procedure. The engine's clock is the instructions run, as every
 //! other timer's is, so the caret blinks on it.
 //!
 //! Not yet measured: a caret made from a bitmap, or grey (`hbm` 1), which
@@ -87,7 +86,7 @@ impl System {
             return;
         };
         // Through the window's own device context where its class has one;
-        // else through USER's own view of the client area (`caret.ts`).
+        // else through USER's own view of the client area.
         let class_style = self.windows[index]
             .as_ref()
             .and_then(|window| self.class_named(&window.class))

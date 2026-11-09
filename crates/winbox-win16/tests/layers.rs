@@ -1,8 +1,8 @@
 //! The layer format (`kb/formats/layer.md`), held to
 //! `test/layers/stack.json`, which `test/layers/layer_test.ts` holds the
-//! TypeScript engine to as well: the same ids, the same flattened listing
-//! and the same zip bytes -- the hashes the TypeScript engine took from
-//! `crypto.subtle`, which WinBox's own sha256 must give too. And a stack
+//! page's layer code to as well: the same ids, the same flattened listing
+//! and the same zip bytes -- the hashes taken from `crypto.subtle`, which
+//! WinBox's own sha256 must give too. And a stack
 //! materialised into folders of the host's and put together by
 //! `HostDrive::layered` lists and reads as the flattened stack does.
 
@@ -117,7 +117,7 @@ fn stack(made: &BTreeMap<String, Layer>, names: &Value) -> Vec<Layer> {
 }
 
 #[test]
-fn the_same_ids_listing_and_zips_as_the_typescript_engine() {
+fn the_same_ids_listing_and_zips_as_the_fixtures() {
     let fixture = fixture();
     let expected = &fixture["expected"];
     let made = layers(&fixture);

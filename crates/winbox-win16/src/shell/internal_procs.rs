@@ -1,7 +1,6 @@
 //! The two window procedures SHELL exports for its own windows: its DDE
 //! windows' (`HERETHARBETYGARS`) and the one its About box's icon is
-//! subclassed with (`WCI`). As `shell/internal-procs.ts`, which cites the
-//! read-outs; **recorded** by `ugaps`.
+//! subclassed with (`WCI`). **Recorded** by `ugaps`.
 
 use winbox_machine::segment_selector;
 

@@ -1,6 +1,5 @@
 //! One window at a time kept from drawing on the screen, as `USER.EXE`
-//! keeps it (seg13 `2276`). Twin of the TypeScript engine's
-//! `lock-window-update.ts`. **Read out**:
+//! keeps it (seg13 `2276`). **Read out**:
 //!
 //! * Locking answers 1; locking while a window is locked, and unlocking with
 //!   none locked, nought (`22af`, `22e5`).
@@ -492,7 +491,6 @@ impl System {
     /// What is made due of the desktop told to the records USER keeps, as
     /// `tell_lock` tells a window's (`USER.EXE` seg1 `3f41`-`3f7c`): the box
     /// given, or all, within the screen, the desktop window's client area.
-    /// The TypeScript engine's `tellDesktop`.
     pub(crate) fn tell_desktop(&mut self, rect: Option<Rect>) {
         if !self.any_kept() {
             return;

@@ -2,10 +2,10 @@
 //! (`kb/formats/layer.md`, "An installer into a layer"): Caribbean
 //! Treasure's SETUP.EXE, its media placed at `C:\CARIBB` on the asset
 //! bundle's base for the VGA under an empty top, on the virtual clock, its
-//! clicks and keys where the TypeScript engine's run made them
+//! clicks and keys where the fixture's run made them
 //! (`test/layers/caribb-layer.json`'s `stepMarks`). Its top's changes made a
-//! layer over the base, the media dropped, are the TypeScript engine's
-//! layer, entry for entry, stamps and all (`test/layers/caribb_test.ts`).
+//! layer over the base, the media dropped, are the fixture's layer, entry
+//! for entry, stamps and all.
 //! It runs as the page runs an installer, WinBox's Program Manager the
 //! shell (`progman::start_shell`), so the layer holds the group the
 //! installer asks it for.
@@ -13,7 +13,7 @@
 //! Skipped without the corpus's program, the bundle (`pnpm assets`) or the
 //! fixture. The fixture is this run's, its text to the byte, the clicks
 //! and keys it was given kept as it has them; `CARIBB_LAYER_WRITE=1` writes
-//! it from the run, as `caribb_test.ts` did.
+//! it from the run.
 
 mod support;
 
@@ -83,10 +83,10 @@ fn caribbean_treasures_installer_into_a_layer() {
         ));
     }
 
-    // The TypeScript engine's clicks and keys, each when its clock came to
-    // it: the installer waits for each, in a box or a dialog, and the two
-    // engines' instructions to there part by a few dozen, which a mark held
-    // to its instruction would wait on for ever.
+    // The fixture's clicks and keys, each when its clock came to it: the
+    // installer waits for each, in a box or a dialog, and the instructions
+    // to there part by a few dozen between runs, which a mark held to its
+    // instruction would wait on for ever.
     let mut marks = fixture["stepMarks"].clone();
 
     for mark in marks.as_array_mut().into_iter().flatten() {
@@ -151,12 +151,9 @@ fn caribbean_treasures_installer_into_a_layer() {
     assert_eq!(
         lines(&made["entries"]),
         lines(&fixture["layer"]["entries"]),
-        "the layer's entries, as the TypeScript engine's"
+        "the layer's entries, as the fixture's"
     );
-    assert_eq!(
-        made, fixture["layer"],
-        "the layer, as the TypeScript engine's"
-    );
+    assert_eq!(made, fixture["layer"], "the layer, as the fixture's");
     assert_group(&installed.layer);
 
     // The fixture's text, from this run: its places as it has them.
@@ -191,8 +188,7 @@ fn caribbean_treasures_installer_into_a_layer() {
     );
 }
 
-/// The order of an installed layer's fixture's keys, as `caribb_test.ts`
-/// and `widget_test.ts` wrote them: the run's places, its layer's manifest
+/// The order of an installed layer's fixture's keys: the run's places, its layer's manifest
 /// (`kb/formats/layer.md`) and what was dropped and referred to.
 const LAYER_ORDER: &[&str] = &[
     "stepMarks",
@@ -227,7 +223,7 @@ const LAYER_ORDER: &[&str] = &[
 ];
 
 /// The group as the page and `--list` show it under the program kept:
-/// its file the layer's, its item as the TypeScript engine reads it.
+/// its file the layer's, its item as the fixture reads it.
 fn assert_group(layer: &Layer) {
     let flat = program_files(std::slice::from_ref(layer)).unwrap();
     let groups = program_groups(|path| {
@@ -262,9 +258,8 @@ fn assert_group(layer: &Layer) {
         ]]
     );
 
-    // And as the launcher lists it (`launch.rs`), as `caribb_test.ts` has
-    // it too: the item run as File Open runs it, the game found in its own
-    // directory.
+    // And as the launcher lists it (`launch.rs`): the item run as File Open
+    // runs it, the game found in its own directory.
     let own = layer
         .manifest
         .entries

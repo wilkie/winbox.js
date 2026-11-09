@@ -1,6 +1,5 @@
 //! A printer's environment: the DEVMODE GDI keeps for a port, which a
-//! driver's `Enable` and `ExtDeviceMode` keep there and read back. The twin
-//! of `src/win16/gdi/environment.ts`.
+//! driver's `Enable` and `ExtDeviceMode` keep there and read back.
 //!
 //! **Read out** of `GDI.EXE` (seg7 `0571`, `05ed`; seg4 `0438`): GDI keeps
 //! twenty slots, each the atom of a port's name -- a colon at its end left

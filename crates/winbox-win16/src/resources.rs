@@ -19,7 +19,7 @@ use crate::system::System;
 /// Where a module's resources' handles start.
 const FIRST: u16 = 0x4000;
 
-/// `HFILE_ERROR`, as the TypeScript engine answers it.
+/// `HFILE_ERROR`, the word a failed open answers.
 const HFILE_ERROR: u16 = 0xffff;
 
 /// What a resource is asked for by: a number, or a name.
@@ -65,7 +65,7 @@ fn named(text: String) -> Wanted {
     }
 }
 
-/// An identity as text, as the TypeScript engine's `String` makes it.
+/// An identity as text: a number in decimal, a name as it is.
 fn text_of(id: &ResourceId) -> String {
     match id {
         ResourceId::Number(number) => number.to_string(),
@@ -414,8 +414,7 @@ pub fn free_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let mut again = Args::repeat(block);
     let freed = memory::global_free(system, &mut again)?;
 
-    // The TypeScript engine answers whether `GlobalFree` answered other
-    // than nought.
+    // It answers whether `GlobalFree` answered other than nought.
     Ok(Answer::Word(u16::from(freed != Answer::Word(0))))
 }
 
@@ -655,8 +654,7 @@ async fn call_handler(
     Ok(answer as u16)
 }
 
-/// `LoadResource` through a handler a program set (seg1 `8957`-`8a07`), as
-/// `resource-handlers.ts`'s: `None` where none is set for its type.
+/// `LoadResource` through a handler a program set (seg1 `8957`-`8a07`): `None` where none is set for its type.
 async fn load_through_handler(
     engine: &Engine,
     instance: u16,
@@ -925,7 +923,7 @@ mod tests {
     }
 
     /// The resource of that number matches, and a name as a name, without
-    /// regard to case. As `test/win16/find_resource_named_test.ts`.
+    /// regard to case.
     #[test]
     fn a_number_matches_its_resource_and_a_name_its_name() {
         use super::matches;

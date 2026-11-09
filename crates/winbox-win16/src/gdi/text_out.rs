@@ -1,8 +1,7 @@
-//! Text drawn: `TextOut` and `ExtTextOut`, onto the pixels a device
-//! context draws on, as the TypeScript engine's `Surface` draws it -- the
-//! ground behind the text under the background mode and colour, the glyphs
-//! in the text colour, and the underline and strikeout -- each as recorded
-//! (`kb/gdi/textout.md`).
+//! Text drawn: `TextOut` and `ExtTextOut`, onto the pixels a device context
+//! draws on -- the ground behind the text under the background mode and
+//! colour, the glyphs in the text colour, and the underline and strikeout --
+//! each as recorded (`kb/gdi/textout.md`).
 //!
 //! The font is the one selected, realised as `text` realises it: a strike,
 //! a plotter font, whose strokes are drawn with the display driver's line,
@@ -15,17 +14,16 @@
 //! the white one.
 //!
 //! The colours are looked up as the text is drawn, against the palette of
-//! the pixels drawn on. The TypeScript engine looks a palette's colour up
-//! as `SetTextColor` and `SetBkColor` are called instead, against the
-//! bitmap selected then; the two part company only for a palette's colour
-//! set before a memory context's bitmap is selected, which nothing recorded
-//! does.
+//! the pixels drawn on, not as `SetTextColor` and `SetBkColor` are called,
+//! against the bitmap selected then; the two part company only for a
+//! palette's colour set before a memory context's bitmap is selected, which
+//! nothing recorded does.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
-// Deliberately: coordinates in a JavaScript number's precision, as the
-// TypeScript engine's are.
+// Deliberately: coordinates in a double's precision, since every rule here
+// was measured through one.
 #![allow(clippy::cast_precision_loss)]
 
 use winbox_raster::line_walk::{self, LineTie, Walk};
@@ -100,8 +98,7 @@ pub(crate) fn target_of(system: &mut System, index: usize) -> DeviceBitmap {
 }
 
 /// What drawing text in a device context draws with: the pixels, the font,
-/// and the context's text state -- the TypeScript engine's `Surface`, as
-/// far as text goes.
+/// and the context's text state.
 pub(crate) struct Writer {
     pub target: DeviceBitmap,
     font: LogicalFont,
@@ -119,8 +116,7 @@ pub(crate) struct Writer {
 
 impl Writer {
     /// A device context's writer, by its index. The font selected must be
-    /// there: the TypeScript engine has nothing to draw text with else, and
-    /// throws.
+    /// there: there is nothing to draw text with else, and this stops.
     pub(crate) fn of(system: &mut System, index: usize) -> Result<Self, Stop> {
         let Some(font) = font_of(system, index)? else {
             return Err(Stop::Unsupported("text drawn with no font"));
@@ -258,9 +254,8 @@ impl Writer {
             return Ok((x, y));
         }
 
-        // Measured twice where no run width is given, as the TypeScript
-        // engine measures: an outline's measuring fits glyphs, and the
-        // interpreter keeps state from one to the next.
+        // Measured twice where no run width is given: an outline's measuring
+        // fits glyphs, and the interpreter keeps state from one to the next.
         let (_, height) = self.measure(text)?;
         let width = match run_width {
             Some(width) => width,
@@ -435,8 +430,8 @@ impl Writer {
     ///
     /// # Errors
     ///
-    /// A strike's region of negative size, which a negative character
-    /// extra can make and the TypeScript engine throws at.
+    /// A strike's region of negative size, which a negative character extra
+    /// can make, stops.
     pub(crate) fn fill_text(&mut self, x: i64, y: i64, text: &[u8]) -> Result<(), Stop> {
         let (x, y) = self.aligned(x, y, text, None)?;
 
@@ -552,15 +547,15 @@ impl Writer {
     /// across. The ground and any rule run from the pen to the last
     /// character's own advance past its own pen. **Recorded** by `extout`.
     ///
-    /// The characters are drawn one at a time, each aligned again by its
-    /// own width as the TypeScript engine aligns it, and without an array
-    /// each moves the pen by its own measure less the run's overhang -- the
-    /// advance a whole run gives it. `VGA.DRV`'s `StrBlt` lays a smeared
-    /// font's glyphs out with no array by adding its bold pixel to the
-    /// character extra (seg2 `0970`), a column a glyph, and the overhang
-    /// once, past the run. **Recorded** by `lbtext`: MS Sans Serif asked
-    /// bold, through `ExtTextOut` with `ETO_OPAQUE`, is laid out as
-    /// `TextOut` lays it, in a window's DC and an owner-drawn list's.
+    /// The characters are drawn one at a time, each aligned again by its own
+    /// width, and without an array each moves the pen by its own measure
+    /// less the run's overhang -- the advance a whole run gives it.
+    /// `VGA.DRV`'s `StrBlt` lays a smeared font's glyphs out with no array
+    /// by adding its bold pixel to the character extra (seg2 `0970`), a
+    /// column a glyph, and the overhang once, past the run. **Recorded** by
+    /// `lbtext`: MS Sans Serif asked bold, through `ExtTextOut` with
+    /// `ETO_OPAQUE`, is laid out as `TextOut` lays it, in a window's DC and
+    /// an owner-drawn list's.
     pub(crate) fn ext_text(
         &mut self,
         x: i64,
@@ -796,9 +791,8 @@ fn justified_spacing(
     };
     let mut drawn = state;
     let added = extras(&mut drawn);
-    // Each character measured as a string of one, which for an outline
-    // whose glyph tables cannot be read stops, as the TypeScript engine's
-    // measure throws.
+    // Each character measured as a string of one, which for an outline whose
+    // glyph tables cannot be read stops.
     let spacing = text
         .iter()
         .enumerate()
@@ -858,9 +852,9 @@ pub(crate) fn device_rect(system: &System, index: usize, rect: Bounds) -> Bounds
     }
 }
 
-/// The device context a drawing call names: `None` for a handle that
-/// stands for nothing, answered as failure; a handle that stands for
-/// something else stops, where the TypeScript engine throws.
+/// The device context a drawing call names: `None` for a handle that stands
+/// for nothing, answered as failure; a handle that stands for something else
+/// stops.
 fn drawing_dc(system: &System, hdc: u16) -> Result<Option<usize>, Stop> {
     if system.handles.resolve(hdc).is_none() {
         return Ok(None);

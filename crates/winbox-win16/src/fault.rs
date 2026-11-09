@@ -1,6 +1,5 @@
 //! A program that faults, as KERNEL takes it (`KRNL386.EXE` seg1 `5e1b`),
-//! as winbox.js's `kernel/fault.ts` has it: **read out**, and **recorded**
-//! by `fault` through the screen.
+//! **read out**, and **recorded** by `fault` through the screen.
 //!
 //! * If the instruction can be stepped over, the first box offers the
 //!   choice: Ignore steps over it and the program goes on; Close goes on to
@@ -16,11 +15,11 @@
 //! debugger's Cancel, a procedure TOOLHELP's `InterruptRegister` was given,
 //! and a fault in KERNEL's or USER's own code, which winbox.js has none of.
 //!
-//! As in the TypeScript engine, only a general protection fault reaches
+//! Only a general protection fault reaches
 //! here: a processor's other faults -- a stack fault, a segment not
 //! present -- are taken by no handler of the engine's, and the run stops at
-//! them. The exit code is KERNEL's own; the Rust engine has no host told
-//! of a task's end, as the TypeScript engine's `onExit` is, to give it to.
+//! them. The exit code is KERNEL's own; the engine has no host told
+//! of a task's end to give it to.
 
 use winbox_machine::segment_selector;
 
@@ -62,7 +61,7 @@ fn file_part(path: &str) -> String {
 
 impl System {
     /// What a stop of the processor's comes to: a general protection fault
-    /// the TypeScript engine's processor raises for the instruction, taken
+    /// the processor raises for the instruction, taken
     /// through KERNEL's boxes; another fault it raises, by its own vector;
     /// anything else, the stop as it was (`fault_vector.rs`).
     pub(crate) fn processor_stop(&self, exit: winbox_cpu::Exit) -> Event {
@@ -89,7 +88,7 @@ impl System {
 
     /// The instruction at CS:IP's bytes as KERNEL reads them, through CS;
     /// `None` past its limit. The offset wraps in 64 KiB, as the
-    /// JavaScript core's `read8` wraps it, unless the instruction that
+    /// processor's byte read wraps it, unless the instruction that
     /// faulted addresses in 32 bits.
     fn code_byte(&self, wide: bool, at: u16) -> Option<u8> {
         let segment = self.cpu.segments[winbox_cpu::CS];

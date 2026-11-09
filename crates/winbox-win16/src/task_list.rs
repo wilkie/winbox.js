@@ -1,4 +1,4 @@
-//! Switching between programs, as winbox.js's `task-list.ts` has it: the
+//! Switching between programs, as winbox.js has it: the
 //! keys USER's system queue takes for itself -- Control and Escape, Print
 //! Screen, and the hot keys -- and what they lead to: the Task List,
 //! TASKMAN.EXE, started by `DefWindowProc` for `SC_TASKLIST`; a copy of the

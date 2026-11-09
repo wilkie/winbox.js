@@ -20,8 +20,8 @@ use crate::system::System;
 pub enum HostProc {
     /// The procedure of one of USER's own classes -- its hidden windows',
     /// an icon's title's -- which answers as `DefWindowProc` does: one for
-    /// each class, by its name, as the TypeScript engine makes each a
-    /// function of its own, and so a thunk of its own (`starmerc` asks).
+    /// each class, by its name, each a function of its own, and so a thunk
+    /// of its own (`starmerc` asks).
     DefWindow(String),
     Dialog,
     /// A control's, by its class, upper case.

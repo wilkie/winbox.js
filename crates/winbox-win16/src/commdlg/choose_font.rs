@@ -5,7 +5,6 @@
 //! and `chfont2`; each step is COMMDLG's, at the address the comments give
 //! ([[topic:choose-font]] in the knowledge base), and each call into
 //! USER, GDI and KERNEL is made as COMMDLG makes it (`guest_calls.rs`).
-//! As `src/win16/commdlg/choose-font.ts`.
 //!
 //! Where COMMDLG runs on Windows 3.0 (`[0CAEh]` below 30Ah) it takes other
 //! ways -- `EnumFonts` for `EnumFontFamilies`, a private notification

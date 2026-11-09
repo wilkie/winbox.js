@@ -2,8 +2,7 @@
 //! the windows in it, as `RedrawWindow`, `InvalidateRect`, `InvalidateRgn`,
 //! `ValidateRect`, `ValidateRgn`, `ScrollWindow`, `ScrollWindowEx` and the
 //! end of `LockWindowUpdate` make it (`USER.EXE` seg1 `3ed7`, its walk `4034` and
-//! what each window is given `4202`). Twin of the TypeScript engine's
-//! `invalidate-through.ts`. **Read out**:
+//! what each window is given `4202`). **Read out**:
 //!
 //! * A window is passed over where its rectangle, cut to the client areas
 //!   it is in, is empty, or meets nothing of the region (`4058`-`40a1`,
@@ -148,8 +147,7 @@ impl System {
 
     /// USER's bit 4 of the byte at 26h of a window: made by a module marked
     /// for Windows 3.10 or later, set by `CreateWindow` where `GetExpWinVer`
-    /// answers 30Ah or more (`USER.EXE` seg8 `0425`-`0432`). The TypeScript
-    /// engine's `madeFor31`.
+    /// answers 30Ah or more (`USER.EXE` seg8 `0425`-`0432`).
     pub(crate) fn made_for_31(&mut self, index: usize) -> bool {
         self.expected_version(index) >= 0x30a
     }
@@ -448,7 +446,6 @@ impl System {
     /// A rectangle of the screen cut to the client area of each window a
     /// window is in (seg1 `8bb3`): none where the window or one of them is
     /// hidden, or one of them minimized. An empty rectangle is not none.
-    /// The TypeScript engine's `cutToParents`.
     pub(crate) fn cut_to_parents(&self, index: usize, rect: Rect) -> Option<Rect> {
         if !self.shown(index).visible {
             return None;
@@ -497,7 +494,7 @@ impl System {
     /// none, made due or valid through it and the windows in it (`3ed7`).
     /// `told` is what is made due, in its client area's terms, for the lock
     /// (`3f41`-`3f7c`). False where the window does not show: nothing is
-    /// painted now either. The TypeScript engine's `redrawThrough`.
+    /// painted now either.
     pub(crate) fn redraw_through(
         &mut self,
         index: usize,

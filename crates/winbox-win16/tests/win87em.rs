@@ -1,7 +1,6 @@
 //! WIN87EM and the OS fixups: a program's floating-point instructions made
 //! the emulator's or left the coprocessor's as they are linked, and the
-//! emulator carrying them out. As `test/win16/win87em_test.ts`; `__FPMATH`'s
-//! cases are `win87em.rs`'s own tests.
+//! emulator carrying them out. `__FPMATH`'s cases are `win87em.rs`'s own tests.
 //!
 //! An OS fixup is added where it is, a word at its offset and one at the
 //! byte after (`linker.rs`'s `os_fixup`): without a coprocessor the `FWAIT`

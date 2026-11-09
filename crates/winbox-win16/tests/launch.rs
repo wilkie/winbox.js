@@ -1,5 +1,5 @@
 //! The launcher's list (`src/launch.rs`), held to `test/layers/launch.json`,
-//! which `test/layers/launch_test.ts` holds the TypeScript engine's twin
+//! which `test/layers/launch_test.ts` holds the page's launcher code
 //! to as well: synthetic stacks, their files in hexadecimal.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -128,7 +128,7 @@ fn plain(groups: &[LaunchGroup]) -> Value {
 }
 
 #[test]
-fn the_launchers_list_is_the_typescript_engines() {
+fn the_launchers_list_is_the_fixtures() {
     let fixture: Value = serde_json::from_str(
         &std::fs::read_to_string(root().join("test/layers/launch.json")).unwrap(),
     )

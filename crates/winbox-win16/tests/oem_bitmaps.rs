@@ -1,8 +1,7 @@
-//! The display drivers' OEM bitmaps, read as the TypeScript engine's
-//! `driverResources` reads them: each bitmap's size and a digest of its
-//! indices, taken from that engine over the same drivers. The drivers are
-//! the installation's, under `oracle/build`, which a checkout does not have
-//! until the oracle is built; without them there is nothing to read.
+//! The display drivers' OEM bitmaps: each bitmap's size and a digest of its
+//! indices, recorded over the same drivers. The drivers are the installation's,
+//! under `oracle/build`, which a checkout does not have until the oracle is
+//! built; without them there is nothing to read.
 
 use std::path::Path;
 
@@ -50,7 +49,7 @@ fn read(drive: &str, file: &str, display: DisplayKind) -> Option<String> {
 }
 
 #[test]
-fn as_the_typescript_engine_reads_them() {
+fn are_the_recorded_sizes_and_digests() {
     let drivers = [
         ("drive-c", "VGA.DRV", 16, false, VGA),
         ("drive-c-hercules", "HERCULES.DRV", 2, false, HERCULES),

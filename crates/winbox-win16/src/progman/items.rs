@@ -1,7 +1,7 @@
 //! A group's items: made from its file (seg4 `1735`), made by `AddItem`
 //! (`CreateNewItem`, seg4 `105d`), placed (seg2 `1325`), taken out (seg4
 //! `15a8`), and the group window's scroll bars made to fit them (seg2
-//! `0b04`), as `PROGMAN.EXE` does each. As `src/win16/progman/items.ts`.
+//! `0b04`), as `PROGMAN.EXE` does each.
 //!
 //! `PROGMAN.EXE` keeps an item in memory as a structure of 16h bytes (seg4
 //! `0f27`): the next, its slot, the instance of the program it started,

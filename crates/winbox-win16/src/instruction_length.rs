@@ -1,6 +1,6 @@
 //! How long an instruction is, as KERNEL works it out to step over the one
 //! a program faulted on when Ignore is chosen (`KRNL386.EXE` seg1 `a2f4`),
-//! as winbox.js's `instruction-length.ts` follows it: its prefixes, its
+//! as it does: its prefixes, its
 //! opcode, and the operands its encoding says follow -- a ModR/M byte and
 //! its displacement, a SIB byte with 32-bit addressing, an immediate or an
 //! address. 16-bit operands and addresses unless a prefix says 32. `None`

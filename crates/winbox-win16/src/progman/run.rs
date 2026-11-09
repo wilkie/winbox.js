@@ -3,7 +3,7 @@
 //! File Open of the current group's first item (`067d`-`06ba`), the item
 //! started (`03e7`-`05c9`), and Program Manager's boxes (seg1 `00ec`) with
 //! the strings they take from `PROGMAN.EXE`'s string table, kept here by
-//! their numbers. As `src/win16/progman/run.ts`. Recorded by `pmitem`.
+//! their numbers. Recorded by `pmitem`.
 
 use super::dde::{D_QUIET, describe};
 use super::loaded;

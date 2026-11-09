@@ -4,21 +4,19 @@
 //! USER's two that ask GDI's: a tabbed string's extent and the dialog base
 //! units.
 //!
-//! The font is the one selected, realised as the TypeScript engine realises
-//! it: a stock font as its face's nearest strike to its cell, a made one as
-//! the mapper answered it -- a strike, a plotter font or an outline face. An
-//! outline whose glyph tables cannot be read stops, where the TypeScript
-//! engine throws.
+//! The font is the one selected: a stock font as its face's nearest strike
+//! to its cell, a made one as the mapper answered it -- a strike, a plotter
+//! font or an outline face. An outline whose glyph tables cannot be read
+//! stops.
 //!
 //! `AddFontResource` and `RemoveFontResource` add a font file to GDI's
 //! table and take it away (`added`).
 //!
 //! A handle that stands for something other than a device context is
-//! answered as the TypeScript engine answers it, which finds no font there:
-//! `GetTextMetrics` and `SetTextJustification` answer 1, and the rest as for
-//! a context with no font. Where the TypeScript engine would throw --
-//! measuring with no device context, or with no font, or writing to a
-//! structure that is not there -- this stops.
+//! answered as finding no font there: `GetTextMetrics` and
+//! `SetTextJustification` answer 1, and the rest as for a context with no
+//! font. Measuring with no device context, or with no font, or writing to a
+//! structure that is not there, stops.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -94,8 +92,7 @@ pub fn realised(system: &mut System, object: usize) -> Result<Option<LogicalFont
     }
 }
 
-/// What an outline whose glyph tables cannot be read stops with, where the
-/// TypeScript engine throws.
+/// What an outline whose glyph tables cannot be read stops with.
 pub(crate) fn unreadable(_: Fault) -> Stop {
     Stop::Unsupported("a TrueType font whose glyph tables cannot be read")
 }
@@ -118,8 +115,7 @@ pub fn font_of(system: &mut System, index: usize) -> Result<Option<LogicalFont>,
 /// The text metrics of a device context's font: `None` for a handle that
 /// stands for nothing, and an answer of `None` for a context with no font --
 /// or for a handle that stands for something other than a device context,
-/// which the TypeScript engine finds no font in and answers as it answers a
-/// context with none.
+/// which has no font and is answered as a context with none is.
 pub fn get_text_metrics(system: &mut System, hdc: u16) -> Result<Option<Option<TextMetric>>, Stop> {
     if system.handles.resolve(hdc).is_none() {
         return Ok(None);
@@ -181,9 +177,8 @@ pub(crate) fn get_text_metrics_call(system: &mut System, args: &mut Args) -> Res
 /// * The term is kept in the device context. A bitmap font's
 ///   `GetTextExtent` does not move it on; a plotter font's moves it on once.
 ///
-/// Not followed, as the TypeScript engine does not: an extra with a count of
-/// nought, which divides by nought in GDI; GDI keeping a negative advance
-/// from going below nought.
+/// Not followed: an extra with a count of nought, which divides by nought in
+/// GDI; GDI keeping a negative advance from going below nought.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Justification {
     pub extra: i32,
@@ -284,9 +279,9 @@ pub(crate) fn justified_extent(
 /// count of nought turns it off. 1, or nought for a handle that stands for
 /// nothing.
 ///
-/// A handle that stands for something other than a device context answers
-/// 1, as the TypeScript engine's does: it keeps the justification on
-/// whatever the handle stands for, where nothing reads it again.
+/// A handle that stands for something other than a device context answers 1:
+/// the justification is kept on whatever the handle stands for, where
+/// nothing reads it again.
 pub fn set_text_justification(system: &mut System, hdc: u16, extra: i16, count: i16) -> u16 {
     if system.handles.resolve(hdc).is_none() {
         return 0;
@@ -342,8 +337,7 @@ pub(crate) fn sliced(text: &[u8], count: i32) -> &[u8] {
 /// in `MM_LOMETRIC`. Width in the low word.
 ///
 /// The string is what the program's pointer reads to its nought, cut to
-/// `count` as the TypeScript engine cuts it. The clip region does not come
-/// into it.
+/// `count`. The clip region does not come into it.
 pub fn get_text_extent(
     system: &mut System,
     hdc: u16,
@@ -388,10 +382,10 @@ pub fn get_text_extent(
     Ok(pack(across, down))
 }
 
-/// A string argument as the TypeScript engine reads one: a string that
-/// cannot be read to its nought turns the call away, answering nought
-/// (**recorded** by `badarg`). A null pointer is none there, and one whose
-/// segment is nought a number, which no measuring call can take.
+/// A string argument: a string that cannot be read to its nought turns the
+/// call away, answering nought (**recorded** by `badarg`). A null pointer is
+/// none there, and one whose segment is nought a number, which no measuring
+/// call can take.
 pub(crate) enum Text {
     Read(Vec<u8>),
     Refused,
@@ -631,10 +625,10 @@ pub(crate) fn system_font_object(system: &mut System) -> Option<usize> {
 /// System font is asked of the strike: another font object realised to the
 /// same strike counts.
 ///
-/// `None` where there is no font -- a context with none, or a handle that
-/// is no device context's -- whose average the TypeScript engine reads as
-/// `undefined`, so no default stop is ever past where the text has got to.
-/// The System font's stock handle is made all the same, as it is there.
+/// `None` where there is no font -- a context with none, or a handle that is
+/// no device context's -- whose average is no number, so no default stop is
+/// ever past where the text has got to. The System font's stock handle is
+/// made all the same, as it is there.
 pub(crate) fn tab_average(
     system: &mut System,
     index: Option<usize>,
@@ -688,8 +682,7 @@ pub(crate) fn tab_average(
 /// `tmAveCharWidth`.
 ///
 /// A context with no font, or a handle that is no device context's, has no
-/// default stops and a height of nought, as in the TypeScript engine; text
-/// to measure in it stops, where that engine would throw.
+/// default stops and a height of nought; text to measure in it stops.
 pub fn get_tabbed_text_extent(
     system: &mut System,
     hdc: u16,

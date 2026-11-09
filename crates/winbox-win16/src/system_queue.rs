@@ -1,4 +1,4 @@
-//! USER's system queue, as winbox.js's `system-queue.ts` keeps it: the
+//! USER's system queue, as winbox.js keeps it: the
 //! keyboard's and the mouse's input, one queue for every task, in the order
 //! it was put in, given to a window only as a task takes it; and the hooks
 //! it calls, the journal hooks, the keyboard hooks and the mouse hooks.

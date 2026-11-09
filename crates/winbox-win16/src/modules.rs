@@ -48,8 +48,7 @@ impl Kept {
     }
 
     /// `DISPLAY` as the display driver of a file is, with that driver's own
-    /// export table (`display-driver.ts`); the default display's for a
-    /// file of none of them.
+    /// export table; the default display's for a file of none of them.
     pub fn display_driver(file: &str) -> &'static Kept {
         crate::kept::DISPLAY_DRIVERS
             .iter()

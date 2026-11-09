@@ -1,8 +1,7 @@
 //! Text drawn, held to what Windows drew: the oracle's fixtures of text
-//! drawn into a monochrome bitmap and read back with `GetBitmapBits`, as
-//! the TypeScript engine's replay draws them (`test/oracle/replay.ts`).
-//! A face only an outline answers is not drawn here, and its records are
-//! counted apart.
+//! drawn into a monochrome bitmap and read back with `GetBitmapBits`. A face
+//! only an outline answers is not drawn here, and its records are counted
+//! apart.
 
 use std::fmt::Write;
 use std::path::{Path, PathBuf};
@@ -353,12 +352,12 @@ fn draws_the_strikes_as_the_hercules_does() {
     tally.assert_all("glyphs-hercules");
 }
 
-/// The fabricated glyph recordings, from the TypeScript engine's
-/// `fabricated_glyphs_test`: each a face with glyphs cut to an instrument --
-/// a bar, a dot, a curve's turn -- recorded by the `glyphs` probe on the
-/// display it names. The fabricated file stands in for the face it was cut
-/// from, in that face's style, and is put back after. Every cell naming the
-/// face is held to Windows, square and not, with nothing wrong anywhere.
+/// The fabricated glyph recordings: each a face with glyphs cut to an
+/// instrument -- a bar, a dot, a curve's turn -- recorded by the `glyphs`
+/// probe on the display it names. The fabricated file stands in for the face
+/// it was cut from, in that face's style, and is put back after. Every cell
+/// naming the face is held to Windows, square and not, with nothing wrong
+/// anywhere.
 #[test]
 fn draws_the_fabricated_glyphs_as_windows_does() {
     let folder = root().join("oracle/fixtures/fabricated");
@@ -795,8 +794,8 @@ fn moves_the_current_position_with_ta_updatecp() {
     text_out(&mut system, hdc, 0, 0, b"AB").unwrap();
     assert_eq!(system.gdi.dcs[index].state.position, (5, 7));
 
-    // A handle that stands for nothing answers FALSE; one that is no
-    // device context's stops, as the TypeScript engine throws.
+    // A handle that stands for nothing answers FALSE; one that is no device
+    // context's stops.
     assert_eq!(text_out(&mut system, 0x1234, 0, 0, b"AB"), Ok(0));
 
     let pen = get_stock_object(&mut system, 7);

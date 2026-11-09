@@ -1,6 +1,6 @@
 //! The folders' and drives' pictures of COMMDLG's file boxes: bitmap 576 of
 //! the installation's `COMMDLG.DLL`, read as data, as SHELL's logo is.
-//! None without the file. As `pictures.ts`.
+//! None without the file.
 
 use winbox_raster::{decode_dib, dib_to_device, palette_for_display};
 

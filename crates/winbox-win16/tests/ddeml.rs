@@ -1,7 +1,6 @@
 //! `DDEML` is WinBox's own (`src/ddeml/`): its probes write what Windows
 //! wrote with `DDEML.DLL` on the drive -- each import of an export linked to
-//! WinBox's stub -- and with no `DDEML.DLL` on the drive at all. As
-//! `test/win16/ddeml_test.ts`.
+//! WinBox's stub -- and with no `DDEML.DLL` on the drive at all.
 
 mod support;
 
@@ -10,7 +9,7 @@ use winbox_win16::Stop;
 use support::{Setup, box_hand, recorded, run_setup};
 
 /// The probes that talk through DDEML, each with the records it does not
-/// yet agree on, as `test/oracle/replay.ts`'s `KNOWN_GAPS` has them.
+/// yet agree on, as `support::KNOWN_GAPS` has them.
 const PROBES: &[(&str, &[&str])] = &[
     ("ddexact", &[]),
     ("ddemgmt", &[]),
@@ -28,9 +27,9 @@ const PROBES: &[(&str, &[&str])] = &[
     ("ddewep", &[]),
 ];
 
-/// The records more that do not agree with no `DDEML.DLL` on the drive, as
-/// `test/win16/ddeml_test.ts`'s `WITHOUT_GAPS`: none. WinBox's own DDEML,
-/// with no file, is counted as its file would be (`own_modules::use_own`).
+/// The records more that do not agree with no `DDEML.DLL` on the drive:
+/// none. WinBox's own DDEML, with no file, is counted as its file would be
+/// (`own_modules::use_own`).
 const WITHOUT_FILE: &[(&str, &[&str])] = &[];
 
 /// A probe run, with or without `DDEML.DLL` on the drive: how it stopped,

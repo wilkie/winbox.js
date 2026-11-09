@@ -2,9 +2,7 @@
 //! the flag `SetHookFlags` sets is set (`GDI.EXE` seg1 `4423`, `43f3`): the
 //! context, `DCHC_INVALIDVISRGN` (1), the hook's data and nought. USER's own
 //! hook, on the contexts it lends, WinBox runs itself (`dc_entries`); a
-//! program's is called through the processor. Which calls call it, read
-//! out and inferred, is told in the TypeScript engine's twin,
-//! `dc-hook-calls.ts`. **Recorded** by `dchook`.
+//! program's is called through the processor. **Recorded** by `dchook`.
 
 use winbox_cpu::{AX, DS, ES, SS};
 
@@ -52,8 +50,7 @@ const USER_DC_FIRST: &[&str] = &[
 ];
 
 /// GDI's calls whose first argument is a device context beside those a
-/// metafile keeps (`metafile::DC_FIRST`), as the TypeScript engine's export
-/// table types them.
+/// metafile keeps (`metafile::DC_FIRST`), as GDI's export table types them.
 const MORE_DC_FIRST: &[&str] = &[
     "CreateUserDiscardableBitmap",
     "Death",

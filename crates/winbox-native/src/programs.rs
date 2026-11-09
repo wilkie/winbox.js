@@ -501,7 +501,7 @@ pub fn check_name(name: &str) -> Result<(), String> {
 }
 
 /// The folder an installer's media are put in on C:, as the page and the
-/// probe harnesses put them (`MEDIA` in `src/run/main.ts`): a folder of
+/// probe harnesses put them: a folder of
 /// their own, so nothing the installer installs can be taken for media.
 pub const MEDIA: &str = "WBSETUP";
 

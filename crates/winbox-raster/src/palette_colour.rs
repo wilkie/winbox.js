@@ -39,8 +39,7 @@ const PC_EXPLICIT: u8 = 0x02;
 /// What of a device context a colour is read against: the entries of the
 /// logical palette selected into it and, once realized, each entry's slot
 /// of the system palette; and the palette of the bitmap it draws into.
-/// Any of them may be missing, as the TypeScript engine's surface may lack
-/// each.
+/// Any of them may be missing.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SurfacePalette<'a> {
     pub entries: Option<&'a [PaletteEntry]>,
@@ -59,8 +58,7 @@ pub struct Realized<'a> {
 impl Realized<'_> {
     /// The slot a colour of a picture is drawn in: its nearest entry's
     /// (`paldib`: a DIB's colours, and WinG's, come out as the realized
-    /// palette's nearest). An entry with no slot is slot 0, as the
-    /// TypeScript engine's missing slot is once it is stored as a pixel.
+    /// palette's nearest). An entry with no slot is slot 0.
     pub fn slot_of(&self, red: u8, green: u8, blue: u8) -> usize {
         self.slots
             .get(nearest_entry(self.entries, red, green, blue))

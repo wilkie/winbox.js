@@ -5,8 +5,8 @@
 //! is kept the first time it is loaded, as a driver's file is loaded only
 //! once `SYSTEM.INI` names it, so an installation without it has the same
 //! modules and selectors as one that never heard of it. For that it is
-//! declared here, not among the modules kept as Windows starts (`kept.rs`,
-//! written from the TypeScript engine's export tables), each of which
+//! declared here, not among the modules kept as Windows starts (`kept.rs`),
+//! each of which
 //! takes its selectors before any program's.
 //!
 //! What it does is what Windows' own Sound Blaster 1.5 driver,

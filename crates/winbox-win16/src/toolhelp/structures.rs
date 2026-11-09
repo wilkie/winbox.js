@@ -2,7 +2,7 @@
 //! the check every one of its calls makes of the structure it is handed:
 //! not nought, and its `dwSize` exactly the structure's size, its high word
 //! nought (`TOOLHELP.DLL` seg1 `0cb3`-`0cd0` for `TaskFirst`, and the same
-//! in each). As `toolhelp/structures.ts`.
+//! in each).
 
 use crate::system::System;
 

@@ -1,7 +1,6 @@
 //! USER's smaller exports: aliases of others, the cores others are made of,
 //! and the helpers its controls paint with. **Read out of `USER.EXE`** and
-//! **recorded** by `usermisc`. As `src/win16/user/small-calls.ts`, which
-//! says more of each.
+//! **recorded** by `usermisc`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.

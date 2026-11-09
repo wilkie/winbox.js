@@ -30,9 +30,9 @@ fn refuses_a_glyph_that_reaches_too_far_out_of_its_cell() {
 
 #[test]
 fn refuses_a_glyph_a_program_left_not_a_number() {
-    // A point a program named past the end of its zone reads as nothing,
-    // and the TypeScript engine's `Math.max` carries that into the reach:
-    // the comparison is false, and the glyph is not drawn.
+    // A point a program named past the end of its zone reads as nothing, and
+    // the reach carries that on: the comparison is false, and the glyph is
+    // not drawn.
     let mut contours = bar(4.0);
 
     contours[0][1].y = f64::NAN;

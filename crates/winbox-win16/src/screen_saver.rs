@@ -1,6 +1,5 @@
 //! The screen saver, as USER starts it. **Read out** of `USER.EXE`, and
-//! **recorded** by `spiidle`; the TypeScript engine's `screen-saver.ts` is
-//! the same.
+//! **recorded** by `spiidle`.
 //!
 //! * USER notes when input last came, `SYSTEM`'s millisecond count
 //!   (`[0FAh]`): as a look reads each event of the system's queue, the

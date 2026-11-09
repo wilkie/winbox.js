@@ -1,6 +1,6 @@
-//! `ShowWindow` on the raster desktop, as winbox.js's `window-state.ts`
-//! shows and hides a window, and the messages of a change of active window
-//! (`activation.ts`). How each looks is measured by the `sizing` probe;
+//! `ShowWindow` on the raster desktop, as winbox.js
+//! shows and hides a window, and the messages of a change of active window.
+//! How each looks is measured by the `sizing` probe;
 //! what a window shown or hidden is sent, and in what order, by `showseq`.
 //! A window minimized, or restored from an icon, is not shown here yet.
 
@@ -103,8 +103,7 @@ impl System {
     /// them once USER has made it, front to back (`177d`) -- with the windows
     /// it owns before it, the same way, and the head after them
     /// (`1631`-`16c5`); the window moved, or the one it is owned under among
-    /// them, first of them for `HWND_TOP` (`1611`-`1662`, `15d7`). The
-    /// TypeScript engine's `familyOf`.
+    /// them, first of them for `HWND_TOP` (`1611`-`1662`, `15d7`).
     pub(crate) fn family_of(&self, shown: usize) -> Vec<usize> {
         fn build(
             owner: usize,
@@ -932,8 +931,7 @@ impl Engine {
     /// `SetWindowPos` (`1d56`-`1d81`; `minact`: 120h). Then the windows it
     /// owns shown again (`1d86`-`1d91`, seg14 `0e37` with 3), the focus
     /// given it (`1e2c`-`1e35`, seg1 `381d`), and `WM_ACTIVATE` with
-    /// `WA_ACTIVE` and nought (`1e3a`-`1e4b`). The TypeScript engine's
-    /// `restoreFromIcon`.
+    /// `WA_ACTIVE` and nought (`1e3a`-`1e4b`).
     async fn restore_from_icon(&self, hwnd: u16, index: usize, quiet: bool) -> Result<(), Stop> {
         // Its title hidden, `ShowIconTitle` with nought -- which makes it
         // first where the icon never had one, an icon made hidden (seg1
@@ -1963,7 +1961,7 @@ impl Engine {
     /// the topmost windows, as `CreateWindow` puts it, so is just before an
     /// icon at the front alone (`showmin`). Shown, it is drawn as
     /// `SetWindowPos` ends, with the titles due before it
-    /// (`paint_due_titles`). The TypeScript engine's `titleShown`.
+    /// (`paint_due_titles`).
     async fn title_shown(&self, hwnd: u16, index: usize, made_now: bool) -> Result<(), Stop> {
         let made = self.title_made(hwnd, index).await? || made_now;
 
@@ -2028,8 +2026,7 @@ impl Engine {
     /// its list is drawn once it is placed (`begin_placing`,
     /// `end_placing`). Shown, its flags say so, and it is drawn before it is
     /// told -- not told it was shown where it showed already; hidden, as a
-    /// window made minimized is, it is not drawn. The TypeScript engine's
-    /// `minimizeToBottom`.
+    /// window made minimized is, it is not drawn.
     /// `top`: `SW_SHOWMINIMIZED`, which names no window to go after --
     /// `HWND_TOP`, the list as `EndDeferWindowPos` works it out
     /// (`z_order.rs`), and the window made active as `SetWindowPos` makes it
@@ -2301,7 +2298,7 @@ impl System {
     /// it stays where it lies. An icon's title is owned by its icon, so is
     /// none of its brothers': `minact`'s B, minimized again, is named to go
     /// after its title only as the title, a window it owns, goes first
-    /// (`minimize_to_bottom`). The TypeScript engine's `minimizedAfter`.
+    /// (`minimize_to_bottom`).
     pub(crate) fn minimized_after(&self, index: usize) -> Option<usize> {
         let window = self.windows[index].as_ref().expect("a window");
         let (parent, owner, topmost) = (window.parent, window.owner, window.topmost);

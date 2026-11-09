@@ -1,10 +1,8 @@
 //! The combo box: a field -- an edit control, or for a drop-down list its
 //! own selection field -- a button, and a list box of the class
 //! `ComboLBox`, always showing under a simple one's field and dropped down
-//! from the others'. winbox.js's `combobox.ts`, with what
-//! `control-classes.ts` does with it: its making (`initCombo`), its list
-//! dropped down and put away, its focus, and its answer to the messages it
-//! is sent (`comboMessage`).
+//! from the others': its making, its list dropped down and put away, its
+//! focus, and its answer to the messages it is sent.
 //!
 //! **Read out of `USER.EXE`** -- the window procedure is seg33 `0000`, with
 //! seg34 for its layout -- and **recorded** by `combobox` on four displays:
@@ -12,8 +10,7 @@
 //! list, filled, selected, keyed, dropped down and put away.
 //!
 //! Its field, its button and its focus rectangle are the desktop's drawing
-//! (`control_pixels.rs`); an owner-drawn one's `WM_DRAWITEM` is sent as the
-//! TypeScript engine sends it.
+//! (`control_pixels.rs`); an owner-drawn one's `WM_DRAWITEM` is sent.
 
 use crate::call::Stop;
 use crate::control_host::{
@@ -253,9 +250,8 @@ pub fn edit_style(style: u32) -> u32 {
     edit
 }
 
-/// The field as the combo box paints it, for a drop-down list
-/// (`desktop.ts`'s `paintCombo`): the rectangle inside its border and a
-/// border more, which is highlighted while the combo box has the focus
+/// The field as the combo box paints it, for a drop-down list: the
+/// rectangle inside its border and a border more, which is highlighted while the combo box has the focus
 /// and its list is put away, and an owner's item's rectangle, three
 /// borders in.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

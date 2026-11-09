@@ -1,5 +1,4 @@
-//! The interpreter held to Windows through fabricated fonts: the TypeScript
-//! engine's `fabricated_test`.
+//! The interpreter held to Windows through fabricated fonts.
 //!
 //! Each fabrication is an installed face with one glyph's program rewritten
 //! to report a point, or a state, back through the advance phantom; the
@@ -295,8 +294,7 @@ fn read_a_constant_back_unchanged_at_every_size() {
 /// what Windows said, and what the interpreter says at that size.
 type Hinted = (f64, f64, Option<f64>);
 
-/// One `hinting` recording by name, read the way the TypeScript engine's
-/// `isect_parallel_test` and `round_state_test` read it: each pixel size
+/// One `hinting` recording by name, read as the tests below read it: each pixel size
 /// Windows reports for Arial Italic's `m`, once, with the interpreter run at
 /// that size. `None` where the recording or its font has not been built.
 fn hinted(name: &str) -> Option<Vec<Hinted>> {
@@ -366,8 +364,7 @@ fn differing(one: &[Hinted], other: &[Hinted]) -> Vec<f64> {
         .collect()
 }
 
-/// What `ISECT` does when the two lines barely cross: the TypeScript
-/// engine's `isect_parallel_test`. The same five points every time, only the
+/// What `ISECT` does when the two lines barely cross. The same five points every time, only the
 /// second line's far end moving: at right angles, half a degree apart, and
 /// exactly parallel. Windows divides unless the denominator is exactly
 /// nought, so two lines a fraction of a degree apart put the point hundreds
@@ -413,8 +410,7 @@ fn isect_divides_rather_than_taking_the_midpoint() {
     assert!(exact >= 10, "{exact}");
 }
 
-/// The round state a byte describes: the TypeScript engine's
-/// `round_state_test`. `SROUND` with a period of 999 masked with `~998`
+/// The round state a byte describes. `SROUND` with a period of 999 masked with `~998`
 /// lands nowhere near a pixel boundary and the answer moves with the input,
 /// which is how the mask shows itself: a division by 999 would give the same
 /// answer every time. The forty-five degree period is a root and rounds two

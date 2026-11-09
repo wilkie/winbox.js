@@ -13,8 +13,7 @@ use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
 
-/// The files a probe that prints finds on its drive, as the TypeScript
-/// engine's run puts them (`run-probe.ts`).
+/// The files a probe that prints finds on its drive.
 ///
 /// * `printing` finds winbox.js's own printer installed in `WIN.INI`: on
 ///   the VGA, where `vgaprint` recorded with Windows' PostScript driver.
@@ -69,8 +68,7 @@ pub fn root() -> PathBuf {
 
 /// The folder of the recordings made in 386 enhanced mode, before a
 /// fixture's name: `enhanced/dpmiver` is `dpmiver` recorded in that mode
-/// (`record.mjs --mode enhanced`), replayed on a machine in it. As
-/// `replay.ts`'s `ENHANCED`.
+/// (`record.mjs --mode enhanced`), replayed on a machine in it.
 pub const ENHANCED: &str = "enhanced/";
 
 /// The mode a fixture was recorded in, by its name, and its name without
@@ -304,10 +302,10 @@ pub const SOUND: &str = "vgasound";
 
 /// The keys a whole run presses when a box of USER's own that lets no
 /// program run comes up, one list for each box, as the recording pressed
-/// them (`record.mjs --shoot ... --then`) and the TypeScript engine's
-/// replay presses them; and where it clicks at a box that takes no key, as
-/// the recording clicked (`click=XxY`): MCI's sequencer's warning, its OK at
-/// (410, 237) (`oracle/build/screens/sndplay.png`).
+/// them (`record.mjs --shoot ... --then`) and the replay presses them; and
+/// where it clicks at a box that takes no key, as the recording clicked
+/// (`click=XxY`): MCI's sequencer's warning, its OK at (410, 237)
+/// (`oracle/build/screens/sndplay.png`).
 pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
     ("fault", &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]]),
     (
@@ -372,8 +370,8 @@ pub static RUNS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize
 pub fn run_with(name: &str, prepare: impl FnOnce(&mut System)) -> Option<(Stop, Vec<[String; 3]>)> {
     // As long as the heaviest probes take to end -- the outline faces' run
     // to 470 million instructions, some 160 seconds on the virtual clock --
-    // where the TypeScript engine's whole runs have 30 seconds of the
-    // host's, in which it gets that far.
+    // where the whole runs have 30 seconds of the host's, in which it gets
+    // that far.
     run_on(name, prepare, |system| {
         (
             winbox_win16::Engine::new(system).run(2_000_000_000, 300.0),
@@ -812,8 +810,7 @@ pub struct Mount {
 
 /// The images a probe's recording had mounted, as
 /// `oracle/probes/<probe>.mounts` lists them and `record.mjs` reads them: a
-/// line each, as `a:imgflop.img floppy`; `#` starts a comment. As
-/// `run-probe.ts`'s `mountsOf`.
+/// line each, as `a:imgflop.img floppy`; `#` starts a comment.
 pub fn mounts_of(probe: &str) -> Vec<Mount> {
     let Ok(text) = std::fs::read(root().join(format!("oracle/probes/{probe}.mounts"))) else {
         return Vec::new();
@@ -921,8 +918,7 @@ fn mount_images(system: &mut System, probe: &str) {
 /// of it, before the write is made. DOSBox's key puts the next disk in
 /// every drive with a set, the last followed by the first
 /// (`DriveManager::CycleAllDisks`); the probe waits for the disk, so where
-/// the swap comes changes nothing it records. As `run-probe.ts`'s
-/// `swapAtRequest`.
+/// the swap comes changes nothing it records.
 fn swap_at_request(system: &mut System, module: &'static str, name: &'static str, args: u32) {
     if module != "KERNEL" || name != "_lwrite" {
         return;
@@ -1168,8 +1164,7 @@ pub fn fixtures() -> Vec<String> {
 /// What a whole run wrote for each record Windows wrote, in the
 /// recording's order: the run's own occurrence of the record's function
 /// and arguments, where the probe writes the same call more than once, else
-/// the last it wrote; `None` where it never wrote that call (`replay.ts`'s
-/// `wholeRun`).
+/// the last it wrote; `None` where it never wrote that call.
 pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<Option<&'a str>> {
     let mut written: std::collections::HashMap<(&str, &str), Vec<&str>> =
         std::collections::HashMap::new();
@@ -1200,8 +1195,7 @@ pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<
 }
 
 /// The recordings in 386 enhanced mode whose records `kb/data/conformance.json`
-/// carries, as `replay.ts`'s `ENHANCED` names them. The rest are held by the
-/// replay as every fixture is, but left out of the report until the
+/// carries. The rest are held by the replay as every fixture is, but left out of the report until the
 /// knowledge base tells the two modes' records apart: it would count them
 /// against pages measured in standard mode (the owner's decision of
 /// 2026-11-08, `kb/guides/retire-typescript.md`).
@@ -1212,7 +1206,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
 ];
 
 /// Functions a module declares but answers with a stub: their records are
-/// counted `unimplemented`, not as disagreeing, as `replay.ts`'s `STUBBED`.
+/// counted `unimplemented`, not as disagreeing.
 pub const STUBBED: &[&str] = &[
     // WinG's halftone brushes: recorded by `wingapi`, their dither not
     // worked out, and `WinGCreateHalftoneBrush` makes none.
@@ -1233,7 +1227,7 @@ pub const STANDARD: &str = "standard/";
 /// fixture's mode (`enhanced/<probe>:<function>`, or
 /// `standard/<probe>:<function>`), its probe and display
 /// (`<probe>-<display>:<function>`), its probe, or the function alone, as
-/// `replay.ts`'s `gapOf`, which had no key for standard mode alone.
+/// `standard/<probe>:<function>` for standard mode alone.
 pub fn gap_of(enhanced: bool, probe: &str, display: &str, function: &str) -> Option<&'static str> {
     let find = |key: String| {
         KNOWN_GAPS
@@ -1255,10 +1249,10 @@ pub fn gap_of(enhanced: bool, probe: &str, display: &str, function: &str) -> Opt
 /// enhanced mode, or `standard/probe:function` for one in standard mode
 /// alone; each with what is short. A gap's function that agrees in
 /// every record fails its trial, so the list only shrinks. The first part
-/// is `replay.ts`'s `KNOWN_GAPS`, moved across with its reasons; the
-/// second, the records the TypeScript replay passed with no adapter and the
-/// enhanced recordings it did not replay, named when the Rust replay took
-/// them over (the owner's decision of 2026-11-08,
+/// is the gaps of the probes the replay first held, with their reasons; the
+/// second, the records that passed with no adapter and the enhanced
+/// recordings that were not replayed, named when the Rust replay took them
+/// over (the owner's decision of 2026-11-08,
 /// `kb/guides/retire-typescript.md`).
 pub const KNOWN_GAPS: &[(&str, &str)] = &[
     // `segfree` names each selector by the one before it with the same
@@ -1535,7 +1529,7 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "WinBox has no INT 21h vector beneath its KERNEL",
     ),
     // GDISeeGDIDo's 1, 2 and 3 are KERNEL's local heap calls on GDI's data
-    // segment; WinBox's GDI segment holds no local heap (`gdi-heap.ts`), as
+    // segment; WinBox's GDI segment holds no local heap, as
     // USER's does not for UserSeeUserDo.
     (
         "ugaps:seegdiheap",
@@ -1689,9 +1683,9 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "a program's data segment's limit, its size in Windows",
     ),
     //
-    // The records the TypeScript replay passed with no adapter, and the
-    // recordings in enhanced mode it did not replay, held by the Rust
-    // replay from 2026-11-08: what each differs in, and why where it is
+    // The records that passed with no adapter, and the recordings in
+    // enhanced mode that were not replayed, held by the Rust replay from
+    // 2026-11-08: what each differs in, and why where it is
     // known (`kb/guides/retire-typescript.md`, "Not yet done").
     //
     // `adlibout` and `adlibgap` open the Ad Lib's own device, found by its
@@ -1953,7 +1947,7 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
 ];
 
 /// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the
-/// TypeScript tests wrote that a Rust test now writes: each object's keys
+/// Rust tests write: each object's keys
 /// in the order `order` gives them, a key it does not name after those in
 /// the order of the value's own map, and a newline at the end.
 pub fn json_text(value: &serde_json::Value, indent: usize, order: &[&str]) -> String {

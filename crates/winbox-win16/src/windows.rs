@@ -101,18 +101,16 @@ pub struct Window {
     /// `RDW_INTERNALPAINT`, USER's flag 1000h of the word at 24h
     /// (`USER.EXE` seg1 `422b`). Taken off as its `WM_PAINT` is taken
     /// (`7864`, `446f`), by `BeginPaint` (`7643`) and by
-    /// `RDW_NOINTERNALPAINT` (`4323`). The TypeScript engine's
-    /// `DesktopWindow.internalPaint`.
+    /// `RDW_NOINTERNALPAINT` (`4323`).
     pub internal_paint: bool,
     /// Made due by another task than its own, not yet looked at: USER's
     /// flag 20h of the word at 24h (`USER.EXE` seg1 `4242`-`424c`); a
     /// program's validation passes it over (`4315`-`4320`). Taken off by
     /// `BeginPaint`, its `WM_PAINT` taken, `GetUpdateRect` and
-    /// `GetUpdateRgn` (`764c`, `787a`, `4483`, `4684`, `47a3`). The
-    /// TypeScript engine's `otherTask`.
+    /// `GetUpdateRgn` (`764c`, `787a`, `4483`, `4684`, `47a3`).
     pub other_task: bool,
     /// Its `WM_PAINT` sent by `UpdateWindow`, `BeginPaint` not yet called
-    /// (`447f`, `764c`). The TypeScript engine's `paintSent`.
+    /// (`447f`, `764c`).
     pub paint_sent: bool,
     pub needs_nc_paint: bool,
     pub needs_frame: bool,
@@ -215,7 +213,7 @@ impl Window {
 }
 
 /// A box due a paint, with a mark of its own: a box set again is another
-/// box, however alike, as the TypeScript engine's arrays are.
+/// box, however alike.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Dirty {
     pub area: [i32; 4],

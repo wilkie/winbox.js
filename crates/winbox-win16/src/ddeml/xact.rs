@@ -3,7 +3,7 @@
 //! (`4866`, `4b8e`, `4c6a`), the server's window turning messages into
 //! callbacks (`3a68`) and their answers into replies (`3fa0`), advise
 //! links and `DdePostAdvise` (`3e64`), and abandoning (`1bf0`, `1cb6`), as
-//! `DDEML.DLL` seg1 has them. As `src/win16/ddeml/xact.ts`.
+//! `DDEML.DLL` seg1 has them.
 
 use super::conv::{on_terminate, post_dde};
 use super::core::{Cmp, Dd, R, hi, lo, long, plus};

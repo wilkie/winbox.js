@@ -169,8 +169,7 @@ pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Re
     // 74h plus twice 27h, seg1 `1b92`-`1baa`, written as USER starts, seg3
     // `1e30`-`1eed`, and by `SPI_ICONVERTICALSPACING`, seg41 `1259`), the
     // lowest row first, then
-    // from the left (`029d`-`0341`, an insertion sort, stable). The
-    // TypeScript engine's `arrangeIcons`.
+    // from the left (`029d`-`0341`, an insertion sort, stable).
     let spacing = system.metric(SM_CYICONSPACING);
     let (origin_x, origin_y, high) = parent
         .and_then(|index| system.windows[index].as_ref())
@@ -308,8 +307,7 @@ pub(super) fn tile_child_windows(engine: &Engine, mut args: Args) -> Later<'_> {
 /// Children cascaded in a window's client area, the first given at its
 /// corner (seg15 `0875`): a sizing child sized to the step, any other
 /// keeping its size. Each step is worked out as its child is moved, from
-/// the parent and the child as they are then, as the TypeScript engine
-/// works it out: a child's own messages may have moved or sized another.
+/// the parent and the child as they are then: a child's own messages may have moved or sized another.
 pub(crate) async fn cascade_all(
     engine: &Engine,
     parent: Option<usize>,

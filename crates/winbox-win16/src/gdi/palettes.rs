@@ -1,6 +1,5 @@
-//! Logical palettes, and the 256-colour display's system palette as
-//! programs realize theirs into it, as winbox.js's `palettes.ts` and
-//! `system-palette.ts` keep them.
+//! Logical palettes, and the 256-colour display's system palette as programs
+//! realize theirs into it.
 //!
 //! **Recorded** by `palette` on the VGA, the EGA, the Super VGA and the
 //! Hercules, none of which has `RC_PALETTE`: a palette keeps its entries as
@@ -161,10 +160,9 @@ impl System {
         Some((handle, slots))
     }
 
-    /// A logical palette realized into the system palette: each entry's
-    /// slot kept on the palette; how many entries are in a slot they were
-    /// not in before, and how many slots were given a colour
-    /// (`system-palette.ts`).
+    /// A logical palette realized into the system palette: each entry's slot
+    /// kept on the palette; how many entries are in a slot they were not in
+    /// before, and how many slots were given a colour.
     #[allow(clippy::too_many_lines)]
     fn realize(&mut self, object: usize, foreground: bool) -> (u16, u16) {
         let entries = self.entries_of(object);

@@ -2,9 +2,9 @@
 //! over the palette, deflated, filling a page the size the resolution makes
 //! of it. What winbox.js's printer hands a document on as.
 //!
-//! The deflated bytes are `miniz_oxide`'s at its default level, where the
-//! TypeScript engine's are the browser's `CompressionStream`'s: both are
-//! the same pixels in the zlib format, but not byte for byte the same file.
+//! The deflated bytes are `miniz_oxide`'s at its default level, which is not
+//! the browser's `CompressionStream`: both make the same pixels in the zlib
+//! format, but not byte for byte the same file.
 
 use std::fmt::Write;
 

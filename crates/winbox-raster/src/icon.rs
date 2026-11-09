@@ -75,8 +75,7 @@ pub fn icon_entries(group: &[u8]) -> Vec<IconEntry> {
 /// display's colours, 7D00h from 16 bits up; of `size` square, one of that
 /// many colours at once, else the one of most colours below; else, of any
 /// size, the one of most colours not more than the display's; else the
-/// first. A count of colours is the entry's own byte, nought for 256. As
-/// `icon.ts`'s `pickIcon`.
+/// first. A count of colours is the entry's own byte, nought for 256.
 #[must_use]
 pub fn pick_icon(entries: &[IconEntry], size: usize, display_colours: u32) -> Option<IconEntry> {
     let most = if display_colours >= 0x1_0000 {
@@ -156,7 +155,7 @@ pub fn decode_icon(bytes: &[u8], palette: &mut DevicePalette) -> IconData {
                 // On a display of 256 colours, the static colour nearest,
                 // not one of the driver's own between them: SimTown's
                 // demo's icon in Widget Workshop's group, as Windows wrote
-                // it (`icon.ts`).
+                // it.
                 nearest_static(palette, red, green, blue) as u8
             } else {
                 palette.index(red, green, blue) as u8

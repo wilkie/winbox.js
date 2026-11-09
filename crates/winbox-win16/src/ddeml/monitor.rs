@@ -3,7 +3,7 @@
 //! `MF_LINKS` and `MF_CONV` each a `GMEM_DDESHARE` block sent to every
 //! monitor's window, the two hooks of `MF_SENDMSGS` and `MF_POSTMSGS`, and
 //! the monitor's window procedure (`DDEML.DLL` seg1 `2ddc`-`3672`,
-//! `61a8`). As `src/win16/ddeml/monitor.ts`.
+//! `61a8`).
 
 use crate::commdlg::api::Arg;
 use crate::engine::GuestArg;

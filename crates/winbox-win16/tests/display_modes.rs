@@ -1,8 +1,7 @@
 //! The display modes (`data/displays.json`) and what the drivers DOSBox
-//! cannot run answer, from the read-outs. As `test/win16/display_modes_test.ts`
-//! and the parts of `test/win16/display_driver_test.ts` the crate's own tests
-//! (`display.rs`, `gdi/mod.rs`, `gdi/calls/escape.rs`, `present.rs`,
-//! `tests/oem_bitmaps.rs`) did not already hold.
+//! cannot run answer, from the read-outs. The crate's own tests (`display.rs`, `gdi/mod.rs`,
+//! `gdi/calls/escape.rs`, `present.rs`, `tests/oem_bitmaps.rs`) hold the rest
+//! of the display driver's read-outs.
 //!
 //! The recorded modes are checked against real Windows by the probes, which
 //! is a stronger thing than anything here. The 8514/a and the XGA are not,

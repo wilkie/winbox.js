@@ -201,10 +201,10 @@ fn answers_nothing_without_a_device_context() {
 }
 
 /// A handle that stands for something other than a device context is
-/// answered as the TypeScript engine answers it, finding no font there:
-/// `GetTextMetrics` and `SetTextJustification` answer 1, the others as for
-/// a context with no font, and the tabbed extent of text with nothing to
-/// measure is nought by nought.
+/// answered as finding no font there: `GetTextMetrics` and
+/// `SetTextJustification` answer 1, the others as for a context with no
+/// font, and the tabbed extent of text with nothing to measure is nought by
+/// nought.
 #[test]
 fn a_handle_that_is_no_device_contexts_has_no_font() {
     let mut system = System::new();

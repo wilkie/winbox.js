@@ -282,7 +282,7 @@ impl Engine {
     /// The windows a window owns, as it is destroyed: those of its own
     /// task destroyed, as `DestroyOwnedWindows` destroys them; one of
     /// another task's owned by none after (`USER.EXE` seg8 `0912`-`0949`;
-    /// **recorded** by `taskend`). As `DestroyWindow.ts`.
+    /// **recorded** by `taskend`).
     async fn destroy_owned(&self, index: usize, owned: Vec<u16>) -> Result<(), Stop> {
         for owned in owned {
             {

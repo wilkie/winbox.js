@@ -1,4 +1,4 @@
-//! A window moved or sized, as winbox.js's `track-loop.ts` does it: what
+//! A window moved or sized, as winbox.js does it: what
 //! `DefWindowProc` does for `SC_MOVE` and `SC_SIZE`, from the keyboard or
 //! with the mouse on the caption or the frame.
 //!
@@ -12,8 +12,7 @@
 //! the rest move it, an arrow on the other axis adding that edge. Not
 //! measured: the outline drawn while the window moves. Windows' loop does
 //! not dispatch a timer, so the probe cannot capture from inside it; the
-//! outline here is the window's rectangle inverted, a frame's width thick,
-//! and is the TypeScript engine's.
+//! outline here is the window's rectangle inverted, a frame's width thick.
 
 use crate::call::Stop;
 use crate::engine::Engine;

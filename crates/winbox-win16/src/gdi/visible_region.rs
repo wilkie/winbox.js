@@ -1,8 +1,7 @@
 //! GDI's visible-region family: the calls USER keeps a device context to
-//! what shows of its window with, which a program may make too. **Read
-//! out** of `GDI.EXE` seg1 and **recorded** by `visfam`; the TypeScript
-//! engine's twin is `src/win16/gdi/visible-region.ts`, where each read-out
-//! is told. The design they follow is `kb/topics/visible-regions.md`.
+//! what shows of its window with, which a program may make too. **Read out**
+//! of `GDI.EXE` seg1 and **recorded** by `visfam`. The design they follow is
+//! `kb/topics/visible-regions.md`.
 //!
 //! A context keeps its visible region in the screen's terms (`Dc::vis`,
 //! none for what the context shows), the copies `SaveVisRgn` saved, and
@@ -162,8 +161,7 @@ fn restore_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, 
 }
 
 /// `SaveVisRgn` as USER makes it for a region given to `GetDCEx`
-/// (`dc_entries`): the copy kept with no handle of its own, as the
-/// TypeScript engine's `saveVisQuietly` says why.
+/// (`dc_entries`): the copy kept with no handle of its own.
 pub(crate) fn save_vis_quietly(system: &mut System, dc: usize) {
     let vis = vis_of(system, dc);
     let object = system.gdi_object(GdiObject::Region(vis));

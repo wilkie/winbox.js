@@ -1,8 +1,7 @@
 //! GDI's TrueType engine as a printer's driver puts a font it realized to
 //! work: `EngineSetFontContext`, `EngineGetGlyphBmp`, `EngineGetCharWidth`
 //! and `EngineExtTextOut`, and the two the engine keeps beside them,
-//! `EngineMakeFontDir` and `ConvertOutlineFontFile`. The twin of
-//! `src/win16/gdi/engine-glyphs.ts`; the reading out of each is there.
+//! `EngineMakeFontDir` and `ConvertOutlineFontFile`.
 
 use winbox_raster::logical_font::Outline;
 use winbox_raster::{LogicalFont, Style};
@@ -251,10 +250,10 @@ fn engine_matrix(info: &FontInfo, angle: u16) -> [i32; 4] {
     [m00, m01, m10, m11]
 }
 
-/// A character's glyph as the engine's context makes it at an angle, as
-/// `engineGlyph`: `Surface.glyphOf` of the context's font, its advance the
-/// scaler's where the context's matrix is not a plain upright scale;
-/// `None` where the context has no face.
+/// A character's glyph as the engine's context makes it at an angle: the
+/// context's font's glyph, its advance the scaler's where the context's
+/// matrix is not a plain upright scale; `None` where the context has no
+/// face.
 pub(crate) fn context_glyph(
     system: &System,
     code: u8,
@@ -657,7 +656,6 @@ const FF_DECORATIVE: u8 = 0x50;
 const ANSI_CHARSET: u8 = 0;
 const SYMBOL_CHARSET: u8 = 2;
 
-/// `EngineMakeFontDir` (`GDI.EXE` seg7 `1184`), as in `engine-glyphs.ts`.
 // Each piece of the entry in turn, as GDI writes them.
 /// `EngineMakeFontDir` (`GDI.EXE` seg7 `1184`): the font directory's entry of a
 /// `.TTF`, as `CreateScalableFontResource` puts it in the `.FOT` it writes

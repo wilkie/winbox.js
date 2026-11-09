@@ -1,8 +1,6 @@
-//! The bounds GDI keeps of what is drawn in a device context: the
-//! program's, by `SetBoundsRect` and `GetBoundsRect`, and Windows' own, by
-//! `IsDCDirty`, `SetDCStatus` and the same two calls with 8000h in the
-//! flags. The TypeScript engine's twin is `src/win16/gdi/bounds.ts`, where
-//! each read-out is told.
+//! The bounds GDI keeps of what is drawn in a device context: the program's,
+//! by `SetBoundsRect` and `GetBoundsRect`, and Windows' own, by `IsDCDirty`,
+//! `SetDCStatus` and the same two calls with 8000h in the flags.
 //!
 //! **Read out** of `GDI.EXE`: a context keeps two rectangles in the
 //! screen's coordinates and their flags -- 1 Windows' set, 2 Windows'

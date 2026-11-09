@@ -1,7 +1,6 @@
 //! The methods of WinBox's objects, by the ordinal of the export each is:
 //! what an `Ole` function finds in an object's table and calls, and what a
-//! program calling the table itself reaches. As
-//! `src/win16/olecli/methods.ts`.
+//! program calling the table itself reaches.
 
 use super::core::{
     Kind, OLE_ERROR_GENERIC, OLE_ERROR_MEMORY, OLE_ERROR_NOT_EQUAL, OLE_ERROR_STATIC, OLE_OK, Ole,

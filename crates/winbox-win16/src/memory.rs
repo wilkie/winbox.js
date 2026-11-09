@@ -17,7 +17,7 @@ const GMEM_ZEROINIT: u16 = 0x0040;
 const GMEM_MODIFY: u16 = 0x0080;
 const GMEM_DISCARDABLE: u16 = 0x0100;
 /// The most selectors `20a8` gives a block `GlobalReAlloc` moves
-/// (`KRNL386.EXE` seg1 `40f9`). As `memory-model.ts`'s.
+/// (`KRNL386.EXE` seg1 `40f9`).
 const MOST_MOVED_SELECTORS: usize = 0xfe;
 
 /// A selector of a handle: the same descriptor, at a program's privilege.
@@ -381,7 +381,7 @@ pub(crate) fn reallocate(system: &mut System, handle: u16, size: u32, flags: u16
         // One that moves takes its selectors from `20a8`, which gives no
         // more than FEh (`40f9`): **recorded** by `galimit` in enhanced
         // mode, where there is room for it, FE0000h given and FF0000h
-        // refused. As `GlobalReAlloc.ts`.
+        // refused.
         if moves && (new as usize).div_ceil(0x10000) > MOST_MOVED_SELECTORS {
             return 0;
         }

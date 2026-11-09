@@ -904,8 +904,8 @@ fn mci_sysinfo(system: &mut System, id: u16, flags: u32, parms: u32) -> Result<u
         return Ok(MCIERR_OUTOFRANGE);
     }
 
-    // The TypeScript engine reads the open devices' list before its start
-    // here, for a number of nought or less than nought, and fails.
+    // A number of nought or less than nought would read the open devices'
+    // list before its start, so it stops here.
     let Some(name) = usize::try_from(number - 1).ok().and_then(|at| open.get(at)) else {
         return Err(Stop::Unsupported(
             "MCI_SYSINFO_OPEN asked for device nought or less",
@@ -1217,8 +1217,7 @@ pub fn mci_send_command_call(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 /// One string of a module's string table, read from its file; `None` where
-/// there is none. A word read past what was read is nought, as the
-/// TypeScript engine reads one.
+/// there is none. A word read past what was read is nought.
 fn module_string(system: &mut System, path: &str, id: u16) -> Option<Vec<u8>> {
     if path.is_empty() {
         return None;

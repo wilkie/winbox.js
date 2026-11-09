@@ -1,7 +1,7 @@
-//! Painting a window on the raster desktop, as winbox.js does it: the
-//! frame by `WM_NCPAINT` and the background by `WM_ERASEBKGND` when they are
-//! due (`erase.ts`), `BeginPaint` and `EndPaint`, what a program marks to be
-//! painted again (`InvalidateRect`, `update-region.ts`), and `UpdateWindow`.
+//! Painting a window on the raster desktop: the frame by `WM_NCPAINT` and
+//! the background by `WM_ERASEBKGND` when they are due, `BeginPaint` and
+//! `EndPaint`, what a program marks to be painted again (`InvalidateRect`),
+//! and `UpdateWindow`.
 //!
 //! Erasing, as USER does it (`USER.EXE` seg1 `7a83`, the only place
 //! `WM_ERASEBKGND` is sent from), **read out** and recorded by `nobrush`:
@@ -35,7 +35,7 @@ pub const WM_ICONERASEBKGND: u16 = 0x0027;
 
 impl System {
     /// Whether a window is painted as an icon: minimized, and its class has
-    /// an icon (`paint-icon.ts`).
+    /// an icon.
     pub fn paints_icon(&self, index: usize) -> bool {
         let Some(window) = self.windows[index].as_ref() else {
             return false;
@@ -170,7 +170,7 @@ impl Engine {
     /// the message and deleted after it (`showseq`). Where what it is due
     /// is a region of its own, `shape`, a copy of it, whatever it covers
     /// (`USER.EXE` seg1 `7ba0`-`7be4`, `7b52`; `rdwwalk`); 1 where it is due
-    /// all of itself (`7bab`). The TypeScript engine's `sendNcPaint`.
+    /// all of itself (`7bab`).
     async fn send_nc_paint(
         &self,
         hwnd: u16,
@@ -447,8 +447,7 @@ impl Engine {
     /// `WS_CLIPCHILDREN` -- the desktop has -- a child of another task
     /// passed over (`796a`-`797f`, `7a04`-`7a59`). The windows in it with
     /// `DSP_ALLCHILDREN` in `flags`, or with `DSP_ENUMCLIPPEDCHILDREN` where
-    /// it has `WS_CLIPCHILDREN`; none with neither (`796a`-`797c`). The
-    /// TypeScript engine's `syncPaintFrom`.
+    /// it has `WS_CLIPCHILDREN`; none with neither (`796a`-`797c`).
     pub(crate) async fn sync_paint_from(
         &self,
         start: Option<usize>,
@@ -562,8 +561,7 @@ impl Engine {
                 };
 
                 // An icon's title is drawn by USER, not erased as a window
-                // that paints itself is, as the TypeScript engine's
-                // `eraseDue` passes it over (`paintsItself`).
+                // that paints itself is; it is passed over (`paints_itself`).
                 if !window.paints_itself()
                     || !window.visible
                     || !(window.needs_erase || window.needs_nc_paint)
@@ -984,8 +982,7 @@ impl Engine {
     /// due waits while a window behind it is due (`4424`-`443e`,
     /// `44d8`-`4503`). Before a window with an update region is painted,
     /// each window it is in that is due, up to one with `WS_CLIPCHILDREN`,
-    /// is validated where the window is (`4515`). The TypeScript engine's
-    /// `UpdateWindow`.
+    /// is validated where the window is (`4515`).
     pub async fn update_window(&self, hwnd: u16) -> Result<(), Stop> {
         self.update_now(hwnd, true).await
     }
@@ -994,7 +991,7 @@ impl Engine {
     /// (`USER.EXE` seg1 `441d`): `UpdateWindow`, and `RedrawWindow`'s
     /// `RDW_UPDATENOW` without `RDW_NOCHILDREN` or with it (`3f93`-`3fad`).
     /// A window is due where it has an update region or a paint of its own
-    /// (`4453`-`445d`). The TypeScript engine's `updateNow`.
+    /// (`4453`-`445d`).
     pub async fn update_now(&self, hwnd: u16, children: bool) -> Result<(), Stop> {
         let root = {
             let system = self.system();

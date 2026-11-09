@@ -1,5 +1,4 @@
 //! GDI's TrueType engine as a printer driver asks it: `EngineRealizeFont`.
-//! The twin of `src/win16/gdi/engine-font.ts`.
 //!
 //! **Read out** of `GDI.EXE` seg3 `2b2d`-`2b54`:
 //!

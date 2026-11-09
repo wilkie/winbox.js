@@ -16,12 +16,10 @@
 //! that a system can answer `GetTextMetrics` without rasterising anything.
 //! Drawing a glyph needs the interpreter (`hinting`).
 //!
-//! Where the TypeScript engine reads past the end of the file it throws, and
-//! the call that asked fails; a glyph's own tables read here answer a
-//! `Fault` there, which the caller turns into a stop. The tables read for the
-//! whole face -- the character map, the advances, the names -- stop reading
-//! where the file stops instead, which no font the installation ships can
-//! show.
+//! A glyph's own tables, read past the end of the file, answer a `Fault`,
+//! which the caller turns into a stop. The tables read for the whole face --
+//! the character map, the advances, the names -- stop reading where the file
+//! stops instead, which no font the installation ships can show.
 
 // Deliberately: numbers compared and converted as a JavaScript engine's
 // are, since every rule here was measured through one.
@@ -820,8 +818,7 @@ impl TrueTypeFont {
         let mut ppem = MIN_PPEM;
 
         // A table that cannot be read by the square group leaves the smallest
-        // size infinite, and the TypeScript engine loops for ever; this stops
-        // where a byte's sizes do.
+        // size infinite; this stops where a byte's sizes do.
         while ppem < smallest && ppem <= 255.0 {
             let (ascent, descent) = self.scaled_extent(ppem);
 
@@ -1274,8 +1271,7 @@ impl TrueTypeFont {
     }
 
     /// Whether glyph programs run at a size once `prep` has run, by the
-    /// `INSTCTRL` it left -- `Hinter.gridFit` after `prepare` in
-    /// `truetype-font.ts`'s callers (`engine-glyphs.ts`). `None` where the
+    /// `INSTCTRL` it left. `None` where the
     /// programs cannot run.
     pub fn prep_grid_fit(&self, ppem: f64, stretch: f64, rotated: bool) -> Option<bool> {
         if ppem == 0.0 || ppem.is_nan() {

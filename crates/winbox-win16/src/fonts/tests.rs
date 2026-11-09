@@ -445,7 +445,7 @@ fn maps_every_request_as_windows_does() {
     }
 }
 
-/// The plotter fonts, from the TypeScript engine's `vector_font_test`.
+/// The plotter fonts.
 ///
 /// Their character table does not start where a 2.x or 3.x font's does, and
 /// reading it two bytes out still yields numbers -- just nonsense ones. The
@@ -490,7 +490,7 @@ fn the_plotter_fonts_agree_with_their_own_headers() {
     }
 }
 
-/// From the TypeScript engine's `strike_stretch_test`, on the VGA sweep.
+/// The strike chosen for a stretch, on the VGA sweep.
 ///
 /// Fixedsys is fifteen rows and System sixteen, one strike each, so there is
 /// no choice of strike to confound the multiple: it is

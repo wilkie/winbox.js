@@ -1,6 +1,5 @@
 //! TOOLHELP's view of a local heap, read where KERNEL keeps it, in the
-//! segment (`TOOLHELP.DLL` seg1 `0744`-`07e9`, `0a4f`-`0a8d`). As
-//! `toolhelp/local.ts`.
+//! segment (`TOOLHELP.DLL` seg1 `0744`-`07e9`, `0a4f`-`0a8d`).
 
 use winbox_machine::segment_selector;
 
@@ -76,8 +75,7 @@ pub fn local_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     Ok(Answer::Word(1))
 }
 
-/// A `LOCALENTRY` filled for the arena at `arena`; see `fill` in
-/// `local.ts`.
+/// A `LOCALENTRY` filled for the arena at `arena`.
 fn fill(system: &mut System, entry: Far, selector: u16, arena: u16) {
     let data = |name: &str| {
         system

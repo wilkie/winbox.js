@@ -1,5 +1,5 @@
 //! USER's system error box (`USER.EXE` seg1 `9325`, export 320), as
-//! winbox.js's `sys-error-box.ts` has it: a box drawn straight on the
+//! winbox.js has it: a box drawn straight on the
 //! screen over every window, with no window of its own, and a loop of its
 //! own over the mouse and the keyboard in which no program runs. KERNEL
 //! shows it when a program faults (`fault.rs`). **Read out**, and
@@ -17,12 +17,11 @@
 //!   above the bottom: a place with no button is left empty.
 //! * It answers the place chosen, 1 to 3.
 //!
-//! What a person does at the box comes from the host's mouse and keyboard,
-//! as the TypeScript engine's `rasterInput.modal` takes them: while the box
-//! is up they are its messages (`System::modal_input`). A run with no one
-//! at it has a hand instead (`BoxHand`), as the TypeScript engine's probe
-//! runs press keys when the box comes up; with neither, the box waits until
-//! the run's time is up.
+//! What a person does at the box comes from the host's mouse and keyboard:
+//! while the box is up they are its messages (`System::modal_input`). A
+//! run with no one at it has a hand instead (`BoxHand`), which presses
+//! keys when the box comes up; with neither, the box waits until the
+//! run's time is up.
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::desktop_paint::fill_brush;
@@ -656,7 +655,7 @@ impl Engine {
                         let down = modal.input(&mut system, message, wparam, x.into(), y.into());
 
                         // The key comes up after the box is gone, if a press
-                        // chose a button: the TypeScript engine's then goes
+                        // chose a button: it then goes
                         // to the window with the focus, which no key of the
                         // host's reaches here yet.
                         note_async_key(&mut system, key, false);

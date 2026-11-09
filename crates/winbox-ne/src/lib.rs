@@ -8,12 +8,10 @@
 //! engine's loader gives each segment its selector and applies the
 //! relocations. Strings are the file's bytes as characters, one each.
 //!
-//! The format: Microsoft's *Executable-File Header Format* (1991), the
-//! description kept at <https://wiki.osdev.org/NE>, and winbox.js's own
-//! reading of it, `src/executable.ts` and `src/win16/loader.ts`. A
-//! relocation's ADDITIVE flag is bit 2 of any type, as both read it. This
-//! differs from that reading in one place, where it was short of the
-//! format: the resource table is read to its end, not to thirty types.
+//! The format: Microsoft's *Executable-File Header Format* (1991) and the
+//! description kept at <https://wiki.osdev.org/NE>. A relocation's ADDITIVE
+//! flag is bit 2 of any type. The resource table is read to its end, however
+//! many types it holds.
 
 use std::fmt;
 

@@ -166,8 +166,7 @@ impl LogicalFont {
     }
 
     /// The strike, for a font that is one. Every caller asks only of a font
-    /// it knows is a strike or a plotter font: the TypeScript engine reads
-    /// `entry.header` there and would throw on an outline's.
+    /// it knows is a strike or a plotter font.
     ///
     /// # Panics
     ///
@@ -357,8 +356,8 @@ impl LogicalFont {
     /// overhanging the end of the string by a little more.
     ///
     /// For an outline face this is `try_measure`, and a glyph whose tables
-    /// cannot be read measures as nothing here; the TypeScript engine throws
-    /// there, and so does every GDI call, which measures with `try_measure`.
+    /// cannot be read measures as nothing here; every GDI call, which measures with
+    /// `try_measure`, fails there.
     /// Only the faces USER measures with of its own accord -- strikes, all of
     /// them -- come here.
     pub fn measure(&self, text: &[u8], options: Measure) -> (f64, f64) {

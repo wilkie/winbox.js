@@ -1,8 +1,7 @@
 //! The Color dialog's arithmetic: hue, luminosity and saturation from a
 //! colour and back, each on a scale of 240, in COMMDLG's own sixteen bit
 //! words. **Read out** of `COMMDLG.DLL` seg1 (`281d`, `29f1`, `2999`) and
-//! **recorded** by `choosclr`'s `rgb` and `hls` records. As
-//! `src/win16/commdlg/colour-math.ts`.
+//! **recorded** by `choosclr`'s `rgb` and `hls` records.
 
 /// A colour as hue, luminosity and saturation (seg1 `281d`): luminosity the
 /// sum of the largest and smallest of red, green and blue on 240 (rounded

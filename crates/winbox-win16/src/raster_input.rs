@@ -1,4 +1,4 @@
-//! The mouse on the raster desktop, as winbox.js's `raster-input.ts` gives
+//! The mouse on the raster desktop, as winbox.js gives
 //! it to the windows: the window under a point, and the mouse put in that
 //! window's task's queue as the mouse made it, to be hit-tested as it is
 //! taken (`mouse_scan.rs`). The keyboard's is `key_input.rs`.
@@ -843,7 +843,7 @@ impl System {
     }
 
     /// A move over no window, the desktop window's: taken, it makes the
-    /// cursor the arrow (`set-cursor.ts`; `curerr`).
+    /// cursor the arrow (`curerr`).
     fn move_to_desktop(&mut self, x: i16, y: i16) {
         let Some(desktop) = self.handles.lookup(Object::Desktop) else {
             return;

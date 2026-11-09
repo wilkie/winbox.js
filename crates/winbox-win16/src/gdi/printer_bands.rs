@@ -1,5 +1,5 @@
 //! Bands: GDI's side of a driver whose `dpRaster` has `RC_BANDING` (2), as
-//! `GDI.EXE` keeps it. The twin of `src/win16/gdi/printer-bands.ts`.
+//! `GDI.EXE` keeps it.
 //!
 //! * `CreateDC` of a device newly enabled, not an IC, makes a metafile
 //!   (seg1 `042d`, `GetTempFileName` and `CreateMetaFile`; here one in

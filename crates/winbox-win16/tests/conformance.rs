@@ -1,7 +1,6 @@
 //! The oracle's replay: every recording in `oracle/fixtures` (the top level,
 //! standard mode's, and `enhanced/`) one trial, its probe run whole once
-//! and each function's records held to what Windows 3.1 recorded, as the
-//! TypeScript replay held them (`test/oracle/conformance.ts`). A function
+//! and each function's records held to what Windows 3.1 recorded. A function
 //! `support::KNOWN_GAPS` names is excused, and fails its trial the moment
 //! every one of its records agrees, so the list only shrinks.
 //!
@@ -12,10 +11,10 @@
 //! is run and the rest are ignored (`-- --include-ignored` runs them all).
 //!
 //! A run of every trial writes what it found into `kb/data/conformance.json`,
-//! the report the knowledge base reads, in the shape the TypeScript replay
-//! wrote: each tracked fixture's probe, display, Windows, records and its
-//! functions' counts, and its gaps. The recordings in enhanced mode that
-//! `support::REPORTED_ENHANCED` does not name are held but left out of it.
+//! the report the knowledge base reads: each tracked fixture's probe,
+//! display, Windows, records and its functions' counts, and its gaps. The
+//! recordings in enhanced mode that `support::REPORTED_ENHANCED` does not
+//! name are held but left out of it.
 
 mod support;
 
@@ -42,7 +41,7 @@ const SAMPLE: &[&str] = &[
     "enhanced/w386env",
 ];
 
-/// A record's outcome, as `conformance.ts` counts them.
+/// A record's outcome: how the replay counts each record.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Outcome {
     Agreed,
@@ -103,8 +102,7 @@ fn main() {
     let conclusion = libtest_mimic::run(&arguments, trials);
     let reports = reports.lock().unwrap();
 
-    // Every trial run: the report written, as the TypeScript replay's
-    // global teardown merged its shards' shares.
+    // Every trial run: the report written, each trial's share merged.
     if !names.is_empty() && reports.len() == names.len() {
         let written = report_text(&reports);
 
@@ -195,8 +193,7 @@ fn hold(name: &str, reports: &Reports) -> Result<(), Failed> {
 
     let mut failures = String::new();
     let mut gaps = Vec::new();
-    // The gaps in the order the recording first names their functions, as
-    // `conformance.ts` lists them.
+    // The gaps in the order the recording first names their functions.
     let mut first: Vec<&str> = Vec::new();
 
     for [function, _, _] in &recorded {
@@ -303,9 +300,8 @@ fn tracked() -> Option<std::collections::HashSet<String>> {
     )
 }
 
-/// The report's text, as `conformance-shares.ts` wrote it:
-/// `JSON.stringify(report, null, 1)`, its fixtures and each one's functions
-/// in the order `localeCompare` sorts them.
+/// The report's text, as `JSON.stringify(report, null, 1)` writes it, its
+/// fixtures and each one's functions in the order `localeCompare` sorts them.
 fn report_text(reports: &BTreeMap<String, Report>) -> String {
     let tracked = tracked();
     let mut names: Vec<&String> = reports

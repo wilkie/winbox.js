@@ -1,15 +1,13 @@
 //! The hardware-captured conformance vectors, run against the Rust core
-//! alone: no JavaScript core to take an instruction it leaves, as there is
-//! none in the native engine. Each vector's one instruction is run by
-//! [`Cpu::run`], and whatever stops it -- an opcode not interpreted, a fault
-//! the core does not take, memory it leaves to a host -- is a failure, by
-//! its kind.
+//! alone: nothing takes an instruction it leaves. Each vector's one
+//! instruction is run by [`Cpu::run`], and whatever stops it -- an opcode not
+//! interpreted, a fault the core does not take, memory it leaves to a host --
+//! is a failure, by its kind.
 //!
-//! The vectors and the rules for comparing them are the JavaScript suites'
-//! (`test/conformance/oracle.ts` and `oracle386.ts`): the 80286's from
-//! <https://github.com/SingleStepTests/80286>, the 80386's from
+//! The vectors are the 80286's from
+//! <https://github.com/SingleStepTests/80286> and the 80386's from
 //! <https://github.com/SingleStepTests/80386>, each set aside, skipped and
-//! masked as those suites do, and sampled as `pnpm test:conformance` samples
+//! masked by the rules below, and sampled as `pnpm test:conformance` samples
 //! them -- the first 250 of each 80286 opcode, the first 100 of each 80386
 //! file. Fetch them with `node scripts/fetch-cpu-tests.mjs` (`--cpu 386
 //! --all` for the 80386's); they are not committed. They are read from the
@@ -25,7 +23,7 @@
 //! full run, `baseline286.json` (the 80286's 326 files, 250 vectors of
 //! each) and `baseline386.json` (all 941 of the 80386's, 100 of each),
 //! beside this file: a file that passes fewer than its baseline fails the
-//! test, as `test/conformance/baseline*.json` hold the TypeScript core.
+//! test.
 //! `CONFORMANCE_UPDATE=1` writes the baseline afresh from the run.
 //!
 //! `CONFORMANCE_SAMPLE` changes the sample, `CONFORMANCE_ONLY` (a list of
@@ -42,7 +40,7 @@ use std::sync::Mutex;
 
 use winbox_cpu::{Bus, CS, Cpu, DS, ES, Exit, FS, GS, SS, X87};
 
-/// The FLAGS bits the JavaScript core models, as `oracle.ts` compares them.
+/// The FLAGS bits the core models, which the vectors are compared on.
 const FLAG_MASK: u32 = 0x7fd5;
 
 /// The suite's vectors' directory, under the repository's `test/conformance`.
@@ -67,10 +65,9 @@ fn only() -> Option<HashSet<String>> {
     })
 }
 
-/// Memory as the JavaScript core's `Memory` keeps it: mebibyte blocks made
-/// as they are written, and a block never written read as its garbage,
-/// `0x1234 % address`. What a test writes is noted, to be cleared for the
-/// next.
+/// Memory kept as mebibyte blocks made as they are written, and a block never
+/// written read as its garbage, `0x1234 % address`. What a test writes is
+/// noted, to be cleared for the next.
 struct Memory {
     bytes: Vec<u8>,
     written: Vec<u32>,
@@ -204,8 +201,7 @@ fn step(cpu: &mut Cpu<Memory>, summary: &mut Summary) -> Result<(), (Kind, Strin
     })
 }
 
-/// A fresh real-mode machine on `memory`, with the unit the JavaScript
-/// core always has.
+/// A fresh real-mode machine on `memory`, with a floating-point unit.
 fn machine(memory: Memory) -> Cpu<Memory> {
     let mut cpu = Cpu::new(memory);
 
@@ -440,7 +436,7 @@ fn lock_prefixed(bytes: &[u8]) -> bool {
 }
 
 /// A byte shifted left or right by 16 or 24, which the 386 and the 286
-/// leave CF differently for (`oracle.ts`, `byteShiftBy16Or24`).
+/// leave CF differently for.
 fn byte_shift_by_16_or_24(bytes: &[u8], cx: u32) -> bool {
     let at = bytes
         .iter()
@@ -859,7 +855,7 @@ fn base_of(stem: &str) -> String {
     name
 }
 
-/// IN, OUT, INS, OUTS and HLT, which `oracle386.ts` sets aside.
+/// IN, OUT, INS, OUTS and HLT, which the suite sets aside.
 const SET_ASIDE: [u8; 13] = [
     0x6c, 0x6d, 0x6e, 0x6f, 0xe4, 0xe5, 0xe6, 0xe7, 0xec, 0xed, 0xee, 0xef, 0xf4,
 ];

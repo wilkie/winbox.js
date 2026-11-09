@@ -178,8 +178,7 @@ impl System {
     /// A procedure of USER's own called at the address a program was handed
     /// for it, `MOV AX, n; INT 84h; RETF 10` (`proc_token`): made ready to
     /// be called with the window procedure's arguments on the stack. Neither
-    /// logged nor charged as a call is, as the TypeScript engine's
-    /// `userProcedureInvoke` is neither.
+    /// logged nor charged as a call is.
     pub(crate) fn user_procedure_call(&mut self) -> Pending {
         let stack = self.cpu.segments[SS].base;
         let sp = u32::from(self.cpu.regs[SP]);
@@ -346,8 +345,7 @@ impl System {
             first: None,
         };
         // Logged as it is made, its answer when it comes: a call made in
-        // another's answer comes after it, as the TypeScript engine tells
-        // its watcher.
+        // another's answer comes after it.
         let instructions = self.instructions;
         let from = self.log_from;
         let logged = self.log.as_mut().map(|log| {
@@ -486,8 +484,7 @@ impl System {
 /// it: each structure laid below the stack and given as a far pointer to
 /// it, the arguments pushed below them, the first first, under a return
 /// address, and the function answering it run on them; the stack as it was
-/// after. The twin of the TypeScript engine calling the function itself.
-/// Its answer, and each structure as the call left it.
+/// after. Its answer, and each structure as the call left it.
 pub(crate) async fn call_named(
     engine: &Engine,
     module: &'static str,

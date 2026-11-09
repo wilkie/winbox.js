@@ -1,4 +1,4 @@
-//! A program's first state, as winbox.js's `Win16.prepare` makes it: its
+//! A program's first state, as winbox.js makes it: its
 //! program segment prefix with the command line, its environment and stack,
 //! and the registers it starts with.
 
@@ -92,7 +92,7 @@ impl System {
         }
 
         self.cpu.protected = true;
-        // Protected mode's bit, as the TypeScript engine sets the word.
+        // Protected mode's bit of the machine status word.
         self.cpu.msw = Some(1);
         // A program's own `IN` and `OUT` answered here (`ports.rs`).
         self.cpu.ports = true;
@@ -142,8 +142,7 @@ impl System {
         // command line -- its length, its characters and a nought, with no
         // carriage return (`winexec`).
         let prefix = (program_segment as u32) << 16;
-        // A character a byte, as the TypeScript engine's `charCodeAt`
-        // gives them: a tail may carry any byte (`mmTaskCreate`'s).
+        // A character a byte: a tail may carry any byte (`mmTaskCreate`'s).
         let tail: Vec<u8> = command_line.chars().take(126).map(|c| c as u8).collect();
         let tail = &tail[..];
 

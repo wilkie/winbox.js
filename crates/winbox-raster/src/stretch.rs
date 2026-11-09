@@ -141,8 +141,7 @@ pub fn stretch_map(
 
     if !mono {
         // An empty group, which only a size of nought on one side can make,
-        // shows nothing, as the TypeScript engine's `undefined` is stored
-        // as nought.
+        // shows nothing: it is stored as nought.
         return match axis {
             Axis::Rows => stretch_rows(from, size, false)
                 .iter()
@@ -217,8 +216,7 @@ pub fn stretch_map(
 /// first kept by the same mode (`02f1`). Rows before `first` are passed
 /// over by the same steps (`00ef`, `010a`).
 ///
-/// **Read out**, and **recorded** by `prblt2`. The twin of
-/// `src/raster/stretch.ts`'s `monoStretchRows`.
+/// **Read out**, and **recorded** by `prblt2`.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub fn mono_stretch_rows(
     pixel: impl Fn(i32, i32) -> u8,

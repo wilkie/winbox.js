@@ -1,12 +1,9 @@
-//! The processor's cases from the TypeScript engine's unit tests that the
-//! hardware vectors do not reach (`tests/conformance.rs`): divide errors,
+//! The processor's cases that the hardware vectors do not reach
+//! (`tests/conformance.rs`): divide errors,
 //! which the vectors skip wherever the part faults; the 80386's extensions
 //! and immediates under the size prefixes, pinned where a program of the
 //! corpus found them wrong; and protected-mode segmentation, where the
-//! vectors are all real mode. Each case is the TypeScript test's, ported
-//! as it was (`test/emulator/divide_error_test.ts`, `operand_size_test.ts`,
-//! `protected_mode_test.ts`), its expected values unchanged and its source
-//! kept with it. What the core leaves to its host -- which fault a
+//! vectors are all real mode. Each case keeps its source with it. What the core leaves to its host -- which fault a
 //! protected-mode access raises -- is held in `winbox-win16`'s
 //! `fault_vector.rs`.
 
@@ -24,7 +21,7 @@ fn set_reg32(cpu: &mut Cpu<VecBus>, index: usize, value: u32) {
     cpu.high[index] = (value >> 16) as u16;
 }
 
-/// A real-mode machine as the TypeScript tests make one: CS and DS 1000h,
+/// A real-mode machine: CS and DS 1000h,
 /// SS 2000h, SP 1000h, `code` at 1000h:0000.
 fn real(code: &[u8]) -> Cpu<VecBus> {
     let mut cpu = Cpu::new(VecBus(vec![0; 0x80000]));
@@ -45,7 +42,7 @@ fn step(cpu: &mut Cpu<VecBus>) {
 }
 
 mod divide_errors {
-    //! `test/emulator/divide_error_test.ts`. A divide error is interrupt 0,
+    //! A divide error is interrupt 0,
     //! raised when the quotient will not fit the destination -- which
     //! includes every divide by zero. The one exception is a signed byte
     //! divide whose quotient works out to exactly -128, which the part
@@ -140,7 +137,7 @@ mod divide_errors {
 }
 
 mod operand_size {
-    //! `test/emulator/operand_size_test.ts`: immediates and the 80386's
+    //! Immediates and the 80386's
     //! extensions under the size prefixes. Found by Slam! of the corpus,
     //! whose 32-bit arithmetic looped for ever: a byte immediate is
     //! sign-extended to the whole 32 bits, and TEST's immediate is 32 bits
@@ -348,7 +345,7 @@ mod operand_size {
 }
 
 mod protected_mode {
-    //! `test/emulator/protected_mode_test.ts`: hand-built scenarios
+    //! Hand-built scenarios
     //! asserting what a 386 is specified to do, as no published
     //! protected-mode corpus exists. A GDT descriptor is eight bytes: limit
     //! 15:0, base 15:0, base 23:16, P | DPL | S | type, G | D/B | limit

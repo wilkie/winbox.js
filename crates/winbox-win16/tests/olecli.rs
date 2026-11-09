@@ -1,7 +1,6 @@
 //! `OLECLI` is WinBox's own (`src/olecli/`): its probes write what Windows
 //! wrote with `OLECLI.DLL` on the drive -- each import of an export linked
-//! to WinBox's stub -- and with no `OLECLI.DLL` on the drive at all. As
-//! `test/win16/olecli_test.ts`.
+//! to WinBox's stub -- and with no `OLECLI.DLL` on the drive at all.
 
 mod support;
 

@@ -1,6 +1,5 @@
 //! Hooks: procedures a program puts in USER's way, called with a code, a
-//! `WPARAM` and an `LPARAM` before USER does something, as winbox.js's
-//! `hooks.ts` keeps them.
+//! `WPARAM` and an `LPARAM` before USER does something.
 //!
 //! **Recorded** by `hooks`, with three message filters: the newest hook is
 //! called first, and each passes on to the one put in before it; a hook
@@ -37,11 +36,10 @@
 //! running task's own hooks, then on to every task's (`7ca2`-`7cd3`). As a
 //! task ends its own hooks are taken out, and with its module's last
 //! instance, or a library deleted, the module's hooks for every task
-//! (`unhook_task`, `unhook_module`). As `hooks.ts`.
+//! (`unhook_task`, `unhook_module`).
 //!
 //! A hook's procedure may be a program's, at its far address, or one of
-//! winbox.js's own, as SHELL's shell hook is (`shell/shell_hook.rs`): the
-//! TypeScript engine's hooks may be functions.
+//! winbox.js's own, as SHELL's shell hook is (`shell/shell_hook.rs`).
 
 use std::future::Future;
 use std::pin::Pin;
@@ -99,7 +97,7 @@ pub struct Hook {
 impl System {
     /// A chain as the running task calls it: its own hooks, newest first,
     /// then those for every task, newest first (`USER.EXE` seg1
-    /// `7ca2`-`7cd3`). As `hooks.ts`'s `chainFor`.
+    /// `7ca2`-`7cd3`).
     fn chain(&self, kind: i16) -> Vec<Hook> {
         self.chain_for(kind, self.task_handle)
     }

@@ -276,12 +276,11 @@ pub fn build_dcb(text: &[u8]) -> (i16, [u8; DCB_SIZE]) {
     (0, dcb)
 }
 
-/// A string argument as the TypeScript engine reads one: a string that
-/// cannot be read to its nought turns the call away before it is made,
-/// answering nought (**recorded** by `badarg`), so `None`. A null pointer is
-/// none there, and one whose segment is nought a number; USER's reading of
-/// either (`?? ''`, and `Array.from` of a number) finds no characters, so
-/// each is empty here.
+/// A string argument: a string that cannot be read to its nought turns
+/// the call away before it is made, answering nought (**recorded** by
+/// `badarg`), so `None`. A null pointer is none, and one whose segment is
+/// nought a number; USER's reading of either finds no characters, so each
+/// is empty here.
 fn text_argument(system: &System, far: u32) -> Option<Vec<u8>> {
     match crate::shell::text_argument(system, far) {
         Text::Null | Text::Number(_) => Some(Vec::new()),

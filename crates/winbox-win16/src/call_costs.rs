@@ -2,8 +2,7 @@
 //! have them: what a virtual clock charges a call when it charges calls as
 //! recorded (`Clock::measured_calls`) rather than the survey's 15. The same
 //! instructions whatever the clock's rate, as a slower processor takes
-//! longer over the same code. WinBox's TypeScript engine has the same
-//! table (`src/win16/call-costs.ts`); see `kb/topics/timing.md`.
+//! longer over the same code. See `kb/topics/timing.md`.
 //!
 //! Two sources:
 //!

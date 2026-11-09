@@ -2,8 +2,7 @@
 //! it: `BitBlt` and `PatBlt` to the driver's `BitBlt`, `StretchBlt` to its
 //! `StretchBlt` and `SetDIBitsToDevice` to its `DIBToDevice`; and a memory
 //! context made compatible with a driver's context. What GDI draws itself
-//! for a driver that cannot is `printer_stretch.rs`. The twin of
-//! `src/win16/gdi/printer-blits.ts`.
+//! for a driver that cannot is `printer_stretch.rs`.
 //!
 //! Not followed: a memory context's own drawing through its printer's
 //! driver, but for what GDI draws into bitmaps of its own.

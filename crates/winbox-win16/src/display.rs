@@ -29,7 +29,7 @@ pub enum SaveRule {
 /// −1, nothing kept after. Any other lets it go, −1 (`2c18`). Its flag of
 /// the memory used since (bit 2 of its byte 1F4h, set as the screen's state
 /// is put back, seg1 `00a7`) is never set: WinBox's screen is never given
-/// up. `kept` is its bit 1. As `display-driver.ts`' `saveScreenBitmap`.
+/// up. `kept` is its bit 1.
 pub fn save_screen_bitmap(kept: &mut bool, rect: [i32; 4], cmd: u16) -> u16 {
     match cmd {
         0 => {
@@ -164,7 +164,7 @@ impl Display {
     /// taken off (seg6 `0225`), 252Fh from the DOS call while the hook is
     /// in. **That depends on state**: again with no `Enable` between, the
     /// hook is off and AX is what the BIOS left, not measured; 252Fh then
-    /// too. As `display-driver.ts`' `disableAnswer`.
+    /// too.
     pub fn disable_answer(&self) -> u16 {
         match self.driver_file.to_ascii_uppercase().as_str() {
             "XGA.DRV" => 0,
@@ -179,7 +179,7 @@ impl Display {
     /// gives, read out of `VGA.DRV` alone; the Hercules's and `SVGA256.DRV`
     /// have none, and USER keeps them in a bitmap of its own. The EGA's, the
     /// Super VGA's, the 8514/a's and the XGA's have it and are not read out:
-    /// nothing kept. As `display-driver.ts`' `saveScreenBitmapRule`.
+    /// nothing kept.
     pub fn save_screen_bitmap_rule(&self) -> SaveRule {
         match self.driver_file.to_ascii_uppercase().as_str() {
             "VGA.DRV" => SaveRule::Driver,
@@ -584,8 +584,7 @@ mod tests {
 
     /// `GetDriverResourceID` as each driver answers it at its mode's
     /// settings (`8514.DRV` seg6 `02be`, `XGA.DRV` seg3 `008e`,
-    /// `SVGA256.DRV` seg1 `2d6e`): as the TypeScript engine's
-    /// `display_driver_test.ts`.
+    /// `SVGA256.DRV` seg1 `2d6e`).
     #[test]
     fn answers_get_driver_resource_id_as_each_driver_does() {
         let answers: [(&str, u16, Option<u16>); 20] = [

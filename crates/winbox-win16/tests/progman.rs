@@ -2,7 +2,7 @@
 //! starts `PROGMAN.EXE` and there is none: `pmstart`, run with the file
 //! removed from the installation and on the asset bundle's base, which has
 //! none, is held to what Windows wrote with Microsoft's; and run with the
-//! file, Microsoft's runs. As `test/win16/progman_test.ts`.
+//! file, Microsoft's runs.
 
 mod support;
 

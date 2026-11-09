@@ -1,5 +1,4 @@
-//! An edit control's memory in the program's own local heap, as winbox.js's
-//! `edit-buffer.ts` keeps it.
+//! An edit control's memory in the program's own local heap.
 //!
 //! **Read out of `USER.EXE`**: the edit control runs with DS set to the
 //! instance handle it was made with, so what it allocates is in that
@@ -21,8 +20,8 @@
 //! typed and 20h, and shrinking it to the text and 10h when more than 20h
 //! is spare (seg26 `05c4`, `0841`). Here a multi-line control's text is
 //! written to the block whenever it changes and when it is handed out, the
-//! block grown then to the text and 20h if it is too small. Not followed,
-//! as the TypeScript engine does not follow it: the shrinking; a
+//! block grown then to the text and 20h if it is too small. Not followed:
+//! the shrinking; a
 //! single-line control's text, written only when it is handed out; the
 //! line starts' block, which keeps its first size; and a dialog's edit
 //! control without `DS_LOCALEDIT`, whose heap USER makes in a block of its

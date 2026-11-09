@@ -1,10 +1,7 @@
 //! The fabricated recordings other than `glyphs`, held to Windows through
-//! GDI as the TypeScript engine's replay drew them, each with the ceilings
-//! its jest test kept (`test/raster/dropout_size_test.ts`,
-//! `glyph_buffer_test.ts`, `tall_glyphs_test.ts`, `turned_squares_test.ts`,
-//! and the `hinting` readouts of `delta_base_test.ts`, `delta_order_test.ts`,
-//! `getinfo_version_test.ts`, `point_size_test.ts` and
-//! `twilight_placement_test.ts`).
+//! GDI, each with the ceilings its test kept (dropout size, glyph buffer,
+//! tall glyphs, turned squares, and the `hinting` readouts of delta base,
+//! delta order, `GETINFO` version, point size and twilight placement).
 //!
 //! Each recording names the fabricated font it was made against; the font
 //! stands in for the face it was cut from, in that face's style, and is put
@@ -84,8 +81,8 @@ impl Drop for Fabricated {
     }
 }
 
-/// What a recorded function draws, as the TypeScript replay's adapter drew
-/// it; `None` for a function with no adapter here.
+/// What a recorded function draws; `None` for a function with no adapter
+/// here.
 fn replayed(system: &mut System, function: &str, args: &str) -> Option<String> {
     Some(match function {
         "column" => column(system, &Asked::parse(args)),

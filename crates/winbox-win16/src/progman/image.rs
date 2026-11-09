@@ -2,8 +2,7 @@
 //! executable with no file behind it, so the task is made as `WinExec`
 //! makes any program's -- its segments placed, its data segment its own
 //! instance, its start-up run by the processor -- by the loader, the linker
-//! and KERNEL's `InitTask` as they are. As `src/win16/progman/image.ts`;
-//! the two make the same bytes (`progman.rs`'s test, `progman_test.ts`).
+//! and KERNEL's `InitTask` as they are.
 //!
 //! It is `PROGMAN`, "WinBox Program Manager", with Microsoft's header's
 //! sizes: its data segment as large as `PROGMAN.EXE`'s (8A3h bytes, seg8),
@@ -240,10 +239,9 @@ mod tests {
         assert!(executable.resources.is_empty());
     }
 
-    /// The bytes the TypeScript engine makes: `progman_test.ts` holds the
-    /// same digest and sizes.
+    /// The bytes it makes keep the same digest and sizes.
     #[test]
-    fn it_is_the_typescript_engines() {
+    fn it_keeps_its_digest_and_sizes() {
         let bytes = image();
 
         assert_eq!(bytes.len(), IMAGE_SIZE);

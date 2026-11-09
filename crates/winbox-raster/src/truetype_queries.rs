@@ -2,8 +2,7 @@
 //! the bytes of a table (`GetFontData`), its kerning pairs
 //! (`GetKerningPairs`) and the outline metrics (`GetOutlineTextMetrics`),
 //! in the font's own units. GDI's side -- the character set, the pixel
-//! size, the mapping -- is `winbox-win16`'s `gdi::text::queries`. The
-//! TypeScript engine's twin is `src/raster/truetype-queries.ts`.
+//! size, the mapping -- is `winbox-win16`'s `gdi::text::queries`.
 //!
 //! **Read out** of `GDI.EXE`: the engine's entry points are a table at
 //! seg47 `001e`, reached through seg36's stubs `0042` to `00ae`.
@@ -207,8 +206,7 @@ pub struct OutlineMetrics {
     pub names: [Vec<u16>; 4],
 }
 
-/// **Read out** of seg40 `0606`, the engine's builder; see the TypeScript
-/// engine's `outlineMetrics` for each field's source.
+/// **Read out** of seg40 `0606`, the engine's builder.
 pub fn outline_metrics(font: &TrueTypeFont, encoding: u16) -> OutlineMetrics {
     let bytes = font.data().bytes();
     let head = named(bytes, *b"head");

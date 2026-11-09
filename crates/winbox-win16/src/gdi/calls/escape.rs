@@ -34,10 +34,9 @@ const MOUSETRAILS: i16 = 39;
 /// What the driver answers an escape, by its number, and the far pointer to
 /// what it is given.
 ///
-/// A handle that stands for anything but a memory device context is asked
-/// of the display's driver, as the TypeScript engine asks: it looks only
-/// for a memory context's mark on whatever the handle stands for, and a
-/// window has none.
+/// A handle that stands for anything but a memory device context is asked of
+/// the display's driver: only a memory context's mark is looked for on
+/// whatever the handle stands for, and a window has none.
 pub fn escape(system: &System, hdc: u16, number: i16, input: u32) -> i16 {
     match system.handles.resolve(hdc) {
         None => return 0,

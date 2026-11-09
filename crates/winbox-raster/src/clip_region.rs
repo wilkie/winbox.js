@@ -1,5 +1,4 @@
-//! A region of pixels as GDI keeps one, as winbox.js's `clip-region.ts`
-//! keeps it: bands of rows, each a set of runs of columns, with bands that
+//! A region of pixels as GDI keeps one: bands of rows, each a set of runs of columns, with bands that
 //! are alike joined. It has one rectangle, and is `SIMPLEREGION`, only when
 //! that is all it is, however it was made.
 

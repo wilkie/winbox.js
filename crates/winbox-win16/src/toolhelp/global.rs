@@ -1,6 +1,5 @@
 //! TOOLHELP's view of the global heap (`TOOLHELP.DLL` seg1 `02a2`-`06cc`,
-//! types `14f7`-`168d`). As `toolhelp/global.ts`, which says what each
-//! block is.
+//! types `14f7`-`168d`).
 
 use winbox_machine::{handle_for, index_for, segment_selector};
 

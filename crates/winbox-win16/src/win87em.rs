@@ -334,7 +334,7 @@ mod tests {
         (system.cpu.regs[AX], system.cpu.regs[DX])
     }
 
-    /// As `test/win16/win87em_test.ts`: the program's control word 1332h,
+    /// The program's control word 1332h,
     /// the unit's 1330h, the invalid and denormal exceptions left unmasked
     /// (`WIN87EM.DLL` seg1 `b3`).
     #[test]

@@ -390,8 +390,8 @@ impl FontManager {
 
 #[cfg(test)]
 impl FontManager {
-    /// Puts a font in its family's place for its style, as the TypeScript
-    /// engine's fabricated replays do, answering the family as it was.
+    /// Puts a font in its family's place for its style, as the fabricated
+    /// recordings need, answering the family as it was.
     pub(crate) fn stand_in(&mut self, font: TrueTypeFont) -> (String, Option<super::Family>) {
         let face = font.face_name().to_string();
         let key = style_key(font.bold_face(), font.italic_face());

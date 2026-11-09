@@ -17,8 +17,8 @@ use crate::system::System;
 /// Windows' own profile.
 const WINDOWS_PROFILE: &str = "WIN.INI";
 
-/// A string argument as the TypeScript engine reads one: `None` for a null
-/// pointer, a number's digits where the segment is nought.
+/// A string argument: `None` for a null pointer, a number's digits where the
+/// segment is nought.
 fn lpcstr(system: &System, far: u32) -> Option<Vec<u8>> {
     match (far >> 16, far & 0xffff) {
         (0, 0) => None,
@@ -27,7 +27,7 @@ fn lpcstr(system: &System, far: u32) -> Option<Vec<u8>> {
     }
 }
 
-/// A name as the TypeScript engine's `String` makes it: `null` for none.
+/// A name as text: `null` for none.
 fn named(name: Option<&Vec<u8>>) -> Vec<u8> {
     name.cloned().unwrap_or_else(|| b"null".to_vec())
 }
@@ -386,7 +386,7 @@ fn get_int(
     Answer::Word(to_integer(value.as_deref(), default))
 }
 
-/// An entry written, as `profile.ts`'s `WritePrivateProfileString`: all
+/// An entry written (`WritePrivateProfileString`): all
 /// three null lets the file held go. The section looked for first
 /// (`KRNL386.EXE` seg1 `6d5a`-`6e1f`): missing, a null entry or value leaves
 /// the file and answers 1 (`707c`, `profnul`); there, a null entry removes

@@ -1,4 +1,4 @@
-//! Where a menu bar's items go, as winbox.js's `menu-bar.ts` lays them out.
+//! Where a menu bar's items go.
 //! **Recorded** by `menuhelp`, a bar of File, Game and a Help whose text
 //! starts with a backspace, in windows 300 down to 100 wide:
 //!

@@ -3,8 +3,7 @@
 //! cannot be started for want of its file. **Read out** of `SHELL.DLL`
 //! (the box's procedure, ordinal 101 `FindExeDlgProc`, seg8 `010e`; the
 //! routine that shows it, unnamed ordinal 119, seg8 `0570`; its dialog 200)
-//! and **recorded** by `findexe`. As `src/win16/shell/find-program.ts`,
-//! which says more of each step.
+//! and **recorded** by `findexe`.
 //!
 //! The dialog is WinBox's own, laid out from its controls: no Windows file
 //! is shipped and none of its bytes is copied here.
@@ -591,7 +590,7 @@ mod tests {
 
         assert_eq!(template.caption, "Program Not Found");
         assert_eq!(template.items.len(), 7);
-        // As `test/win16/user_shell_dialogs_test.ts`: its items in order.
+        // Its items in order.
         assert_eq!(
             template
                 .items

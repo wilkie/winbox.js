@@ -37,8 +37,8 @@ const OBM_CHECK: u16 = 32760;
 /// read: the VGA's, 14 by 14 (**recorded** by `userwin`, `e000e`).
 const CHECK_SIZE: u16 = 14;
 
-/// The most bytes of a string argument the TypeScript engine reads
-/// (`readCString`'s limit): a longer string is cut there.
+/// The most bytes of a string argument that are read: a longer string is cut
+/// there.
 const ARGUMENT_STRING_MOST: u32 = 1000;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -67,9 +67,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     }))
 }
 
-/// An item's text as a program passes it, the way the TypeScript engine
-/// reads a string argument: a null pointer is none; one whose segment is
-/// nought is a number -- a bitmap's handle, an owner-drawn item's data.
+/// An item's text as a program passes it: a null pointer is none; one whose
+/// segment is nought is a number -- a bitmap's handle, an owner-drawn item's data.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ItemText {
     Null,
@@ -120,8 +119,8 @@ impl System {
         })
     }
 
-    /// A string argument's bytes as the TypeScript engine reads them, once
-    /// its check has passed: on from where the pointer points in memory,
+    /// A string argument's bytes, once its check has passed: on from where
+    /// the pointer points in memory,
     /// past the segment's end rather than back to its start, and no more
     /// than `ARGUMENT_STRING_MOST` of them.
     pub(crate) fn argument_string(&self, far: u32) -> Vec<u8> {
@@ -176,8 +175,8 @@ impl System {
             return Ok((usize::from(key) < items.len()).then_some((menu, usize::from(key))));
         }
 
-        // A menu that opens itself is searched without end by the
-        // TypeScript engine, until its stack runs out; that is a stop here.
+        // A menu that opens itself would be searched without end; that is a
+        // stop here.
         if depth > self.menus.len() {
             return Err(Stop::Unsupported("a menu that opens itself"));
         }
@@ -208,7 +207,7 @@ impl System {
     /// An item as `AppendMenu` and `InsertMenu` make one. Only a string
     /// item's text is kept: a bitmap's or an owner-drawn item's is not a
     /// string. A number given for text -- a pointer whose segment is nought
-    /// -- is kept as its decimal digits, as the TypeScript engine has it.
+    /// -- is kept as its decimal digits.
     /// A pop-up item's identifier is the handle of the menu it opens; one
     /// that is some other object's handle opens nothing and has command
     /// nought.
@@ -422,8 +421,8 @@ impl System {
 
         let length = (0x10000 - (far & 0xffff)).min(0x4000) as usize;
 
-        // The TypeScript engine reads the header's second word whatever the
-        // length, and throws where the segment's end leaves no room for it.
+        // The header's second word is read whatever the length, so a
+        // segment's end that leaves no room for it stops here.
         if length < 4 {
             return Err(Stop::Unsupported(
                 "a menu template too near its segment's end for its header",

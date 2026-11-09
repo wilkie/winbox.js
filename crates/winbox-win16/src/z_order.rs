@@ -7,7 +7,7 @@
 //! `0e09`-`0e38` before anything moves and `0a63`-`0a96` as each is
 //! placed), and each linked after the window it is to go after, topmost
 //! changed as it is (`0b46`-`0b71`). **Recorded** by `zorder` and
-//! `dlgfront`. The TypeScript engine's `z-order.ts`.
+//! `dlgfront`.
 //!
 //! The windows at the top are the desktop's, front first; an icon's title
 //! is one of them, owned by its icon, from the time USER makes it (seg1
@@ -288,7 +288,7 @@ impl System {
     /// -- made topmost or not where it was left marked so (seg7
     /// `0a4f`-`0a60`, `0b46`-`0b71`): `zmark`'s Q, marked by its owner made
     /// topmost alone, is made topmost as it is moved, and not as it is
-    /// asked for nothing. The TypeScript engine's `placedMarked`.
+    /// asked for nothing.
     pub(crate) fn z_placed_marked(&mut self, index: usize, flags: u16) {
         if self.shown(index).topmost_due && (flags | 0x1800) & 0x18e7 != 0x1807 {
             self.z_flip_topmost(index);
@@ -586,7 +586,7 @@ impl System {
     /// one is -- but where it is the last topmost and this one is not, not
     /// -- and not after one that is not. The last topmost window is looked
     /// for with this one out of the list, as USER has it there. **Recorded**
-    /// by `zcbtins`. The TypeScript engine's `Desktop.linkMadeAfter`.
+    /// by `zcbtins`.
     pub(crate) fn z_link_made_after(&mut self, index: usize, after: u16) {
         let set = |system: &mut System, topmost: bool| {
             let shown = system.shown_mut(index);

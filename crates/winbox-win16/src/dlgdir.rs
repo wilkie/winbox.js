@@ -1,7 +1,6 @@
 //! A directory listed into a list box or a combo box, and an entry chosen
 //! from one turned back into a path: `DlgDirList`, `DlgDirListComboBox`,
-//! `LB_DIR`, `CB_DIR`, `LB_ADDFILE` and the `DlgDirSelect` family --
-//! winbox.js's `dlgdir.ts`.
+//! `LB_DIR`, `CB_DIR`, `LB_ADDFILE` and the `DlgDirSelect` family.
 //!
 //! **Read out of `USER.EXE`**, seg37, which asks DOS for all of it through
 //! INT 21h: the drive (0Eh, 19h), the directory (3Bh, 47h), and the entries
@@ -12,7 +11,7 @@
 //! `[-c-]`. Each is lowered, a name through `OemToAnsi` first, as DOS names
 //! are OEM characters.
 //!
-//! Not followed, as the TypeScript engine does not follow them: a negative
+//! Not followed: a negative
 //! static control identifier, which asks for the entries with their size,
 //! date, time and attributes after tabs (seg37 `01f2`, `0a7d`); and the disk
 //! transfer area `LB_DIR` leaves pointing into USER's own data (seg37
@@ -462,8 +461,7 @@ impl Engine {
         };
 
         // `*.*` is handed to the list as a string of USER's own, which a
-        // message posted cannot carry here: the TypeScript engine posts its
-        // text, which no program's queue holds.
+        // message posted cannot carry here: no program's queue holds its text.
         if post && (others != 0 || (files_pass && matches!(spec, Spec::All))) {
             return Err(Stop::Unsupported("DlgDirList posting *.* to its list"));
         }
@@ -543,8 +541,7 @@ impl Engine {
         if directory {
             text = if text.get(1) == Some(&b'-') {
                 // The letter, where there is one: an item of a program's own
-                // `[-` has none, which the TypeScript engine writes as
-                // `undefined`.
+                // `[-` has none, and the colon stands alone.
                 let mut drive: Vec<u8> = text.get(2).copied().into_iter().collect();
 
                 drive.push(b':');

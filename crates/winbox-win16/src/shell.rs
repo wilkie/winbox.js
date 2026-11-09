@@ -29,8 +29,7 @@ use crate::system::System;
 pub struct Shell {
     pub registry: reg_api::Registry,
     pub hook: shell_hook::ShellHook,
-    /// The windows marked as taking files dropped on them. The TypeScript
-    /// engine marks the window itself; nothing reads the mark there either.
+    /// The windows marked as taking files dropped on them; nothing reads the mark.
     pub accepts_files: HashSet<u16>,
     /// The extension whose registry association gave the command
     /// `command_for` answered last, none for a program or `WIN.INI`'s: the
@@ -79,7 +78,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     })
 }
 
-/// A string argument as the TypeScript engine reads one: none for a null
+/// A string argument: none for a null
 /// pointer, a number where the segment is nought; a string that cannot be
 /// read to its nought turns the call away, answering nought (**recorded**
 /// by `badarg`).

@@ -1,8 +1,6 @@
 //! GDI's calls on a device context that USER and the drivers make, and a
 //! program may: the logical font selected, the relative-or-absolute mode,
 //! the hook a context calls, its clip region's own handle, and `ResetDC`.
-//! The TypeScript engine's twin is `src/win16/gdi/dc-internals.ts`, where
-//! each read-out is told.
 //!
 //! **Recorded** by `dcinner` on the VGA and the 256-colour display.
 

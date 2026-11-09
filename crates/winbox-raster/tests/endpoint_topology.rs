@@ -1,5 +1,4 @@
 //! The endpoint topology decision, as `GDI.EXE` actually branches it.
-//! Ported from the TypeScript engine's `test/raster/endpoint_topology_test.ts`.
 //!
 //! `CheckHorizTopology` in the pseudocode decides what a point sitting
 //! exactly on a scanline contributes, from three comparisons. The shipped

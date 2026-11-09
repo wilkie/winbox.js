@@ -1,8 +1,7 @@
 //! GDI's spooler: the jobs a printer's driver opens and writes its output
 //! through -- `OpenJob`, `StartSpoolPage`, `EndSpoolPage`, `WriteSpool`,
-//! `WriteDialog`, `CloseJob`, `DeleteJob` -- and `QueryAbort`, which asks
-//! a device context's abort procedure. The twin of
-//! `src/win16/gdi/spooler.ts`.
+//! `WriteDialog`, `CloseJob`, `DeleteJob` -- and `QueryAbort`, which asks a
+//! device context's abort procedure.
 //!
 //! **Read out** of `GDI.EXE` seg28, with seg29 (WIN.INI and the ports),
 //! seg30 (the communications driver's ports) and seg7 `052d`
@@ -1744,9 +1743,9 @@ async fn size_of(engine: &Engine, path: &[u8], structure: u32) -> Result<u32, St
     Ok(size)
 }
 
-/// `SpoolFile` (seg28 `156f`): a file handed to Print Manager to print, as
-/// a job of a queue, by the printer's name and its port; told in
-/// `spooler.ts`. The job's handle, unshifted, or -1, or -5.
+/// `SpoolFile` (seg28 `156f`): a file handed to Print Manager to print, as a
+/// job of a queue, by the printer's name and its port. The job's handle,
+/// unshifted, or -1, or -5.
 pub async fn spool_file(
     engine: &Engine,
     printer: u32,

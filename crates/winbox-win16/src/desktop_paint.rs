@@ -1,5 +1,4 @@
-//! What the raster desktop draws itself, as winbox.js's `desktop.ts` draws
-//! it: the desktop's own background, each window's frame through
+//! What the raster desktop draws itself: the desktop's own background, each window's frame through
 //! `frame.rs`, a minimized window's icon and its title, and a window's
 //! client area erased with its class's brush -- each where the window
 //! shows, through a view of the screen (`surface.rs`).
@@ -239,8 +238,7 @@ impl System {
     /// A class's background brush as the desktop erases with it:
     /// `COLOR_WINDOW + 1` and the other system colours plus one stand for
     /// the colour itself, anything else is a brush's handle. A pen, which a
-    /// handle may name, erases in its colour (`raster-desktop.ts`,
-    /// `backgroundOf`).
+    /// handle may name, erases in its colour.
     pub fn background_of(&mut self, handle: u16) -> Option<Background> {
         if handle == 0 {
             return None;
@@ -425,8 +423,7 @@ impl System {
     /// the screen: through the desktop window's own region by USER's rule,
     /// the screen less the rectangles of the windows at the top that show,
     /// as its `WS_CLIPCHILDREN` takes them out (`USER.EXE` seg1 `162c`,
-    /// `16f2`; `less_top_windows`). The TypeScript engine's
-    /// `paintBackground`.
+    /// `16f2`; `less_top_windows`).
     pub fn paint_background_in(&mut self, area: [i32; 4]) {
         let screen = self.screen_bitmap();
         let (width, height) = (screen.width(), screen.height());
@@ -611,8 +608,8 @@ impl System {
     /// `WM_ICONERASEBKGND` (`USER.EXE` seg1 `5881`): a top-level window's is
     /// the desktop's, its wallpaper or its brush from the screen's corner
     /// (`58d4`). A child's is
-    /// its parent's class brush -- which the TypeScript engine's desktop
-    /// windows are made without, so it draws none, and nor does this.
+    /// its parent's class brush -- which the desktop's windows are made
+    /// without, so it draws none.
     pub fn erase_icon(&mut self, index: usize) {
         let (width, height, left, top, parent) = {
             let Some(window) = self.windows[index].as_ref() else {
@@ -641,8 +638,7 @@ impl System {
 
     /// The icon a window of a class shows minimized, from the class's
     /// icon handle: none for nought, and `IDI_APPLICATION` -- the standard
-    /// icon's own handle, as the TypeScript engine knows it by its being
-    /// the driver's very object -- shown as USER's Windows flag.
+    /// icon's own handle -- shown as USER's Windows flag.
     pub fn minimized_icon_of(&mut self, handle: u16) -> Option<IconData> {
         if handle == 0 {
             return None;

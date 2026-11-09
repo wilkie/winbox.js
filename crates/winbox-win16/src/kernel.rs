@@ -542,8 +542,7 @@ pub(crate) fn module_handle_named(system: &System, text: &str) -> u16 {
 /// which finds the module of a module's handle or an instance -- a
 /// program's, a library's, or one WinBox keeps -- and answers its handle,
 /// as its name would find it. A task's handle finds nothing (**recorded**
-/// by `modnum`), but a program's task is its instance here. As
-/// `GetModuleHandle.ts`.
+/// by `modnum`), but a program's task is its instance here.
 fn module_by_number(system: &System, number: u16) -> u16 {
     match system.handles.resolve_module(number) {
         // A task's own handle -- not its instance's, nor its module's --
@@ -643,8 +642,7 @@ impl System {
     /// `WF_PMODE`, `WF_ENHANCED`, `WF_CPU486`, `WF_80x87`, `WF_PAGING`.
     /// KERNEL sets `WF_PMODE|WF_ENHANCED` or `WF_PMODE|WF_STANDARD` by what
     /// INT 2Fh 1600h answers as it starts (`KRNL386.EXE` seg1
-    /// `aa76`-`aa90`). The coprocessor's bit follows the machine's. As
-    /// `GetWinFlags.ts`'s `winFlags`.
+    /// `aa76`-`aa90`). The coprocessor's bit follows the machine's.
     #[must_use]
     pub fn win_flags(&self) -> u16 {
         let mode = match self.mode {
