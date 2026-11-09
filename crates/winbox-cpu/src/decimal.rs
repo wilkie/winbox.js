@@ -1,5 +1,5 @@
 //! The decimal adjustments -- `DAA`, `DAS`, `AAA`, `AAS`, `AAM` and `AAD` --
-//! and `SALC`, with the flags the hardware leaves, the
+//! and `SALC`, with the flags the hardware vectors hold them to, the
 //! documented-undefined ones as the 80286 vectors have them.
 
 use crate::{AF, AX, Bus, CF, Cpu, Exit, OF};
