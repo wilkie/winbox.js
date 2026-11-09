@@ -3729,6 +3729,7 @@ test.describe('the page, to a screen reader and the keyboard', () => {
       'the asset bundle, or the strings, instlay or pmitem probe, has not been made here'
     );
     test.skip(!existsSync(RUST), 'the Rust engine has not been built: pnpm build:web');
+    test.slow(true, 'two axe scans in each of sixteen states: 33 s in Firefox');
 
     await page.goto('/run.html');
     await expect(page.locator('#status')).toHaveText('Ready.');
