@@ -5,7 +5,7 @@ name: GetFreeSpace
 ordinal: 169
 summary: The bytes free in the global heap, counting what DPMI could still give and what could be discarded; on WinBox, the oracle's machine as a program found it.
 versions:
-  '3.1': exact
+  '3.1': partial
 probes: [galimit, freemem]
 source: src/win16/kernel/GetFreeSpace.ts
 topics: [global-and-local-memory]
@@ -19,7 +19,7 @@ topics: [global-and-local-memory]
 
 ## Nuances
 
-- The figure is the machine's: how much DPMI has and how much of it Windows has used. WinBox answers the oracle's machine as [[probe:galimit]] found it, less what has been held since a program first asked for memory or how much there is (see How much there is, in [[topic:global-and-local-memory]]). A program's own segments are not counted, so a program larger or smaller than `galimit` is told what `galimit` was told.
+- The figure is the machine's: how much DPMI has and how much of it Windows has used. WinBox answers the oracle's machine as [[probe:galimit]] found it, less what has been held since a program first asked for memory or how much there is (see How much there is, in [[topic:global-and-local-memory]]). A program's own segments are not counted, so a program larger or smaller than `galimit` is told what `galimit` was told: [[probe:freemem]] is told 15,085K, a K under Windows' 15,086K, in both modes (58,327K in enhanced mode, against 58,328K). The Rust replay holds those records as a known gap ([[guide:retire-typescript]]).
 - [[read out]] Discardable blocks that are not locked count as free, so allocating one leaves the figure as it was. WinBox takes every block held from it. Not yet measured.
 
 ## Inside Windows

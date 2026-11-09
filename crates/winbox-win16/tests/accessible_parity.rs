@@ -12,6 +12,11 @@
 //! desktop's number for it in both, from the order the windows are made,
 //! not a handle, so nothing is set aside before they are compared.
 //!
+//! Each file is also this run's text to the byte: its run, its places and
+//! its count of calls as the file has them (the places are what the run
+//! is given), and the trees kept. `WINBOX_TREES=write` writes the trees
+//! from this run, as `accessible_parity_test.ts` did.
+//!
 //! Without the oracle's installation, the probes or the corpus's
 //! programs, what is not here passes with nothing to check.
 
@@ -25,6 +30,27 @@ use winbox_win16::System;
 use winbox_win16::survey::{self, Survey};
 
 use support::{Setup, installed, root};
+
+/// The order of a trees' file's keys, as `accessible_parity_test.ts`
+/// wrote them.
+const ORDER: &[&str] = &[
+    "run",
+    "seconds",
+    "calls",
+    "stepMarks",
+    "trees",
+    "corpus",
+    "windows",
+    "probe",
+    "file",
+    "path",
+    "instructions",
+    "time",
+    "key",
+    "code",
+    "kind",
+    "alt",
+];
 
 /// The trees' files.
 fn trees() -> PathBuf {
@@ -163,6 +189,29 @@ fn the_trees_are_the_typescript_engines() {
         for (at, (made, expected)) in made.iter().zip(&expected).enumerate() {
             assert_eq!(made, expected, "{name}: tree {at}");
         }
+
+        // The file as this run writes it: its run, its places and the
+        // count of calls as the file has them, and the trees this run kept.
+        let written = support::json_text(
+            &serde_json::json!({
+                "run": file["run"],
+                "seconds": file["seconds"],
+                "calls": file["calls"],
+                "stepMarks": file["stepMarks"],
+                "trees": made,
+            }),
+            2,
+            ORDER,
+        );
+
+        if std::env::var("WINBOX_TREES").as_deref() == Ok("write") {
+            std::fs::write(entry.path(), &written).unwrap();
+        }
+
+        assert!(
+            written == text,
+            "{name}: the file's text, as this run writes it"
+        );
 
         checked += 1;
     }

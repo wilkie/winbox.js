@@ -43,6 +43,8 @@ struct Manifest {
 #[derive(Deserialize)]
 struct Program {
     id: String,
+    #[serde(default)]
+    title: String,
     run: String,
     #[serde(default)]
     survey: Option<Survey>,
@@ -523,6 +525,240 @@ fn base_of(assets: bool, display: &str) -> (&'static str, String) {
     }
 }
 
+/// `--write DIR`: the folder each program's report is written into.
+fn write_to() -> Option<std::path::PathBuf> {
+    std::env::args()
+        .collect::<Vec<_>>()
+        .windows(2)
+        .find(|pair| pair[0] == "--write")
+        .map(|pair| std::path::PathBuf::from(&pair[1]))
+}
+
+/// How many calls the survey keeps from a run's start, and from its end,
+/// the rest counted between (`survey_test.ts`'s `keepCalls` and tail).
+const KEPT_FIRST: usize = 100_000;
+const KEPT_LAST: usize = 1_000;
+
+/// A program's report, written as the TypeScript survey writes its own
+/// (`test/corpus/survey_test.ts`): `<id>.json`, `<id>.calls.txt`, and its
+/// screens, `<id>.png`, `<id>-2.png` on after steps, `<id>.boxN.png`, from
+/// the trace's screens in `screens`. The calls are the Rust engine's
+/// lines, `MODULE.Name = answer @cs:ip`, which keep no arguments; the
+/// TypeScript survey's show them as its argument types decode them. A
+/// run's steps' places (`stepMarks`) are what the run was given, the
+/// TypeScript report's, kept as it has them.
+fn write_report(dir: &Path, id: &str, title: &str, out: &str, screens: &Path) -> Vec<String> {
+    let calls: Vec<&str> = out.lines().filter(|line| is_call(line)).collect();
+    let name = |line: &str| line.split([' ', '(']).next().unwrap_or("").to_string();
+    let mut functions: Vec<String> = calls.iter().map(|line| name(line)).collect();
+
+    functions.sort();
+    functions.dedup();
+
+    let mut stubs: Vec<(String, usize)> = Vec::new();
+
+    for line in calls.iter().filter(|line| line.contains(" stub ")) {
+        let called = name(line);
+
+        match stubs.iter_mut().find(|(each, _)| *each == called) {
+            Some((_, count)) => *count += 1,
+            None => stubs.push((called, 1)),
+        }
+    }
+
+    let boxes: Vec<std::path::PathBuf> = (1..=3)
+        .map(|at| screens.join(format!("{id}.box{at}.png")))
+        .take_while(|file| file.exists())
+        .collect();
+    let ended = out.lines().any(|line| line.starts_with("stopped: Ended"));
+    let quoted = |text: &str| serde_json::to_string(text).unwrap();
+    let mut json = format!(
+        "{{\n \"id\": {},\n \"title\": {},\n \"calls\": {},\n \"functions\": {},\n \"stubs\": ",
+        quoted(id),
+        quoted(title),
+        calls.len(),
+        functions.len()
+    );
+
+    if stubs.is_empty() {
+        json.push_str("{}");
+    } else {
+        let listed: Vec<String> = stubs
+            .iter()
+            .map(|(name, count)| format!("\n  {}: {count}", quoted(name)))
+            .collect();
+
+        let _ = write!(json, "{{{}\n }}", listed.join(","));
+    }
+
+    let last: Vec<String> = calls[calls.len().saturating_sub(15)..]
+        .iter()
+        .map(|line| format!("\n  {}", quoted(&name(line))))
+        .collect();
+    let _ = write!(
+        json,
+        ",\n \"faulted\": {},\n \"ended\": {ended},\n \"failure\": null,\n \"last\": [{}\n ]",
+        !boxes.is_empty(),
+        last.join(",")
+    );
+
+    // The places a run with steps was given, as its TypeScript report has
+    // them.
+    let theirs = std::fs::read_to_string(Path::new("corpus/reports").join(format!("{id}.json")))
+        .unwrap_or_default();
+
+    if let Some(at) = theirs.find(",\n \"stepMarks\": [") {
+        let marks = &theirs[at..];
+        let end = marks.find("\n ]").map_or(marks.len(), |end| end + 3);
+
+        json.push_str(&marks[..end]);
+    }
+
+    json.push_str("\n}\n");
+
+    let _ = std::fs::create_dir_all(dir);
+    let _ = std::fs::write(dir.join(format!("{id}.json")), json);
+
+    let kept: Vec<String> = if calls.len() > KEPT_FIRST + KEPT_LAST {
+        calls[..KEPT_FIRST]
+            .iter()
+            .map(|line| (*line).to_string())
+            .chain([format!(
+                "... {} calls not kept ...",
+                calls.len() - KEPT_FIRST - KEPT_LAST
+            )])
+            .chain(
+                calls[calls.len() - KEPT_LAST..]
+                    .iter()
+                    .map(|line| (*line).to_string()),
+            )
+            .collect()
+    } else {
+        calls.iter().map(|line| (*line).to_string()).collect()
+    };
+    let _ = std::fs::write(dir.join(format!("{id}.calls.txt")), kept.join("\n"));
+
+    // Its screens, and no box an earlier run left.
+    let mut written = Vec::new();
+
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let file = entry.file_name().to_string_lossy().into_owned();
+
+            if file.starts_with(&format!("{id}.box")) && is_png(&file) {
+                let _ = std::fs::remove_file(entry.path());
+            }
+        }
+    }
+
+    if let Ok(entries) = std::fs::read_dir(screens) {
+        for entry in entries.flatten() {
+            let file = entry.file_name().to_string_lossy().into_owned();
+            let own = file == format!("{id}.png")
+                || (file.starts_with(&format!("{id}-")) && is_png(&file))
+                || (file.starts_with(&format!("{id}.box")) && is_png(&file));
+
+            if own && std::fs::copy(entry.path(), dir.join(&file)).is_ok() {
+                written.push(file);
+            }
+        }
+    }
+
+    written.sort();
+    written
+}
+
+/// Whether a file's name is a PNG's, as the survey names its screens.
+fn is_png(file: &str) -> bool {
+    Path::new(file)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("png"))
+}
+
+/// What `--write` wrote set beside the TypeScript survey's reports
+/// (`corpus/reports`): how many files are the same to the byte, and of the
+/// rest, the calls alike as the comparison reads them (`normal`, their
+/// arguments left out) and the screens alike pixel for pixel.
+fn compare_written(dir: &Path, ids: &[(String, Vec<String>)]) {
+    let theirs = Path::new("corpus/reports");
+    let same = |name: &str| {
+        std::fs::read(dir.join(name))
+            .ok()
+            .is_some_and(|ours| std::fs::read(theirs.join(name)).is_ok_and(|theirs| theirs == ours))
+    };
+    let (mut json, mut calls, mut calls_alike, mut pngs, mut png_bytes, mut png_pixels) =
+        (0, 0, 0, 0, 0, 0);
+    let mut apart = Vec::new();
+
+    for (id, screens) in ids {
+        if same(&format!("{id}.json")) {
+            json += 1;
+        } else {
+            apart.push(format!("{id}.json"));
+        }
+
+        let name = format!("{id}.calls.txt");
+
+        if same(&name) {
+            calls += 1;
+        }
+
+        let read = |folder: &Path| {
+            calls_of(&std::fs::read_to_string(folder.join(&name)).unwrap_or_default())
+        };
+        let (ours, want) = (read(dir), read(theirs));
+
+        if ours.len() == want.len()
+            && ours
+                .iter()
+                .zip(&want)
+                .all(|(got, want)| same_call(&normal(got), want))
+        {
+            calls_alike += 1;
+        } else {
+            apart.push(name);
+        }
+
+        for screen in screens {
+            pngs += 1;
+
+            if same(screen) {
+                png_bytes += 1;
+            }
+
+            if differing(&dir.join(screen), &theirs.join(screen)) == Some(0) {
+                png_pixels += 1;
+            } else {
+                apart.push(screen.clone());
+            }
+        }
+    }
+
+    println!(
+        "written: {} programs; .json the same to the byte {json}; .calls.txt to the byte {calls}, \
+         alike without arguments {calls_alike}; screens {pngs}, to the byte {png_bytes}, \
+         pixel for pixel {png_pixels}",
+        ids.len()
+    );
+
+    if !apart.is_empty() {
+        println!("written and differing: {}", apart.join(", "));
+    }
+}
+
+/// Whether a call written here, read as the comparison reads it, is the
+/// TypeScript survey's line: the same, or a negative answer it wrote that
+/// is the word or the long here (`wanted`), or one with no answer either
+/// side.
+fn same_call(got: &str, want: &str) -> bool {
+    let (word, long) = wanted(want);
+
+    same(got, &word)
+        || long.as_ref().is_some_and(|long| same(got, long))
+        || same(&word, got)
+        || (want.starts_with("... ") && got == normal(want))
+}
+
 /// `--base assets`: drive C: has the asset bundle's base beneath it, not
 /// the oracle's installation, against the same reports.
 fn on_assets() -> bool {
@@ -544,6 +780,8 @@ fn main() {
     let mut whole_alike = 0;
     let mut compared = 0;
     let screens = std::env::temp_dir().join(format!("winbox-corpus-{}", std::process::id()));
+    let write = write_to();
+    let mut written = Vec::new();
 
     std::fs::create_dir_all(&screens).expect("a folder for the screens");
 
@@ -613,6 +851,13 @@ fn main() {
             .filter(|line| is_call(line))
             .map(normal)
             .collect();
+
+        if let Some(dir) = &write {
+            written.push((
+                program.id.clone(),
+                write_report(dir, &program.id, &program.title, &out, &screens),
+            ));
+        }
         let mut n = 0;
 
         // The TypeScript engine's last call may have had no answer by the
@@ -685,6 +930,10 @@ fn main() {
 
     if assets {
         held_to_list(&rows);
+    }
+
+    if let Some(dir) = &write {
+        compare_written(dir, &written);
     }
 }
 

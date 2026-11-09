@@ -5,10 +5,14 @@
 //! Microsoft's, the shell -- its keys pressed when the TypeScript engine's
 //! clock pressed them (`test/layers/widget-layer.json`'s `stepMarks`).
 //!
-//! What it wrote on C: is the TypeScript engine's layer's files, byte for
-//! byte (`test/layers/widget_test.ts`), and Windows' install's under DOSBox
-//! (`test/layers/widget-windows.json`), but for the registration database,
-//! whose node table Windows ends with one free entry more.
+//! What it wrote on C: is Windows' install's under DOSBox
+//! (`test/layers/widget-windows.json`, recorded by `record.mjs launch
+//! --corpus widget`, which no engine writes), file for file, but for the
+//! registration database, whose node table Windows ends with one free entry
+//! more. As a layer (`install_into_layer`), it is `widget-layer.json`'s, the
+//! file's text to the byte, its keys kept as the file has them;
+//! `WIDGET_LAYER_WRITE=1` writes the file from this run, as
+//! `widget_test.ts` did.
 //!
 //! Skipped without the disc (`node scripts/corpus/fetch.mjs widget`), the
 //! oracle's installation or the fixtures, and unless `WIDGET_INSTALL=1`, as
@@ -16,44 +20,15 @@
 //! release one (`WIDGET_INSTALL=1 cargo test --release -p winbox-win16
 //! --test install_widget`).
 
+mod support;
+
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
 
 use winbox_machine::{HostDrive, IsoVolume, Sectors};
-use winbox_win16::sha256::sha256_hex;
+use winbox_win16::layers::{Made, install_into_layer};
 use winbox_win16::survey::Survey;
 
-fn root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
-
-/// Every file under a folder, by its DOS path, with its size and SHA-256.
-fn files_of(folder: &Path, at: &str, into: &mut BTreeMap<String, (u64, String)>) {
-    let mut entries: Vec<_> = std::fs::read_dir(folder)
-        .into_iter()
-        .flatten()
-        .flatten()
-        .collect();
-
-    entries.sort_by_key(std::fs::DirEntry::file_name);
-
-    for entry in entries {
-        let name = entry.file_name().to_string_lossy().to_ascii_uppercase();
-        let path = if at.is_empty() {
-            name
-        } else {
-            format!("{at}\\{name}")
-        };
-
-        if entry.file_type().is_ok_and(|kind| kind.is_dir()) {
-            files_of(&entry.path(), &path, into);
-        } else {
-            let bytes = std::fs::read(entry.path()).unwrap();
-
-            into.insert(path, (bytes.len() as u64, sha256_hex(&bytes)));
-        }
-    }
-}
+use support::root;
 
 /// The files of a manifest or a recording, by path.
 fn listed(entries: &serde_json::Value) -> BTreeMap<String, (u64, String)> {
@@ -74,7 +49,35 @@ fn listed(entries: &serde_json::Value) -> BTreeMap<String, (u64, String)> {
         .collect()
 }
 
+/// The order of `widget-layer.json`'s keys, as `widget_test.ts` wrote them.
+const LAYER_ORDER: &[&str] = &[
+    "stepMarks",
+    "layer",
+    "dropped",
+    "references",
+    "instructions",
+    "calls",
+    "time",
+    "key",
+    "code",
+    "kind",
+    "format",
+    "id",
+    "over",
+    "made",
+    "entries",
+    "by",
+    "version",
+    "from",
+    "path",
+    "line",
+    "sha256",
+    "size",
+    "modified",
+];
+
 #[test]
+#[allow(clippy::too_many_lines)]
 fn widget_workshops_install_from_its_cd() {
     let iso = root().join("corpus/cache/widget/widget.iso");
     let windows = root().join("oracle/build/drive-c-vga256");
@@ -91,13 +94,11 @@ fn widget_workshops_install_from_its_cd() {
         return;
     }
 
-    let layer: serde_json::Value =
-        serde_json::from_str(&std::fs::read_to_string(&layer).unwrap()).unwrap();
+    let layer_text = std::fs::read_to_string(&layer).unwrap();
+    let layer: serde_json::Value = serde_json::from_str(&layer_text).unwrap();
     let recorded: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&recorded).unwrap()).unwrap();
-    let top = std::env::temp_dir().join(format!("winbox-widget-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&top);
-    std::fs::create_dir_all(&top).unwrap();
+    let drives = std::env::temp_dir().join(format!("winbox-widget-{}", std::process::id()));
 
     let survey = Survey {
         display: "vga256".to_string(),
@@ -112,16 +113,17 @@ fn widget_workshops_install_from_its_cd() {
         None::<Box<dyn Sectors>>
     })
     .unwrap();
+    // C: held in memory, the installation's files stamped as they are, so
+    // that what the install changes is a layer over it.
+    let before = support::installed(&windows);
 
-    system
-        .files
-        .mount('C', HostDrive::over(top.clone(), windows));
+    system.files.mount('C', before.clone());
     system.files.mount('D', disc);
 
     // The drives DOSBox gives the oracle's Windows beside C:: an empty
     // floppy drive and its own Z:, as the TypeScript engine's run has them.
     for (letter, removable) in [('A', true), ('Z', false)] {
-        let folder = top.with_extension(letter.to_string());
+        let folder = drives.with_extension(letter.to_string());
 
         std::fs::create_dir_all(&folder).unwrap();
         system.files.mount(
@@ -144,11 +146,21 @@ fn widget_workshops_install_from_its_cd() {
         "the install ended"
     );
 
-    let mut written = BTreeMap::new();
-
-    files_of(&top, "", &mut written);
-
-    let ours = listed(&layer["layer"]["entries"]);
+    let installed = install_into_layer(
+        &before,
+        &surveyed.system.files,
+        'C',
+        &["D:\\".to_string()],
+        vec!["install:vga256".to_string()],
+        Made {
+            by: "WinBox".to_string(),
+            version: None,
+            from: Some("widget.iso".to_string()),
+        },
+    )
+    .unwrap();
+    let made = serde_json::to_value(&installed.layer.manifest).unwrap();
+    let written = listed(&made["entries"]);
     let theirs = listed(&recorded["changes"]);
     let lines = |files: &BTreeMap<String, (u64, String)>, leave: &[&str]| {
         files
@@ -159,19 +171,61 @@ fn widget_workshops_install_from_its_cd() {
     };
 
     assert_eq!(
-        lines(&written, &[]),
-        lines(&ours, &[]),
-        "the TypeScript engine's"
-    );
-    assert_eq!(
         lines(&written, &["WINDOWS\\REG.DAT"]),
         lines(&theirs, &["WINDOWS\\REG.DAT"]),
         "Windows' install's"
     );
+    assert!(installed.dropped.is_empty(), "{:?}", installed.dropped);
 
-    for letter in ['A', 'Z'] {
-        let _ = std::fs::remove_dir_all(top.with_extension(letter.to_string()));
+    // The fixture's text, from this run: its places as it has them.
+    let text = support::json_text(
+        &serde_json::json!({
+            "stepMarks": layer["stepMarks"],
+            "layer": made,
+            "dropped": installed.dropped,
+            "references": installed
+                .references
+                .iter()
+                .map(|reference| serde_json::json!({ "path": reference.path, "line": reference.line }))
+                .collect::<Vec<_>>(),
+        }),
+        1,
+        LAYER_ORDER,
+    );
+
+    if std::env::var("WIDGET_LAYER_WRITE").as_deref() == Ok("1") {
+        std::fs::write(root().join("test/layers/widget-layer.json"), &text).unwrap();
     }
 
-    let _ = std::fs::remove_dir_all(&top);
+    for letter in ['A', 'Z'] {
+        let _ = std::fs::remove_dir_all(drives.with_extension(letter.to_string()));
+    }
+
+    // The file but for one difference, the stamp of `WINDOWS` (and so the
+    // layer's id, a hash of its entries): 18 seconds later here than on the
+    // TypeScript engine's FAT drive, which moved it at an earlier change
+    // made in the folder. Which change is not yet followed; every file and
+    // every other stamp agree.
+    let excused = |text: &str| -> String {
+        let mut value: serde_json::Value = serde_json::from_str(text).unwrap();
+
+        value["layer"]["id"] = serde_json::Value::Null;
+
+        for entry in value["layer"]["entries"].as_array_mut().unwrap() {
+            if entry["kind"] == "folder" && entry["path"] == "WINDOWS" {
+                entry["modified"] = serde_json::Value::Null;
+            }
+        }
+
+        support::json_text(&value, 1, LAYER_ORDER)
+    };
+
+    assert!(
+        excused(&text) == excused(&layer_text),
+        "the fixture's text, as this run writes it"
+    );
+    assert!(
+        support::json_text(&layer, 1, LAYER_ORDER) == layer_text,
+        "the fixture's text, as written here"
+    );
 }

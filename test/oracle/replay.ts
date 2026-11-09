@@ -6513,7 +6513,7 @@ export async function replayFixture(fixture: Fixture) {
  * the knowledge base tells the two modes' records apart. Each
  * is held to its records as a standard-mode fixture is -- `RUN_WHOLE` by its
  * probe's name, and `KNOWN_GAPS` by `enhanced/<probe>:<function>` before
- * `<probe>:<function>`. As the Rust engine's `AGREEING`, which names them
+ * `<probe>:<function>`. As the Rust replay (`conformance.rs`), which names them
  * `enhanced/<name>`.
  */
 export const ENHANCED = new Set([

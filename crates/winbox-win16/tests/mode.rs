@@ -1,7 +1,7 @@
 //! A machine's mode, standard or 386 enhanced (`kb/guides/enhanced-mode.md`,
 //! phases 1 and 2): what Windows answers by it, as `winflags` and `galimit`
 //! recorded it in each mode. INT 2Fh and DPMI's version are held to
-//! `dpmiver` in both modes by the probes (`AGREEING`'s `enhanced/dpmiver`).
+//! `dpmiver` in both modes by the replay (`conformance.rs`'s `enhanced/dpmiver`).
 //! As `test/win16/mode_test.ts`.
 
 use winbox_machine::Figures;

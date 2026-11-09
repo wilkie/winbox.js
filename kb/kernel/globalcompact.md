@@ -5,7 +5,7 @@ name: GlobalCompact
 ordinal: 25
 summary: The largest block DPMI could still give, compacting first where it is too small; on WinBox, the oracle's machine as a program found it.
 versions:
-  '3.1': exact
+  '3.1': partial
 probes: [freemem, galimit]
 source: src/win16/kernel/memory-info.ts
 topics: [global-and-local-memory]
@@ -20,6 +20,7 @@ topics: [global-and-local-memory]
 ## Nuances
 
 - WinBox answers the oracle's machine as [[probe:galimit]] found it, less what has been held since a program first asked (see How much there is, in [[topic:global-and-local-memory]]). It never compacts: nothing in WinBox needs moving to make room.
+- [[probe:freemem]]'s `free` records hold [[fn:KERNEL.GetFreeSpace]]'s figure beside `GlobalCompact`'s, and WinBox answers that 1K under Windows' (a known gap of the Rust replay); its `GlobalCompact` records agree.
 
 ## Inside Windows
 

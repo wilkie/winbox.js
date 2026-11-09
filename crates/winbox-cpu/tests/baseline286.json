@@ -1,0 +1,1310 @@
+{
+  "files": {
+    "00": {
+      "passed": 245,
+      "total": 245
+    },
+    "01": {
+      "passed": 245,
+      "total": 245
+    },
+    "02": {
+      "passed": 245,
+      "total": 245
+    },
+    "03": {
+      "passed": 245,
+      "total": 245
+    },
+    "04": {
+      "passed": 250,
+      "total": 250
+    },
+    "05": {
+      "passed": 250,
+      "total": 250
+    },
+    "06": {
+      "passed": 245,
+      "total": 245
+    },
+    "07": {
+      "passed": 244,
+      "total": 244
+    },
+    "08": {
+      "passed": 245,
+      "total": 245
+    },
+    "09": {
+      "passed": 245,
+      "total": 245
+    },
+    "0A": {
+      "passed": 245,
+      "total": 245
+    },
+    "0B": {
+      "passed": 245,
+      "total": 245
+    },
+    "0C": {
+      "passed": 250,
+      "total": 250
+    },
+    "0D": {
+      "passed": 250,
+      "total": 250
+    },
+    "0E": {
+      "passed": 245,
+      "total": 245
+    },
+    "10": {
+      "passed": 245,
+      "total": 245
+    },
+    "11": {
+      "passed": 246,
+      "total": 246
+    },
+    "12": {
+      "passed": 245,
+      "total": 245
+    },
+    "13": {
+      "passed": 245,
+      "total": 245
+    },
+    "14": {
+      "passed": 250,
+      "total": 250
+    },
+    "15": {
+      "passed": 250,
+      "total": 250
+    },
+    "16": {
+      "passed": 245,
+      "total": 245
+    },
+    "17": {
+      "passed": 244,
+      "total": 244
+    },
+    "18": {
+      "passed": 245,
+      "total": 245
+    },
+    "19": {
+      "passed": 245,
+      "total": 245
+    },
+    "1A": {
+      "passed": 245,
+      "total": 245
+    },
+    "1B": {
+      "passed": 245,
+      "total": 245
+    },
+    "1C": {
+      "passed": 250,
+      "total": 250
+    },
+    "1D": {
+      "passed": 250,
+      "total": 250
+    },
+    "1E": {
+      "passed": 245,
+      "total": 245
+    },
+    "1F": {
+      "passed": 245,
+      "total": 245
+    },
+    "20": {
+      "passed": 241,
+      "total": 241
+    },
+    "21": {
+      "passed": 239,
+      "total": 239
+    },
+    "22": {
+      "passed": 240,
+      "total": 240
+    },
+    "23": {
+      "passed": 239,
+      "total": 239
+    },
+    "24": {
+      "passed": 250,
+      "total": 250
+    },
+    "25": {
+      "passed": 250,
+      "total": 250
+    },
+    "27": {
+      "passed": 250,
+      "total": 250
+    },
+    "28": {
+      "passed": 240,
+      "total": 240
+    },
+    "29": {
+      "passed": 239,
+      "total": 239
+    },
+    "2A": {
+      "passed": 240,
+      "total": 240
+    },
+    "2B": {
+      "passed": 240,
+      "total": 240
+    },
+    "2C": {
+      "passed": 250,
+      "total": 250
+    },
+    "2D": {
+      "passed": 250,
+      "total": 250
+    },
+    "2F": {
+      "passed": 250,
+      "total": 250
+    },
+    "30": {
+      "passed": 241,
+      "total": 241
+    },
+    "31": {
+      "passed": 239,
+      "total": 239
+    },
+    "32": {
+      "passed": 240,
+      "total": 240
+    },
+    "33": {
+      "passed": 239,
+      "total": 239
+    },
+    "34": {
+      "passed": 250,
+      "total": 250
+    },
+    "35": {
+      "passed": 250,
+      "total": 250
+    },
+    "37": {
+      "passed": 250,
+      "total": 250
+    },
+    "38": {
+      "passed": 240,
+      "total": 240
+    },
+    "39": {
+      "passed": 239,
+      "total": 239
+    },
+    "3A": {
+      "passed": 240,
+      "total": 240
+    },
+    "3B": {
+      "passed": 239,
+      "total": 239
+    },
+    "3C": {
+      "passed": 250,
+      "total": 250
+    },
+    "3D": {
+      "passed": 250,
+      "total": 250
+    },
+    "3F": {
+      "passed": 250,
+      "total": 250
+    },
+    "40": {
+      "passed": 250,
+      "total": 250
+    },
+    "41": {
+      "passed": 250,
+      "total": 250
+    },
+    "42": {
+      "passed": 250,
+      "total": 250
+    },
+    "43": {
+      "passed": 250,
+      "total": 250
+    },
+    "44": {
+      "passed": 250,
+      "total": 250
+    },
+    "45": {
+      "passed": 250,
+      "total": 250
+    },
+    "46": {
+      "passed": 250,
+      "total": 250
+    },
+    "47": {
+      "passed": 250,
+      "total": 250
+    },
+    "48": {
+      "passed": 250,
+      "total": 250
+    },
+    "49": {
+      "passed": 250,
+      "total": 250
+    },
+    "4A": {
+      "passed": 250,
+      "total": 250
+    },
+    "4B": {
+      "passed": 250,
+      "total": 250
+    },
+    "4C": {
+      "passed": 250,
+      "total": 250
+    },
+    "4D": {
+      "passed": 250,
+      "total": 250
+    },
+    "4E": {
+      "passed": 250,
+      "total": 250
+    },
+    "4F": {
+      "passed": 250,
+      "total": 250
+    },
+    "50": {
+      "passed": 244,
+      "total": 244
+    },
+    "51": {
+      "passed": 244,
+      "total": 244
+    },
+    "52": {
+      "passed": 244,
+      "total": 244
+    },
+    "53": {
+      "passed": 245,
+      "total": 245
+    },
+    "54": {
+      "passed": 244,
+      "total": 244
+    },
+    "55": {
+      "passed": 244,
+      "total": 244
+    },
+    "56": {
+      "passed": 244,
+      "total": 244
+    },
+    "57": {
+      "passed": 244,
+      "total": 244
+    },
+    "58": {
+      "passed": 244,
+      "total": 244
+    },
+    "59": {
+      "passed": 245,
+      "total": 245
+    },
+    "5A": {
+      "passed": 244,
+      "total": 244
+    },
+    "5B": {
+      "passed": 244,
+      "total": 244
+    },
+    "5C": {
+      "passed": 244,
+      "total": 244
+    },
+    "5D": {
+      "passed": 244,
+      "total": 244
+    },
+    "5E": {
+      "passed": 244,
+      "total": 244
+    },
+    "5F": {
+      "passed": 244,
+      "total": 244
+    },
+    "60": {
+      "passed": 245,
+      "total": 245
+    },
+    "61": {
+      "passed": 244,
+      "total": 244
+    },
+    "62": {
+      "passed": 243,
+      "total": 243
+    },
+    "68": {
+      "passed": 245,
+      "total": 245
+    },
+    "69": {
+      "passed": 243,
+      "total": 243
+    },
+    "6A": {
+      "passed": 245,
+      "total": 245
+    },
+    "6B": {
+      "passed": 243,
+      "total": 243
+    },
+    "6C": {
+      "passed": 0,
+      "total": 246
+    },
+    "6D": {
+      "passed": 0,
+      "total": 245
+    },
+    "6E": {
+      "passed": 0,
+      "total": 245
+    },
+    "6F": {
+      "passed": 0,
+      "total": 245
+    },
+    "70": {
+      "passed": 250,
+      "total": 250
+    },
+    "71": {
+      "passed": 250,
+      "total": 250
+    },
+    "72": {
+      "passed": 250,
+      "total": 250
+    },
+    "73": {
+      "passed": 250,
+      "total": 250
+    },
+    "74": {
+      "passed": 250,
+      "total": 250
+    },
+    "75": {
+      "passed": 250,
+      "total": 250
+    },
+    "76": {
+      "passed": 250,
+      "total": 250
+    },
+    "77": {
+      "passed": 250,
+      "total": 250
+    },
+    "78": {
+      "passed": 250,
+      "total": 250
+    },
+    "79": {
+      "passed": 250,
+      "total": 250
+    },
+    "7A": {
+      "passed": 250,
+      "total": 250
+    },
+    "7B": {
+      "passed": 250,
+      "total": 250
+    },
+    "7C": {
+      "passed": 250,
+      "total": 250
+    },
+    "7D": {
+      "passed": 250,
+      "total": 250
+    },
+    "7E": {
+      "passed": 250,
+      "total": 250
+    },
+    "7F": {
+      "passed": 250,
+      "total": 250
+    },
+    "80.0": {
+      "passed": 240,
+      "total": 240
+    },
+    "80.1": {
+      "passed": 240,
+      "total": 240
+    },
+    "80.2": {
+      "passed": 240,
+      "total": 240
+    },
+    "80.3": {
+      "passed": 240,
+      "total": 240
+    },
+    "80.4": {
+      "passed": 240,
+      "total": 240
+    },
+    "80.5": {
+      "passed": 240,
+      "total": 240
+    },
+    "80.6": {
+      "passed": 239,
+      "total": 239
+    },
+    "80.7": {
+      "passed": 239,
+      "total": 239
+    },
+    "81.0": {
+      "passed": 239,
+      "total": 240
+    },
+    "81.1": {
+      "passed": 239,
+      "total": 240
+    },
+    "81.2": {
+      "passed": 239,
+      "total": 240
+    },
+    "81.3": {
+      "passed": 239,
+      "total": 240
+    },
+    "81.4": {
+      "passed": 238,
+      "total": 239
+    },
+    "81.5": {
+      "passed": 238,
+      "total": 239
+    },
+    "81.6": {
+      "passed": 239,
+      "total": 240
+    },
+    "81.7": {
+      "passed": 239,
+      "total": 240
+    },
+    "82.0": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.1": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.2": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.3": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.4": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.5": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.6": {
+      "passed": 239,
+      "total": 239
+    },
+    "82.7": {
+      "passed": 239,
+      "total": 239
+    },
+    "83.0": {
+      "passed": 240,
+      "total": 240
+    },
+    "83.1": {
+      "passed": 240,
+      "total": 240
+    },
+    "83.2": {
+      "passed": 240,
+      "total": 240
+    },
+    "83.3": {
+      "passed": 240,
+      "total": 240
+    },
+    "83.4": {
+      "passed": 239,
+      "total": 239
+    },
+    "83.5": {
+      "passed": 239,
+      "total": 239
+    },
+    "83.6": {
+      "passed": 240,
+      "total": 240
+    },
+    "83.7": {
+      "passed": 240,
+      "total": 240
+    },
+    "84": {
+      "passed": 239,
+      "total": 239
+    },
+    "85": {
+      "passed": 239,
+      "total": 239
+    },
+    "86": {
+      "passed": 239,
+      "total": 239
+    },
+    "87": {
+      "passed": 243,
+      "total": 243
+    },
+    "88": {
+      "passed": 240,
+      "total": 240
+    },
+    "89": {
+      "passed": 241,
+      "total": 241
+    },
+    "8A": {
+      "passed": 239,
+      "total": 239
+    },
+    "8B": {
+      "passed": 240,
+      "total": 240
+    },
+    "8C": {
+      "passed": 242,
+      "total": 246
+    },
+    "8D": {
+      "passed": 239,
+      "total": 239
+    },
+    "8E": {
+      "passed": 243,
+      "total": 247
+    },
+    "8F": {
+      "passed": 244,
+      "total": 244
+    },
+    "90": {
+      "passed": 250,
+      "total": 250
+    },
+    "91": {
+      "passed": 250,
+      "total": 250
+    },
+    "92": {
+      "passed": 250,
+      "total": 250
+    },
+    "93": {
+      "passed": 250,
+      "total": 250
+    },
+    "94": {
+      "passed": 250,
+      "total": 250
+    },
+    "95": {
+      "passed": 250,
+      "total": 250
+    },
+    "96": {
+      "passed": 250,
+      "total": 250
+    },
+    "97": {
+      "passed": 250,
+      "total": 250
+    },
+    "98": {
+      "passed": 250,
+      "total": 250
+    },
+    "99": {
+      "passed": 250,
+      "total": 250
+    },
+    "9A": {
+      "passed": 239,
+      "total": 239
+    },
+    "9B": {
+      "passed": 250,
+      "total": 250
+    },
+    "9C": {
+      "passed": 243,
+      "total": 243
+    },
+    "9D": {
+      "passed": 243,
+      "total": 243
+    },
+    "9E": {
+      "passed": 250,
+      "total": 250
+    },
+    "9F": {
+      "passed": 250,
+      "total": 250
+    },
+    "A0": {
+      "passed": 243,
+      "total": 243
+    },
+    "A1": {
+      "passed": 243,
+      "total": 243
+    },
+    "A2": {
+      "passed": 242,
+      "total": 242
+    },
+    "A3": {
+      "passed": 242,
+      "total": 242
+    },
+    "A4": {
+      "passed": 246,
+      "total": 246
+    },
+    "A5": {
+      "passed": 225,
+      "total": 244
+    },
+    "A6": {
+      "passed": 246,
+      "total": 246
+    },
+    "A7": {
+      "passed": 228,
+      "total": 245
+    },
+    "A8": {
+      "passed": 250,
+      "total": 250
+    },
+    "A9": {
+      "passed": 250,
+      "total": 250
+    },
+    "AA": {
+      "passed": 246,
+      "total": 246
+    },
+    "AB": {
+      "passed": 237,
+      "total": 246
+    },
+    "AC": {
+      "passed": 247,
+      "total": 247
+    },
+    "AD": {
+      "passed": 232,
+      "total": 244
+    },
+    "AE": {
+      "passed": 246,
+      "total": 246
+    },
+    "AF": {
+      "passed": 238,
+      "total": 246
+    },
+    "B0": {
+      "passed": 250,
+      "total": 250
+    },
+    "B1": {
+      "passed": 250,
+      "total": 250
+    },
+    "B2": {
+      "passed": 250,
+      "total": 250
+    },
+    "B3": {
+      "passed": 250,
+      "total": 250
+    },
+    "B4": {
+      "passed": 250,
+      "total": 250
+    },
+    "B5": {
+      "passed": 250,
+      "total": 250
+    },
+    "B6": {
+      "passed": 250,
+      "total": 250
+    },
+    "B7": {
+      "passed": 250,
+      "total": 250
+    },
+    "B8": {
+      "passed": 250,
+      "total": 250
+    },
+    "B9": {
+      "passed": 250,
+      "total": 250
+    },
+    "BA": {
+      "passed": 250,
+      "total": 250
+    },
+    "BB": {
+      "passed": 250,
+      "total": 250
+    },
+    "BC": {
+      "passed": 250,
+      "total": 250
+    },
+    "BD": {
+      "passed": 250,
+      "total": 250
+    },
+    "BE": {
+      "passed": 250,
+      "total": 250
+    },
+    "BF": {
+      "passed": 250,
+      "total": 250
+    },
+    "C0.0": {
+      "passed": 241,
+      "total": 241
+    },
+    "C0.1": {
+      "passed": 241,
+      "total": 241
+    },
+    "C0.2": {
+      "passed": 241,
+      "total": 241
+    },
+    "C0.3": {
+      "passed": 241,
+      "total": 241
+    },
+    "C0.4": {
+      "passed": 224,
+      "total": 224
+    },
+    "C0.5": {
+      "passed": 224,
+      "total": 224
+    },
+    "C0.6": {
+      "passed": 224,
+      "total": 224
+    },
+    "C0.7": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.0": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.1": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.2": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.3": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.4": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.5": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.6": {
+      "passed": 241,
+      "total": 241
+    },
+    "C1.7": {
+      "passed": 241,
+      "total": 241
+    },
+    "C2": {
+      "passed": 241,
+      "total": 241
+    },
+    "C3": {
+      "passed": 241,
+      "total": 241
+    },
+    "C4": {
+      "passed": 240,
+      "total": 240
+    },
+    "C5": {
+      "passed": 241,
+      "total": 241
+    },
+    "C6": {
+      "passed": 245,
+      "total": 245
+    },
+    "C7": {
+      "passed": 244,
+      "total": 245
+    },
+    "C8": {
+      "passed": 240,
+      "total": 240
+    },
+    "C9": {
+      "passed": 234,
+      "total": 234
+    },
+    "CA": {
+      "passed": 241,
+      "total": 241
+    },
+    "CB": {
+      "passed": 241,
+      "total": 241
+    },
+    "CC": {
+      "passed": 243,
+      "total": 243
+    },
+    "CD": {
+      "passed": 243,
+      "total": 243
+    },
+    "CE": {
+      "passed": 243,
+      "total": 243
+    },
+    "CF": {
+      "passed": 244,
+      "total": 244
+    },
+    "D0.0": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.1": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.2": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.3": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.4": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.5": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.6": {
+      "passed": 241,
+      "total": 241
+    },
+    "D0.7": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.0": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.1": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.2": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.3": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.4": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.5": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.6": {
+      "passed": 241,
+      "total": 241
+    },
+    "D1.7": {
+      "passed": 241,
+      "total": 241
+    },
+    "D2.0": {
+      "passed": 241,
+      "total": 241
+    },
+    "D2.1": {
+      "passed": 241,
+      "total": 241
+    },
+    "D2.2": {
+      "passed": 241,
+      "total": 241
+    },
+    "D2.3": {
+      "passed": 241,
+      "total": 241
+    },
+    "D2.4": {
+      "passed": 225,
+      "total": 225
+    },
+    "D2.5": {
+      "passed": 225,
+      "total": 225
+    },
+    "D2.6": {
+      "passed": 224,
+      "total": 224
+    },
+    "D2.7": {
+      "passed": 241,
+      "total": 241
+    },
+    "D3.0": {
+      "passed": 242,
+      "total": 242
+    },
+    "D3.1": {
+      "passed": 242,
+      "total": 242
+    },
+    "D3.2": {
+      "passed": 242,
+      "total": 242
+    },
+    "D3.3": {
+      "passed": 242,
+      "total": 242
+    },
+    "D3.4": {
+      "passed": 243,
+      "total": 243
+    },
+    "D3.5": {
+      "passed": 243,
+      "total": 243
+    },
+    "D3.6": {
+      "passed": 243,
+      "total": 243
+    },
+    "D3.7": {
+      "passed": 243,
+      "total": 243
+    },
+    "D4": {
+      "passed": 243,
+      "total": 243
+    },
+    "D5": {
+      "passed": 244,
+      "total": 244
+    },
+    "D6": {
+      "passed": 243,
+      "total": 243
+    },
+    "D7": {
+      "passed": 241,
+      "total": 241
+    },
+    "D8": {
+      "passed": 238,
+      "total": 241
+    },
+    "E0": {
+      "passed": 242,
+      "total": 242
+    },
+    "E1": {
+      "passed": 240,
+      "total": 240
+    },
+    "E2": {
+      "passed": 242,
+      "total": 242
+    },
+    "E3": {
+      "passed": 241,
+      "total": 241
+    },
+    "E4": {
+      "passed": 0,
+      "total": 240
+    },
+    "E5": {
+      "passed": 0,
+      "total": 240
+    },
+    "E6": {
+      "passed": 240,
+      "total": 240
+    },
+    "E7": {
+      "passed": 241,
+      "total": 241
+    },
+    "E8": {
+      "passed": 240,
+      "total": 240
+    },
+    "E9": {
+      "passed": 240,
+      "total": 240
+    },
+    "EA": {
+      "passed": 242,
+      "total": 242
+    },
+    "EB": {
+      "passed": 243,
+      "total": 243
+    },
+    "EC": {
+      "passed": 0,
+      "total": 240
+    },
+    "ED": {
+      "passed": 0,
+      "total": 240
+    },
+    "EE": {
+      "passed": 240,
+      "total": 240
+    },
+    "EF": {
+      "passed": 241,
+      "total": 241
+    },
+    "F4": {
+      "passed": 0,
+      "total": 240
+    },
+    "F5": {
+      "passed": 250,
+      "total": 250
+    },
+    "F6.0": {
+      "passed": 243,
+      "total": 243
+    },
+    "F6.1": {
+      "passed": 243,
+      "total": 243
+    },
+    "F6.2": {
+      "passed": 242,
+      "total": 242
+    },
+    "F6.3": {
+      "passed": 242,
+      "total": 242
+    },
+    "F6.4": {
+      "passed": 243,
+      "total": 243
+    },
+    "F6.5": {
+      "passed": 243,
+      "total": 243
+    },
+    "F6.6": {
+      "passed": 243,
+      "total": 243
+    },
+    "F6.7": {
+      "passed": 243,
+      "total": 243
+    },
+    "F7.0": {
+      "passed": 242,
+      "total": 243
+    },
+    "F7.1": {
+      "passed": 242,
+      "total": 243
+    },
+    "F7.2": {
+      "passed": 243,
+      "total": 243
+    },
+    "F7.3": {
+      "passed": 243,
+      "total": 243
+    },
+    "F7.4": {
+      "passed": 242,
+      "total": 242
+    },
+    "F7.5": {
+      "passed": 242,
+      "total": 242
+    },
+    "F7.6": {
+      "passed": 243,
+      "total": 243
+    },
+    "F7.7": {
+      "passed": 243,
+      "total": 243
+    },
+    "F8": {
+      "passed": 250,
+      "total": 250
+    },
+    "F9": {
+      "passed": 250,
+      "total": 250
+    },
+    "FA": {
+      "passed": 250,
+      "total": 250
+    },
+    "FB": {
+      "passed": 250,
+      "total": 250
+    },
+    "FC": {
+      "passed": 250,
+      "total": 250
+    },
+    "FD": {
+      "passed": 250,
+      "total": 250
+    },
+    "FE.0": {
+      "passed": 243,
+      "total": 243
+    },
+    "FE.1": {
+      "passed": 243,
+      "total": 243
+    },
+    "FF.0": {
+      "passed": 242,
+      "total": 242
+    },
+    "FF.1": {
+      "passed": 242,
+      "total": 242
+    },
+    "FF.2": {
+      "passed": 242,
+      "total": 242
+    },
+    "FF.3": {
+      "passed": 242,
+      "total": 242
+    },
+    "FF.4": {
+      "passed": 242,
+      "total": 242
+    },
+    "FF.5": {
+      "passed": 242,
+      "total": 242
+    },
+    "FF.6": {
+      "passed": 242,
+      "total": 242
+    }
+  },
+  "note": "The vectors of each 80286 file the Rust core passes, from a full run. Regenerate with CONFORMANCE_UPDATE=1 cargo test --release -p winbox-cpu --test conformance -- --ignored.",
+  "sample": 250
+}

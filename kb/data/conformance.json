@@ -185,33 +185,38 @@
    "capture": {
     "total": 2,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "device": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "open": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "part": {
     "total": 63,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 63,
     "unimplemented": 0,
-    "unsupported": 63
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "device": "the probe finds the Ad Lib by its name, which WinBox's own synthesizer does not have",
+   "capture": "the probe finds no Ad Lib by its name, and captures nothing",
+   "open": "the probe finds no Ad Lib by its name, and opens nothing",
+   "part": "the probe finds no Ad Lib by its name, and times nothing"
+  }
  },
  "adlibgm-adlibgeneral": {
   "probe": "adlibgm",
@@ -221,48 +226,50 @@
   "functions": {
    "at": {
     "total": 129,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 14,
+    "disagreed": 115,
     "unimplemented": 0,
-    "unsupported": 129
+    "unsupported": 0
    },
    "caps": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "capture": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "close": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "open": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "send": {
     "total": 129,
-    "agreed": 0,
+    "agreed": 129,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 129
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "at": "a message's time by timeGetTime, a millisecond either way of Windows'"
+  }
  },
  "adlibmap": {
   "probe": "adlibmap",
@@ -272,41 +279,43 @@
   "functions": {
    "at": {
     "total": 87,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 21,
+    "disagreed": 66,
     "unimplemented": 0,
-    "unsupported": 87
+    "unsupported": 0
    },
    "capture": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "close": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "open": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "send": {
     "total": 87,
-    "agreed": 0,
+    "agreed": 87,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 87
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "at": "a message's time by timeGetTime, a millisecond either way of Windows'"
+  }
  },
  "adlibmap-adlibgeneral": {
   "probe": "adlibmap",
@@ -316,41 +325,43 @@
   "functions": {
    "at": {
     "total": 87,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 15,
+    "disagreed": 72,
     "unimplemented": 0,
-    "unsupported": 87
+    "unsupported": 0
    },
    "capture": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "close": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "open": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "send": {
     "total": 87,
-    "agreed": 0,
+    "agreed": 87,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 87
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "at": "a message's time by timeGetTime, a millisecond either way of Windows'"
+  }
  },
  "adlibout": {
   "probe": "adlibout",
@@ -361,54 +372,61 @@
    "at": {
     "total": 238,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 238,
     "unimplemented": 0,
-    "unsupported": 238
+    "unsupported": 0
    },
    "capture": {
     "total": 2,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "close": {
     "total": 2,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "device": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "open": {
     "total": 2,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "send": {
     "total": 238,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 238,
     "unimplemented": 0,
-    "unsupported": 238
+    "unsupported": 0
    },
    "system": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "device": "the probe finds the Ad Lib by its name, which WinBox's own synthesizer does not have",
+   "open": "the probe finds no Ad Lib by its name, and opens nothing",
+   "capture": "the probe finds no Ad Lib by its name, and captures nothing",
+   "at": "the probe finds no Ad Lib by its name, and times nothing",
+   "send": "the probe finds no Ad Lib by its name, and sends nothing",
+   "close": "the probe finds no Ad Lib by its name, and closes nothing"
+  }
  },
  "adlibseq": {
   "probe": "adlibseq",
@@ -418,27 +436,29 @@
   "functions": {
    "at": {
     "total": 7,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 1,
+    "disagreed": 6,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "capture": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "mci": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "at": "the sequencer's open is not charged, and TIMER.DRV's count across its periods is not read out"
+  }
  },
  "altchild": {
   "probe": "altchild",
@@ -4285,17 +4305,17 @@
   "functions": {
    "background": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "pixels": {
     "total": 32,
-    "agreed": 0,
+    "agreed": 32,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 32
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -4308,17 +4328,17 @@
   "functions": {
    "background": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "pixels": {
     "total": 32,
-    "agreed": 0,
+    "agreed": 32,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 32
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -4405,38 +4425,38 @@
   "functions": {
    "background": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "colours": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "pixels": {
     "total": 492,
-    "agreed": 0,
+    "agreed": 492,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 492
+    "unsupported": 0
    },
    "sent": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    },
    "set": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -4449,38 +4469,38 @@
   "functions": {
    "background": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "colours": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "pixels": {
     "total": 492,
-    "agreed": 0,
+    "agreed": 492,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 492
+    "unsupported": 0
    },
    "sent": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    },
    "set": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -4493,38 +4513,38 @@
   "functions": {
    "background": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "colours": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "pixels": {
     "total": 492,
-    "agreed": 0,
+    "agreed": 492,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 492
+    "unsupported": 0
    },
    "sent": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    },
    "set": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -6597,52 +6617,52 @@
   "functions": {
    "bytes": {
     "total": 14,
-    "agreed": 0,
+    "agreed": 14,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 14
+    "unsupported": 0
    },
    "FindResource": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "GetModuleFileName": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetModuleHandle": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetProcAddress": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetSysColor": {
     "total": 21,
-    "agreed": 0,
+    "agreed": 21,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 21
+    "unsupported": 0
    },
    "GetSystemMetrics": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -6655,52 +6675,52 @@
   "functions": {
    "bytes": {
     "total": 10,
-    "agreed": 0,
+    "agreed": 10,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 10
+    "unsupported": 0
    },
    "FindResource": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "GetModuleFileName": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetModuleHandle": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetProcAddress": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetSysColor": {
     "total": 21,
-    "agreed": 0,
+    "agreed": 21,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 21
+    "unsupported": 0
    },
    "GetSystemMetrics": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -6713,52 +6733,52 @@
   "functions": {
    "bytes": {
     "total": 14,
-    "agreed": 0,
+    "agreed": 14,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 14
+    "unsupported": 0
    },
    "FindResource": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "GetModuleFileName": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetModuleHandle": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetProcAddress": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "GetSysColor": {
     "total": 21,
-    "agreed": 0,
+    "agreed": 21,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 21
+    "unsupported": 0
    },
    "GetSystemMetrics": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -7731,10 +7751,10 @@
    },
    "free": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 2,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "order": {
     "total": 1,
@@ -7744,7 +7764,9 @@
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "free": "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments"
+  }
  },
  "enhanced/w386dpmi": {
   "probe": "w386dpmi",
@@ -8303,40 +8325,45 @@
    "count": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "module": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "path": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "pdb": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "variable": {
     "total": 4,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 4,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "pdb": "the task's prefix is at another selector in WinBox",
+   "variable": "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER",
+   "count": "WinBox's environment holds windir alone, so the count's place differs",
+   "module": "the recorder started the probe from C:\\WINDOWS, the replay from C:\\"
+  }
  },
  "escapes-ega": {
   "probe": "escapes",
@@ -9581,31 +9608,31 @@
   "functions": {
    "add": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "faces": {
     "total": 9,
-    "agreed": 0,
+    "agreed": 9,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 9
+    "unsupported": 0
    },
    "file": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "remove": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -9722,10 +9749,10 @@
    },
    "free": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 2,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "order": {
     "total": 1,
@@ -9735,7 +9762,9 @@
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "free": "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments"
+  }
  },
  "ftitle": {
   "probe": "ftitle",
@@ -11010,52 +11039,52 @@
   "functions": {
    "dc": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "memdc": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "mixed": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "reuse": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "stock": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "stock9": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stock9object": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -11068,52 +11097,52 @@
   "functions": {
    "dc": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "memdc": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "mixed": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "reuse": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "stock": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "stock9": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stock9object": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -11126,52 +11155,52 @@
   "functions": {
    "dc": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "memdc": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "mixed": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "reuse": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "stock": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "stock9": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stock9object": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -11766,19 +11795,22 @@
    "bytes": {
     "total": 135,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 135,
     "unimplemented": 0,
-    "unsupported": 135
+    "unsupported": 0
    },
    "census": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "census": "the global heap's blocks, which in WinBox are not Windows' own modules'",
+   "bytes": "GDI's TrueType scaler's own memory, which WinBox has not"
+  }
  },
  "groundw-vga": {
   "probe": "groundw",
@@ -15653,94 +15685,94 @@
   "functions": {
    "box": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "count": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "current": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "dblclk": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "dialog": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "exit": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "init": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "inquire": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "newinquire": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "open": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "select": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stop": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "walk": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -16074,38 +16106,38 @@
   "functions": {
    "caps": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "close": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "error": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "info": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "open": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -16190,34 +16222,36 @@
   "functions": {
    "mci": {
     "total": 27,
-    "agreed": 0,
+    "agreed": 27,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 27
+    "unsupported": 0
    },
    "motion": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "notify": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "wait": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 4,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "wait": "a play's notification comes a tenth of a second early: not yet investigated"
+  }
  },
  "mdiscrl": {
   "probe": "mdiscrl",
@@ -17381,69 +17415,71 @@
   "functions": {
    "caps": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 2,
+    "disagreed": 4,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "close": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "control": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "count": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "error": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "long": {
     "total": 9,
-    "agreed": 0,
+    "agreed": 9,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 9
+    "unsupported": 0
    },
    "message": {
     "total": 9,
-    "agreed": 0,
+    "agreed": 9,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 9
+    "unsupported": 0
    },
    "open": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "short": {
     "total": 12,
-    "agreed": 0,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "caps": "the capabilities are WinBox's own sound driver's, its names and numbers"
+  }
  },
  "minact": {
   "probe": "minact",
@@ -18228,31 +18264,31 @@
   "functions": {
    "caps": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "count": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "open": {
     "total": 11,
-    "agreed": 0,
+    "agreed": 11,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    },
    "text": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 8,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 8
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -18665,80 +18701,80 @@
   "functions": {
    "box": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "debugstr": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "drv": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "joy": {
     "total": 25,
-    "agreed": 0,
+    "agreed": 25,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 25
+    "unsupported": 0
    },
    "mci": {
     "total": 32,
-    "agreed": 0,
+    "agreed": 32,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 32
+    "unsupported": 0
    },
    "notify": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "stack": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "task": {
     "total": 10,
-    "agreed": 0,
+    "agreed": 10,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 10
+    "unsupported": 0
    },
    "version": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "wep": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "yieldproc": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -18788,31 +18824,31 @@
   "functions": {
    "handle": {
     "total": 92,
-    "agreed": 0,
+    "agreed": 92,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 92
+    "unsupported": 0
    },
    "id": {
     "total": 38,
-    "agreed": 0,
+    "agreed": 38,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 38
+    "unsupported": 0
    },
    "open": {
     "total": 13,
-    "agreed": 0,
+    "agreed": 13,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 13
+    "unsupported": 0
    },
    "text": {
     "total": 27,
-    "agreed": 0,
+    "agreed": 27,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 27
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -19135,59 +19171,59 @@
   "functions": {
    "closed": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "dialog": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "dir": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "enabled": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "exec": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "menu": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "player": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "types": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -19445,24 +19481,24 @@
   "functions": {
    "metrics": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "rows": {
     "total": 144,
-    "agreed": 0,
+    "agreed": 144,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 144
+    "unsupported": 0
    },
    "window": {
     "total": 31,
-    "agreed": 0,
+    "agreed": 31,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 31
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -19475,24 +19511,24 @@
   "functions": {
    "metrics": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "rows": {
     "total": 144,
-    "agreed": 0,
+    "agreed": 144,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 144
+    "unsupported": 0
    },
    "window": {
     "total": 31,
-    "agreed": 0,
+    "agreed": 31,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 31
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -19764,40 +19800,44 @@
    "calls": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "counter": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "ds": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "read": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "start": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {
+   "calls": "the program ends at the null selector's fault, before it writes this",
+   "ds": "the program ends at the null selector's fault, before it writes this",
+   "read": "the program ends at the null selector's fault, before it writes this",
+   "counter": "the program ends at the null selector's fault, before it writes this",
    "answer": "a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through"
   }
  },
@@ -23639,17 +23679,17 @@
   "functions": {
    "entry": {
     "total": 20,
-    "agreed": 0,
+    "agreed": 20,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 20
+    "unsupported": 0
    },
    "ready": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -27278,10 +27318,10 @@
   "functions": {
    "atom": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "register": {
     "total": 2,
@@ -27823,27 +27863,31 @@
   "functions": {
    "block": {
     "total": 230,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 1,
+    "disagreed": 229,
     "unimplemented": 0,
-    "unsupported": 230
+    "unsupported": 0
    },
    "bytes": {
     "total": 4096,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 4096,
     "unimplemented": 0,
-    "unsupported": 4096
+    "unsupported": 0
    },
    "census": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "block": "the global heap's blocks, which in WinBox are not Windows' own modules'",
+   "census": "the global heap's blocks, which in WinBox are not Windows' own modules'",
+   "bytes": "GDI's TrueType scaler's own memory, which WinBox has not"
+  }
  },
  "scalemem-vga": {
   "probe": "scalemem",
@@ -27853,27 +27897,31 @@
   "functions": {
    "block": {
     "total": 229,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 1,
+    "disagreed": 228,
     "unimplemented": 0,
-    "unsupported": 229
+    "unsupported": 0
    },
    "bytes": {
     "total": 4096,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 4096,
     "unimplemented": 0,
-    "unsupported": 4096
+    "unsupported": 0
    },
    "census": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "block": "the global heap's blocks, which in WinBox are not Windows' own modules'",
+   "census": "the global heap's blocks, which in WinBox are not Windows' own modules'",
+   "bytes": "GDI's TrueType scaler's own memory, which WinBox has not"
+  }
  },
  "scalepts-ega": {
   "probe": "scalepts",
@@ -27884,33 +27932,38 @@
    "census": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "hunt": {
     "total": 2,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "where": {
     "total": 1,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "window": {
     "total": 12,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 12,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "census": "the global heap's blocks, which in WinBox are not Windows' own modules'",
+   "hunt": "GDI's TrueType scaler's own memory, which WinBox has not",
+   "where": "GDI's TrueType scaler's own memory, which WinBox has not",
+   "window": "GDI's TrueType scaler's own memory, which WinBox has not"
+  }
  },
  "scanscr-ega": {
   "probe": "scanscr",
@@ -28429,20 +28482,22 @@
   "functions": {
    "mci": {
     "total": 103,
-    "agreed": 0,
+    "agreed": 103,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 103
+    "unsupported": 0
    },
    "took": {
     "total": 5,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 4,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "took": "a play to 250 waited for takes 600 ms here and 500 in Windows: not yet investigated"
+  }
  },
  "setcur": {
   "probe": "setcur",
@@ -29151,24 +29206,24 @@
   "functions": {
    "mci": {
     "total": 29,
-    "agreed": 0,
+    "agreed": 29,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 29
+    "unsupported": 0
    },
    "snd": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "sound": {
     "total": 20,
-    "agreed": 0,
+    "agreed": 20,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 20
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -29253,59 +29308,59 @@
   "functions": {
    "block": {
     "total": 32,
-    "agreed": 0,
+    "agreed": 32,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 32
+    "unsupported": 0
    },
    "bytes": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "closed": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "command": {
     "total": 9,
-    "agreed": 0,
+    "agreed": 9,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 9
+    "unsupported": 0
    },
    "exec": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "length": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "texts": {
     "total": 12,
-    "agreed": 0,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    },
    "window": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -29490,19 +29545,22 @@
    "residue": {
     "total": 2920,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 2920,
     "unimplemented": 0,
-    "unsupported": 2920
+    "unsupported": 0
    },
    "stack": {
     "total": 730,
     "agreed": 0,
-    "disagreed": 0,
+    "disagreed": 730,
     "unimplemented": 0,
-    "unsupported": 730
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "stack": "the stack pointer at the call, 600h above Windows' in standard mode: not yet investigated",
+   "residue": "GDI's TrueType scaler's working memory, left on the caller's stack, which WinBox has not"
+  }
  },
  "stackpos": {
   "probe": "stackpos",
@@ -29693,59 +29751,59 @@
   "functions": {
    "null": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "reuse": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "room": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "selected": {
     "total": 20,
-    "agreed": 0,
+    "agreed": 20,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 20
+    "unsupported": 0
    },
    "stock": {
     "total": 68,
-    "agreed": 0,
+    "agreed": 68,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 68
+    "unsupported": 0
    },
    "stockagain": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stockbitmap": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "twice": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -29758,59 +29816,59 @@
   "functions": {
    "null": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "reuse": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "room": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "selected": {
     "total": 20,
-    "agreed": 0,
+    "agreed": 20,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 20
+    "unsupported": 0
    },
    "stock": {
     "total": 68,
-    "agreed": 0,
+    "agreed": 68,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 68
+    "unsupported": 0
    },
    "stockagain": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stockbitmap": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "twice": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -29823,59 +29881,59 @@
   "functions": {
    "null": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "reuse": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "room": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "selected": {
     "total": 20,
-    "agreed": 0,
+    "agreed": 20,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 20
+    "unsupported": 0
    },
    "stock": {
     "total": 68,
-    "agreed": 0,
+    "agreed": 68,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 68
+    "unsupported": 0
    },
    "stockagain": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "stockbitmap": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "twice": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -30786,10 +30844,10 @@
    },
    "load": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -32223,17 +32281,17 @@
   "functions": {
    "create": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 8,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 8
+    "unsupported": 0
    },
    "rect": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 8,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 8
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -33087,97 +33145,100 @@
   "functions": {
    "caps": {
     "total": 4,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 2,
+    "disagreed": 2,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "close": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "control": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "count": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "error": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "header": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "message": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "open": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 2,
+    "disagreed": 1,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "pause": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "play": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "position": {
     "total": 7,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 7
+    "unsupported": 0
    },
    "query": {
     "total": 19,
-    "agreed": 0,
+    "agreed": 19,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 19
+    "unsupported": 0
    },
    "reset": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "caps": "the capabilities are WinBox's own sound driver's, its names and numbers",
+   "open": "a device opened again answers 11 here, where Windows' driver answers 4: not yet investigated"
+  }
  },
  "wavemix": {
   "probe": "wavemix",
@@ -33187,87 +33248,87 @@
   "functions": {
    "activate": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "channel": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "close": {
     "total": 5,
-    "agreed": 0,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 5
+    "unsupported": 0
    },
    "end": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "error": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "flush": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "info": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "ini": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "init": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "load": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "play": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "wave": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    }
   },
   "gaps": {}

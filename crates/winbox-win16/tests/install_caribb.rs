@@ -11,7 +11,11 @@
 //! installer asks it for.
 //!
 //! Skipped without the corpus's program, the bundle (`pnpm assets`) or the
-//! fixture.
+//! fixture. The fixture is this run's, its text to the byte, the clicks
+//! and keys it was given kept as it has them; `CARIBB_LAYER_WRITE=1` writes
+//! it from the run, as `caribb_test.ts` did.
+
+mod support;
 
 use std::path::PathBuf;
 
@@ -46,6 +50,7 @@ fn lines(entries: &serde_json::Value) -> Vec<String> {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn caribbean_treasures_installer_into_a_layer() {
     let media = root().join("corpus/programs/caribb");
     let fixture = root().join("test/layers/caribb-layer.json");
@@ -153,6 +158,31 @@ fn caribbean_treasures_installer_into_a_layer() {
         "the layer, as the TypeScript engine's"
     );
     assert_group(&installed.layer);
+
+    // The fixture's text, from this run: its places as it has them.
+    let written = support::json_text(
+        &serde_json::json!({
+            "stepMarks": fixture["stepMarks"],
+            "layer": made,
+            "dropped": installed.dropped,
+            "references": installed
+                .references
+                .iter()
+                .map(|reference| serde_json::json!({ "path": reference.path, "line": reference.line }))
+                .collect::<Vec<_>>(),
+        }),
+        1,
+        LAYER_ORDER,
+    );
+
+    if std::env::var("CARIBB_LAYER_WRITE").as_deref() == Ok("1") {
+        std::fs::write(root().join("test/layers/caribb-layer.json"), &written).unwrap();
+    }
+
+    assert!(
+        written == fixture_text,
+        "the fixture's text, as this run writes it"
+    );
     assert!(installed.dropped.is_empty(), "{:?}", installed.dropped);
     assert!(
         installed.references.is_empty(),
@@ -160,6 +190,41 @@ fn caribbean_treasures_installer_into_a_layer() {
         installed.references
     );
 }
+
+/// The order of an installed layer's fixture's keys, as `caribb_test.ts`
+/// and `widget_test.ts` wrote them: the run's places, its layer's manifest
+/// (`kb/formats/layer.md`) and what was dropped and referred to.
+const LAYER_ORDER: &[&str] = &[
+    "stepMarks",
+    "layer",
+    "dropped",
+    "references",
+    "calls",
+    "instructions",
+    "time",
+    "pointer",
+    "key",
+    "code",
+    "kind",
+    "x",
+    "y",
+    "button",
+    "buttons",
+    "double",
+    "format",
+    "id",
+    "over",
+    "made",
+    "entries",
+    "by",
+    "version",
+    "from",
+    "path",
+    "line",
+    "sha256",
+    "size",
+    "modified",
+];
 
 /// The group as the page and `--list` show it under the program kept:
 /// its file the layer's, its item as the TypeScript engine reads it.

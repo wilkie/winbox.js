@@ -1,7 +1,7 @@
 //! `VER` and `LZEXPAND` are WinBox's own (`src/ver/`, `src/lzexpand/`):
 //! their probes write what Windows wrote with no `VER.DLL` or
 //! `LZEXPAND.DLL` on the drive at all, as they do with the files there
-//! (`probes.rs`, `AGREEING`). As `test/win16/ver_lzexpand_test.ts`.
+//! (the replay, `conformance.rs`). As `test/win16/ver_lzexpand_test.ts`.
 
 mod support;
 

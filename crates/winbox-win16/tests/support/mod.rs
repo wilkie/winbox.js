@@ -13,362 +13,6 @@ use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
 
-/// The probes the Rust engine runs to their end, agreeing with Windows.
-pub const AGREEING: &[&str] = &[
-    "stackpos",
-    "grealloc",
-    "greuse",
-    "memory",
-    "glock",
-    "localre",
-    "mmtime",
-    "mmdevs",
-    "mcidevs",
-    "mcifile",
-    "sndplay",
-    "mmio",
-    "sndrec",
-    "sndrec-vgasound",
-    "drivers",
-    "drvmsg",
-    "registry",
-    "shell2",
-    "shlhook",
-    "comms",
-    "escapes-vga",
-    "escapes-ega",
-    "escapes-svga",
-    "escapes-hercules",
-    "enumobj-vga",
-    "enumobj-ega",
-    "enumobj-svga",
-    "enumobj-hercules",
-    "enumregs",
-    "filecdr",
-    "queries",
-    "scrolls",
-    "updrgn",
-    "winhelp",
-    "clip",
-    "lockupd",
-    "btnclick",
-    "btnkeys",
-    "altchild",
-    "capdbl",
-    "comboact",
-    "titledis",
-    "curerr",
-    "mousemsg",
-    "nchit-vga",
-    "nchit-ega",
-    "nchit-hercules",
-    "selbmp",
-    "btnmore",
-    "sndplay-vgasound",
-    "stockdel-vga",
-    "stockdel-ega",
-    "stockdel-hercules",
-    "stockdel-svga",
-    "search",
-    "filedlg",
-    "editdbl",
-    "sllen",
-    "menuenab",
-    "mdisys",
-    "hidfocus",
-    "comboesc",
-    "editundo",
-    "mldlg",
-    "mlfull",
-    "lwrhuge",
-    "accinit",
-    "accsys",
-    "openfile",
-    "cardview",
-    "altenter",
-    "notepos",
-    "ulcolour",
-    "sysq",
-    "jrnlrec",
-    "jrnlplay",
-    "inhook",
-    "tasklist",
-    "prtsc",
-    "hotkey",
-    "keyrep",
-    "inlock",
-    "sysparam",
-    "drvres-vga",
-    "drvres-ega",
-    "drvres-hercules",
-    "drvres-svga",
-    "fontres",
-    "dblrect",
-    "deskwall-vga",
-    "deskwall-ega",
-    "deskwall-svga",
-    "deskwall-hercules",
-    "deskwall-vga256",
-    "deskbrsh-ega",
-    "deskbrsh-hercules",
-    "swpframe",
-    "titledbl",
-    "minmax",
-    "nccalc",
-    "menuwnd",
-    "enumfam-vga",
-    "enumfam-ega",
-    "enumfam-hercules",
-    "enumfam-svga",
-    "strcpyn",
-    "editclip",
-    "deskdeep-vga",
-    "deskdeep-vga256",
-    "alttab",
-    "enddlg",
-    "syschar",
-    "mmiohi",
-    "mmioext",
-    "fontdef",
-    "fontver-vga",
-    "fontver-hercules",
-    "fontboot-fonts",
-    "fontboot-ttoff",
-    "fontboot-ttonly",
-    "sndbig",
-    "inpost",
-    "gmhook",
-    "hwhook",
-    "lockinp",
-    "bcast",
-    "bdrwidth",
-    "langdrv",
-    "spiboot-settings",
-    "spiidle",
-    "wavemix",
-    "sysdlg",
-    "dlgcode",
-    "sysfilt",
-    "cbthook",
-    "sebhook",
-    "ddexact",
-    "postend",
-    "associco",
-    "dderaw",
-    "ddemgmt",
-    "profhold",
-    "findrepl",
-    "choosclr",
-    "ftitle",
-    "ofnerr",
-    "ofnopen",
-    "pmatom",
-    "chfont",
-    "chfont2",
-    "prdlg",
-    "prdlgx",
-    "pric",
-    "prdoc",
-    "prspool",
-    "prabort",
-    "prdraw",
-    "prlpt",
-    "prnote",
-    "prtabs",
-    "lzfiles",
-    "verinfo",
-    "verinst",
-    "chfont3",
-    "chfontpr",
-    "lbtext",
-    "ddeinst",
-    "ddefail",
-    "ddemon",
-    "ddeterm",
-    "ddelist",
-    "ddenest",
-    "prmeta",
-    "prdrv",
-    "prband",
-    "ddeheap",
-    "ddehsz",
-    "lochand",
-    "lzero",
-    "lheapseg",
-    "localgro",
-    "prblt",
-    "prblt2",
-    "dirorder",
-    "lbmark",
-    "abouthin",
-    "grround",
-    "instlay",
-    "pmbare-vga",
-    "pmbare-ega",
-    "pmraw",
-    "pmsyntax",
-    "pmgroups",
-    "pmfiles",
-    "pmshell-progman",
-    "progdde",
-    "mscdex",
-    "imgflop",
-    "imghdd",
-    "imgwrite",
-    "drvioctl",
-    "imgcd",
-    "imgbin",
-    "imgcue",
-    "imgcue2",
-    "imgtrk",
-    "imgswap",
-    "biosmem",
-    "kconst",
-    "thtask",
-    "ktask2",
-    "ttquery",
-    "dcinner-vga",
-    "dcinner-vga256",
-    "bounds",
-    "gdipq",
-    "gdicopy",
-    "sysdrv",
-    "snddrv",
-    "kbdrv",
-    "wnetall",
-    "usermisc",
-    "curmake",
-    "dragq",
-    "userint",
-    "replym",
-    "endmenu",
-    "usermore",
-    "intpos",
-    "sysdbg",
-    "iconid",
-    "loadalt",
-    "mmmisc",
-    "mmmisc-vgasound",
-    "mmnodev",
-    "mmnodev-vgasound",
-    "mmcmd",
-    "kmore",
-    "kevent",
-    "thswch",
-    "mmtaskc",
-    "reshand",
-    "kbreak",
-    "kbenable",
-    "wplace",
-    "iextract",
-    "aboutdp",
-    "gfreeal",
-    "metarec",
-    "visrgn",
-    "getdcex",
-    "visrule",
-    "galimit",
-    "visdraw",
-    "visfam",
-    "dchook",
-    "dcreuse",
-    "dcentry",
-    "visscrl",
-    "vismove",
-    "dchkdel",
-    "vislock",
-    "invchild",
-    "ictwrap",
-    "undefdl",
-    "kintrnl",
-    "kowner",
-    "systimer",
-    "hwevent",
-    "dragobj",
-    "oemlayer",
-    "filport",
-    "findexe",
-    "gdimisc",
-    "olestat",
-    "olemem",
-    "gdidm-vga",
-    "gdidm-ega",
-    "gdidm-svga",
-    "gdispool",
-    "gdiint",
-    "iconhand-vga",
-    "iconhand-vga256",
-    "oledde",
-    "olepbd",
-    "olepbr",
-    "swpunc",
-    "olesrv",
-    "gdidmdrw-vga",
-    "gdidmdrw-ega",
-    "gdidmdrw-svga",
-    "scanscr-vga",
-    "scanscr-ega",
-    "scanscr-svga",
-    "oleemb",
-    "olehnd",
-    "olenet",
-    "rdwwalk",
-    "rdw31",
-    "swpunc31",
-    "swplist",
-    "swplst31",
-    "savebit",
-    "rdwmore",
-    "prttxt",
-    "wfpwalk",
-    "gdidmdrw-hercules",
-    "gdidmdib-vga256",
-    "uwleft",
-    "prttx2",
-    "maxcopy",
-    "prttstk",
-    "gdidmpx-vga",
-    "gdidmpx-hercules",
-    "gdidmpx-vga256",
-    "enumobj-vga256",
-    "prttcw",
-    "gdidmrle-vga",
-    "gdidmrle-vga256",
-    "rootattr",
-    "segtail",
-    "execpk",
-    "dlgfront",
-    "zorder",
-    "zcreate",
-    "zactive",
-    "swpshow",
-    "profnul",
-    "zminim",
-    "zcbtins",
-    "zmark",
-    "mbseb",
-    "zhidmin",
-    "taskend",
-    "hooks",
-    "pmitem",
-    "rootlib",
-    "dpmiver",
-    "dpmigrw",
-    "dpminul",
-    "dpmiout",
-    // Recorded in 386 enhanced mode, run on a machine in it (`ENHANCED`).
-    "enhanced/winflags",
-    "enhanced/dpmiver",
-    "enhanced/about",
-    "enhanced/dpmigrw",
-    "enhanced/dpminul",
-    "enhanced/dpmiout",
-    // WATCOM's Win386 supervisor and its 32-bit programs (`win386.md`).
-    "enhanced/w386ver",
-    "enhanced/w386dpmi",
-    "enhanced/w386lib",
-];
-
 /// The files a probe that prints finds on its drive, as the TypeScript
 /// engine's run puts them (`run-probe.ts`).
 ///
@@ -1210,7 +854,7 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
 /// (`FatVolume`), or a CD image (`IsoVolume`) -- a cue sheet's files found
 /// beside it, as `record.mjs` copies them and DOSBox finds them
 /// (`GetRealFileName`). A probe whose image is not mounted runs without
-/// it, and is left out of `AGREEING`.
+/// it, and its records differ.
 fn image_volume(kind: &str, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
     match kind {
         "floppy" | "hdd" => FatVolume::new(bytes, kind == "floppy")
@@ -1490,4 +1134,882 @@ pub fn bundle_store(system: &mut System) {
     if system.assets.is_none() {
         system.assets = bundle();
     }
+}
+
+/// Every recording the replay holds, by its fixture's name: the top level
+/// of `oracle/fixtures`, standard mode's, and `enhanced/`, 386 enhanced
+/// mode's, each sorted. `fabricated/`, `screens/` and the rest are not
+/// recordings of a probe's records.
+pub fn fixtures() -> Vec<String> {
+    let mut names = Vec::new();
+
+    for folder in ["", ENHANCED] {
+        let Ok(entries) = std::fs::read_dir(root().join("oracle/fixtures").join(folder)) else {
+            continue;
+        };
+        let mut found: Vec<String> = entries
+            .flatten()
+            .filter(|entry| entry.path().is_file())
+            .filter_map(|entry| {
+                let file = entry.file_name().to_string_lossy().into_owned();
+
+                file.strip_suffix(".json")
+                    .map(|name| format!("{folder}{name}"))
+            })
+            .collect();
+
+        found.sort();
+        names.extend(found);
+    }
+
+    names
+}
+
+/// What a whole run wrote for each record Windows wrote, in the
+/// recording's order: the run's own occurrence of the record's function
+/// and arguments, where the probe writes the same call more than once, else
+/// the last it wrote; `None` where it never wrote that call (`replay.ts`'s
+/// `wholeRun`).
+pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<Option<&'a str>> {
+    let mut written: std::collections::HashMap<(&str, &str), Vec<&str>> =
+        std::collections::HashMap::new();
+
+    for [function, args, result] in records {
+        written
+            .entry((function.as_str(), args.as_str()))
+            .or_default()
+            .push(result.as_str());
+    }
+
+    let mut seen: std::collections::HashMap<(&str, &str), usize> = std::collections::HashMap::new();
+
+    recorded
+        .iter()
+        .map(|[function, args, _]| {
+            let key = (function.as_str(), args.as_str());
+            let occurrence = seen.entry(key).or_default();
+            let at = *occurrence;
+
+            *occurrence += 1;
+            written
+                .get(&key)
+                .and_then(|results| results.get(at).or(results.last()))
+                .copied()
+        })
+        .collect()
+}
+
+/// The recordings in 386 enhanced mode whose records `kb/data/conformance.json`
+/// carries, as `replay.ts`'s `ENHANCED` names them. The rest are held by the
+/// replay as every fixture is, but left out of the report until the
+/// knowledge base tells the two modes' records apart: it would count them
+/// against pages measured in standard mode (the owner's decision of
+/// 2026-11-08, `kb/guides/retire-typescript.md`).
+pub const REPORTED_ENHANCED: &[&str] = &[
+    "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
+    "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
+    "w386lib",
+];
+
+/// Functions a module declares but answers with a stub: their records are
+/// counted `unimplemented`, not as disagreeing, as `replay.ts`'s `STUBBED`.
+pub const STUBBED: &[&str] = &[
+    // WinG's halftone brushes: recorded by `wingapi`, their dither not
+    // worked out, and `WinGCreateHalftoneBrush` makes none.
+    "halftone-brush",
+];
+
+/// Fixtures whose probe is not built by `build-probes.mjs`, each with why:
+/// their records are counted `unsupported`, and their trials pass with
+/// nothing to check. Any other fixture whose probe is not built fails its
+/// trial.
+pub const UNBUILT: &[(&str, &str)] = &[];
+
+/// A known gap's key for a recording in standard mode alone, where the
+/// same probe's recording in enhanced mode agrees: `standard/<probe>:<function>`.
+pub const STANDARD: &str = "standard/";
+
+/// The known gap of a fixture's function, where it has one: by the
+/// fixture's mode (`enhanced/<probe>:<function>`, or
+/// `standard/<probe>:<function>`), its probe and display
+/// (`<probe>-<display>:<function>`), its probe, or the function alone, as
+/// `replay.ts`'s `gapOf`, which had no key for standard mode alone.
+pub fn gap_of(enhanced: bool, probe: &str, display: &str, function: &str) -> Option<&'static str> {
+    let find = |key: String| {
+        KNOWN_GAPS
+            .iter()
+            .find(|&&(each, _)| each == key)
+            .map(|&(_, reason)| reason)
+    };
+    let mode = if enhanced { ENHANCED } else { STANDARD };
+
+    find(format!("{mode}{probe}:{function}"))
+        .or_else(|| find(format!("{probe}-{display}:{function}")))
+        .or_else(|| find(format!("{probe}:{function}")))
+        .or_else(|| find(function.to_string()))
+}
+
+/// Recorded behaviour the Rust engine is known not to reproduce, by
+/// `probe:function`, `probe-display:function` for one display of a probe
+/// recorded on several, `enhanced/probe:function` for a recording in 386
+/// enhanced mode, or `standard/probe:function` for one in standard mode
+/// alone; each with what is short. A gap's function that agrees in
+/// every record fails its trial, so the list only shrinks. The first part
+/// is `replay.ts`'s `KNOWN_GAPS`, moved across with its reasons; the
+/// second, the records the TypeScript replay passed with no adapter and the
+/// enhanced recordings it did not replay, named when the Rust replay took
+/// them over (the owner's decision of 2026-11-08,
+/// `kb/guides/retire-typescript.md`).
+pub const KNOWN_GAPS: &[(&str, &str)] = &[
+    // `segfree` names each selector by the one before it with the same
+    // descriptor. A task's handle is its task database's selector in Windows
+    // and a number of WinBox's own here, so three records that name it
+    // differ: the first run's database freed (`p1`), the second run's handle
+    // (`c2.task`), and its database freed (`b1`). WinBox takes a descriptor
+    // for the database in its place, so every other selector around it is
+    // given as Windows gives it (`Win16.load`).
+    (
+        "segfree:between",
+        "a task's handle is not its task database's selector: 1 of 8 records",
+    ),
+    (
+        "segfree:child",
+        "a task's handle is not its task database's selector: 2 of 26 records",
+    ),
+    // `popmax`'s pop-up made `WS_CAPTION | WS_MINIMIZE`: `CreateWindow`
+    // minimizes it as it does an overlapped one (`USER.EXE` seg8 `0843`-`0861`
+    // asks nothing of the kind of window), and its first `WM_SIZE` is the whole
+    // window's, as an icon's client area is; winbox.js minimizes only an
+    // overlapped window as it is made.
+    (
+        "popmax:minlog",
+        "a pop-up made WS_MINIMIZE is not minimized as it is made",
+    ),
+    (
+        "popmax:minrects",
+        "a pop-up made WS_MINIMIZE is not minimized as it is made",
+    ),
+    // `solodata` reads its module's flags from the header KERNEL keeps in
+    // memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
+    // a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
+    // winbox.js's database holds the file's header, which reads 201h. What
+    // the bit does -- the prologue and the thunk -- agrees.
+    (
+        "solodata:flags",
+        "the module's database holds its file's header, not the bits KERNEL sets in its flags",
+    ),
+    // DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
+    // whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
+    // is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C:, a
+    // FAT16 volume, answers the folder's figures too; it has no Z:. A:, B:
+    // and the numbers past Z: agree. And
+    // function 1Ch, which winbox.js does not answer: under DOSBox it gives a
+    // drive's geometry without the room, and DS:BX a selector of DOSX's own
+    // over the media byte, F8h for C: (`diskfree`).
+    (
+        "diskfree:space",
+        "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
+    ),
+    ("diskfree:allocation", "DOS function 1Ch is not answered"),
+    ("diskfree:segment", "DOS function 1Ch is not answered"),
+    ("diskfree:media", "DOS function 1Ch is not answered"),
+    // GlobalReAlloc growing a block past one allocated after it moves it in
+    // Windows, its selector the same; winbox.js gives each selector a 64 KiB
+    // place of its own and grows a block where it is. And FS, which no 16-bit
+    // code of Windows loads, comes back from the call nought, reaching linear
+    // nought, as from a trip to real mode (`segreg`, recorded in standard
+    // mode); winbox.js's calls leave FS alone. One record each.
+    (
+        "segreg:moved",
+        "a block grown past the next moves in Windows, its selector kept; winbox.js grows it where it is, one record",
+    ),
+    (
+        "segreg:selector",
+        "FS comes back from GlobalReAlloc nought in Windows, as from a trip to real mode; winbox.js leaves it, one record",
+    ),
+    (
+        "segreg:fs",
+        "FS comes back from GlobalReAlloc reaching linear nought in Windows; winbox.js leaves it holding the block, one record",
+    ),
+    // A program's first blocks, asked for without GMEM_ZEROINIT, hold what
+    // Windows' memory held before -- in the recording, 3,869 of 4,096 bytes
+    // and 7,415 and 6,673 of 8,448 are not nought (`gfresh`). That is the
+    // state of the machine Windows ran on, not anything Windows does, and
+    // winbox.js's memory starts as nought. Three records.
+    (
+        "gfresh:fresh",
+        "a fresh block holds what Windows' memory held before, leftovers of the machine's earlier use; winbox.js's memory starts as nought, three records",
+    ),
+    // A block freed is room for the next, as in Windows (`gcycle`'s `cycle`
+    // and `after` agree); but how many blocks there is room for at once is
+    // Windows' selectors less those its own modules and the shell hold, 7,680
+    // of 1 KiB, where winbox.js's own hold fewer and it gives 8,084.
+    (
+        "gcycle:hold",
+        "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled",
+    ),
+    // A procedure given EnumTaskWindows without `MakeProcInstance`, which
+    // USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
+    // `nop`s, takes the null selector 1 for its data segment. DOSBox, which
+    // the recording was made under, lets memory be reached through it and
+    // the procedure records nothing; a real processor faults, and winbox.js
+    // follows the processor and ends the program (`nullds`). The probe makes
+    // these calls last.
+    (
+        "minis3:tasks",
+        "a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through",
+    ),
+    // The same, measured on its own: DOSBox runs the procedure with the null
+    // selector for its data segment, four times; a real processor faults on
+    // its first read, and winbox.js ends the program there.
+    (
+        "nullds:answer",
+        "a procedure run with the null selector for its data segment faults here, as a real processor does; DOSBox lets it through",
+    ),
+    // KERNEL's pointer checks answer by touching the memory and catching the
+    // fault. DOSBox raises none for the null selector, an offset past a
+    // segment's limit, or a write to code, and they answered 0 there; a real
+    // processor faults, and winbox.js answers 1, for all 12 (`bad-pointers.ts`).
+    (
+        "badptr:fault",
+        "12 checks answer 1 where a real processor faults on the null selector, a limit or a write to code; DOSBox raises no fault and answered 0",
+    ),
+    // What RegisterClass answers: 1 for the probe, a program made for Windows
+    // 3.0. Windows 3.1 is documented to answer the class's atom, which may be
+    // what a program made for 3.1 gets; not changed until that is measured.
+    (
+        "classinf:register",
+        "RegisterClass answers 1 for a program made for 3.0, which is not followed yet",
+    ),
+    // CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
+    // polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and
+    // what it makes of that is not read out; winbox.js makes their union. One
+    // polygon and two, which make no region, agree.
+    (
+        "regions:polypolygon",
+        "three polygons make what GDI's builder makes of a count of three points, not yet read out",
+    ),
+    // `WM_MEASUREITEM`'s item number for a list box of fixed heights, which
+    // USER never sets (`USER.EXE` seg38 `0272`): what was left on its stack --
+    // 2567 on the VGA, 2287 on the others -- which nothing can work out. Every
+    // other field agrees.
+    (
+        "listbox:measure",
+        "the item number is whatever was left on the stack; every other field agrees",
+    ),
+    // The combo box's two `WM_MEASUREITEM`s, one for its field and one for
+    // its list: USER leaves the field's width and the list's item number unset
+    // (`USER.EXE` seg34 `02ac`, seg38 `0278`), so each carries what was on the
+    // stack -- 879, and 2567 -- which nothing can work out. Every other field
+    // agrees.
+    (
+        "combobox:measure",
+        "the field's width and the list's item number are whatever was left on the stack",
+    ),
+    // The numbers `RegisterWindowMessage` gives. Everything that relates them
+    // agrees -- at least 0xC000, the same for a string in any case, another for
+    // another string -- but Windows' first was 0xC40E, after whatever was
+    // registered before the probe ran, and its next eight more, which follows
+    // from how USER lays out its table. Neither is modelled; these count up
+    // from 0xC000 by one.
+    (
+        "regmsg:register",
+        "message numbers count from 0xC000 by one; Windows gave 0xC40E, then eight more",
+    ),
+    // A task's blocks of global memory are freed as it ends, and a block of
+    // `GMEM_DDESHARE` -- the module's whose code allocated it
+    // (`KRNL386.EXE` seg1 `0d12`-`0d2a`) -- as the module's last instance ends.
+    // winbox.js frees neither: 5 of `ddeleft`'s 12 records, every one taken
+    // after a program ended.
+    (
+        "ddeleft:owned",
+        "no global memory is freed as its task or module ends",
+    ),
+    // An atom deleted once more than it was added: KERNEL looks up the string
+    // its freed entry held and answers what was left in AX (seg1 `4a80`),
+    // which depends on what the local heap wrote over the freed entry.
+    // winbox.js keeps no heap for the atoms, and answers nought: 1 record,
+    // where Windows' freed entry still held the string.
+    (
+        "ddeleft:DdeFreeStringHandle",
+        "an atom deleted once too often answers nought",
+    ),
+    // KERNEL's own notify procedure is `8de2` in KERNEL's first code
+    // segment; `LocalNotify` answers it as `LocalInit` left it. WinBox has
+    // no such segment, and keeps the offset with the segment nought: 1
+    // record of `locinfo`'s.
+    (
+        "locinfo:notifyseg",
+        "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
+    ),
+    // `winexpe`'s `WinExec` of a Win32 program: Windows starts it as a DOS
+    // program, its stub, in a DOS session (WINOLDAP), and answers that
+    // instance; WinBox has no DOS sessions and answers `LoadModule`'s 21
+    // (1 record).
+    (
+        "winexpe:exec",
+        "Windows starts a file that is no Windows program in a DOS session, which WinBox has not got",
+    ),
+    // `GetCurrentPDB`'s DX is the word at 220h of KERNEL's data: the prefix
+    // DOS made for KERNEL as WIN.COM started it (`KRNL386.EXE` seg3 `0252`).
+    // WinBox's KERNEL was started by no DOS and has no prefix (1 record).
+    (
+        "ktask:kernelpsp",
+        "KERNEL's own prefix, which DOS made for it, is not there in WinBox",
+    ),
+    // USER's and GDI's local heaps, which TOOLHELP walks: WinBox keeps their
+    // objects in itself, and their data segments hold no heap (2 records).
+    (
+        "thheap:lsystem",
+        "USER's and GDI's data segments hold no local heap in WinBox",
+    ),
+    (
+        "strfunc:seeuser",
+        "UserSeeUserDo works on USER's own data segment, which in WinBox holds no local heap and none of USER's words (as thheap:lsystem)",
+    ),
+    (
+        "userproc:classproc",
+        "WinBox registers USER's own classes #32768 to #32772 only on the raster desktop, with procedures of its own that no address of USER's names, and gives the desktop's none",
+    ),
+    // `ttqmap`'s fonts asked for under `MM_LOMETRIC`: Windows realises a
+    // font's height in the device context's units; both engines take it as
+    // pixels, so the widths, the pairs' amounts and the outline metrics are
+    // a larger font's (`kb/topics/truetype-queries.md`). `GetFontData`
+    // agrees.
+    (
+        "ttqmap:kern",
+        "a font's height under a mapping mode is taken as pixels",
+    ),
+    (
+        "ttqmap:abc",
+        "a font's height under a mapping mode is taken as pixels",
+    ),
+    (
+        "ttqmap:otm",
+        "a font's height under a mapping mode is taken as pixels",
+    ),
+    // EMSCopy's entry, seg1 `a940`, is past the limit KERNEL leaves its first
+    // code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`); DOSBox runs
+    // what lies past it, MMSYSTEM's first code segment (`emspast`), and WinBox
+    // answers the call as that does. Where the block lies, and its bytes, are
+    // the global heap's and the file's.
+    (
+        "emscopy:entry",
+        "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+    ),
+    (
+        "emspast:entry",
+        "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+    ),
+    (
+        "emspast:block",
+        "WinBox's EMSCopy lies in its stubs' segment, not past KERNEL's code",
+    ),
+    (
+        "emspast:bytes",
+        "the bytes past KERNEL's code are MMSYSTEM.DLL's, and WinBox's MMSYSTEM is its own",
+    ),
+    // `oleitem` calls DELETECLIENTINFO on Item3's window with the second
+    // conversation's property: Windows' GetProp no longer finds it, yet its
+    // EnumProps still lists it. USER's RemoveProp (seg13 `1057`-`1147`) and
+    // EnumProps (seg13 `114a`-`120f`), read out, give no cause; WinBox's
+    // lists it no more. One record.
+    (
+        "oleitem:props",
+        "a property DELETECLIENTINFO took away is still listed by Windows' EnumProps",
+    ),
+    // KERNEL's own prefix, THHOOK's 220h and WinOldApCall(1)'s DX, is each
+    // task's prefix's parent in Windows (`kgaps`); WinBox keeps no prefix of
+    // KERNEL's, and a task's prefix has no parent.
+    ("kgaps:kernelpdb", "WinBox keeps no prefix of KERNEL's own"),
+    // DoSignal calls a task's handler with DS its database (`KRNL386.EXE`
+    // seg1 `6154`-`6158`); WinBox's task handles are no selectors.
+    (
+        "kgaps:dosignalds",
+        "WinBox's task handles are not selectors of a task database",
+    ),
+    // GetSetKernelDOSProc's first answer is the INT 21h vector KERNEL found
+    // beneath it, a DPMI host's; WinBox has nothing beneath its KERNEL.
+    (
+        "kgaps:dosprocold",
+        "WinBox has no INT 21h vector beneath its KERNEL",
+    ),
+    // GDISeeGDIDo's 1, 2 and 3 are KERNEL's local heap calls on GDI's data
+    // segment; WinBox's GDI segment holds no local heap (`gdi-heap.ts`), as
+    // USER's does not for UserSeeUserDo.
+    (
+        "ugaps:seegdiheap",
+        "WinBox's GDI segment holds no local heap",
+    ),
+    // The PostScript driver names a face it downloads by the global atom it
+    // adds for the face's key, which starts with a selector
+    // (`PSCRIPT.DRV` seg9 `0ba3`, `170a`): WinBox numbers global atoms from
+    // C000h and gives other selectors (`kb/topics/atoms.md`). Every glyph and
+    // the document's size agree.
+    (
+        "prtt:line",
+        "the downloaded face's name is a global atom, and its key a selector",
+    ),
+    // `kb/gdi/enginegetglyphbmp.md`: slanted Wingdings' E9h, a column wider
+    // on the left in Windows, one of the 52 (and of `prttrot`'s glyphs).
+    (
+        "prtteng:EngineGetGlyphBmp",
+        "the box of a glyph GDI's engine slants, at one size",
+    ),
+    (
+        "prttrot:EngineGetGlyphBmp",
+        "the box of a glyph GDI's engine slants, at one size",
+    ),
+    // `rledib` stretches a compressed DIB through a bitmap GDI makes of the
+    // DIB's size (`GDI.EXE` seg11 `12ca`-`12f9`), whose pixels the stream
+    // leaves are as that bitmap's memory was before -- what GDI's heap held
+    // there. WinBox's bitmap starts nought.
+    (
+        "rledib:leftover",
+        "the pixels a compressed DIB's stream leaves unset in GDI's own bitmap are what its memory held",
+    ),
+    (
+        "gdidmdrw-vga256:dibget",
+        "the driver reads the probe's null translation table, which DOSBox reads as its real-mode vectors",
+    ),
+    (
+        "gdidmdrw-vga256:dibset",
+        "the driver matches a DIB of 24 bits through the probe's null translation table, which DOSBox reads as its real-mode vectors",
+    ),
+    // `prttrot` reads GDI's TrueType scaler's own memory with `TOOLHELP` after
+    // each glyph -- the read-out behind `kb/gdi/enginegetglyphbmp.md` -- and
+    // WinBox's engine keeps no such memory; its glyphs agree.
+    (
+        "prttrot:gdi data",
+        "GDI's data segment, which the probe finds in the global heap",
+    ),
+    (
+        "prttrot:scaler",
+        "where GDI's TrueType scaler keeps its context, which WinBox has not",
+    ),
+    (
+        "prttrot:bytes",
+        "GDI's TrueType scaler's own memory, which WinBox has not",
+    ),
+    (
+        "prttrot:element",
+        "the scaler's glyph element, which WinBox has not",
+    ),
+    // `kb/gdi/enginegetglyphbmp.md`: of the glyphs GDI's engine slants,
+    // Symbol's corner comes with a fraction across and Wingdings' E9h has its
+    // arrowhead's tip rescued a column or a row past WinBox's box; a few
+    // others differ by a pixel.
+    (
+        "prttslt:EngineGetGlyphBmp",
+        "the corner and box of a glyph GDI's engine slants",
+    ),
+    (
+        "prttslt:row",
+        "a pixel or a column of a glyph GDI's engine slants",
+    ),
+    // `enhmode` calls DPMI's functions with harmless arguments, in both modes,
+    // and WinBox answers each as DOSX or WIN386 does (`kb/topics/
+    // dpmi-functions.md`) but for three things that are not DPMI's: 000Dh of
+    // one of the table's first sixteen descriptors, which WinBox gives to
+    // blocks; DOS's version, through 0300h, 6.00 in WinBox and 5.00 beneath
+    // Windows on DOSBox; and the interrupt flag 0902h reads, which WinBox's
+    // processor keeps clear for a task and Windows' set.
+    (
+        "enhmode:dpmi",
+        "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
+    ),
+    // Its `kernel` records: a code and a data segment's limits, which are
+    // the segments' sizes under Windows and FFFFh in WinBox; and
+    // `GetFreeSpace`, which tells every program what `galimit` was told
+    // (`kb/topics/global-and-local-memory.md`, "How much there is").
+    (
+        "enhmode:kernel",
+        "a segment's limit, and GetFreeSpace less the program's own segments",
+    ),
+    // In enhanced mode, INT 2Fh 1684h gives an entry point for ten of WIN386's
+    // devices; WinBox has none of them yet, and answers none for each.
+    (
+        "enhanced/enhmode:vxd",
+        "WIN386's devices' entry points, which WinBox has none of",
+    ),
+    // The DPMI host's probes (`kb/topics/dpmi-functions.md`, "Not yet
+    // done"): what lies outside DPMI -- DOS's version, 6.00 in WinBox and
+    // 5.00 beneath Windows on DOSBox; the interrupt flag, which WinBox's
+    // processor keeps clear for a task and Windows' set -- and where the
+    // hosts keep what WinBox keeps in its own places.
+    (
+        "dpmildt:specific",
+        "000Dh's sixteen descriptors, which WinBox gives to blocks",
+    ),
+    (
+        "enhanced/dpmildt:table",
+        "the highest selector 000Bh answers: WinBox's first megabyte's at its table's top",
+    ),
+    (
+        "dpmimem:block",
+        "where DOSX's arena puts a block, and WIN386's handles",
+    ),
+    (
+        "dpmimem:interrupts",
+        "the interrupt flag, which WinBox's processor keeps clear for a task",
+    ),
+    (
+        "enhanced/dpmimem:page",
+        "where WIN386 maps a physical address",
+    ),
+    (
+        "dpmirm:dos",
+        "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+    ),
+    (
+        "dpmirm:stack",
+        "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+    ),
+    (
+        "enhanced/dpmirm:vector",
+        "the real-mode vectors' values, DOS's and the BIOS's",
+    ),
+    (
+        "dpmiexc:divide",
+        "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+    ),
+    (
+        "dpmiexc:protection",
+        "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+    ),
+    (
+        "dpmiexc:vector",
+        "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox",
+    ),
+    // The Win386 supervisor's own data segment is the program's 16-bit one,
+    // whose limit Windows makes its size and WinBox 64 KiB
+    // (`kb/topics/global-and-local-memory.md`, "Not yet done").
+    (
+        "enhanced/w386env:supervisor",
+        "a program's data segment's limit, its size in Windows",
+    ),
+    //
+    // The records the TypeScript replay passed with no adapter, and the
+    // recordings in enhanced mode it did not replay, held by the Rust
+    // replay from 2026-11-08: what each differs in, and why where it is
+    // known (`kb/guides/retire-typescript.md`, "Not yet done").
+    //
+    // `adlibout` and `adlibgap` open the Ad Lib's own device, found by its
+    // name, "Ad Lib". WinBox's own sound driver stands in for the
+    // recording's Sound Blaster and Ad Lib drivers, and its synthesizer is
+    // "WinBox MIDI Synthesizer" (as `mididev`'s capabilities), so the probe
+    // finds none (`device`: 65535) and writes nothing more.
+    // `tests/adlib.rs` runs both with the synthesizer named "Ad Lib", and
+    // their writes to the chip agree with DOSBox's, write for write
+    // (`kb/topics/adlib.md`).
+    (
+        "adlibout:device",
+        "the probe finds the Ad Lib by its name, which WinBox's own synthesizer does not have",
+    ),
+    (
+        "adlibout:open",
+        "the probe finds no Ad Lib by its name, and opens nothing",
+    ),
+    (
+        "adlibout:close",
+        "the probe finds no Ad Lib by its name, and closes nothing",
+    ),
+    (
+        "adlibout:capture",
+        "the probe finds no Ad Lib by its name, and captures nothing",
+    ),
+    (
+        "adlibout:send",
+        "the probe finds no Ad Lib by its name, and sends nothing",
+    ),
+    (
+        "adlibout:at",
+        "the probe finds no Ad Lib by its name, and times nothing",
+    ),
+    (
+        "adlibgap:device",
+        "the probe finds the Ad Lib by its name, which WinBox's own synthesizer does not have",
+    ),
+    (
+        "adlibgap:open",
+        "the probe finds no Ad Lib by its name, and opens nothing",
+    ),
+    (
+        "adlibgap:capture",
+        "the probe finds no Ad Lib by its name, and captures nothing",
+    ),
+    (
+        "adlibgap:part",
+        "the probe finds no Ad Lib by its name, and times nothing",
+    ),
+    // The times of the messages sent through the MIDI Mapper, by
+    // `timeGetTime`: a millisecond either way of Windows' in 66 of 87
+    // records (72 with "Ad Lib general" current), and 115 of `adlibgm`'s
+    // 129. `kb/topics/adlib.md` has them agreeing 81 times in 86 with the
+    // calls charged as Windows ran them; the millisecond either way is
+    // where `TIMER.DRV`'s count ticks over, whose phase against WinBox's
+    // clock is not known (inferred).
+    (
+        "adlibmap:at",
+        "a message's time by timeGetTime, a millisecond either way of Windows'",
+    ),
+    (
+        "adlibgm:at",
+        "a message's time by timeGetTime, a millisecond either way of Windows'",
+    ),
+    // MCI's sequencer: opening it took Windows 143 ms, loading
+    // `MCISEQ.DRV`, which WinBox does not charge; and after its first play
+    // `timeGetTime` went back 28 ms and more, `TIMER.DRV`'s count across
+    // the sequencer's `timeBeginPeriod` and `timeEndPeriod`, not read out
+    // (`kb/topics/adlib.md`, "Not matched"). 6 of 7 records.
+    (
+        "adlibseq:at",
+        "the sequencer's open is not charged, and TIMER.DRV's count across its periods is not read out",
+    ),
+    // A play of a MIDI file from 0 to 250 waited for: 500 ms by
+    // `timeGetTime` in Windows, 600 here. 1 of 5 records; not yet
+    // investigated.
+    (
+        "seqlen:took",
+        "a play to 250 waited for takes 600 ms here and 500 in Windows: not yet investigated",
+    ),
+    // A play's notification, in tenths of a second: 19 in Windows, 18
+    // here, played to its end and resumed to its end. 2 of 6 records; not
+    // yet investigated.
+    (
+        "mciplay:wait",
+        "a play's notification comes a tenth of a second early: not yet investigated",
+    ),
+    // The devices' capabilities are WinBox's own sound driver's -- its
+    // manufacturer, products, version and names, "WinBox ..." -- standing
+    // in for the recording's Sound Blaster 1.5 and Ad Lib drivers.
+    (
+        "mididev:caps",
+        "the capabilities are WinBox's own sound driver's, its names and numbers",
+    ),
+    (
+        "wavedev:caps",
+        "the capabilities are WinBox's own sound driver's, its names and numbers",
+    ),
+    // `waveOutOpen` of the device while it is open: Windows' Sound
+    // Blaster driver answers 4, MMSYSERR_ALLOCATED; WinBox's own driver
+    // 11, MMSYSERR_INVALPARAM. 1 of 3 records; not yet investigated.
+    (
+        "wavedev:open",
+        "a device opened again answers 11 here, where Windows' driver answers 4: not yet investigated",
+    ),
+    // `environ` reads its own environment: DOSBox's `PATH`, `COMSPEC` and
+    // `BLASTER` before `windir`, in Windows; WinBox's environment holds
+    // `windir` alone. And the program was started from `C:\WINDOWS` by the
+    // recorder, from `C:\` here; its prefix's selector is WinBox's.
+    (
+        "environ:variable",
+        "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER",
+    ),
+    (
+        "environ:count",
+        "WinBox's environment holds windir alone, so the count's place differs",
+    ),
+    (
+        "environ:module",
+        "the recorder started the probe from C:\\WINDOWS, the replay from C:\\",
+    ),
+    (
+        "environ:pdb",
+        "the task's prefix is at another selector in WinBox",
+    ),
+    // `GetFreeSpace`, 1K under Windows': WinBox's machine holds what
+    // `galimit` was told as it started, and `freemem`'s own segments are
+    // 420h bytes smaller than `galimit`'s (`kb/kernel/getfreespace.md`).
+    (
+        "freemem:free",
+        "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments",
+    ),
+    (
+        "enhanced/freemem:free",
+        "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments",
+    ),
+    // `nullds`: as `nullds:answer`, the procedure run with the null
+    // selector for its data segment faults here and the program ends, so
+    // its last records are not written.
+    (
+        "nullds:calls",
+        "the program ends at the null selector's fault, before it writes this",
+    ),
+    (
+        "nullds:counter",
+        "the program ends at the null selector's fault, before it writes this",
+    ),
+    (
+        "nullds:ds",
+        "the program ends at the null selector's fault, before it writes this",
+    ),
+    (
+        "nullds:read",
+        "the program ends at the null selector's fault, before it writes this",
+    ),
+    // The TrueType scaler's own memory, read through TOOLHELP's walk of
+    // the global heap (`GlobalFirst`, `GlobalNext`, `MemoryRead`): GDI's
+    // blocks and the scaler's buffers, which WinBox's engine does not
+    // keep, and a global heap of 39 blocks where Windows' had some 230.
+    // Instruments, as `prttrot`'s are (`prttrot:bytes`).
+    (
+        "scalemem:census",
+        "the global heap's blocks, which in WinBox are not Windows' own modules'",
+    ),
+    (
+        "scalemem:block",
+        "the global heap's blocks, which in WinBox are not Windows' own modules'",
+    ),
+    (
+        "scalemem:bytes",
+        "GDI's TrueType scaler's own memory, which WinBox has not",
+    ),
+    (
+        "groundsc:census",
+        "the global heap's blocks, which in WinBox are not Windows' own modules'",
+    ),
+    (
+        "groundsc:bytes",
+        "GDI's TrueType scaler's own memory, which WinBox has not",
+    ),
+    (
+        "scalepts:census",
+        "the global heap's blocks, which in WinBox are not Windows' own modules'",
+    ),
+    (
+        "scalepts:hunt",
+        "GDI's TrueType scaler's own memory, which WinBox has not",
+    ),
+    (
+        "scalepts:where",
+        "GDI's TrueType scaler's own memory, which WinBox has not",
+    ),
+    (
+        "scalepts:window",
+        "GDI's TrueType scaler's own memory, which WinBox has not",
+    ),
+    // `stack` reads what the scaler left on the probe's stack below where
+    // it was called (`kb/topics/synthetic-italic.md`): what lies there is
+    // GDI's scaler's working memory, which WinBox's engine does not leave.
+    // And in standard mode the stack pointer at the call, 264Eh in
+    // Windows and 2C4Eh here, 600h apart, where enhanced mode's agree: not
+    // yet investigated.
+    (
+        "stack:residue",
+        "GDI's TrueType scaler's working memory, left on the caller's stack, which WinBox has not",
+    ),
+    (
+        "standard/stack:stack",
+        "the stack pointer at the call, 600h above Windows' in standard mode: not yet investigated",
+    ),
+    // In enhanced mode (`kb/guides/enhanced-mode.md`, "What every probe
+    // shows in the other mode", and its "Not yet done").
+    (
+        "enhanced/kconst:order",
+        "the first megabyte's selectors in enhanced mode's order",
+    ),
+    (
+        "enhanced/galimit:alloc",
+        "KERNEL's descriptor table growing by 1000h in enhanced mode",
+    ),
+    (
+        "enhanced/galimit:free",
+        "KERNEL's descriptor table growing by 1000h in enhanced mode",
+    ),
+    (
+        "enhanced/galimit:largest",
+        "KERNEL's descriptor table growing by 1000h in enhanced mode",
+    ),
+    (
+        "enhanced/kmore:dos",
+        "where a selector lies in enhanced mode, its number not its meaning",
+    ),
+    (
+        "enhanced/selalias:rights",
+        "AllocSelector(0) gives no access rights in enhanced mode",
+    ),
+    (
+        "enhanced/loadenv:env",
+        "the environment as the task sees it in enhanced mode",
+    ),
+    ("enhanced/thtask:timer", "TIMER's count in enhanced mode"),
+    (
+        "enhanced/sysdrv:timer",
+        "CreateSystemTimer's handles start at 30h in enhanced mode, a system timer fewer in use",
+    ),
+    (
+        "enhanced/mmtime:kill",
+        "TIMER.DRV's VTDAPI path in enhanced mode answers nought, not 97",
+    ),
+    (
+        "enhanced/mmtime:period",
+        "TIMER.DRV's VTDAPI path in enhanced mode answers nought, not 97",
+    ),
+    (
+        "enhanced/kintrnl:winoldap",
+        "KERNEL's WinOldAp hooks answer nought and keep no list in enhanced mode",
+    ),
+];
+
+/// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the
+/// TypeScript tests wrote that a Rust test now writes: each object's keys
+/// in the order `order` gives them, a key it does not name after those in
+/// the order of the value's own map, and a newline at the end.
+pub fn json_text(value: &serde_json::Value, indent: usize, order: &[&str]) -> String {
+    fn write(
+        out: &mut String,
+        value: &serde_json::Value,
+        depth: usize,
+        indent: usize,
+        order: &[&str],
+    ) {
+        let pad = |depth: usize| " ".repeat(depth * indent);
+
+        match value {
+            serde_json::Value::Array(items) if !items.is_empty() => {
+                out.push('[');
+
+                for (at, item) in items.iter().enumerate() {
+                    out.push_str(if at == 0 { "\n" } else { ",\n" });
+                    out.push_str(&pad(depth + 1));
+                    write(out, item, depth + 1, indent, order);
+                }
+
+                out.push('\n');
+                out.push_str(&pad(depth));
+                out.push(']');
+            }
+            serde_json::Value::Object(map) if !map.is_empty() => {
+                let mut keys: Vec<&String> = map.keys().collect();
+
+                keys.sort_by_key(|key| {
+                    order
+                        .iter()
+                        .position(|each| each == key)
+                        .unwrap_or(order.len())
+                });
+                out.push('{');
+
+                for (at, key) in keys.into_iter().enumerate() {
+                    out.push_str(if at == 0 { "\n" } else { ",\n" });
+                    out.push_str(&pad(depth + 1));
+                    out.push_str(&serde_json::to_string(key).unwrap());
+                    out.push_str(": ");
+                    write(out, &map[key], depth + 1, indent, order);
+                }
+
+                out.push('\n');
+                out.push_str(&pad(depth));
+                out.push('}');
+            }
+            other => out.push_str(&serde_json::to_string(other).unwrap()),
+        }
+    }
+
+    let mut out = String::new();
+
+    write(&mut out, value, 0, indent, order);
+    out.push('\n');
+    out
 }

@@ -1,7 +1,11 @@
-//! The oracle's probes run on the Rust engine, their records held to what
-//! Windows 3.1 recorded (`oracle/fixtures`). The probes are built into
-//! `oracle/build/probes`, which a checkout does not have until they are
-//! built; without them these pass with nothing to check.
+//! The oracle's probes run on the Rust engine in ways the replay
+//! (`conformance.rs`, which holds every fixture's records) does not run
+//! them: a program that faults answered at its boxes and its screens
+//! compared, the images the probes mount left as they were, a mixer on
+//! WinBox's own card; and the survey of every fixture against the replay's
+//! last report. The probes are built into `oracle/build/probes`, which a
+//! checkout does not have until they are built; without them these pass
+//! with nothing to check.
 
 mod support;
 
@@ -11,19 +15,7 @@ use winbox_win16::host::{Host, HostSlot};
 use winbox_win16::key_input::Key;
 use winbox_win16::{Stop, System};
 
-use support::{AGREEING, Step, VK_RETURN, VK_TAB, hand, recorded, root, run, run_with};
-
-#[test]
-fn probes_agree_with_windows() {
-    for name in AGREEING {
-        let Some((stop, records)) = run(name) else {
-            continue;
-        };
-
-        assert_eq!(stop, Stop::Ended, "{name}");
-        assert_eq!(Some(records), recorded(name), "{name}");
-    }
-}
+use support::{Step, VK_RETURN, VK_TAB, answers, hand, recorded, root, run, run_with};
 
 /// What a program writes to a disk image is kept apart from it, sector by
 /// sector (`Overlay`): after `imgwrite` has written all over its floppy, the
@@ -92,9 +84,11 @@ fn image_probes_leave_their_images_as_they_were() {
     );
 }
 
-/// How many records of each probe the TypeScript engine agrees with
-/// Windows on, from the knowledge base's conformance data.
-fn typescript_agreed() -> std::collections::HashMap<String, u64> {
+/// How many records of each fixture the replay's last full run
+/// (`conformance.rs`) agreed with Windows on, from the report it wrote,
+/// `kb/data/conformance.json`. The recordings in enhanced mode it leaves
+/// out of the report are not there.
+fn last_agreed() -> std::collections::HashMap<String, u64> {
     let text = std::fs::read_to_string(root().join("kb/data/conformance.json")).unwrap_or_default();
     let data: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
     let mut agreed = std::collections::HashMap::new();
@@ -115,37 +109,23 @@ fn typescript_agreed() -> std::collections::HashMap<String, u64> {
     agreed
 }
 
-/// Every probe built, run, and how far each got, against the TypeScript
-/// engine's agreement with Windows: `cargo test -p winbox-win16 --test
-/// probes -- --ignored --nocapture`.
+/// Every probe built, run, and how far each got, against the replay's
+/// last report of its agreement with Windows: `cargo test -p winbox-win16
+/// --test probes -- --ignored --nocapture`. A fixture the report does not
+/// carry -- a recording in enhanced mode it leaves out -- is listed apart.
 #[test]
 #[ignore = "a survey, not a check"]
 fn survey() {
-    let typescript = typescript_agreed();
+    let last = last_agreed();
     let mut level = Vec::new();
     let mut behind = Vec::new();
     let mut ahead = Vec::new();
+    let mut unreported = Vec::new();
     let mut stops = std::collections::BTreeMap::<String, Vec<String>>::new();
 
     // The recordings at the top level, standard mode's, and those made in
     // 386 enhanced mode, by their folder's name (`support::ENHANCED`).
-    let mut names = Vec::new();
-
-    for folder in ["", support::ENHANCED] {
-        let Ok(entries) = std::fs::read_dir(root().join("oracle/fixtures").join(folder)) else {
-            continue;
-        };
-
-        for entry in entries.flatten() {
-            let file = entry.file_name().to_string_lossy().into_owned();
-
-            if let Some(name) = file.strip_suffix(".json") {
-                names.push(format!("{folder}{name}"));
-            }
-        }
-    }
-
-    for name in &names {
+    for name in &support::fixtures() {
         let name = name.as_str();
         let Some(recorded) = recorded(name) else {
             continue;
@@ -153,37 +133,17 @@ fn survey() {
         let Some((stop, records)) = run(name) else {
             continue;
         };
-        // As a whole run is replayed: each record's result found by its
-        // function and arguments -- the record's own occurrence of them,
-        // where a probe writes the same call more than once, else the last
-        // written (`replay.ts`).
-        let mut written: std::collections::HashMap<(&str, &str), Vec<&str>> =
-            std::collections::HashMap::new();
-
-        for [function, args, result] in &records {
-            written
-                .entry((function.as_str(), args.as_str()))
-                .or_default()
-                .push(result.as_str());
-        }
-
-        let mut seen: std::collections::HashMap<(&str, &str), usize> =
-            std::collections::HashMap::new();
+        // As the replay holds a whole run: each record's result found by
+        // its function and arguments (`support::answers`).
         let agreed = recorded
             .iter()
-            .filter(|[function, args, result]| {
-                let key = (function.as_str(), args.as_str());
-                let occurrence = seen.entry(key).or_default();
-                let at = *occurrence;
-
-                *occurrence += 1;
-                written
-                    .get(&key)
-                    .and_then(|results| results.get(at).or(results.last()))
-                    == Some(&result.as_str())
-            })
+            .zip(answers(&recorded, &records))
+            .filter(|([_, _, result], answer)| *answer == Some(result.as_str()))
             .count() as u64;
-        let theirs = typescript.get(name).copied().unwrap_or(0);
+        let Some(&theirs) = last.get(name) else {
+            unreported.push(format!("{name} {agreed}/{}", recorded.len()));
+            continue;
+        };
 
         if stop != Stop::Ended {
             stops
@@ -210,7 +170,8 @@ fn survey() {
         println!("{:4} {stop}: {}", names.len(), names.join(" "));
     }
 
-    println!("ended behind the TypeScript engine: {}", behind.join(", "));
+    println!("not in the report: {}", unreported.join(", "));
+    println!("ended behind the last report: {}", behind.join(", "));
     println!("ahead of it: {}", ahead.join(", "));
     println!("level with it: {} -- {}", level.len(), level.join(" "));
 }
@@ -230,30 +191,11 @@ fn differing() {
             continue;
         };
         // Each record held to the run's own occurrence of its function and
-        // arguments, else the last written, as the survey holds them.
-        let mut written: std::collections::HashMap<(&str, &str), Vec<&str>> =
-            std::collections::HashMap::new();
-
-        for [function, args, result] in &records {
-            written
-                .entry((function.as_str(), args.as_str()))
-                .or_default()
-                .push(result.as_str());
-        }
-
-        let mut seen: std::collections::HashMap<(&str, &str), usize> =
-            std::collections::HashMap::new();
+        // arguments, else the last written, as the replay holds them.
         let differing: Vec<_> = recorded
             .iter()
-            .filter_map(|[function, args, result]| {
-                let key = (function.as_str(), args.as_str());
-                let occurrence = seen.entry(key).or_default();
-                let got = written
-                    .get(&key)
-                    .and_then(|results| results.get(*occurrence).or(results.last()))
-                    .copied();
-
-                *occurrence += 1;
+            .zip(answers(&recorded, &records))
+            .filter_map(|([function, args, result], got)| {
                 (got != Some(result.as_str())).then_some((function, args, result, got))
             })
             .collect();

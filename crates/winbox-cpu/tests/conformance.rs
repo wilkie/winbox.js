@@ -12,15 +12,26 @@
 //! masked as those suites do, and sampled as `pnpm test:conformance` samples
 //! them -- the first 250 of each 80286 opcode, the first 100 of each 80386
 //! file. Fetch them with `node scripts/fetch-cpu-tests.mjs` (`--cpu 386
-//! --all` for the 80386's); they are not committed.
+//! --all` for the 80386's); they are not committed. They are read from the
+//! repository's `test/conformance/vectors` and `vectors386` (in a git
+//! worktree, links to the main checkout's), and where a folder is not there
+//! its test says so and checks nothing.
 //!
 //! ```text
 //! cargo test --release -p winbox-cpu --test conformance -- --ignored --nocapture
 //! ```
 //!
+//! Each file's count of vectors passed is held to a baseline taken from a
+//! full run, `baseline286.json` (the 80286's 326 files, 250 vectors of
+//! each) and `baseline386.json` (all 941 of the 80386's, 100 of each),
+//! beside this file: a file that passes fewer than its baseline fails the
+//! test, as `test/conformance/baseline*.json` hold the TypeScript core.
+//! `CONFORMANCE_UPDATE=1` writes the baseline afresh from the run.
+//!
 //! `CONFORMANCE_SAMPLE` changes the sample, `CONFORMANCE_ONLY` (a list of
 //! files by name, `F6.6,660FAF`) narrows the run, and `CONFORMANCE_VERBOSE`
-//! prints every file rather than only those with failures.
+//! prints every file rather than only those with failures. A run at
+//! another sample than its baseline's is not held to it.
 
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::Write as _;
@@ -300,6 +311,91 @@ fn report(part: &str, summaries: &[Summary]) -> (usize, usize) {
     (passed, total)
 }
 
+/// The run held to its baseline (`baseline286.json`, `baseline386.json`
+/// beside this file): every file it names that the run ran passes at least
+/// as many vectors as it says. With `CONFORMANCE_UPDATE=1`, the baseline
+/// written from the run instead. A run at another sample is not held to it.
+fn hold_to_baseline(part: &str, file: &str, sample: usize, summaries: &[Summary]) {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join(file);
+
+    if std::env::var("CONFORMANCE_UPDATE").as_deref() == Ok("1") {
+        let files: serde_json::Map<String, serde_json::Value> = summaries
+            .iter()
+            .map(|summary| {
+                (
+                    summary.file.clone(),
+                    serde_json::json!({ "passed": summary.passed, "total": summary.total }),
+                )
+            })
+            .collect();
+        let baseline = serde_json::json!({
+            "note": format!("The vectors of each {part} file the Rust core passes, from a full run. Regenerate with CONFORMANCE_UPDATE=1 cargo test --release -p winbox-cpu --test conformance -- --ignored."),
+            "sample": sample,
+            "files": files,
+        });
+
+        fs::write(
+            &path,
+            serde_json::to_string_pretty(&baseline).unwrap() + "\n",
+        )
+        .unwrap();
+        println!("{part}: baseline written, {}", path.display());
+        return;
+    }
+
+    let baseline: serde_json::Value =
+        serde_json::from_slice(&fs::read(&path).expect("the baseline")).expect("JSON");
+
+    if baseline["sample"].as_u64() != Some(sample as u64) {
+        println!(
+            "{part}: the baseline was taken at a sample of {}, this run at {sample}: not held to it",
+            baseline["sample"]
+        );
+        return;
+    }
+
+    let ran: BTreeMap<&str, &Summary> = summaries
+        .iter()
+        .map(|summary| (summary.file.as_str(), summary))
+        .collect();
+    let mut below = Vec::new();
+    let mut held = 0;
+
+    for (name, counts) in baseline["files"].as_object().expect("the baseline's files") {
+        let Some(summary) = ran.get(name.as_str()) else {
+            // A file the baseline names and the run did not find, unless
+            // the run was narrowed to some.
+            if only().is_none() {
+                below.push(format!("{name} not run"));
+            }
+
+            continue;
+        };
+        let expected = counts["passed"].as_u64().unwrap_or(0) as usize;
+
+        held += 1;
+
+        if summary.passed < expected {
+            below.push(format!(
+                "{name} {}/{} < {expected}",
+                summary.passed, summary.total
+            ));
+        }
+    }
+
+    println!(
+        "{part}: {held} files held to the baseline, {} below it",
+        below.len()
+    );
+    assert!(
+        below.is_empty(),
+        "{part} below its baseline: {}",
+        below.join(", ")
+    );
+}
+
 /* ---- the 80286's vectors: JSON, a file to an opcode ---- */
 
 const REGISTERS16: [(&str, usize); 8] = [
@@ -514,7 +610,10 @@ fn compare_286(cpu: &Cpu<Memory>, test: &serde_json::Value) -> Result<(), (Kind,
 fn vectors_286() {
     let directory = vectors("vectors");
     let Ok(entries) = fs::read_dir(&directory) else {
-        println!("no 80286 vectors at {}", directory.display());
+        println!(
+            "skipped, nothing checked: no 80286 vectors at {} (node scripts/fetch-cpu-tests.mjs)",
+            directory.display()
+        );
         return;
     };
     let only = only();
@@ -533,6 +632,7 @@ fn vectors_286() {
     let summaries = run_all(files, |file, memory| run_286_file(file, memory, sample));
 
     report("80286", &summaries);
+    hold_to_baseline("80286", "baseline286.json", sample, &summaries);
 }
 
 /* ---- the 80386's vectors: MOO, a file to an opcode and its prefixes ---- */
@@ -918,7 +1018,10 @@ fn run_386_file(
 fn vectors_386() {
     let directory = vectors("vectors386");
     let Ok(entries) = fs::read_dir(&directory) else {
-        println!("no 80386 vectors at {}", directory.display());
+        println!(
+            "skipped, nothing checked: no 80386 vectors at {} (node scripts/fetch-cpu-tests.mjs --cpu 386 --all)",
+            directory.display()
+        );
         return;
     };
     let only = only();
@@ -941,4 +1044,5 @@ fn vectors_386() {
     });
 
     report("80386", &summaries);
+    hold_to_baseline("80386", "baseline386.json", sample, &summaries);
 }
