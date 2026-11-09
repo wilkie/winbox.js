@@ -21,10 +21,12 @@ use super::parse::{EMPTY, parse_file};
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
 
+/// COMMDLG's Open box's procedure (seg2 `42a3`).
 pub(crate) fn file_open_dlg_proc(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(dialog_proc(engine, args, false))
 }
 
+/// COMMDLG's Save As box's procedure (seg2 `446a`).
 pub(crate) fn file_save_dlg_proc(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(dialog_proc(engine, args, true))
 }

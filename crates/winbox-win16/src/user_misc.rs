@@ -694,6 +694,8 @@ pub fn key_state(system: &System, key: u16) -> u16 {
     }
 }
 
+/// Read out of `USER.EXE`: the key's byte from the state table, sign-extended
+/// -- `FF80h` for a key down, `1` for one toggled on, `FF81h` for both.
 fn get_key_state(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let key = args.word(system);
 

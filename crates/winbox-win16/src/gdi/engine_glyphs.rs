@@ -370,6 +370,11 @@ fn fix_mul(value: i64, factor: i64) -> i64 {
     (value * factor + 32768).div_euclid(65536)
 }
 
+/// `EngineSetFontContext` (`GDI.EXE` seg5 `0993`, into seg1 `6de2`): the
+/// engine's context set for a `FONTINFO` at an angle, as `setContext`. A
+/// printer's driver sets it before it asks for glyphs (`PSCRIPT.DRV` seg4
+/// `0805`); realizing a font sets it at the font's escapement (seg3 `2557`),
+/// and filling its widths sets it upright (seg1 `6d5c`).
 fn engine_set_font_context_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let angle = args.word(system);
@@ -656,6 +661,32 @@ const SYMBOL_CHARSET: u8 = 2;
 
 /// `EngineMakeFontDir` (`GDI.EXE` seg7 `1184`), as in `engine-glyphs.ts`.
 // Each piece of the entry in turn, as GDI writes them.
+/// `EngineMakeFontDir` (`GDI.EXE` seg7 `1184`): the font directory's entry of a
+/// `.TTF`, as `CreateScalableFontResource` puts it in the `.FOT` it writes
+/// (seg7 `1585`), written to a buffer of the caller's; answers its length, or
+/// -1 with TrueType off or where the file is not a face.
+///
+/// Written in pieces, what lies between them left as it was:
+///
+/// * 29h bytes as GDI keeps them (seg7 `1147`): a count of 1, an ordinal of
+///   nought, `dfVersion` 200h, `dfSize` 95h, and the copyright, `Windows!
+///   Windows! Windows!` with its nought and four bytes after.
+/// * From 46h, `dfType`: 3, 80h more where the first argument is not nought,
+///   `OS/2`'s `fsSelection` in its high byte. `dfPoints` the em in font units,
+///   the resolutions 72, the ascent, the internal leading (the cell less the
+///   em) and the external leading (`hhea`'s gap, nought for less) in them.
+///   Italic, underline and strike-out `FFh` for `fsSelection`'s bits 0, 1 and 4.
+///   The weight, a class of 1 to 9 its hundreds (`1170`). The character set 2
+///   for a pictorial `PANOSE` family. Nought, the cell, the pitch and family
+///   from `PANOSE` (`12af`, its serif styles at `1137`), the average width, the
+///   width of the box.
+/// * The characters: from 20h less two, to `FFh` at most, default 1 and break 2,
+///   from the first; a face whose characters start past `FFh` is of the symbol
+///   set, its characters counted on from 20h for as many as it has, to `FFh`, and
+///   20h short of its first is its offset.
+/// * `dfFace`, the offset of the names in the caller's segment; `head`'s lowest
+///   size; the offset; and the full name, the family and the style, each with
+///   its nought.
 #[allow(clippy::too_many_lines)]
 fn engine_make_font_dir_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hidden = args.word(system);

@@ -489,6 +489,10 @@ fn rect_at(system: &System, far: u32) -> [i32; 4] {
     [word(0), word(2), word(4), word(6)]
 }
 
+/// A rectangle filled with a brush, or for a number under 8 with the brush the
+/// parent answers `WM_CTLCOLOR` of that type with; the brush's pattern set to
+/// start at the parent's client area's corner, the desktop's where no parent is
+/// given (`USER.EXE` seg1 `76eb`-`7763`).
 fn paint_rect(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (parent, hwnd, hdc, brush, rect) = {

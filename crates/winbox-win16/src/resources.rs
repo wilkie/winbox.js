@@ -444,6 +444,7 @@ pub fn access_resource(system: &mut System, args: &mut Args) -> Result<Answer, S
     Ok(Answer::Word(file as u16))
 }
 
+/// The size of a resource, as its module's resource table gives it.
 pub fn sizeof_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let _instance = args.word(system);
     let handle = args.word(system);

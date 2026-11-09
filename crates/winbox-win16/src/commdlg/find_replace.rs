@@ -257,6 +257,7 @@ async fn open(engine: &Engine, lpfr: u32, replace: bool) -> Result<u16, Stop> {
     Ok(dialog)
 }
 
+/// Opens the modeless Find dialog for a program's window.
 pub fn find_text(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let lpfr = args.dword(&engine.system());
@@ -265,6 +266,7 @@ pub fn find_text(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// Opens the modeless Replace dialog for a program's window.
 pub fn replace_text(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let lpfr = args.dword(&engine.system());
@@ -273,10 +275,12 @@ pub fn replace_text(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// The Find dialog's procedure, COMMDLG's export 13.
 pub fn find_text_dlg_proc(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move { Ok(Answer::Word(procedure(engine, args, false).await?)) })
 }
 
+/// The Replace dialog's procedure, COMMDLG's export 14.
 pub fn replace_text_dlg_proc(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move { Ok(Answer::Word(procedure(engine, args, true).await?)) })
 }

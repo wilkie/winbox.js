@@ -589,6 +589,12 @@ pub fn poly_polygon(system: &mut System, hdc: u16, far: u32, counts: u32, rings:
     1
 }
 
+/// Several polygons, filled together under the fill mode and each outlined with
+/// the pen. **Recorded** by `gdidraw`, on Windows 3.1: no ring is closed. Each
+/// is outlined through its points and not back to its first, and filled between
+/// those same edges alone, under `ALTERNATE` by pairs of crossings and under
+/// `WINDING` between any two where the count is not nought. A program that
+/// wants a ring closed repeats its first point.
 fn poly_polygon_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);

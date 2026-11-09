@@ -123,6 +123,10 @@ pub fn set_environment(system: &mut System, port: u32, environment: u32, count: 
     handle
 }
 
+/// The environment kept for a port, copied into `lpEnviron`, no more than
+/// `nMaxCount` bytes: the count copied. With `lpEnviron` nought, the size of
+/// the block kept, as `GlobalSize` answers it. Nought where none is kept (seg7
+/// `0571`).
 fn get_environment_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let port = args.dword(system);
     let environment = args.dword(system);
@@ -136,6 +140,10 @@ fn get_environment_call(system: &mut System, args: &mut Args) -> Result<Answer, 
     )))
 }
 
+/// An environment kept for a port: the one there let go, and with a count of
+/// nought nothing kept and -1 answered; else a block of `GlobalAlloc (2002h)`
+/// the count's size, copied from `lpEnviron`, put in the first free slot, and
+/// its handle answered; nought with no slot free (seg7 `05ed`).
 fn set_environment_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let port = args.dword(system);
     let environment = args.dword(system);

@@ -1539,6 +1539,9 @@ fn close_job_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `DeleteJob` (seg28 `13e0`): a job straight to its port has its file closed
+/// and deleted, unwritten, and its blocks freed; the communications driver's
+/// port is flushed, reset and closed (seg30 `018a`). 1. No broadcast.
 fn delete_job_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let job = args.word(&engine.system());
@@ -1575,6 +1578,9 @@ fn write_dialog_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `QueryAbort` (seg7 `052d`): nought for no device context; else the answer of
+/// the abort procedure `SETABORTPROC` gave it, called with the device context
+/// and the code; 1 with none.
 fn query_abort_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hdc, code) = {
@@ -1849,6 +1855,12 @@ pub async fn spool_file(
     Ok(job)
 }
 
+/// `QueryJob` (seg28 `18e4`), what a printer's driver asks of a job: for
+/// `SP_QUERYVALIDJOB`, 30, 1 where the handle, shifted back left, names a block
+/// of at least 148h bytes, and nought for a handle from -5 to -1; for
+/// `SP_QUERYDISKAVAIL`, 1004h, 1 while Print Manager's last word on its disk
+/// space is not nought (`[058Ah]`, from `GetSpoolJob`'s 1Bh), whatever the job.
+/// Any other code answers nought.
 fn query_job_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (job, code) = {
@@ -1861,6 +1873,14 @@ fn query_job_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `DeleteSpoolPage` (seg28 `0ff3`): the page being written let go. A job
+/// through the communications driver or the network answers nought. Otherwise
+/// what the job's buffer holds is let go, and with no block for the page the
+/// answer is -1. A job straight to its port goes back to where the page began:
+/// its file's written count set to the job's at 114h, which `StartSpoolPage`
+/// notes only while Print Manager has given its window, and the file sought
+/// there; nothing after is cut off. Print Manager's page has its file closed
+/// where it was kept open, deleted, and its block freed. Then 1.
 fn delete_spool_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let job = args.word(&engine.system());
@@ -1869,6 +1889,19 @@ fn delete_spool_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `SpoolFile` (seg28 `156f`): a file handed to Print Manager to print, as a
+/// job of a queue, by the printer's name and its port. The queues readied
+/// first; then with no window from Print Manager, it is started as `OpenJob`
+/// starts it, and -1 is answered while it has given none (none with the spooler
+/// off). The port and printer are found as `OpenJob` finds a queue, -1 where
+/// none has the port. A job's block, 148h bytes (`GlobalAlloc(3042h)`), and a
+/// page's, C2h (`GlobalAlloc(42h)`), -5 where either fails. The job: state 1
+/// (closed), page 1, room for 7, the queue, no device context, the job's name
+/// at 11Ah, and the file's size at 110h; the page's block at 13Ah, its file's
+/// structure at 0Ah from opening it, its size at 6, its handle -1. Then Print
+/// Manager's window is sent 1001h with the job's handle and the queue: an
+/// answer of -1 in both words frees the job and answers -1; any other, the
+/// job's handle, unshifted.
 fn spool_file_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (printer, port, title, path) = {

@@ -474,6 +474,17 @@ fn open_path(engine: &Engine, path: u32, mode: u16) -> Later<'_> {
     })
 }
 
+/// A file opened, or deleted, as named, or else through PATH (`KRNL386.EXE`
+/// seg3 `04be`-`0505`): the DOS call `wMode` names -- a mode with no function
+/// is an open, 3Dh -- on the path; failing, the same on its name in each of
+/// PATH's directories, KERNEL's search (seg1 `588e`) with the name past its
+/// directory (`5a0e`), a backslash between. What DOS answered, or `FFFFh` where
+/// none had it. KERNEL first asks the file's attributes where the byte at 282h
+/// of its data is set, which `NetWare`'s `DCh` call sets and DOSBox's leaves
+/// nought. The path is built in KERNEL's frame, 80h bytes under the return
+/// address. DS is left as it was. **Recorded** by `kmore`: the probe's file and
+/// WIN.INI, in Windows' directory, opened; a name that is nowhere `FFFFh`; a
+/// delete DOS's 4100h, then `FFFFh`.
 pub fn open_path_name(engine: &Engine, mut args: Args) -> Later<'_> {
     let (path, mode) = {
         let system = engine.system();

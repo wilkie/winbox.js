@@ -503,6 +503,10 @@ pub fn get_nearest_color(system: &System, hdc: u16, colorref: u32) -> u32 {
     palette.colorref(matched)
 }
 
+/// The colour the device draws a colour as, when it is a pen's or text's: one
+/// of the device's own, chosen as its display driver chooses. For the screen
+/// that is one of the display's colours; for a monochrome bitmap, black or
+/// white. See `matchedIndex` for how, which is not by nearness.
 fn get_nearest_color_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let colorref = args.dword(system);

@@ -470,6 +470,7 @@ async fn select_all(engine: &Engine, dialog: u16, id: u16) -> Result<(), Stop> {
     Ok(())
 }
 
+/// The Color dialog, run to its end.
 pub fn choose_color(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let lpcc = args.dword(&engine.system());
@@ -591,6 +592,7 @@ async fn choose(engine: &Engine, lpcc: u32) -> Result<u16, Stop> {
     Ok(answer)
 }
 
+/// The dialog's procedure, COMMDLG's export 8 (seg1 `0197`).
 pub fn color_dlg_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hwnd, message, wparam, lparam) = {
@@ -2347,6 +2349,9 @@ async fn define(engine: &Engine, hwnd: u16, id: u16) -> Result<(), Stop> {
     Ok(())
 }
 
+/// The grids' procedure, COMMDLG's export 25 (`1b46`): their arrows and
+/// characters sent to the dialog, and their focus rectangle drawn as they gain
+/// and lose the focus.
 pub fn want_arrows(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hwnd, message, wparam, lparam) = {

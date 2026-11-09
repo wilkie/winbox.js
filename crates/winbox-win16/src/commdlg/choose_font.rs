@@ -1121,6 +1121,8 @@ fn ranks_above(new: u16, old: u16) -> bool {
     (rank(new).wrapping_sub(rank(old)) as i16) > 0
 }
 
+/// `FontFamilyEnumProc` (`1096`): a face of GDI's taken, left out, or put in
+/// place of the same face of a lower type.
 pub fn font_family_enum_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (lpelf, lpntm, kind, data) = {
@@ -1414,6 +1416,8 @@ async fn default_logfont_bytes(engine: &Engine, lf: &mut [u8]) -> Result<(), Sto
     Ok(())
 }
 
+/// `FontStyleEnumProc` (`184e`): a style of the face's own kind listed, and the
+/// face's sizes.
 pub fn font_style_enum_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (lpelf, lpntm, kind, data) = {
@@ -1499,6 +1503,7 @@ async fn style(engine: &Engine, lpelf: u32, lpntm: u32, kind: u16, data: u32) ->
 // ---------------------------------------------------------------------
 // The call: ChooseFont (`0000`).
 
+/// Shows COMMDLG's Font dialog (`0000`).
 pub fn choose_font(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let lpcf = args.dword(&engine.system());
@@ -1618,6 +1623,7 @@ async fn choose(engine: &Engine, lpcf: u32) -> Result<u16, Stop> {
 // ---------------------------------------------------------------------
 // The procedure: FormatCharDlgProc (`02b0`).
 
+/// The Font dialog's procedure, COMMDLG's export 16 (`02b0`).
 pub fn format_char_dlg_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hwnd, message, wparam, lparam) = {

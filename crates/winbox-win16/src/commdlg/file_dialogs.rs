@@ -347,6 +347,7 @@ pub(super) fn custom_pattern(engine: &Engine, custom: u32) -> Vec<u8> {
 // ---------------------------------------------------------------------
 // The start: GetOpenFileName and GetSaveFileName (seg2 `09eb`).
 
+/// Shows COMMDLG's Open box (seg2 `0c17`).
 pub(crate) fn get_open_file_name(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let ofn = args.dword(&engine.system());
@@ -355,6 +356,7 @@ pub(crate) fn get_open_file_name(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// Shows COMMDLG's Save As box (seg2 `0c48`).
 pub(crate) fn get_save_file_name(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let ofn = args.dword(&engine.system());

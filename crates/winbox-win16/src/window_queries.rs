@@ -406,6 +406,10 @@ fn top_window(system: &System, hwnd: u16) -> u16 {
     related(system, hwnd, GW_CHILD)
 }
 
+/// A window related to another: the first or last of its siblings, the one
+/// after or before it, its owner, or its first child -- the siblings in the
+/// order they lie, the top one first, as a dialog's controls are in the order
+/// they were made.
 pub fn get_window(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let relation = args.word(system);

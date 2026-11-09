@@ -1341,6 +1341,8 @@ fn wep(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(1))
 }
 
+/// `GetFileResourceSize` (seg3 `0010`): a resource's length, and its place in
+/// the file.
 fn get_file_resource_size_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (file, kind, id, offset) = {
@@ -1360,6 +1362,8 @@ fn get_file_resource_size_export(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `GetFileResource` (seg3 `017e`): a resource's bytes, found or at a place
+/// given.
 fn get_file_resource_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (file, kind, id, offset, length, data) = {
@@ -1381,6 +1385,9 @@ fn get_file_resource_export(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `GetFileVersionInfoSize` (seg3 `086e`): the version resource's length -- its
+/// block's own, where that is no more than the resource's -- once its first 48h
+/// bytes show `VS_FIXEDFILEINFO`'s signature, `FEEF04BDh`, at 14h.
 fn get_file_version_info_size_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (file, handle) = {
@@ -1395,6 +1402,8 @@ fn get_file_version_info_size_export(engine: &Engine, mut args: Args) -> Later<'
     })
 }
 
+/// `GetFileVersionInfo` (seg3 `0906`): `GetFileResource` of the version
+/// resource.
 fn get_file_version_info_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (file, handle, length, data) = {
@@ -1414,6 +1423,12 @@ fn get_file_version_info_export(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `VerFindFile` (seg3 `1315`): where a file is, and where it should go.
+/// Windows' folder is asked for, whatever `szWinDir` says. The file is looked
+/// for in the program's folder, Windows' and the system's -- the program's last
+/// for a shared file -- then where `OpenFile` looks. A shared file goes in the
+/// system folder where that is inside Windows', in Windows' otherwise; another
+/// in the program's folder.
 fn ver_find_file_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (flags, file, _windows, app, cur, cur_length, dest, dest_length) = {
@@ -1437,6 +1452,9 @@ fn ver_find_file_export(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `VerInstallFile` (seg3 `0c9a`): a file copied, expanded, into a temporary
+/// file beside where it goes, compared with what is there, and put in its
+/// place.
 fn ver_install_file_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (flags, src_file, dest_file, src_dir, dest_dir, cur_dir, tmp_file, tmp_length) = {
@@ -1464,6 +1482,12 @@ fn ver_install_file_export(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `VerQueryValue` (seg3 `0943`): a value of a version block by its path. Each
+/// part, the backslashes before it passed over, is looked for among the
+/// children of the block found last, by USER's `lstrcmpi`; a block must have
+/// room for itself in what is left of the whole, and a child must be longer
+/// than five bytes. The block's last byte is made nought while it is walked,
+/// and the path's separator each part ends at, and both put back.
 fn ver_query_value_export(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (block, sub_block, buffer, length) = {

@@ -940,6 +940,9 @@ pub fn get_pixel(system: &mut System, hdc: u16, x: i32, y: i32) -> Result<u32, S
     }
 }
 
+/// The colour of one pixel, as a `COLORREF`, `0x00BBGGRR`: for a bitmap
+/// selected into a memory device context, the palette's colour for the pixel's
+/// index. The `bitblt` probe reads every colour it records this way.
 fn get_pixel_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let x = i32::from(args.signed(system));
@@ -1166,6 +1169,9 @@ pub fn invert_rect(system: &mut System, hdc: u16, rect: [i32; 4]) {
     }
 }
 
+/// Inverts every pixel of a rectangle, each bit of its colour's index as the
+/// raster operation `DSTINVERT` does; the right and bottom edges are outside
+/// it.
 fn invert_rect_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);

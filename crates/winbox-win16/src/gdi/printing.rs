@@ -356,6 +356,7 @@ fn start_doc_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// Answers 1 whether or not a document is being printed (`printing`).
 fn start_page_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
 
@@ -409,6 +410,7 @@ fn set_abort_proc_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// The page drawn, kept; -1 with no document (`printing`).
 fn end_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hdc, driver) = {
@@ -426,6 +428,7 @@ fn end_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// The document handed on; 1 with none (`printing`).
 fn end_doc_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hdc, driver) = {

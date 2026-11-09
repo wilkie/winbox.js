@@ -234,6 +234,7 @@ pub fn alloc_ds_to_cs_alias(system: &mut System, args: &mut Args) -> Result<Answ
     Ok(Answer::Word(alias_of(system, selector, true)))
 }
 
+/// A data selector for a code segment's memory; see `AllocDSToCSAlias`.
 pub fn alloc_cs_to_ds_alias(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let selector = args.word(system);
 

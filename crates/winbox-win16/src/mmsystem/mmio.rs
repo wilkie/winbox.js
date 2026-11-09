@@ -820,6 +820,7 @@ pub(crate) fn bad_code(system: &System, pointer: u32) -> bool {
 // ---------------------------------------------------------------------------
 // Opening and closing
 
+/// `mmioOpen` (`2a5`).
 fn mmio_open(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (name, info, flags) = {
@@ -1052,6 +1053,7 @@ fn fourcc(bytes: [u8; 4], upper: bool) -> u32 {
     u32::from_le_bytes(code)
 }
 
+/// `mmioClose` (`457`).
 fn mmio_close(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, flags) = {
@@ -1211,6 +1213,7 @@ pub(crate) fn exit_application_call(engine: &Engine, _: Args) -> Later<'_> {
 // ---------------------------------------------------------------------------
 // Reading, writing and seeking
 
+/// `mmioRead` (`4b4`).
 fn mmio_read(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, buffer, count) = {
@@ -1304,6 +1307,7 @@ fn reset_buf_offset(system: &mut System, handle: u16) {
     block.set(system, BUF_OFFSET, disk);
 }
 
+/// `mmioWrite` (`62b`).
 fn mmio_write(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, buffer, count) = {
@@ -1444,6 +1448,7 @@ async fn expand(engine: &Engine, handle: u16, count: u32) -> Result<u16, Stop> {
     Ok(answer)
 }
 
+/// `mmioSeek` (`7e9`).
 fn mmio_seek(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, offset, origin) = {
@@ -1534,6 +1539,7 @@ pub async fn seek(engine: &Engine, handle: u16, offset: u32, origin: u16) -> Res
 // ---------------------------------------------------------------------------
 // The structure and the buffer
 
+/// `mmioGetInfo` (`929`).
 fn mmio_get_info(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let mut system = engine.system();
@@ -1566,6 +1572,7 @@ fn get_info(system: &mut System, handle: u16, info: u32, flags: u16) -> u16 {
     0
 }
 
+/// `mmioSetInfo` (`996`).
 fn mmio_set_info(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let mut system = engine.system();
@@ -1616,6 +1623,7 @@ fn set_info(system: &mut System, handle: u16, info: u32, flags: u16) -> u16 {
     0
 }
 
+/// `mmioSetBuffer` (`a68`).
 fn mmio_set_buffer(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, buffer, size, flags) = {
@@ -1805,6 +1813,7 @@ async fn resize_buffer(engine: &Engine, handle: u16, size: u32) -> Result<u16, S
     Ok(0)
 }
 
+/// `mmioFlush` (`cd8`).
 fn mmio_flush(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, flags) = {
@@ -1876,6 +1885,7 @@ pub async fn flush(engine: &Engine, handle: u16, flags: u16) -> Result<u16, Stop
     Ok(0)
 }
 
+/// `mmioAdvance` (`da7`).
 fn mmio_advance(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, info, flags) = {
@@ -1981,6 +1991,7 @@ pub async fn advance(engine: &Engine, handle: u16, info: u32, flags: u16) -> Res
 // ---------------------------------------------------------------------------
 // Codes, procedures and messages
 
+/// `mmioStringToFOURCC` (`ed3`): four bytes, read past a nought.
 fn mmio_string_to_fourcc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let system = engine.system();
@@ -2006,6 +2017,7 @@ fn mmio_string_to_fourcc(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `mmioInstallIOProc` (`f6e`).
 fn mmio_install_io_proc(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let mut system = engine.system();
@@ -2077,6 +2089,7 @@ fn install_io_proc(system: &mut System, fcc: u32, procedure: u32, flags: u32) ->
     0
 }
 
+/// `mmioSendMessage` (`1073`).
 fn mmio_send_message(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, message, first, second) = {
@@ -2100,6 +2113,7 @@ fn mmio_send_message(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+/// `mmioRename` (`1d2`).
 fn mmio_rename(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (from, to, info, flags) = {
@@ -2160,6 +2174,7 @@ async fn rename(engine: &Engine, from: u32, to: u32, info: u32, flags: u32) -> R
 // ---------------------------------------------------------------------------
 // RIFF chunks
 
+/// `mmioDescend` (`1360`).
 fn mmio_descend(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, chunk, parent, flags) = {
@@ -2278,6 +2293,7 @@ pub async fn descend(
     }
 }
 
+/// `mmioAscend` (`1562`).
 fn mmio_ascend(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, chunk, flags) = {
@@ -2374,6 +2390,7 @@ fn data_pad(engine: &Engine) -> u32 {
     far
 }
 
+/// `mmioCreateChunk` (`16a5`).
 fn mmio_create_chunk(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (handle, chunk, flags) = {

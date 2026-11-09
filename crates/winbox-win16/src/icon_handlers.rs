@@ -242,6 +242,9 @@ pub fn load_dib_cursor_handler(system: &mut System, args: &mut Args) -> Result<A
     Ok(Answer::Word(dib_handler(system, false, block, resource)))
 }
 
+/// `LoadCursorIconHandler` (seg12 `0deb`-`0e49`): a Windows 2 module's icon or
+/// cursor -- nought for one of 64K or more -- read by KERNEL's own handler, and
+/// made USER's (`convertOld`). The block, or nought with it left discarded.
 pub fn load_cursor_icon_handler(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let block = args.word(system);
     let _module = args.word(system);

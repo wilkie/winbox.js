@@ -361,6 +361,15 @@ pub fn save_dc(system: &mut System, hdc: u16) -> u16 {
     dc.saved.len() as u16
 }
 
+/// Saves a device context's state, to be put back by `RestoreDC`.
+///
+/// **Recorded** by `clipdc`: it answers the new level, 1 for the first, and
+/// after `RestoreDC` counts on from the level restored. The text and background
+/// colours, the stretch mode and the clip region are put back.
+///
+/// Also saved, and not recorded: the background mode, text alignment, character
+/// spacing, brush, pen, font, drawing mode, brush origin, mapping and the
+/// current position. Not saved: the bitmap.
 pub(crate) fn save_dc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
 
@@ -672,6 +681,13 @@ fn stretch_mode(state: &mut DcState) -> (&mut Option<u16>, u16) {
     (&mut state.stretch_mode, 1)
 }
 
+/// Sets how the pen and the brush mix with the pixels already there, and
+/// answers the mode that was set before. A mode is one of the sixteen ways of
+/// combining two values bit by bit, `R2_BLACK` 1 to `R2_WHITE` 16; a device
+/// context starts in `R2_COPYPEN`, 13.
+///
+/// **Recorded** by `mixmode`, which sets each of the sixteen in turn and reads
+/// back what was set before and what `GetROP2` says after, on four displays.
 pub(crate) fn set_rop2_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(set_word(system, args, 0, rop2))
 }
@@ -694,6 +710,8 @@ pub(crate) fn get_poly_fill_mode_call(
     Ok(get_word(system, args, poly_fill_mode))
 }
 
+/// Sets how `StretchBlt` shrinks into a device context: `BLACKONWHITE` (1),
+/// `WHITEONBLACK` (2) or `COLORONCOLOR` (3).
 pub(crate) fn set_stretch_blt_mode_call(
     system: &mut System,
     args: &mut Args,

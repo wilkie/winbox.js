@@ -249,6 +249,11 @@ pub fn create_compatible_bitmap(system: &mut System, hdc: u16, width: i16, heigh
     ))
 }
 
+/// Makes a bitmap of the same kind as a device context's: the display's depth
+/// for a window or the screen, and for a memory device context the depth of the
+/// bitmap selected into it -- which for a new one is its one-by-one monochrome
+/// bitmap, so a bitmap made compatible with a fresh memory device context is
+/// monochrome. The pixels start black.
 pub(crate) fn create_compatible_bitmap_call(
     system: &mut System,
     args: &mut Args,

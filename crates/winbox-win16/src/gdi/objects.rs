@@ -807,6 +807,8 @@ pub fn get_object(system: &mut System, handle: u16, size: i16, far: u32) -> u16 
     count as u16
 }
 
+/// What an object is, put in a program's buffer, as much of it as there is room
+/// for: how many bytes. `GDI.EXE` 4:04BB.
 pub(crate) fn get_object_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let size = args.signed(system);
@@ -861,6 +863,9 @@ pub fn is_gdi_object(system: &System, handle: u16) -> u16 {
     }
 }
 
+/// What kind of GDI object a handle is, or nought: 1 a pen, 2 a brush, 3 a
+/// font, 4 a palette, 5 a bitmap, 6 a region, 7 a device context. A window,
+/// nought and a deleted object are nought (`queries`).
 pub(crate) fn is_gdi_object_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
 
