@@ -48,4 +48,4 @@ Print Screen puts a copy of the screen, or with Alt of the active window, on the
 
 ## In winbox.js
 
-`crates/winbox-win16/src/clipboard.rs`, and `edit-clipboard.ts` for the edit controls.
+`crates/winbox-win16/src/clipboard.rs` for the edit controls.
