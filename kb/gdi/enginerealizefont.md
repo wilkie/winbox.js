@@ -32,7 +32,7 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/engine-font.ts` and `crates/winbox-win16/src/gdi/engine_font.rs`. The TypeScript engine had realized the face without the horizontal resolution, at a ratio of 96 to 300. Wingdings' `VDMX` has no group for that ratio, so no size was found and the realization failed; the PostScript driver then printed Wingdings as Symbol.
+`crates/winbox-win16/src/gdi/engine_font.rs`. The TypeScript engine had realized the face without the horizontal resolution, at a ratio of 96 to 300. Wingdings' `VDMX` has no group for that ratio, so no size was found and the realization failed; the PostScript driver then printed Wingdings as Symbol.
 
 ## Not yet done
 

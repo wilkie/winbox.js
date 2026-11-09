@@ -32,4 +32,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-`GlobalLock` answers `selectorFor(handle) << 16` and counts a discardable block's lock with the block. winbox.js's own modules take a block's address without counting (`globalPointer` in `src/win16/kernel/GlobalLock.ts`, `System::global_pointer` in the Rust engine), so a program sees only the locks it, or KERNEL for it, made. See [[topic:global-and-local-memory]].
+`GlobalLock` answers `selectorFor(handle) << 16` and counts a discardable block's lock with the block. winbox.js's own modules take a block's address without counting (`globalPointer` in `System::global_pointer` in the Rust engine), so a program sees only the locks it, or KERNEL for it, made. See [[topic:global-and-local-memory]].

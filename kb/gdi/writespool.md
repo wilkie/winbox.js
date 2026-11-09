@@ -29,7 +29,7 @@ topics: [printer-drivers, printing]
 
 ## Implementation
 
-`src/win16/gdi/spooler.ts` and `crates/winbox-win16/src/gdi/spooler.rs`. GDI waits in its own loop for the timeouts, with nothing else running. On a virtual clock, the time that takes is charged to the clock as instructions run, so the box comes up after the same virtual time in both engines.
+`crates/winbox-win16/src/gdi/spooler.rs`. GDI waits in its own loop for the timeouts, with nothing else running. On a virtual clock, the time that takes is charged to the clock as instructions run, so the box comes up after the same virtual time in both engines.
 
 ## Not yet done
 

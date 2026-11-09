@@ -35,4 +35,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzOpenFile` in `src/win16/lzexpand/lz.ts` and `lz_open_file` in `crates/winbox-win16/src/lzexpand/mod.rs` call KERNEL's `OpenFile` with the program's `OFSTRUCT`. Both engines agree with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.
+`lz_open_file` in `crates/winbox-win16/src/lzexpand/mod.rs` call KERNEL's `OpenFile` with the program's `OFSTRUCT`. WinBox agrees with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.

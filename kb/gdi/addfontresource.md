@@ -37,4 +37,4 @@ topics: [font-resources, font-enumeration]
 
 ## Implementation
 
-Both engines keep GDI's font table: `FontManager.addResource` in `src/win16/font-manager.ts`, and `crates/winbox-win16/src/fonts/added.rs`. [[probe:fontres]] agrees on 57 of 57 records in each, [[probe:fontver]] on 24 of 24 on each display, and [[probe:fontboot]] on 32 of 32 in each preset.
+Both engines keep GDI's font table: `FontManager.addResource` in `crates/winbox-win16/src/fonts/added.rs`. [[probe:fontres]] agrees on 57 of 57 records in each, [[probe:fontver]] on 24 of 24 on each display, and [[probe:fontboot]] on 32 of 32 in each preset.

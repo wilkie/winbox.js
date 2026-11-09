@@ -19,4 +19,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/shell/programs.ts` (`extractIcons`), and the Rust engine's `shell/programs.rs`.
+`crates/winbox-win16/src/shell/programs.rs`.

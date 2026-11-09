@@ -25,4 +25,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `reconnect` in `src/win16/ddeml/conv.ts` and `reconnect` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The new conversation is made through the window the old one was made through; its advise links are started again asynchronously. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `reconnect` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The new conversation is made through the window the old one was made through; its advise links are started again asynchronously. WinBox agrees with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

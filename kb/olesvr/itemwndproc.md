@@ -92,4 +92,4 @@ topics: [ole]
 
 ## Implementation
 
-WinBox's own registers the class and answers as the file does (`src/win16/olesvr/index.ts`, `crates/winbox-win16/src/olesvr/mod.rs`), and makes an item window for each object as the file does ([[topic:ole]]).
+WinBox's own registers the class and answers as the file does (`crates/winbox-win16/src/olesvr/mod.rs`), and makes an item window for each object as the file does ([[topic:ole]]).

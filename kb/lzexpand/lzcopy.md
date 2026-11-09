@@ -40,4 +40,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzCopy` in `src/win16/lzexpand/lz.ts` and `lz_copy` in `crates/winbox-win16/src/lzexpand/mod.rs`, through KERNEL's `_lread`, `_lwrite`, `_llseek` and `Dos3Call`. Both engines agree with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.
+`lz_copy` in `crates/winbox-win16/src/lzexpand/mod.rs`, through KERNEL's `_lread`, `_lwrite`, `_llseek` and `Dos3Call`. WinBox agrees with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.

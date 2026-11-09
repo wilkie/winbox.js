@@ -18,4 +18,4 @@ topics: [multimedia-files]
 
 ## Implementation
 
-As read out of `MMSYSTEM.DLL` seg7, the same in both engines: `src/win16/mmsystem/mmio.ts` and `crates/winbox-win16/src/mmsystem/mmio.rs`.
+As read out of `MMSYSTEM.DLL` seg7: `crates/winbox-win16/src/mmsystem/mmio.rs`.

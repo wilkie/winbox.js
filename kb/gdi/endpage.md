@@ -27,7 +27,7 @@ On the context of a driver that bands, `NEWFRAME` plays the page GDI kept, band 
 
 ## Implementation
 
-`src/win16/gdi/printing.ts` and `printer-driver.ts`; in Rust, `crates/winbox-win16/src/gdi/printing.rs` and `printer_driver.rs`.
+`crates/winbox-win16/src/gdi/printing.rs` and `crates/winbox-win16/src/gdi/printer_driver.rs`.
 
 ## Not yet done
 

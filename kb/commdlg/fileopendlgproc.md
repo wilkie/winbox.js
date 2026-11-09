@@ -42,7 +42,7 @@ No program calls it. [[fn:COMMDLG.GetOpenFileName]] gives its far address to `Di
 
 ## Implementation
 
-WinBox's own: `FileOpenDlgProc` in `src/win16/commdlg/file-init.ts` and `file_open_dlg_proc` in `crates/winbox-win16/src/commdlg/file_init.rs`, given to USER at its stub's address. Its block is kept by its window, not under the property A000h ([[topic:file-dialogs]]).
+WinBox's own: `file_open_dlg_proc` in `crates/winbox-win16/src/commdlg/file_init.rs`, given to USER at its stub's address. Its block is kept by its window, not under the property A000h ([[topic:file-dialogs]]).
 
 ## Not yet done
 

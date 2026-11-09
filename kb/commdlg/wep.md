@@ -28,4 +28,4 @@ KERNEL calls it as COMMDLG is freed, with one word saying why; no program calls 
 
 ## Implementation
 
-WinBox's own answers 1 (`src/win16/commdlg/index.ts`; the Rust engine's `commdlg/mod.rs`): its COMMDLG holds none of those objects. A program's import of it links there. With `COMMDLG.DLL` on the drive, KERNEL calls the file's own as its library is let go ([[topic:dynamic-link-libraries]]).
+WinBox's own answers 1 (`crates/winbox-win16/src/commdlg/mod.rs`): its COMMDLG holds none of those objects. A program's import of it links there. With `COMMDLG.DLL` on the drive, KERNEL calls the file's own as its library is let go ([[topic:dynamic-link-libraries]]).

@@ -28,4 +28,4 @@ topics: [user-internals]
 
 ## Implementation
 
-**Implemented (a).** Both engines answer it as the `EDIT` class's procedure with the caller's AX (`BozosLiveHere` in `src/win16/user/internals.ts`, `user_internals.rs`). WinBox's edit control is its own and keeps the text itself, so DS does not choose where. See [[topic:user-internals]].
+**Implemented (a).** Both engines answer it as the `EDIT` class's procedure with the caller's AX (`BozosLiveHere` in `crates/winbox-win16/src/user_internals.rs`). WinBox's edit control is its own and keeps the text itself, so DS does not choose where. See [[topic:user-internals]].

@@ -40,4 +40,4 @@ source: crates/winbox-win16/src/shell/programs.rs
 
 ## Implementation
 
-`ExtractAssociatedIcon` in `src/win16/shell/programs.ts` and `extract_associated_icon` in `crates/winbox-win16/src/shell/programs.rs` follow those steps. They use the engines' own `ExtractIcon`, `FindExecutable`, `GetModuleFileName` and `LoadIcon`.
+`extract_associated_icon` in `crates/winbox-win16/src/shell/programs.rs` follow those steps. They use the engines' own `ExtractIcon`, `FindExecutable`, `GetModuleFileName` and `LoadIcon`.

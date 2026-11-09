@@ -46,6 +46,6 @@ source: crates/winbox-win16/src/kernel_calls/file_cdr.rs
 
 ## Implementation
 
-`OpenFile` in `src/win16/kernel/OpenFile.ts` and `open_file` in `crates/winbox-win16/src/files_kernel.rs`, whose box is shown by `open_file` in `crates/winbox-win16/src/kernel_calls/file_cdr.rs`. DOS's 5700h, which both use for the date and time, is `fileStamp` in `src/dos/syscall/files.ts` and `handle_stamp` in `crates/winbox-win16/src/dos.rs`. The search is [[topic:finding-files]]'s.
+`open_file` in `crates/winbox-win16/src/files_kernel.rs`, whose box is shown by `open_file` in `crates/winbox-win16/src/kernel_calls/file_cdr.rs`. DOS's 5700h, which both use for the date and time, is `handle_stamp` in `crates/winbox-win16/src/dos.rs`. The search is [[topic:finding-files]]'s.
 
 Not followed: DOS's sharing and read-only refusals, which DOSBox's DOS does not make either.

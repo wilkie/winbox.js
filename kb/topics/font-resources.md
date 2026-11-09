@@ -166,7 +166,7 @@ Read out of `MAIN.CPL`, segment 9.
 
 ## In winbox.js
 
-- Both engines keep GDI's font table: `FontManager.addResource` and `removeResource` in `src/win16/font-manager.ts`, and `crates/winbox-win16/src/fonts/added.rs`.
+- Both engines keep GDI's font table: `FontManager.addResource` and `removeResource` in `crates/winbox-win16/src/fonts/added.rs`.
   - A raster file is known by its module and a stub by its full name.
   - Strikes added are appended in the table's order.
   - A stub takes the first empty slot.
@@ -174,7 +174,7 @@ Read out of `MAIN.CPL`, segment 9.
   - `[TrueType]` `TTEnable` and `TTOnly` are read at start-up (`trueTypeSettings`, `true_type_settings`).
 - The cache is kept as the fonts realised from a raster file's strike, each with the font object that made it and its `LOGFONT` (`Cached`). A font is realised as it is made, where Windows realises it as it is used. A file removed with such a font cached keeps its strikes out of the table until the object is deleted, or taken out of a scaled DC; added again, they go back where they were.
 - `fontFile` (`src/win16/font-file.ts`) reads what `AddFontResource` reads of a file, and `versionLimit` gives the limit from the display's `RC_BIGFONT`.
-- The calls are `src/win16/gdi/AddFontResource.ts` and `crates/winbox-win16/src/gdi/text/added.rs`.
+- The calls are `crates/winbox-win16/src/gdi/text/added.rs`.
 - [[measured]] [[probe:fontres]] 57 of 57, [[probe:fontdef]] 44 of 44, [[probe:fontver]] 24 of 24 on each display, [[probe:fontboot]] 32 of 32 in each preset, in both engines.
 - [[measured]] Control Panel's Fonts installs `DOSAPP.FON` and removes it, and removes Wingdings and installs it again from `WINGDING.TTF`, in both engines' sessions.
 

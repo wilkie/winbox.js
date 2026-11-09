@@ -21,4 +21,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/engine-font.ts` and `crates/winbox-win16/src/gdi/engine_font.rs`.
+`crates/winbox-win16/src/gdi/engine_font.rs`.

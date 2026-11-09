@@ -25,4 +25,4 @@ topics: [user-internals, system-queue]
 
 ## Implementation
 
-In both engines nought, nothing put: what a program finds (`src/win16/user/internals.ts`, `user_internals.rs`). WinBox's input is its own drivers', put in the system queue directly ([[topic:system-queue]]).
+In both engines nought, nothing put: what a program finds (`crates/winbox-win16/src/user_internals.rs`). WinBox's input is its own drivers', put in the system queue directly ([[topic:system-queue]]).

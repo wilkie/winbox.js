@@ -37,7 +37,7 @@ winbox.js agrees with all of these records. Both were stubs.
 - Lines past the top: on the 256-colour display they end it. [[read out]] On the VGA they go on up, before the bitmap's bits (`VGA.DRV` seg9 `1586`; [[probe:gdidmrle]] sees them written there), which a probe through GDI does not ask.
 - A monochrome bitmap: on the VGA each colour white where the driver takes it as white; the 256-colour driver refuses it and the answer is nought.
 
-[[read out]] GDI hands the DIB to the driver's `DeviceBitmapBits` as it is; the drivers' routines are [[fn:GDI.DMDibBits]]'s. `rle-dib.ts`, `rle_dib.rs`; [[probe:rledib]] agrees in both engines.
+[[read out]] GDI hands the DIB to the driver's `DeviceBitmapBits` as it is; the drivers' routines are [[fn:GDI.DMDibBits]]'s. `crates/winbox-win16/src/gdi/rle_dib.rs`; [[probe:rledib]] agrees in both engines.
 
 ## With a printer's context
 

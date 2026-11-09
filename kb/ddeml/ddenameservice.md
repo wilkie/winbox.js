@@ -35,4 +35,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `nameService` in `src/win16/ddeml/instance.ts` and `name_service` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Each instance is sent `WM_USER + C8h` or `C9h` to its window, which calls back `XTYP_REGISTER` or `XTYP_UNREGISTER`. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `name_service` in `crates/winbox-win16/src/ddeml/instance.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Each instance is sent `WM_USER + C8h` or `C9h` to its window, which calls back `XTYP_REGISTER` or `XTYP_UNREGISTER`. WinBox agrees with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

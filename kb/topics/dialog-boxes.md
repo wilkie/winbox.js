@@ -212,7 +212,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 ## In winbox.js
 
 - `src/win16/user/dialog-template.ts` reads templates.
-- `dialogBox`, `runModal` and `EndDialog` in `src/win16/user/dialogs.ts`, and `begin_modal`, `run_modal` and `end_dialog` in `crates/winbox-win16/src/dialogs.rs`, follow `DialogBoxIndirectParam`, its loop and `EndDialog` as above. The dialog's words at 12h, 14h and 16h are `ended`, `ownerWasDisabled` (`owner_was_disabled`) and `defId` (`def_id`). The last holds the default button's identifier, and then the value `DialogBox` answers.
+- `dialogBox`, `runModal` and `EndDialog` in `begin_modal`, `run_modal` and `end_dialog` in `crates/winbox-win16/src/dialogs.rs`, follow `DialogBoxIndirectParam`, its loop and `EndDialog` as above. The dialog's words at 12h, 14h and 16h are `ended`, `ownerWasDisabled` (`owner_was_disabled`) and `defId` (`def_id`). The last holds the default button's identifier, and then the value `DialogBox` answers.
 - `src/win16/user/dialogs.ts` has:
   - `CreateDialog` and `DialogBox` in all their forms;
   - `DefDlgProc`, the procedure of the dialog class `#32770`;

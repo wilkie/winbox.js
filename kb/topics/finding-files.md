@@ -41,7 +41,7 @@ A program names a file without a directory all the time: `WinExec("NOTEPAD.EXE")
 
 ## In winbox.js
 
-The search is one function in each engine: `searchPlaces` and `searchFile` in `src/win16/kernel/search.ts`, and `search_places` and `search_file` in `crates/winbox-win16/src/search.rs`. `OpenFile`, `WinExec`, `LoadModule`, `LoadLibrary`, SHELL's `locate` and the loading of a program's imports all go through it.
+The search is one function in each engine: `searchPlaces` and `searchFile` in `search_places` and `search_file` in `crates/winbox-win16/src/search.rs`. `OpenFile`, `WinExec`, `LoadModule`, `LoadLibrary`, SHELL's `locate` and the loading of a program's imports all go through it.
 
 The environment winbox.js gives a program has no PATH, only `windir` ([[topic:task-startup]]), so out of the box the search ends at the program's directory. Windows' directory is a constant in winbox.js, so a program that writes over its environment does not lose it. Nothing records a program doing that apart from the probe.
 

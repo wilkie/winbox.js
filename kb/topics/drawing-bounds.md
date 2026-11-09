@@ -28,4 +28,4 @@ GDI can keep the bounds of what is drawn in a device context: a program's, which
 
 ## In winbox.js
 
-`src/win16/gdi/bounds.ts` and `crates/winbox-win16/src/gdi/bounds.rs`, each call that draws giving them its rectangle.
+`crates/winbox-win16/src/gdi/bounds.rs`, each call that draws giving them its rectangle.

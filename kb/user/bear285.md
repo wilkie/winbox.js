@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. The desktop window's instance is answered by `window-words.ts` and `window_queries.rs`.
+`crates/winbox-win16/src/small_calls.rs`. The desktop window's instance is answered by `crates/winbox-win16/src/window_queries.rs`.

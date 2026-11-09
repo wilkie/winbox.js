@@ -25,7 +25,7 @@ topics: [dos-handles, compressed-files]
 
 ## Implementation
 
-`_llseek` in `src/win16/kernel/_llseek.ts` and `llseek` in `crates/winbox-win16/src/files_kernel.rs` move the file's place as DOS function 42h does (`dos_seek` in `crates/winbox-win16/src/dos.rs`, `seek` in `src/dos/syscall/seek.ts`), a place before the start the file's end, and answer -1 for a handle not open or an origin past 2. Both engines agree with [[probe:lzfiles]].
+`llseek` in `crates/winbox-win16/src/files_kernel.rs` move the file's place as DOS function 42h does (`dos_seek` in `crates/winbox-win16/src/dos.rs`, `seek` in `src/dos/syscall/seek.ts`), a place before the start the file's end, and answer -1 for a handle not open or an origin past 2. WinBox agrees with [[probe:lzfiles]].
 
 ## Not yet done
 

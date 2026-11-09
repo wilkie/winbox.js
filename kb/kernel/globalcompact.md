@@ -28,4 +28,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-`src/win16/kernel/memory-info.ts` and `src/win16/kernel/memory-model.ts`; the Rust engine's `pointers.rs` and `GlobalHeap` in `crates/winbox-machine/src/global.rs`.
+`crates/winbox-win16/src/pointers.rs` and `GlobalHeap` in `crates/winbox-machine/src/global.rs`.

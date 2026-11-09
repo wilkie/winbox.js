@@ -22,4 +22,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/icon-handlers.ts`; the Rust engine's `icon_handlers.rs`. WinBox's `ExtractIcon` makes its icons itself.
+`crates/winbox-win16/src/icon_handlers.rs`. WinBox's `ExtractIcon` makes its icons itself.

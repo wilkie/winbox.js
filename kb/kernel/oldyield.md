@@ -15,4 +15,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/WinExec.ts`, and the Rust engine's `tasks.rs` (`old_yield`).
+`crates/winbox-win16/src/tasks.rs` (`old_yield`).

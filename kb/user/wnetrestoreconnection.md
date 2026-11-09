@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/wnet.rs
 
 ## Implementation
 
-`src/win16/user/wnet.ts`; the Rust engine's `user_misc.rs`.
+`crates/winbox-win16/src/user_misc.rs`.

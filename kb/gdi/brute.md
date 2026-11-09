@@ -33,7 +33,7 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-**Implemented (a).** Both engines take CH and CL from CX, read the arguments CL counts, choose the routine as each helper chooses it -- the device the first argument -- and take the arguments off the stack (`Brute` in `src/win16/gdi/driver-helpers.ts`, `brute_call` in `gdi/driver_helpers.rs`). See [[topic:gdi-internals]].
+**Implemented (a).** Both engines take CH and CL from CX, read the arguments CL counts, choose the routine as each helper chooses it -- the device the first argument -- and take the arguments off the stack (`Brute` in `brute_call` in `crates/winbox-win16/src/gdi/driver_helpers.rs`). See [[topic:gdi-internals]].
 
 ## Not yet done
 

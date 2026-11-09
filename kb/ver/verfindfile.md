@@ -43,4 +43,4 @@ topics: [version-information]
 
 ## Implementation
 
-`VerFindFile` in `src/win16/ver/ver.ts` and `ver_find_file` in `crates/winbox-win16/src/ver/mod.rs` call KERNEL, USER and KEYBOARD as VER calls them. Both engines agree with [[probe:verinst]], with `VER.DLL` on the drive and without it.
+`ver_find_file` in `crates/winbox-win16/src/ver/mod.rs` call KERNEL, USER and KEYBOARD as VER calls them. WinBox agrees with [[probe:verinst]], with `VER.DLL` on the drive and without it.

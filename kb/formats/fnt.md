@@ -10,7 +10,7 @@ A `.FON` file is an [[format:ne]] library with no code whose resources are fonts
 
 - [[documented]] `FONTDIR` is resource type `0x8007` and each `FONT` is `0x8008`. The directory is a word count, then for each font a word ordinal and a directory entry: the first 113 bytes of the header below, with a reserved dword where the bits pointer would be, followed by the device and face names.
 - [[measured]] In each of the 34 `.FON` files installed on the VGA and EGA drives (16 and 18), the resource table holds one `FONTDIR`, one `FONT` per strike, and one resource of type `0x8010`; the directory's count equals the number of `FONT` resources. The non-resident name is `FONTRES`, then the aspect and two resolutions the file is cut for — `100,96,96` for the VGA sets, `133,96,72` for the EGA's, `200,96,48` for the CGA Terminal files — or `CONTINUOUSSCALING` for the three plotter files, then a description such as `MS Serif 8,10,12,14,18,24 (VGA res)`.
-- [[measured]] winbox.js reads every `FONT` resource in resource-table order (`src/raster/bitmap-font.ts`, `BitmapFont.load`), and that order is the one the mapper breaks ties with: see the `SMALLE.FON` finding below and [[fonts:8a]].
+- [[measured]] winbox.js reads every `FONT` resource in resource-table order (`BitmapFont.load`), and that order is the one the mapper breaks ties with: see the `SMALLE.FON` finding below and [[fonts:8a]].
 
 ## The header
 
@@ -49,7 +49,7 @@ The layout is [[documented]]. The offsets are also [[read out]] of GDI: the mapp
 ## The plotter fonts
 
 - [[measured]] `ROMAN.FON`, `MODERN.FON` and `SCRIPT.FON` each hold one version `0x0100` font with `dfType` 1, `dfCharSet` 255, characters 32 to 255, a design 32 rows tall (Script's 37) and resolutions of 3 horizontal by 2 vertical. Their `dfPitchAndFamily` is `0x11`, `0x31` and `0x41`.
-- [[inferred]] Their character table starts at 119, which no documentation to hand gives: it is the only offset whose widths reproduce the header's `dfAvgWidth` and `dfMaxWidth` for all three (`bitmap-font.ts`, `tableOffset`).
+- [[inferred]] Their character table starts at 119, which no documentation to hand gives: it is the only offset whose widths reproduce the header's `dfAvgWidth` and `dfMaxWidth` for all three (`tableOffset`).
 - [[measured]] An entry's offset is where its strokes **end**; the previous entry's is where they begin, and the first's begin at nought. The strokes are signed byte pairs, each a displacement the pen draws along; a `0x80` byte lifts the pen, and the pair after it is a displacement to move by without drawing. Coordinates measure downward from the top of the design. Roman's `A` is thirty bytes: a lift to (10,4), a draw to (3,25), a lift back and a draw to (17,25), a crossbar and two serifs ([[fonts:4]]).
 - [[measured]] GDI adds `TMPF_VECTOR` to the pitch it reports, which the file does not carry: Roman's 17 is reported as 19 ([[fonts:4]]).
 

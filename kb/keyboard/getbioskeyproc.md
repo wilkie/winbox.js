@@ -16,4 +16,4 @@ source: crates/winbox-win16/src/keyboard.rs
 
 ## Implementation
 
-`src/win16/keyboard/driver.ts`; the Rust engine's `crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`keyboard/tables.ts`, `keyboard_tables.rs`). The INT 9 vector DOS answers for here as the driver is first called: nought.
+`crates/winbox-win16/src/keyboard.rs`. The driver's tables are WinBox's own, made by `scripts/oracle/keyboard-tables.mjs` (`crates/winbox-win16/src/keyboard_tables.rs`). The INT 9 vector DOS answers for here as the driver is first called: nought.

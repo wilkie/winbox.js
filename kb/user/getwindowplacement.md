@@ -18,4 +18,4 @@ source: crates/winbox-win16/src/window_state.rs
 
 ## Implementation
 
-`src/win16/user/placement.ts`, and the Rust engine's `window_state.rs`.
+`crates/winbox-win16/src/window_state.rs`.

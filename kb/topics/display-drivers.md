@@ -281,7 +281,7 @@ Both engines show the statics this way: dark red as BF0000 until a realization c
 
 ### The drivers' export tables
 
-[[read out]] In both engines, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`display-driver.ts`, `Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
+[[read out]] In both engines, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
 
 - **`SVGA256.DRV`** has 1 to 28, with `StretchBlt` (27) and `StretchDIBits` (28). It also has 101 to 104, `GetDriverResourceID` (450), 500, `SetColorTranslate` (1000), and the cards' bank routines 2000 to 2023. It has none of 90 to 92 or 400 to 403.
 - **`8514.DRV`** has 1 to 28 (27 and 28 are spares), 92 and 101 to 104. Its routines for 8 and for 4 bits are 200 to 226, and its text is 240 and 241. It also has 450 and 500. Its 501 to 506 are places in its data segment and are left out.

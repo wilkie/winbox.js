@@ -25,4 +25,4 @@ topics: [kernel-internals, exported-constants]
 
 ## Implementation
 
-**Implemented (b), data.** In both engines the export is data laid where its stub would be (`exported-data.ts`, `exported_data.rs`): a table of its end alone, a selector of nought. WinBox's KERNEL has no code of Windows' to fault in, and [[fn:KERNEL.HasGPHandler]] answers nought for every address, as recorded by [[probe:kintrnl]]. See [[topic:kernel-internals]].
+**Implemented (b), data.** In both engines the export is data laid where its stub would be (`crates/winbox-win16/src/exported_data.rs`): a table of its end alone, a selector of nought. WinBox's KERNEL has no code of Windows' to fault in, and [[fn:KERNEL.HasGPHandler]] answers nought for every address, as recorded by [[probe:kintrnl]]. See [[topic:kernel-internals]].

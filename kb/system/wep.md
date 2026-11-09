@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/system_driver.rs
 
 ## Implementation
 
-`src/win16/system-driver.ts`; the Rust engine's `crates/winbox-win16/src/system_driver.rs`.
+`crates/winbox-win16/src/system_driver.rs`.

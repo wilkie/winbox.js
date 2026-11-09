@@ -32,4 +32,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `enableCallback` in `src/win16/ddeml/instance.ts` and `enable_callback` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The command is sent to each conversation as `WM_USER + CFh`, and the queue run at once by `WM_USER + CCh` to the instance's window. Both engines agree with [[probe:ddemgmt]] and [[probe:ddefail]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `enable_callback` in `crates/winbox-win16/src/ddeml/instance.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The command is sent to each conversation as `WM_USER + CFh`, and the queue run at once by `WM_USER + CCh` to the instance's window. WinBox agrees with [[probe:ddemgmt]] and [[probe:ddefail]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

@@ -22,4 +22,4 @@ topics: [sound-devices]
 
 ## Implementation
 
-Both engines, as read out: `src/win16/mmsystem/auxiliary.ts` and `crates/winbox-win16/src/mmsystem/auxiliary.rs`.
+As read out: `crates/winbox-win16/src/mmsystem/auxiliary.rs`.

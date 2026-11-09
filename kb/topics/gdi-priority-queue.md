@@ -36,4 +36,4 @@ GDI exports a small priority queue, which the spooler keeps its jobs in: [[fn:GD
 
 ## In winbox.js
 
-`src/win16/gdi/priority-queue.ts` and the Rust engine's `crates/winbox-win16/src/gdi/priority_queue.rs`, both on the block itself.
+`crates/winbox-win16/src/gdi/priority_queue.rs`, both on the block itself.

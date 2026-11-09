@@ -26,4 +26,4 @@ topics: [gdi-internals, kernel-internals]
 
 ## Implementation
 
-**Implemented (b), data,** as KERNEL's [[fn:KERNEL.__GP]]: a table of its end alone, a selector of nought, laid where its stub would be (`exported-data.ts`, `exported_data.rs`). WinBox's GDI checks the pointers it is given in its own code. See [[topic:gdi-internals]].
+**Implemented (b), data,** as KERNEL's [[fn:KERNEL.__GP]]: a table of its end alone, a selector of nought, laid where its stub would be (`crates/winbox-win16/src/exported_data.rs`). WinBox's GDI checks the pointers it is given in its own code. See [[topic:gdi-internals]].

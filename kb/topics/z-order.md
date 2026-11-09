@@ -99,7 +99,7 @@ So the three rules [[probe:dlgfront]] recorded follow:
 - A window owning nothing put after its owner goes behind it. A window put after one of its own family, or after a window in front of its family, leaves the family where it lies: each asked, none told.
 - `SetWindowPos` without `SWP_NOACTIVATE`: the active window put after another goes there; another window asked for `HWND_BOTTOM` or after a window comes to the top, active; `HWND_NOTOPMOST` leaves it where it lies, active; `HWND_TOPMOST` makes it topmost and active.
 
-Both engines had made a window put after `#32771` topmost, made only the window itself topmost or not, brought its family only for `HWND_TOP` and `HWND_TOPMOST`, and told each of the family that moved where it had come to lie. `z-order.ts` and `z_order.rs` now work the list out as above.
+Both engines had made a window put after `#32771` topmost, made only the window itself topmost or not, brought its family only for `HWND_TOP` and `HWND_TOPMOST`, and told each of the family that moved where it had come to lie. `crates/winbox-win16/src/z_order.rs` now work the list out as above.
 
 ## ShowWindow
 
@@ -146,4 +146,4 @@ Both engines had made a window put after `#32771` topmost, made only the window 
 
 ## In winbox.js
 
-`src/win16/user/z-order.ts` and `crates/winbox-win16/src/z_order.rs` work out a window at the top's list (`planZOrder`, `plan_z_order`), whether each lies in place (`liesWhere`, `stayRun`) and link it (`placePlan`, `Desktop.linkAfter`). `positionChanging` and `positionChanged` in `window-state.ts` (`position.rs`) ask, place and tell by it; `activateWindow` brings a window up with `positionRaster`. `CreateWindow` links a window with `Desktop.linkMade` after `WM_NCCREATE`.
+`crates/winbox-win16/src/z_order.rs` work out a window at the top's list (`planZOrder`, `plan_z_order`), whether each lies in place (`liesWhere`, `stayRun`) and link it (`placePlan`, `Desktop.linkAfter`). `positionChanging` and `positionChanged` in `window-state.ts` (`crates/winbox-win16/src/position.rs`) ask, place and tell by it; `activateWindow` brings a window up with `positionRaster`. `CreateWindow` links a window with `Desktop.linkMade` after `WM_NCCREATE`.

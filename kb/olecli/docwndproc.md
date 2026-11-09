@@ -20,4 +20,4 @@ topics: [ole]
 
 ## Implementation
 
-WinBox's own: `convProc` in `src/win16/olecli/linked.ts` and `conv_proc` in `crates/winbox-win16/src/olecli/linked.rs` ([[topic:ole]], "Embedded and linked objects").
+WinBox's own: `conv_proc` in `crates/winbox-win16/src/olecli/linked.rs` ([[topic:ole]], "Embedded and linked objects").

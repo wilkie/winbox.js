@@ -38,4 +38,4 @@ GDI calls the hook so in both engines: a program's through the processor, USER's
 
 ## In winbox.js
 
-`src/win16/gdi/dc-internals.ts` and `crates/winbox-win16/src/gdi/dc_internals.rs`; the palette calls are `palettes.ts` and `palettes.rs` ([[topic:palettes]]).
+`crates/winbox-win16/src/gdi/dc_internals.rs`; the palette calls are `crates/winbox-win16/src/gdi/palettes.rs` ([[topic:palettes]]).

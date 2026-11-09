@@ -16,4 +16,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. [[fn:USER.SystemParametersInfo]] with `SPI_SETDESKPATTERN` and -1.
+`crates/winbox-win16/src/small_calls.rs`. [[fn:USER.SystemParametersInfo]] with `SPI_SETDESKPATTERN` and -1.

@@ -34,4 +34,4 @@ No program calls it. Each time the face changes, the Font dialog gives its far a
 
 ## Implementation
 
-WinBox's own: `FontStyleEnumProc` in `src/win16/commdlg/choose-font.ts` and `font_style_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address. A style's copy of its `LOGFONT` is kept in WinBox's memory, the row's data's low word the number it is kept by, where COMMDLG puts the handle of 50 bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `font_style_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address. A style's copy of its `LOGFONT` is kept in WinBox's memory, the row's data's low word the number it is kept by, where COMMDLG puts the handle of 50 bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.

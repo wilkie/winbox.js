@@ -17,4 +17,4 @@ topics: [ole]
 
 ## Implementation
 
-WinBox's own: `SERVER_VERSION` in `src/win16/olesvr/core.ts` and `crates/winbox-win16/src/olesvr/core.rs` ([[topic:ole]]).
+WinBox's own: `SERVER_VERSION` in `crates/winbox-win16/src/olesvr/core.rs` ([[topic:ole]]).

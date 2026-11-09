@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. The screen saver's look the timer runs (`screen-saver.ts`, `screen_saver.rs`).
+`crates/winbox-win16/src/small_calls.rs`. The screen saver's look the timer runs (`crates/winbox-win16/src/screen_saver.rs`).

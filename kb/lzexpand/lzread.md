@@ -38,4 +38,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzRead` in `src/win16/lzexpand/lz.ts` and `lz_read` in `crates/winbox-win16/src/lzexpand/mod.rs` follow it step by step on the handle's block in global memory. Both engines agree with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.
+`lz_read` in `crates/winbox-win16/src/lzexpand/mod.rs` follow it step by step on the handle's block in global memory. WinBox agrees with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.

@@ -39,7 +39,7 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-**Implemented (b), data.** `THHOOK` is an export that is data in both engines (`exported-data.ts`, `exported_data.rs`): `GetProcAddress` and an import of it give KERNEL's data selector and 218h, and the words from 218h to 22Bh are laid out as the address is first handed out and again as each call returns, since a task switches only inside a call (`kernel/thhook.ts`, `kernel_calls/thhook.rs`): the heap's own block, KERNEL's module, the newest task's prefix, the head of the task chain, the running task, nought.
+**Implemented (b), data.** `THHOOK` is an export that is data in both engines (`crates/winbox-win16/src/exported_data.rs`): `GetProcAddress` and an import of it give KERNEL's data selector and 218h, and the words from 218h to 22Bh are laid out as the address is first handed out and again as each call returns, since a task switches only inside a call (`crates/winbox-win16/src/kernel_calls/thhook.rs`): the heap's own block, KERNEL's module, the newest task's prefix, the head of the task chain, the running task, nought.
 
 ## Not yet done
 

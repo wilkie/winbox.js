@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/small_calls.rs
 
 ## Implementation
 
-`src/win16/user/small-calls.ts`; the Rust engine's `crates/winbox-win16/src/small_calls.rs`. The desktop and every window shown marked to be erased and painted, their frames left, as `RDW_FRAME` is not among the flags: the desktop's own marking for the system colours changed (`desktop.ts`'s `repaintAll`, `desktop.rs`'s `repaint_all_frames`) without the frames.
+`crates/winbox-win16/src/small_calls.rs`. The desktop and every window shown marked to be erased and painted, their frames left, as `RDW_FRAME` is not among the flags: the desktop's own marking for the system colours changed (`desktop.ts`'s `repaintAll`, `crates/winbox-win16/src/desktop.rs`'s `repaint_all_frames`) without the frames.

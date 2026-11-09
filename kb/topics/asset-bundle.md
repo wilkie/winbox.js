@@ -110,7 +110,7 @@ An engine started from the bundle has two things where it would have an installa
 
   `WINBOX_BASE=assets cargo test --release -p winbox-win16 --test probes -- --ignored --nocapture survey`
 
-[[measured]] On the bundle's base, `drvres` on the VGA, EGA, Hercules and Super VGA, `chrome` on the same four, `fontboot` with its three presets and `about` write the same records as on the oracle's installation, in both engines; and SHELL's logo read from the bundle is the installation's, pixel for pixel, on all four displays (`tests/asset_base.rs`, `test/assets/base_test.ts`).
+[[measured]] On the bundle's base, `drvres` on the VGA, EGA, Hercules and Super VGA, `chrome` on the same four, `fontboot` with its three presets and `about` write the same records as on the oracle's installation, in both engines; and SHELL's logo read from the bundle is the installation's, pixel for pixel, on all four displays (`crates/winbox-win16/tests/asset_base.rs`).
 
 ## On the page
 

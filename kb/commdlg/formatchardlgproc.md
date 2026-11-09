@@ -46,4 +46,4 @@ No program calls it. [[fn:COMMDLG.ChooseFont]] gives its far address to `DialogB
 
 ## Implementation
 
-WinBox's own: `FormatCharDlgProc` in `src/win16/commdlg/choose-font.ts` and `format_char_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, given to USER at its stub's address. The dialog's structure is kept in WinBox's memory by the number under its property A000h, where COMMDLG keeps four bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `format_char_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, given to USER at its stub's address. The dialog's structure is kept in WinBox's memory by the number under its property A000h, where COMMDLG keeps four bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.

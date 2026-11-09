@@ -23,4 +23,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `setUserHandle` in `src/win16/ddeml/conv.ts` and `set_user_handle` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The handle is kept in the conversation's state, or an asynchronous transaction's record, as the file keeps it. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `set_user_handle` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The handle is kept in the conversation's state, or an asynchronous transaction's record, as the file keeps it. WinBox agrees with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

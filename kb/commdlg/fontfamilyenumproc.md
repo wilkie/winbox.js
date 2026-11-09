@@ -34,4 +34,4 @@ No program calls it. The Font dialog gives its far address to [[fn:GDI.EnumFontF
 
 ## Implementation
 
-WinBox's own: `FontFamilyEnumProc` in `src/win16/commdlg/choose-font.ts` and `font_family_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address with the data laid out below the stack as COMMDLG's own stack holds it. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `font_family_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address with the data laid out below the stack as COMMDLG's own stack holds it. It works with no `COMMDLG.DLL` on the drive.

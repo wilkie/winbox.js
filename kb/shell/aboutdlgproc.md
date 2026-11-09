@@ -19,4 +19,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/shell/about.ts`, and the Rust engine's `shell/about.rs`; `ShellAbout` uses the same procedure.
+`crates/winbox-win16/src/shell/about.rs`; `ShellAbout` uses the same procedure.

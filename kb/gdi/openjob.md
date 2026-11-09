@@ -33,7 +33,7 @@ topics: [printer-drivers, printing]
 
 ## Implementation
 
-`src/win16/gdi/spooler.ts` and `crates/winbox-win16/src/gdi/spooler.rs`, called by a driver through GDI's exports.
+`crates/winbox-win16/src/gdi/spooler.rs`, called by a driver through GDI's exports.
 
 ## Not yet done
 

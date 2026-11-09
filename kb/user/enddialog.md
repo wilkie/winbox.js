@@ -37,4 +37,4 @@ topics: [dialog-boxes, activation-and-focus]
 
 ## Implementation
 
-`EndDialog` in `src/win16/user/dialogs.ts`, and `end_dialog` in `crates/winbox-win16/src/dialogs.rs`.
+`EndDialog` in `end_dialog` in `crates/winbox-win16/src/dialogs.rs`.

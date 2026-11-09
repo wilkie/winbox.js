@@ -19,4 +19,4 @@ topics: [keyboard-driver]
 
 ## Implementation
 
-`src/win16/keyboard/driver.ts`, and the Rust engine's `keyboard.rs`.
+`crates/winbox-win16/src/keyboard.rs`.

@@ -31,4 +31,4 @@ No program calls it. [[fn:COMMDLG.ReplaceText]] gives its far address to `Create
 
 ## Implementation
 
-WinBox's own: `ReplaceTextDlgProc` in `src/win16/commdlg/find-replace.ts` and `replace_text_dlg_proc` in `crates/winbox-win16/src/commdlg/find_replace.rs`. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `replace_text_dlg_proc` in `crates/winbox-win16/src/commdlg/find_replace.rs`. It works with no `COMMDLG.DLL` on the drive.

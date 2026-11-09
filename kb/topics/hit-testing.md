@@ -117,7 +117,7 @@ Whether the menu bar and the scroll bars were laid out is the window's own flags
 - A maximized window answers as any other, its frame's codes off the screen. Hidden and disabled windows answer as when shown. A child's caption, boxes and frame answer as a window's at the top.
 - A window with `WS_DLGFRAME` and `WS_THICKFRAME` but no border, or with `WS_EX_DLGMODALFRAME` and `WS_THICKFRAME`, has a sizing frame's codes on its outer four pixels, `HTBORDER` inside them, and its client area five pixels in.
 
-winbox.js answers from the read-out in both engines alike (`hitTest` in `raster-input.ts`, `hit_test` in `raster_input.rs`), and agrees with all 176 records on each display. The look's `WM_SETCURSOR`, a press's `WM_NCLBUTTONDOWN` -- the caption, its boxes, the menu bar, the frame's edges for the loop that sizes a window ([[topic:window-states]]) -- and the sizing cursors all go by its answer, so there is one geometry. A thin border's pixel, which winbox.js answered `HTBORDER` before, is now `HTNOWHERE`, and a press there is thrown away, as on Windows.
+winbox.js answers from the read-out in both engines alike (`hitTest` in `hit_test` in `crates/winbox-win16/src/raster_input.rs`), and agrees with all 176 records on each display. The look's `WM_SETCURSOR`, a press's `WM_NCLBUTTONDOWN` -- the caption, its boxes, the menu bar, the frame's edges for the loop that sizes a window ([[topic:window-states]]) -- and the sizing cursors all go by its answer, so there is one geometry. A thin border's pixel, which winbox.js answered `HTBORDER` before, is now `HTNOWHERE`, and a press there is thrown away, as on Windows.
 
 ## Where a hidden window lies
 
@@ -135,7 +135,7 @@ winbox.js answers from the read-out in both engines alike (`hitTest` in `raster-
 
 ## In winbox.js
 
-`src/win16/user/mouse-scan.ts`, and `crates/winbox-win16/src/mouse_scan.rs`. The page's pointer, and [[fn:USER.Mouse_Event]], put the mouse in the queue of the task whose window is under it then, as the point on the screen and what the mouse did (`raster-input.ts`, `raster_input.rs`). Each look hit-tests it as USER's does, sending `WM_NCHITTEST` from the program's own look. A window found to be another task's has the message handed to that task's queue, which hit-tests it again. A press taken sends `WM_PARENTNOTIFY`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR`, and makes the window active, as above. An MDI client learns of a press on a document window through `WM_PARENTNOTIFY`, and makes it active ([[topic:mdi]]).
+`crates/winbox-win16/src/mouse_scan.rs`. The page's pointer, and [[fn:USER.Mouse_Event]], put the mouse in the queue of the task whose window is under it then, as the point on the screen and what the mouse did (`crates/winbox-win16/src/raster_input.rs`). Each look hit-tests it as USER's does, sending `WM_NCHITTEST` from the program's own look. A window found to be another task's has the message handed to that task's queue, which hit-tests it again. A press taken sends `WM_PARENTNOTIFY`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR`, and makes the window active, as above. An MDI client learns of a press on a document window through `WM_PARENTNOTIFY`, and makes it active ([[topic:mdi]]).
 
 A group box's `HTTRANSPARENT` is still found by the desktop as it finds the window under a point, and the group box is not asked. Only `HWND_TOP` among the places `SetWindowPos` can put a window is followed. [[fn:USER.MessageBeep]] makes no sound.
 

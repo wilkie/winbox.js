@@ -25,7 +25,7 @@ Four calls ask about the TrueType font selected into a device context rather tha
 
 ## In winbox.js
 
-The engine's part is `src/raster/truetype-queries.ts` and `crates/winbox-raster/src/truetype_queries.rs`, reading the face's file. GDI's part is `src/win16/gdi/outline-queries.ts` and `crates/winbox-win16/src/gdi/text/queries.rs`. ABC widths are taken from `GetGlyphOutline`'s box and advance. The filler byte of `OUTLINETEXTMETRIC`, which Windows leaves as its stack had it, is written nought.
+The engine's part is `crates/winbox-raster/src/truetype_queries.rs`, reading the face's file. GDI's part is `crates/winbox-win16/src/gdi/text/queries.rs`. ABC widths are taken from `GetGlyphOutline`'s box and advance. The filler byte of `OUTLINETEXTMETRIC`, which Windows leaves as its stack had it, is written nought.
 
 ## Not yet done
 

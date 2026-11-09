@@ -43,9 +43,9 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-The emboldening and italics taken off as read out (`DMExtTextOut` in `driver-helpers.ts`, `taken_off` in `driver_helpers.rs`), `[063Eh]` kept as the last text context's `dpText` (`noteTextDevice`, `note_text_device`; `GetCharWidth`'s through `note_char_width_device`). `driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA: the characters laid out as `0c4b` lays them, the glyphs gathered into the string's cell and drawn through the clip. [[probe:gdidmdrw]] agrees in both engines on the three.
+The emboldening and italics taken off as read out (`DMExtTextOut` in `taken_off` in `crates/winbox-win16/src/gdi/driver_helpers.rs`), `[063Eh]` kept as the last text context's `dpText` (`noteTextDevice`, `note_text_device`; `GetCharWidth`'s through `note_char_width_device`). `crates/winbox-win16/src/gdi/driver_bitmap.rs` on the VGA, the Super VGA and the EGA: the characters laid out as `0c4b` lays them, the glyphs gathered into the string's cell and drawn through the clip. [[probe:gdidmdrw]] agrees in both engines on the three.
 
-On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
+On the 256-colour display its own (`crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
 
 ## Not yet done
 

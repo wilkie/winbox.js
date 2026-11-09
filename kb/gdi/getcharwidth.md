@@ -23,7 +23,7 @@ probes: [text, maxorder, lbtext, prttcw]
 
 ## Implementation
 
-`GetCharWidth.ts` and `get_char_widths` in `gdi/text.rs` add the two for a strike the engines smear (`emboldens`) and the slant's half height less one for an italic strike, each width alike. A vector font's and an outline face's widths are as before; neither simulation of theirs is recorded here. `[063Eh]` set as read out (`_textSurface`; `note_char_width_device` in `gdi/mod.rs`), on a printer's driver's context too.
+`get_char_widths` in `crates/winbox-win16/src/gdi/text.rs` add the two for a strike the engines smear (`emboldens`) and the slant's half height less one for an italic strike, each width alike. A vector font's and an outline face's widths are as before; neither simulation of theirs is recorded here. `[063Eh]` set as read out (`_textSurface`; `note_char_width_device` in `crates/winbox-win16/src/gdi/mod.rs`), on a printer's driver's context too.
 
 ## Not yet done
 

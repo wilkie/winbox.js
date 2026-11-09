@@ -27,4 +27,4 @@ topics: [common-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 42 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping 0 bytes, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's file dialogs make the same strip from the file's bitmap read as data (`pictures.ts`, `pictures.rs`): blue made the window's colour, then the highlight's; with no `COMMDLG.DLL` on the drive there are no pictures.
+Not WinBox's own: ordinal 42 is it has no arm in WinBox (`crates/winbox-win16/src/commdlg/mod.rs`); the entry's `retf` pops 0 bytes. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's file dialogs make the same strip from the file's bitmap read as data (`crates/winbox-win16/src/commdlg/pictures.rs`): blue made the window's colour, then the highlight's; with no `COMMDLG.DLL` on the drive there are no pictures.

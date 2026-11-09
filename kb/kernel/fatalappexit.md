@@ -21,4 +21,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/FatalAppExit.ts`, and the Rust engine's `kernel.rs` (`fatal_app_exit`).
+`crates/winbox-win16/src/kernel.rs` (`fatal_app_exit`).

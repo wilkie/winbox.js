@@ -43,7 +43,7 @@ winbox.js agrees with all 68 records of these cases. Both were stubs.
 
 ## Implementation
 
-On a printer driver's context it goes as USER goes, through the driver's `ExtTextOut` and extent: `driverTabbedTextOut` in `src/win16/user/tabbed-text.ts` and `driver_tabbed_text_out` in `crates/winbox-win16/src/draw_text.rs`. Any other context is drawn as before, a piece at a time with `TextOut`.
+On a printer driver's context it goes as USER goes, through the driver's `ExtTextOut` and extent: `driver_tabbed_text_out` in `crates/winbox-win16/src/draw_text.rs`. Any other context is drawn as before, a piece at a time with `TextOut`.
 
 ## Not yet done
 

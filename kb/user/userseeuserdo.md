@@ -26,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/internals.ts`; `crates/winbox-win16/src/user_internals.rs`. WinBox keeps USER's objects in itself, and its USER's data segment holds no local heap and none of USER's words: the heap's requests answer what WinBox's KERNEL answers for a segment with no heap (nought, the handle back, nought), and 4 and 5 read noughts. A known gap of [[probe:strfunc]], with TOOLHELP's view of USER's heap ([[topic:tool-helper]]).
+`crates/winbox-win16/src/user_internals.rs`. WinBox keeps USER's objects in itself, and its USER's data segment holds no local heap and none of USER's words: the heap's requests answer what WinBox's KERNEL answers for a segment with no heap (nought, the handle back, nought), and 4 and 5 read noughts. A known gap of [[probe:strfunc]], with TOOLHELP's view of USER's heap ([[topic:tool-helper]]).

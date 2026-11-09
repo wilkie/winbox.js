@@ -26,4 +26,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzStart` in `src/win16/lzexpand/lz.ts` and `lz_start` in `crates/winbox-win16/src/lzexpand/mod.rs` allocate the buffers with KERNEL's `GlobalAlloc`.
+`lz_start` in `crates/winbox-win16/src/lzexpand/mod.rs` allocate the buffers with KERNEL's `GlobalAlloc`.

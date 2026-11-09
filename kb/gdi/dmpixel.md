@@ -42,7 +42,7 @@ In both engines as the VGA's driver has it. On the Super VGA and the EGA as on t
 
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 
-On the Hercules and the 256-colour display their own (`herculesPixel` in `driver-hercules.ts`, `pixel` in `driver-vga256.ts`, and the Rust twins), [[probe:gdidmpx]] agreeing in both engines on all three displays.
+On the Hercules and the 256-colour display their own (`herculesPixel` in `pixel` in `driver-vga256.ts`, and the Rust twins), [[probe:gdidmpx]] agreeing in both engines on all three displays.
 
 ## Not yet done
 

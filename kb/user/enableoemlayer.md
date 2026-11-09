@@ -27,4 +27,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/internals.ts`; the Rust engine's `crates/winbox-win16/src/user_internals.rs`. WinBox's display was never turned off and its drivers are its own: the key states are cleared, every window is marked for its frame, background and client as `RepaintScreen` marks them but with the frames (`repaintAll(true)`, `repaint_all_frames(true)`), and the cursor's count goes up. Not followed: installable drivers' `DRV_ENABLE` (WinBox's USER loads none of its own at start).
+`crates/winbox-win16/src/user_internals.rs`. WinBox's display was never turned off and its drivers are its own: the key states are cleared, every window is marked for its frame, background and client as `RepaintScreen` marks them but with the frames (`repaintAll(true)`, `repaint_all_frames(true)`), and the cursor's count goes up. Not followed: installable drivers' `DRV_ENABLE` (WinBox's USER loads none of its own at start).

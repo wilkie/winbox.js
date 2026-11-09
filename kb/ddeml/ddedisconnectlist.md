@@ -23,4 +23,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `disconnectList` in `src/win16/ddeml/conv.ts` and `disconnect_list` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It sends the list `WM_USER + CEh`, 2000h, which ends each conversation in it. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `disconnect_list` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It sends the list `WM_USER + CEh`, 2000h, which ends each conversation in it. WinBox agrees with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

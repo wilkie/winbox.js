@@ -31,7 +31,7 @@ The realization ends by setting the context to the new font at its own escapemen
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`. The context is the face, found again by the name at 6Eh in the header's weight and slant, realized at the `FONTINFO`'s em and resolutions and turned by the angle. It is kept with what it was set for. The answer is nought, or -1 where no face of that name is installed.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`. The context is the face, found again by the name at 6Eh in the header's weight and slant, realized at the `FONTINFO`'s em and resolutions and turned by the angle. It is kept with what it was set for. The answer is nought, or -1 where no face of that name is installed.
 
 ## Not yet done
 

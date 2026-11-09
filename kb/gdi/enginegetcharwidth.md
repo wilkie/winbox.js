@@ -30,7 +30,7 @@ topics: [printer-drivers, truetype-queries]
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`. The widths are the advances WinBox's rasterizer gives the face at the `FONTINFO`'s em, resolutions and slant. WinBox makes no block at 54h: it asks the face each time, and keeps bit 0 as GDI does.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`. The widths are the advances WinBox's rasterizer gives the face at the `FONTINFO`'s em, resolutions and slant. WinBox makes no block at 54h: it asks the face each time, and keeps bit 0 as GDI does.
 
 [[read out]] GDI's own [[fn:GDI.GetCharWidth]] on a printer's context asks the driver's `GetCharWidth` (seg3 `2116`), giving it its `FONTINFO`, GDI's `DRAWMODE` and the `TEXTXFORM`. It adds two to each width for a bold the device cannot make, and half the height less one for a slant (`2148`-`218e`). Both engines now do this; they had answered with WinBox's own widths without calling the driver.
 

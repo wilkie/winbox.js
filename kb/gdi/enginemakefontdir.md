@@ -33,7 +33,7 @@ topics: [font-resources]
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`, reading the face's file through DOS. The facts are the ones `CreateScalableFontResource`'s stub is built from (`trueTypeFacts`), with `fsSelection` and the last character beside them.
+`crates/winbox-win16/src/gdi/engine_glyphs.rs`, reading the face's file through DOS. The facts are the ones `CreateScalableFontResource`'s stub is built from (`trueTypeFacts`), with `fsSelection` and the last character beside them.
 
 ## Not yet done
 

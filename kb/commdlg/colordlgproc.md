@@ -44,4 +44,4 @@ No program calls it. [[fn:COMMDLG.ChooseColor]] gives its far address to `Dialog
 
 ## Implementation
 
-WinBox's own: `ColorDlgProc` in `src/win16/commdlg/choose-color.ts` and `color_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_color.rs`, given to USER at its stub's address. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `color_dlg_proc` in `crates/winbox-win16/src/commdlg/choose_color.rs`, given to USER at its stub's address. It works with no `COMMDLG.DLL` on the drive.

@@ -21,4 +21,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/environment.ts` and `crates/winbox-win16/src/gdi/environment.rs`.
+`crates/winbox-win16/src/gdi/environment.rs`.

@@ -49,4 +49,4 @@ topics: [version-information]
 
 ## Implementation
 
-`VerInstallFile` in `src/win16/ver/ver.ts` and `ver_install_file` in `crates/winbox-win16/src/ver/mod.rs`, through WinBox's own LZEXPAND, KERNEL's `OpenFile` and `Dos3Call`, and USER's `lstrcmpi`. Not followed: VER's local heap for the version blocks, which are global blocks here, freed as VER frees its own. Both engines agree with [[probe:verinst]], with `VER.DLL` on the drive and without it.
+`ver_install_file` in `crates/winbox-win16/src/ver/mod.rs`, through WinBox's own LZEXPAND, KERNEL's `OpenFile` and `Dos3Call`, and USER's `lstrcmpi`. Not followed: VER's local heap for the version blocks, which are global blocks here, freed as VER frees its own. WinBox agrees with [[probe:verinst]], with `VER.DLL` on the drive and without it.

@@ -21,4 +21,4 @@ topics: [printing]
 
 ## Implementation
 
-`src/win16/gdi/spooler.ts` and `crates/winbox-win16/src/gdi/spooler.rs`.
+`crates/winbox-win16/src/gdi/spooler.rs`.

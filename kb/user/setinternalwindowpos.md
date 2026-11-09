@@ -25,4 +25,4 @@ source: crates/winbox-win16/src/window_state.rs
 
 ## Implementation
 
-`src/win16/user/placement.ts`; the Rust engine's `window_state.rs`. Not followed: seg1 `6e25`, called round the showing, which was not read out.
+`crates/winbox-win16/src/window_state.rs`. Not followed: seg1 `6e25`, called round the showing, which was not read out.

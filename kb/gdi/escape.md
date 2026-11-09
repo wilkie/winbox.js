@@ -24,4 +24,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`driverEscape` in `src/win16/gdi/printer-driver.ts` and `driver_escape` in `crates/winbox-win16/src/gdi/printer_driver.rs`, for a driver from the drive. `NEXTBAND` marks the context as banding, which [[fn:GDI.EndPage]] reads. On the context of a driver that bands, `NEWFRAME`, `NEXTBAND`, `ABORTDOC` and `ENDDOC` are GDI's first (`printer-bands.ts`, `printer_bands.rs`; [[topic:printer-drivers]]). Not followed: GDI's own escapes 100h to BFFh, and the escapes GDI keeps in a banding driver's metafile.
+`driver_escape` in `crates/winbox-win16/src/gdi/printer_driver.rs`, for a driver from the drive. `NEXTBAND` marks the context as banding, which [[fn:GDI.EndPage]] reads. On the context of a driver that bands, `NEWFRAME`, `NEXTBAND`, `ABORTDOC` and `ENDDOC` are GDI's first (`crates/winbox-win16/src/gdi/printer_bands.rs`; [[topic:printer-drivers]]). Not followed: GDI's own escapes 100h to BFFh, and the escapes GDI keeps in a banding driver's metafile.

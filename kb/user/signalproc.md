@@ -21,4 +21,4 @@ topics: [user-internals]
 
 ## Implementation
 
-`src/win16/user/icon-handlers.ts`; the Rust engine's `icon_handlers.rs`. Signal 40h as Windows does it. WinBox sets USER's handlers on a module's icons and cursors itself, as the module's handlers are first asked for (`resource-handlers.ts`), where KERNEL would signal it loaded. **Not yet done**: signals 20h, 666h and 80h do nothing -- WinBox's KERNEL and USER are one program and do a task's end and a module's freeing themselves.
+`crates/winbox-win16/src/icon_handlers.rs`. Signal 40h as Windows does it. WinBox sets USER's handlers on a module's icons and cursors itself, as the module's handlers are first asked for (`resource-handlers.ts`), where KERNEL would signal it loaded. **Not yet done**: signals 20h, 666h and 80h do nothing -- WinBox's KERNEL and USER are one program and do a task's end and a module's freeing themselves.

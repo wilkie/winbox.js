@@ -38,4 +38,4 @@ topics: [synthetic-bold, turned-text, non-square-pixels, printer-drivers]
 
 ## Implementation
 
-`driverTextExtent` in `src/win16/gdi/printer-output.ts` and `driver_text_extent` in `crates/winbox-win16/src/gdi/printer_output.rs` measure on a printer driver's context. Not followed there: the driver's `StrBlt`, justification, and GDI's own measure for a font it realized itself.
+`driver_text_extent` in `crates/winbox-win16/src/gdi/printer_output.rs` measure on a printer driver's context. Not followed there: the driver's `StrBlt`, justification, and GDI's own measure for a font it realized itself.

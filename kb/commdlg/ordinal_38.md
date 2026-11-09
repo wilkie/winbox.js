@@ -24,4 +24,4 @@ topics: [common-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 38 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping 6 bytes, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's file dialogs make the same DOS call themselves, through KERNEL's `DOS3Call` as a program would (`file-lists.ts`, `file_lists.rs`).
+Not WinBox's own: ordinal 38 is it has no arm in WinBox (`crates/winbox-win16/src/commdlg/mod.rs`); the entry's `retf` pops 6 bytes. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. WinBox's file dialogs make the same DOS call themselves, through KERNEL's `DOS3Call` as a program would (`crates/winbox-win16/src/commdlg/file_lists.rs`).

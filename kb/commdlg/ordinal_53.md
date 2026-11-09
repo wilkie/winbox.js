@@ -28,4 +28,4 @@ topics: [common-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 53 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping 10 bytes, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. Without the file, WinBox registers the six messages as `COMMDLG` loads, in the same order ([[topic:common-dialogs]]); it does not make the memory device context.
+Not WinBox's own: ordinal 53 is it has no arm in WinBox (`crates/winbox-win16/src/commdlg/mod.rs`); the entry's `retf` pops 10 bytes. With `COMMDLG.DLL` on the drive the file's own code runs it for the file's own callers, whose calls between their functions stay the file's. Without the file, WinBox registers the six messages as `COMMDLG` loads, in the same order ([[topic:common-dialogs]]); it does not make the memory device context.

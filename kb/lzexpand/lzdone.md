@@ -25,4 +25,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`lzDone` in `src/win16/lzexpand/lz.ts` and `lz_done` in `crates/winbox-win16/src/lzexpand/mod.rs`.
+`lz_done` in `crates/winbox-win16/src/lzexpand/mod.rs`.

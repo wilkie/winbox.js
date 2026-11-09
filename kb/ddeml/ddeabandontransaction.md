@@ -31,4 +31,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-WinBox's own: `abandon` in `src/win16/ddeml/xact.ts` and `abandon` in `crates/winbox-win16/src/ddeml/xact.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Each transaction is taken out of the conversation's queue by its identifier, its item's atom deleted (`abandonOne`, `abandon_one`, seg1 `1cb6`). Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `abandon` in `crates/winbox-win16/src/ddeml/xact.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Each transaction is taken out of the conversation's queue by its identifier, its item's atom deleted (`abandonOne`, `abandon_one`, seg1 `1cb6`). WinBox agrees with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

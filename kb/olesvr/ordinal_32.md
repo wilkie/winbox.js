@@ -16,4 +16,4 @@ topics: [ole]
 
 ## Implementation
 
-Not WinBox's own: a stub in WinBox's table (`src/win16/olesvr/index.ts`, named `Unknown`), with no arm in `crates/winbox-win16/src/olesvr/mod.rs`.
+Not WinBox's own: it has no arm in `crates/winbox-win16/src/olesvr/mod.rs`.

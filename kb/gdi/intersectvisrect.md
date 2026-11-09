@@ -23,4 +23,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`): the visible region intersected with the rectangle as given, edges not put in order; the kind of the clip region within it answered. [[probe:visfam]]'s `intersect` agrees in both.
+In both engines (`crates/winbox-win16/src/gdi/visible_region.rs`): the visible region intersected with the rectangle as given, edges not put in order; the kind of the clip region within it answered. [[probe:visfam]]'s `intersect` agrees in both.

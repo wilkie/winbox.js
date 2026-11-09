@@ -29,4 +29,4 @@ It is a window procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a doubleword
 
 ## Implementation
 
-WinBox's own: `dw_up_arrow_hack` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `dwUpArrowHack` in `src/win16/commdlg/print-dlg.ts`, put in place of the printers' combo box's procedure at its stub's address on 3.10, the combo box's own kept as COMMDLG keeps it. [[measured]] Both engines agree with [[probe:prdlg]]'s record of the key.
+WinBox's own: `dw_up_arrow_hack` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `dwUpArrowHack` in `src/win16/commdlg/print-dlg.ts`, put in place of the printers' combo box's procedure at its stub's address on 3.10, the combo box's own kept as COMMDLG keeps it. [[measured]] WinBox agrees with [[probe:prdlg]]'s record of the key.

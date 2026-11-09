@@ -22,4 +22,4 @@ topics: [multimedia-services]
 
 ## Implementation
 
-Both engines, as read out: `src/win16/mmsystem/tasks.ts` and `crates/winbox-win16/src/mmsystem/tasks.rs`, each calling USER and KERNEL as MMSYSTEM calls them.
+As read out: `crates/winbox-win16/src/mmsystem/tasks.rs`, each calling USER and KERNEL as MMSYSTEM calls them.

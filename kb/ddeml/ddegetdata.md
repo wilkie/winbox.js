@@ -29,4 +29,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-WinBox's own: `getData` in `src/win16/ddeml/data.ts` and `get_data` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Sizes are `GlobalSize`'s, less the header. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `get_data` in `crates/winbox-win16/src/ddeml/data.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Sizes are `GlobalSize`'s, less the header. WinBox agrees with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

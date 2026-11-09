@@ -19,4 +19,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/module-calls.ts`, and the Rust engine's `kernel.rs (GlobalHandle)`.
+`kernel.rs (GlobalHandle)`.

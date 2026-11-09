@@ -27,4 +27,4 @@ No program calls it. The Open and Save As boxes' `WM_INITDIALOG` gives it to `Se
 
 ## Implementation
 
-WinBox's own: `dwOKSubclass` in `src/win16/commdlg/file-init.ts` and `dw_ok_subclass` in `crates/winbox-win16/src/commdlg/file_init.rs`, given to `SetWindowLong` at its stub's address.
+WinBox's own: `dw_ok_subclass` in `crates/winbox-win16/src/commdlg/file_init.rs`, given to `SetWindowLong` at its stub's address.

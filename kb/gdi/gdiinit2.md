@@ -26,4 +26,4 @@ topics: [gdi-internals]
 
 ## Implementation
 
-**Implemented (a).** Both engines read the object's address at the handle in GDI's heap as WinBox lays it out (`gdi-heap.ts`, `gdi/heap.rs`) and read or set its word 0Ah, a word set kept in the heap until the object is deleted (`GDIInit2` in `src/win16/gdi/system-exports.ts`). Setting it changes nothing WinBox draws. See [[topic:gdi-internals]].
+**Implemented (a).** Both engines read the object's address at the handle in GDI's heap as WinBox lays it out (`crates/winbox-win16/src/gdi/heap.rs`) and read or set its word 0Ah, a word set kept in the heap until the object is deleted (`GDIInit2` in `src/win16/gdi/system-exports.ts`). Setting it changes nothing WinBox draws. See [[topic:gdi-internals]].

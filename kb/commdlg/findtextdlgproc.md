@@ -31,4 +31,4 @@ No program calls it. [[fn:COMMDLG.FindText]] gives its far address to `CreateDia
 
 ## Implementation
 
-WinBox's own: `FindTextDlgProc` in `src/win16/commdlg/find-replace.ts` and `find_text_dlg_proc` in `crates/winbox-win16/src/commdlg/find_replace.rs`, given to USER at its stub's address. It works with no `COMMDLG.DLL` on the drive.
+WinBox's own: `find_text_dlg_proc` in `crates/winbox-win16/src/commdlg/find_replace.rs`, given to USER at its stub's address. It works with no `COMMDLG.DLL` on the drive.

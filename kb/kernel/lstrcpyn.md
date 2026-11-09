@@ -36,4 +36,4 @@ The code is `KRNL386.EXE` segment 1, from `831f`. It takes the destination, the 
 
 ## Implementation
 
-`src/win16/kernel/lstrcpyn.ts`, and `lstrcpyn` in `crates/winbox-win16/src/kernel.rs`, follow the read-out: the length, the lesser of the two, words then a byte, then the terminator, each offset within its segment. See [[fn:KERNEL.lstrcpy]].
+`lstrcpyn` in `crates/winbox-win16/src/kernel.rs`, follow the read-out: the length, the lesser of the two, words then a byte, then the terminator, each offset within its segment. See [[fn:KERNEL.lstrcpy]].

@@ -32,4 +32,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`getExpandedName` in `src/win16/lzexpand/lz.ts` and `get_expanded_name` in `crates/winbox-win16/src/lzexpand/mod.rs`. Both engines agree with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.
+`get_expanded_name` in `crates/winbox-win16/src/lzexpand/mod.rs`. WinBox agrees with [[probe:lzfiles]], with `LZEXPAND.DLL` on the drive and without it.

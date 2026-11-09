@@ -34,4 +34,4 @@ topics: [font-resources]
 
 ## Implementation
 
-`FontManager.removeResource` in `src/win16/font-manager.ts`, and `crates/winbox-win16/src/fonts/added.rs`. Both keep a removed raster file's strikes out of the table while a font realised from it is cached, which in winbox.js is from the font's making to its deletion. [[probe:fontdef]] agrees on 44 of 44 records in each.
+`FontManager.removeResource` in `crates/winbox-win16/src/fonts/added.rs`. Both keep a removed raster file's strikes out of the table while a font realised from it is cached, which in winbox.js is from the font's making to its deletion. [[probe:fontdef]] agrees on 44 of 44 records in each.

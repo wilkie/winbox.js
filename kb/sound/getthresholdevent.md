@@ -27,4 +27,4 @@ source: crates/winbox-win16/src/sound.rs
 
 ## Implementation
 
-`src/win16/sound.ts`; the Rust engine's `crates/winbox-win16/src/sound.rs`. The task that has the driver open is kept in its data at 90h, as [[fn:SOUND.OpenSound]] sets it; nothing sets a threshold, so the word stays nought.
+`crates/winbox-win16/src/sound.rs`. The task that has the driver open is kept in its data at 90h, as [[fn:SOUND.OpenSound]] sets it; nothing sets a threshold, so the word stays nought.
