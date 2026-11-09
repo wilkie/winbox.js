@@ -1,5 +1,14 @@
-//! The modules winbox.js keeps, written by `scripts/rust/modules.ts` from
-//! the TypeScript engine's export tables: do not edit by hand.
+//! The modules WinBox keeps: each one's name, file, whether its data is
+//! fixed, and by ordinal each export's name, the bytes of arguments it
+//! pops, the bytes it answers in, and whether it is answered as the
+//! module's stub answers (`modules::Export`). The one export table: a
+//! program's calls are linked to these stubs (`linker.rs`), and the
+//! knowledge base's tables are written from it (`tests/exports.rs`).
+//!
+//! Written by `scripts/rust/modules.ts` from the TypeScript engine's export
+//! tables until 2026-11-08, and kept by hand since. An export a function
+//! answers (`call::implementation`) is marked `stub: false`; `call::tests`
+//! holds the two to each other.
 
 use crate::modules::{Export, Kept};
 

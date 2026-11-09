@@ -10,7 +10,9 @@ pub struct Export {
     pub pops: u16,
     /// The bytes it answers in, AX and DX: nought where it leaves them.
     pub returns: u8,
-    /// Whether the TypeScript engine only stubs it, answering nought.
+    /// Whether it is answered as the module's stub answers, nought in the
+    /// bytes it answers in (`call.rs`, `stub_word`), where no function here
+    /// answers it.
     pub stub: bool,
 }
 

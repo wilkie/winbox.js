@@ -315,8 +315,9 @@ impl System {
         // printer's context, some made too (`gdi/printer_bands.rs`).
         let metafile = gdi::metafile::recording(self, module.name, export, stack, sp);
         let banding = gdi::printer_bands::recording(self, module.name, export, stack, sp);
-        // A function the TypeScript engine only stubs is answered as its
-        // stub answers: nought, in the bytes it answers in, or nothing.
+        // An export `kept.rs` marks a stub, that no function here answers,
+        // is answered as the module's stub answers: nought, in the bytes it
+        // answers in, or nothing.
         let implementation = match implementation(module.name, export.name) {
             Some(implementation) => implementation,
             None if export.stub => Implementation::Sync(match export.returns {
@@ -625,43 +626,66 @@ fn win87em_implementation(name: &str) -> Option<Implementation> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::modules::{Export, Kept};
 
-    /// The exports the TypeScript engine answers -- every one not a stub of
-    /// its -- that no call here answers yet, by module: what is left to
-    /// port. `cargo test -p winbox-win16 --lib -- --ignored --nocapture
-    /// unported`.
+    /// An export `kept.rs` marks as no stub, that no function here answers:
+    /// a call to it stops the engine (`Stop::Missing`). KERNEL's constants
+    /// are numbers the linker writes, and its, USER's and GDI's exported
+    /// data places a program reads, not calls.
+    fn unanswered(kept: &Kept, ordinal: usize, export: &Export) -> bool {
+        !export.stub
+            && implementation(kept.name, export.name).is_none()
+            && u16::try_from(ordinal).map_or(true, |ordinal| {
+                crate::exported_data::exported_data(kept.name, ordinal).is_none()
+            })
+            && !(kept.name == "KERNEL"
+                && u16::try_from(ordinal)
+                    .is_ok_and(|ordinal| crate::linker::kernel_constant(ordinal, 0).is_some()))
+    }
+
+    /// Every export `kept.rs` does not mark a stub is answered by a
+    /// function here, a constant or a place in the module's data.
     #[test]
-    #[ignore = "a survey, not a check"]
-    fn unported() {
-        let mut total = 0;
-
-        for kept in crate::kept::KEPT {
-            // KERNEL's constants are numbers the linker writes, not calls.
+    fn every_export_not_a_stub_is_answered() {
+        for kept in crate::kept::KEPT.iter().chain(crate::kept::ON_LOAD) {
             let missing: Vec<&str> = kept
                 .exports
                 .iter()
                 .enumerate()
                 .filter_map(|(ordinal, export)| Some((ordinal, export.as_ref()?)))
-                .filter(|(ordinal, export)| {
-                    !export.stub
-                        && implementation(kept.name, export.name).is_none()
-                        && u16::try_from(*ordinal).map_or(true, |ordinal| {
-                            crate::exported_data::exported_data(kept.name, ordinal).is_none()
-                        })
-                        && !(kept.name == "KERNEL"
-                            && u16::try_from(*ordinal).is_ok_and(|ordinal| {
-                                crate::linker::kernel_constant(ordinal, 0).is_some()
-                            }))
-                })
+                .filter(|&(ordinal, export)| unanswered(kept, ordinal, export))
                 .map(|(_, export)| export.name)
                 .collect();
 
-            if !missing.is_empty() {
-                total += missing.len();
-                println!("{} {}: {}", kept.name, missing.len(), missing.join(" "));
+            assert!(missing.is_empty(), "{}: {}", kept.name, missing.join(" "));
+        }
+    }
+
+    /// The exports `kept.rs` marks as stubs -- answered as the module's stub
+    /// answers -- that a function here answers all the same, by module:
+    /// the function is what a call reaches (`System::call`), so the mark is
+    /// out of date. `cargo test -p winbox-win16 --lib -- --ignored
+    /// --nocapture stubs_answered`.
+    #[test]
+    #[ignore = "a survey, not a check"]
+    fn stubs_answered() {
+        let mut total = 0;
+
+        for kept in crate::kept::KEPT.iter().chain(crate::kept::ON_LOAD) {
+            let answered: Vec<&str> = kept
+                .exports
+                .iter()
+                .flatten()
+                .filter(|export| export.stub && implementation(kept.name, export.name).is_some())
+                .map(|export| export.name)
+                .collect();
+
+            if !answered.is_empty() {
+                total += answered.len();
+                println!("{} {}: {}", kept.name, answered.len(), answered.join(" "));
             }
         }
 
-        println!("unported: {total}");
+        println!("stubs answered: {total}");
     }
 }

@@ -25,12 +25,9 @@
 //! 1. Write it in a file of this module, with the signature every call has
 //!    (`call::Sync` or `call::Async`).
 //! 2. Add its arm to `implementation` below, by the export's name.
-//! 3. In the TypeScript engine, put its function in place of
-//!    `CommDlg.stub` at its ordinal in `src/win16/commdlg/index.ts`, with
-//!    its arguments' types and its answer's.
-//! 4. Write `kept.rs` again (`npm run rust:modules`): the export is then no
-//!    longer a stub there, and `tests::ours_agree` checks the two engines
-//!    answer the same exports.
+//! 3. In `kept.rs`, `COMMDLG`'s table, set the export's `stub` to `false`:
+//!    `tests::ours_agree` checks that the exports answered here are those
+//!    the table marks as no stub.
 
 pub(crate) mod api;
 mod file_command;
@@ -369,8 +366,8 @@ fn comm_dlg_extended_error(system: &mut System, _: &mut Args) -> Result<Answer, 
 mod tests {
     use super::*;
 
-    /// Each export WinBox answers here is one the TypeScript engine
-    /// answers, and no other: its table is `kept.rs`'s.
+    /// Each export WinBox answers here is one `kept.rs` marks as no stub,
+    /// and no other.
     #[test]
     fn ours_agree() {
         let kept = Kept::named(NAME).expect("COMMDLG kept");
@@ -379,7 +376,7 @@ mod tests {
             assert_eq!(
                 implementation(export.name).is_some(),
                 !export.stub,
-                "{} answered by one engine only",
+                "{}: answered here, or marked no stub in kept.rs, but not both",
                 export.name
             );
         }
