@@ -17,4 +17,4 @@ topics: [system-queue]
 
 [[measured]] [[probe:lockinp]]: the four refusals answer nought and change nothing. Locked to `L`: 1; the focus, the active window and the system-modal window `L`, no capture, the clip the screen, and [[fn:KERNEL.IsTaskLocked]] the probe's task; another program posted a message does not answer until the lock is let go; a key goes to `L`, even with the hardware input switched off before. Let go: 1, and all as it was.
 
-Both engines followed none of this before: it was a stub. Not followed: the desktop window given to the window's task, and the words of USER's menu and dialog loops it keeps.
+WinBox followed none of this before: it was a stub. Not followed: the desktop window given to the window's task, and the words of USER's menu and dialog loops it keeps.

@@ -223,7 +223,7 @@ USER lets one program at a time read the input. The first to look holds it, at `
 
 [[measured]] [[probe:inlock]] runs a second program, `B`, which is active with the focus. The probe's window `A` answers `WM_MOUSEACTIVATE` with `MA_NOACTIVATE`. The left button pressed and let go on `A` and X pressed and let go are put in before anything is taken.
 
-- `A` yields forty times as it is handed the release. `B` takes X only after `A` has finished: `A:201`, `A:202`, `A:done`, then `B`'s X. Before, both engines gave X to `B` while `A` yielded.
+- `A` yields forty times as it is handed the release. `B` takes X only after `A` has finished: `A:201`, `A:202`, `A:done`, then `B`'s X. Before, WinBox gave X to `B` while `A` yielded.
 - `A` sends `B` `WM_USER` instead, in which `B` looks for a key with `PeekMessage`. `B` finds X's press there, before `A` has finished.
 
 [[measured]] [[probe:keyrep]]: X pressed, looked at with `PM_NOREMOVE`, then `WM_USER` posted to `T` and X let go. `T` takes X's press first, then the posted message, then the character and the release.
@@ -243,7 +243,7 @@ So the program that took an event lets the input go at its next look where nothi
 [[measured]] [[probe:inpost]] runs `B` as [[probe:inlock]] does. `A`, handed `WM_USER + 1`, yields forty times and writes `A:posted`. The click on `A` and X are put in before anything is taken.
 
 - `A` posts itself `WM_USER + 1` as it is handed the release: `A:201`, `A:202`, `A:done`, `A:posted`, and only then `B`'s X. `A` held the input while it handled what it posted itself.
-- `A` posts itself `WM_USER + 1` before the input is put in, and takes the move, the press and the release with `PeekMessage` for the mouse's messages alone, which pass over the posted message. Its next look lets the input go and takes `WM_USER + 1`; while it yields in it, `B` takes X: `A:201`, `A:202`, `B`'s X, then `A:posted`. Before, both engines kept the input with `A` until a look of its found none, and `B` took X after `A:posted`.
+- `A` posts itself `WM_USER + 1` before the input is put in, and takes the move, the press and the release with `PeekMessage` for the mouse's messages alone, which pass over the posted message. Its next look lets the input go and takes `WM_USER + 1`; while it yields in it, `B` takes X: `A:201`, `A:202`, `B`'s X, then `A:posted`. Before, WinBox kept the input with `A` until a look of its found none, and `B` took X after `A:posted`.
 
 ### Locking the input
 

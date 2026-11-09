@@ -100,7 +100,7 @@ WinBox does the same (`DiscFile`, `crates/winbox-machine/src/files/iso.rs` and `
 - CD audio: an audio track is kept, never played; MSCDEX's audio calls and the lengths of tracks in `WAVE`, `MP3` or `OGG` files, which DOSBox measures through `SDL_sound`. A track after such a file has no start known here, where DOSBox has one.
 - A disc of audio tracks alone, which DOSBox mounts as a drive with no files labelled `Audio_CD` (`drive_iso.cpp` 167-174): WinBox refuses it.
 - `GetRealFileName`'s last try, a sheet's file named as a DOS path through DOSBox's own mounted folders: the native build has no counterpart for an image of the host's, and the page matches the files dropped with the sheet by name (and by the name's last part), without regard to case, where DOSBox on Linux minds it.
-- An image of 2 GB or more: DOSBox's offsets are `int`, both engines' wider.
+- An image of 2 GB or more: DOSBox's offsets are `int`, WinBox's wider.
 - Widget Workshop's last two screens (Installing from a disc, above): InstallShield's window gone before Win32s' setup's error, and a minimized window's title on one line where Windows wraps it.
 - Win32 programs from a disc, Widget Workshop's `WIDGET.EXE` among them: neither engine has Win32s, nor the DOS session `WinExec` starts for a PE file without it.
 - What MSCDEX says of a disc swapped: its media-changed answer is the device driver's (1510h's IOCTL input, through `GetMediaStatus`, which answers `getSwapRequest()` -- FFh once after the swap key, else 01h, `dos_mscdex.cpp` 806-815), a buffer call neither engine makes. Unrecorded.

@@ -60,7 +60,7 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 | 1100h, the network redirector's   | AL FFh                     |                           |
 
 - [[read out]] DOSBox installs its own MSCDEX whether or not a disc is mounted (`MSCDEX_Init`, `dos_mscdex.cpp` 1312-1322) and answers these as recorded (`MSCDEX_Handler`, 1069-1167). Its version is 2.23 (`MSCDEX_VERSION_HIGH`, `_LOW`, 37-38). 1100h also writes ADADh over a word of DADAh on the caller's stack (1071-1074): through Windows that stack is the DOS extender's. The calls that take a buffer at ES:BX -- 1501h, 150Dh, 1505h, 150Fh, 1510h -- are not recorded: through Windows they need DPMI's real-mode calls and a buffer below 1 MB.
-- [[read out]] File Manager asks MSCDEX of each drive. With no handler, `INT 2Fh` went through an empty vector. Then both engines left every register as it was, which to 1500h says "not installed".
+- [[read out]] File Manager asks MSCDEX of each drive. With no handler, `INT 2Fh` went through an empty vector. Then WinBox left every register as it was, which to 1500h says "not installed".
 - WinBox now answers 1100h, 1500h, 150Bh and 150Ch as DOSBox does, a CD-ROM drive being a drive removable and remote (`multiplex_interrupt` in `crates/winbox-win16/src/run.rs`). Any other function changes nothing. See [[topic:cd-rom]].
 
 ## Free space
@@ -147,8 +147,8 @@ Microsoft's setup toolkit (SimTower's `SETUP.EXE`) asks 4300h of a destination, 
 - WinBox keeps each search as DOSBox does: the names as it began, in up to 2,048 numbered searches, the number in the record's bytes 13 and 14 (`Searches` in `dos.rs`). USER's `DlgDirList` and COMMDLG's own lists take the same order. COMMDLG passes over names starting with `.`, and USER keeps `..`, so the root's list box now shows `[..]`.
 - A folder's stamp is DOS's clock's when an entry is made in it, deleted or renamed (`Files::changed`). The Rust engine keeps it beside the drive, as it keeps attributes, because a host's folder takes the host's clock and not DOS's. A drive held in memory keeps it itself as well.
 - Function 40h with CX nought ends the file where it is and stamps it, as `_lwrite` with nought bytes did already.
-- 56h answers as DOSBox's does, and moves folders. Before, both engines refused to move a folder, with error 5, and answered 3 for a folder that is not there.
-- 4300h on a drive other than an image answers as DOSBox's C: does: the path made whole as `resolveDirectory` and `resolve_directory` make it, 30h for the root or a folder, 20h for a file, else error 2 (`fileAttributes` in `file_attributes` in `crates/winbox-win16/src/dos.rs`). This holds for the page's C:, whose layers look as one folder ([[format:layer]]). Before, both engines answered error 2 for the root and for a path ending in a backslash, the folder's own entry's 10h for a folder, the entry's attributes for a file, and error 3 where the folder was not there.
+- 56h answers as DOSBox's does, and moves folders. Before, WinBox refused to move a folder, with error 5, and answered 3 for a folder that is not there.
+- 4300h on a drive other than an image answers as DOSBox's C: does: the path made whole as `resolveDirectory` and `resolve_directory` make it, 30h for the root or a folder, 20h for a file, else error 2 (`fileAttributes` in `file_attributes` in `crates/winbox-win16/src/dos.rs`). This holds for the page's C:, whose layers look as one folder ([[format:layer]]). Before, WinBox answered error 2 for the root and for a path ending in a backslash, the folder's own entry's 10h for a folder, the entry's attributes for a file, and error 3 where the folder was not there.
 
 ## Disk and CD images
 

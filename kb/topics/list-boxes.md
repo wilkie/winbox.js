@@ -43,7 +43,7 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 - [[measured]] Down, Page Down and End move the selection and scroll just enough to show it. A typed character finds the next item it begins, after the caret. A click selects the row under it.
 - [[read out]] A page is a row less than show. The first arrow pressed with nothing selected selects the caret's item.
-- [[read out]] A list box made with neither `WS_VSCROLL` nor `WS_HSCROLL` never has a scroll bar: making it keeps whether it was given either (seg38 `00ea`), and the scroll bar's update leaves at once without (seg43 `0019`). [[measured]] [[probe:lbtext]]: a list box of style nought, one row showing and two items, keeps its whole width. Both engines had shown it a scroll bar.
+- [[read out]] A list box made with neither `WS_VSCROLL` nor `WS_HSCROLL` never has a scroll bar: making it keeps whether it was given either (seg38 `00ea`), and the scroll bar's update leaves at once without (seg43 `0019`). [[measured]] [[probe:lbtext]]: a list box of style nought, one row showing and two items, keeps its whole width. WinBox had shown it a scroll bar.
 - [[read out]] The scroll bar shows while the list is scrolled or does not fit. Its position is the top over the furthest the top can go, as a percentage rounded as `MulDiv` rounds, in the window's range of 0 to 100. [[measured]] Tops of 5, 6, 9 and 3 of 14 items with 5 showing give 56, 67, 100 and 33.
 
 ## Notifications

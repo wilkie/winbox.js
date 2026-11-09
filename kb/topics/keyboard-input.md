@@ -115,7 +115,7 @@ A key goes to the window with the focus, which in a program like Notepad is a ch
 - **A character typed with Alt**, `WM_SYSCHAR` (`622c`). Tab and Escape are nothing. A space in a child is the parent's: the same `WM_SYSCHAR` is sent to it. [[measured]] From a child two deep, Alt+Space goes to its parent, then to the top-level window, whose `DefWindowProc` opens the system menu. Any other character is `SC_KEYMENU` with it, sent to the window itself. [[measured]] So Alt+F in a child is `WM_SYSCOMMAND` to the child, and the top-level window is sent no `WM_SYSCOMMAND` at all.
 - **`SC_KEYMENU` in a child** (seg1 `04dd`, seg17 `00fe`). The menu is that of the nearest window the child lies in that is not a child, or that has a system menu of its own. [[measured]] It opens as the top-level window's menu: `WM_INITMENU` and the rest go to that window.
 
-[[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. Both engines carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. WinBox now agrees with all 20 of [[probe:altchild]]'s records.
+[[measured]] Before this was followed, Alt+F4 did nothing in Notepad while its edit box had the focus. WinBox carried the child's `SC_CLOSE` out on the child itself. Alt and a letter worked, by sending the top-level window `WM_SYSCOMMAND`, which Windows does not send. WinBox now agrees with all 20 of [[probe:altchild]]'s records.
 
 Not measured: a child with a system menu of its own, as an MDI document window has. USER would track that child's own system menu; winbox.js sends `SC_KEYMENU` on to the top-level window, as before.
 
@@ -135,7 +135,7 @@ A key does not go to a window as it is pressed. [[read out]] The keyboard driver
 
 [[measured]] [[probe:sysq]] puts its keys in through `KEYBD_EVENT` and moves the focus before taking them. A key pressed before `SetFocus`, a click that takes the focus, or a `PeekMessage` that only looked goes to the window that has the focus when it is taken; with no focus, the top-level window takes `WM_SYSKEYDOWN` and `WM_SYSCHAR`. WinBox agrees with all its records.
 
-Before this, both engines posted a key to the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed: in Control Panel's Ports Settings, Up, Tab, Down and Enter pressed at once moved the first list's selection both ways and left the second as it was. And a disabled window, or one inside one, with the focus took no keys at all, which USER does not check.
+Before this, WinBox posted a key to the window with the focus as it was pressed. Keys pressed together faster than the program took them went to the window that had the focus when they were pressed: in Control Panel's Ports Settings, Up, Tab, Down and Enter pressed at once moved the first list's selection both ways and left the second as it was. And a disabled window, or one inside one, with the focus took no keys at all, which USER does not check.
 
 ## Not yet done
 

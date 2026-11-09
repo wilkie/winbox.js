@@ -17,4 +17,4 @@ topics: [system-queue]
 
 [[measured]] [[probe:lockinp]]: nought before [[fn:USER.LockInput]] locks; the probe's own task while it does; nought after.
 
-Both engines followed none of this before: it was a stub.
+WinBox followed none of this before: it was a stub.

@@ -17,4 +17,4 @@ topics: [task-list]
 
 [[measured]] The Task List's Switch To and End Task call it as by Alt and Tab ([[probe:tasklist]]), and so does `DefWindowProc` for a hot key ([[probe:hotkey]]). A window chosen there is active after. One minimized is sent `SC_RESTORE` with an `lParam` of nought, and restored.
 
-Both engines followed none of this before: it was a stub. [[topic:task-list]] has the rest.
+WinBox followed none of this before: it was a stub. [[topic:task-list]] has the rest.

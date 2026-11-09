@@ -96,7 +96,7 @@ The other two codes, `HCBT_CLICKSKIPPED` and `HCBT_KEYSKIPPED`, come from the sy
 WinBox agrees with all 47 records. Before, the hooks were asked only of keys and clicks skipped.
 
 - [[measured]] A hook refusing `HCBT_CREATEWND` brings Windows down: [[probe:cbteat]] writes its record before `CreateWindow` and none after, and the screen shows a general protection fault in `USER.EXE` at 0001:3AB0. USER takes the window apart there and sends it `WM_NCDESTROY` (seg8 `0c36`-`0c84`) through its procedure, which it has not been given yet: seg1 `3ab0` calls the window's procedure, nought ([[read out]]). winbox.js, which has no code of USER's to fault in, takes the window apart with no message, and `CreateWindow` answers nought, as USER means it to (seg8 `039d`).
-- [[read out]] The Windows Tutorial's hook (`WINTUTOR.EXE` seg6 `167d`, put in at seg5 `0973`) answers only `HCBT_SYSCOMMAND`, and passes nothing on: 1 for `SC_NEXTWINDOW`, `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY`, and for every command in one state of its own. So Alt and Tab do not leave it, and Control and Escape bring up no Task List over it; both engines' sessions of the Tutorial hold to the last ([[topic:accessories]]).
+- [[read out]] The Windows Tutorial's hook (`WINTUTOR.EXE` seg6 `167d`, put in at seg5 `0973`) answers only `HCBT_SYSCOMMAND`, and passes nothing on: 1 for `SC_NEXTWINDOW`, `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY`, and for every command in one state of its own. So Alt and Tab do not leave it, and Control and Escape bring up no Task List over it; WinBox's sessions of the Tutorial hold to the last ([[topic:accessories]]).
 
 ## The debugging hook
 
