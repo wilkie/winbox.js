@@ -105,7 +105,7 @@ The full lists are `kb/data/win32s-imports.json`; `scripts/kb/win32s-expand.py`,
 
 ## Every function Widget Workshop needs, and who exports it
 
-[[read out]] Each import of the six 32-bit files, looked up by name among the exports of every PE DLL of Win32s and of the disc's tree (`widgetCrossReference` in the JSON):
+[[read out]] Each import of the six 32-bit files, looked up by name among the exports of every PE DLL of Win32s and of the disc's tree (in the JSON):
 
 | Import library | Distinct functions Widget Workshop's six files need | Exported by                       | Found   |
 | -------------- | --------------------------------------------------- | --------------------------------- | ------- |

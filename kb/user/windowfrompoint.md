@@ -50,7 +50,7 @@ A static control and a group box are passed over by their own answers: the stati
 
 ## Implementation
 
-`Desktop.hitSteps` (`crates/winbox-win16/src/desktop.rs`) and `hit_steps` (`crates/winbox-win16/src/raster_input.rs`) walk the windows as `71b9` does and give the steps it comes to, each a window and its answer or a window to be asked; the mouse's scan (`hitTest`, `scan_hit`) and `WindowFromPoint` ask each in turn. `Desktop.windowAt` and `window_at`, for WinBox's own use, take every window for the caller's and the answers of an icon's title and a group box as known.
+`Desktop.hitSteps` (`crates/winbox-win16/src/desktop.rs`) and `hit_steps` (`crates/winbox-win16/src/raster_input.rs`) walk the windows as `71b9` does and give the steps it comes to, each a window and its answer or a window to be asked; the mouse's scan (`hit_test`, `scan_hit`) and `WindowFromPoint` ask each in turn. `window_at` and `window_at`, for WinBox's own use, take every window for the caller's and the answers of an icon's title and a group box as known.
 
 [[read out]] Where the system-modal window itself answers `HTTRANSPARENT`, the walk ends at no window (`7282`-`7285` to `71c6`) and `WindowFromPoint` answers nought. [[measured]] [[probe:uwleft]]: with a pop-up made system-modal answering `HTTRANSPARENT`, every point -- in it, in another window, where no window is -- answers nought; answering `HTCLIENT`, every point answers it. `hitWalk` and `hit_walk` tell the walk that ended at no window from the desktop window's.
 

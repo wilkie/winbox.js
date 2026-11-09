@@ -59,7 +59,7 @@ The answer is the offset of the last part, and of its extension (the end, where 
 
 ## Implementation
 
-`parseFile` and `GetFileTitle` in `parse_file` and `get_file_title` in `crates/winbox-win16/src/commdlg/parse.rs`, follow the parser step by step, changing the name in the caller's memory as it does. WinBox agrees with all 57 of [[probe:ftitle]]'s records.
+`parse_file` and `GetFileTitle` in `parse_file` and `get_file_title` in `crates/winbox-win16/src/commdlg/parse.rs`, follow the parser step by step, changing the name in the caller's memory as it does. WinBox agrees with all 57 of [[probe:ftitle]]'s records.
 
 ## Not yet done
 

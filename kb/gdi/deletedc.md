@@ -26,4 +26,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`deleteDriverDC` in `delete_driver_dc` in the Rust engine. A program's hook is called through the processor before the context is deleted; [[probe:dchkdel]] agrees in all 12 records.
+`delete_driver_dc` in `delete_driver_dc` in the Rust engine. A program's hook is called through the processor before the context is deleted; [[probe:dchkdel]] agrees in all 12 records.

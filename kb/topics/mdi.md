@@ -135,5 +135,5 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 
 - `crates/winbox-win16/src/mdi.rs` holds the class, its messages and the default procedures.
 - `crates/winbox-win16/src/window_state.rs` holds `SetWindowPlacement`.
-- `showRaster` in `crates/winbox-win16/src/window_state.rs` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
+- `show_raster` in `crates/winbox-win16/src/window_state.rs` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
 - `Desktop.maximize` fills a child's parent.

@@ -46,7 +46,7 @@ The cursor is one for the whole screen. Windows does not keep a cursor for each 
 [[measured]] [[probe:curerr]] presses the left button on a disabled window `O` whose pop-up `D` is active:
 
 - With `D` in front of all, nothing moved: the beep.
-- With a hidden window made in front of `D`, and another of `O`'s task hidden behind `O`, `O` came to the top with `D` above it. `D` was active already: the beep.
+- With a hidden window made in front of `D`, and another of `O`'s task hidden behind `O` came to the top with `D` above it. `D` was active already: the beep.
 - With an enabled window of `O`'s task not owned by `O` in front, the look found it first and gave up: nothing moved.
 - The right button: nothing moved.
 

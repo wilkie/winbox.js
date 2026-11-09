@@ -23,4 +23,4 @@ probes: [fotmake, fontboot]
 
 ## Implementation
 
-The replay rebuilds each stub from the drive image's `.TTF` through the same function the API calls, `scalableFontResource`; the API adds only reading the `.TTF` and writing the result through the DOS file layer, which no probe exercises.
+The replay rebuilds each stub from the drive image's `.TTF` through the same function the API calls, `scalable_font_resource`; the API adds only reading the `.TTF` and writing the result through the DOS file layer, which no probe exercises.

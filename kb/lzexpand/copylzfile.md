@@ -21,4 +21,4 @@ topics: [compressed-files]
 
 ## Implementation
 
-`CopyLZFile` calls `lzCopy`; the Rust engine answers it with `lz_copy` (`crates/winbox-win16/src/lzexpand/mod.rs`).
+`CopyLZFile` calls `lz_copy`; the Rust engine answers it with `lz_copy` (`crates/winbox-win16/src/lzexpand/mod.rs`).

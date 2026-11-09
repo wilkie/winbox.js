@@ -25,4 +25,4 @@ See [[topic:system-parameters]], "A program's broadcast".
 
 ## Implementation
 
-`crates/winbox-win16/src/broadcast.rs` do the broadcast as USER does, and agree with all of [[probe:bcast]]'s records. A task's ring of eight is kept as its places alone, the messages in their order beside it (`Task.ringPlace`, `Queue::ring_place`), and agrees with all of [[probe:dderaw]]'s records.
+`crates/winbox-win16/src/broadcast.rs` do the broadcast as USER does, and agree with all of [[probe:bcast]]'s records. A task's ring of eight is kept as its places alone, the messages in their order beside it (`ring_place`, `Queue::ring_place`), and agrees with all of [[probe:dderaw]]'s records.

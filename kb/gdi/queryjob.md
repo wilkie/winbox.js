@@ -30,6 +30,6 @@ topics: [gdi-internals, printing]
 
 ## Implementation
 
-As read out (`crates/winbox-win16/src/gdi/spooler.rs`); the long is the spooler's `diskSpace`, which `GetSpoolJob` keeps. [[probe:gdispool]] agrees in both.
+As read out (`crates/winbox-win16/src/gdi/spooler.rs`); the long is the spooler's `disk_space`, which `GetSpoolJob` keeps. [[probe:gdispool]] agrees in both.
 
 **Recommendation:** done.

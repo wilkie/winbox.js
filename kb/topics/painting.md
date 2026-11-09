@@ -72,4 +72,4 @@ A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, t
 
 ## In winbox.js
 
-`crates/winbox-win16/src/paint.rs` sends the erase and keeps the note. `BeginPaint` answers `fErase` and `rcPaint`, and `eraseDue` erases every window at the top due it as `ShowWindow`, `SetWindowPos`, `CreateWindow`, `DestroyWindow` and a closing menu end. A window of another task is sent `WM_SYNCPAINT` instead. A menu's bits are kept by `openPopup`. `repaintAll` in `crates/winbox-win16/src/desktop.rs` marks everything when the system colours change, and the desktop is drawn when paints are next looked for.
+`crates/winbox-win16/src/paint.rs` sends the erase and keeps the note. `BeginPaint` answers `fErase` and `rcPaint`, and `eraseDue` erases every window at the top due it as `ShowWindow`, `SetWindowPos`, `CreateWindow`, `DestroyWindow` and a closing menu end. A window of another task is sent `WM_SYNCPAINT` instead. A menu's bits are kept by `open_popup`. `repaint_all` in `crates/winbox-win16/src/desktop.rs` marks everything when the system colours change, and the desktop is drawn when paints are next looked for.

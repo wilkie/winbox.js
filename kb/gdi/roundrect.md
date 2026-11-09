@@ -31,4 +31,4 @@ topics: [ellipses, polygon-fill]
 
 ## Implementation
 
-See [[fn:GDI.Ellipse]], whose `paintShape` this shares. Before this, `RoundRect` was a stub.
+See [[fn:GDI.Ellipse]], whose `paint_shape` this shares. Before this, `RoundRect` was a stub.

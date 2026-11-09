@@ -28,4 +28,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `client_proc` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGClientClass` DDEML registers; the transactions' answers are `clientDde` (`client_dde`), seg1 `4866`. WinBox agrees with [[probe:ddemgmt]] and [[probe:ddelist]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `client_proc` in `crates/winbox-win16/src/ddeml/conv.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGClientClass` DDEML registers; the transactions' answers are `client_dde`, seg1 `4866`. WinBox agrees with [[probe:ddemgmt]] and [[probe:ddelist]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

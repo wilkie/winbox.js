@@ -62,10 +62,10 @@ A program started by another, and how the programs share the processor, are in [
 
 ## In winbox.js
 
-`taskEnvironment` in `crates/winbox-win16/src/task.rs` builds the environment. winbox.js has no DOS shell under Windows to lend it variables, so `windir` is the only one. The kernel's path is `C:\WINDOWS\SYSTEM\KRNL386.EXE`, as recorded. `RegisterWindowMessage` counts up from `0xC000` by one, which is the known gap in its conformance. The environment's other records depend on the DOS host and have no replay. The tests hold the layout, the local heap's growth ([[topic:global-and-local-memory]]) and the message rules.
+`task_environment` in `crates/winbox-win16/src/task.rs` builds the environment. winbox.js has no DOS shell under Windows to lend it variables, so `windir` is the only one. The kernel's path is `C:\WINDOWS\SYSTEM\KRNL386.EXE`, as recorded. `RegisterWindowMessage` counts up from `0xC000` by one, which is the known gap in its conformance. The environment's other records depend on the DOS host and have no replay. The tests hold the layout, the local heap's growth ([[topic:global-and-local-memory]]) and the message rules.
 
 `initTask` in `crates/winbox-win16/src/kernel.rs` hands `WinMain` its data segment's selector less one as the instance, and both selectors resolve to the task.
 
-`postQuit` in `crates/winbox-win16/src/queue.rs` keeps the quit flag, and `Win16.exitTask` ends a task that returns to DOS. The conformance suite replays [[probe:quitord]] through the exports, and all six of its records agree. Before this, `DestroyWindow` sent nothing, and `WM_QUIT` had never been given a number, so no program ever stopped.
+`crates/winbox-win16/src/queue.rs` keeps the quit flag, and `Win16.exitTask` ends a task that returns to DOS. The conformance suite replays [[probe:quitord]] through the exports, and all six of its records agree. Before this, `DestroyWindow` sent nothing, and `WM_QUIT` had never been given a number, so no program ever stopped.
 
 Two more things Notepad needed before it could open a window. It imports `SHELL.DLL` and `KEYBOARD.DRV`, and calls `DragAcceptFiles` early. Both are now modules in winbox.js, with the ordinals and names of the installation's own export tables. Only `DragAcceptFiles` does anything; the rest are stubs, and the trace marks them.

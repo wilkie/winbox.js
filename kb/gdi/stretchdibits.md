@@ -40,4 +40,4 @@ winbox.js agrees with all 16 records.
 
 ## Implementation
 
-`StretchDIBits` reads the DIB into a bitmap of the destination's format and hands it to `stretchDevice`, the stretcher `StretchBlt` uses, with the source rectangle turned the right way up.
+`StretchDIBits` reads the DIB into a bitmap of the destination's format and hands it to `stretch_device`, the stretcher `StretchBlt` uses, with the source rectangle turned the right way up.

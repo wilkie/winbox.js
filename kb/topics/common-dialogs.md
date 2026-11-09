@@ -188,7 +188,7 @@ The registration point is one entry per export:
 - `crates/winbox-win16/src/commdlg/mod.rs`, `implementation`, one arm per export by its name.
 - `crates/winbox-win16/src/kept.rs`, `COMMDLG`'s export table: an export WinBox answers is marked `stub: false`. The Rust test `commdlg::tests::ours_agree` holds the two to each other. `kept.rs` was written from the TypeScript engine's table until 2026-11-08 ([[guide:retire-typescript]]).
 
-Helpers WinBox keeps for the dialogs: the far address of an export WinBox answers (`procAddress`, `proc_address`), the extended error (`setError`, `set_error`), `COMMDLG`'s instance (`instance`), a hook called as `COMMDLG` calls one (`callHook`, `call_hook`), the wait cursor (`waitCursor`, `wait_cursor`) and the registered messages (`message`).
+Helpers WinBox keeps for the dialogs: the far address of an export WinBox answers (`proc_address`), the extended error (`set_error`), `COMMDLG`'s instance (`instance`), a hook called as `COMMDLG` calls one (`call_hook`), the wait cursor (`wait_cursor`) and the registered messages (`message`).
 
 **How a dialog calls USER, GDI and KERNEL.** WinBox makes every call as a program makes it: its arguments pushed below the stack, its structures and strings laid out below them and read back after, and the function that answers a program's call run, through `api.rs` (`crates/winbox-win16/src/commdlg/guest_calls.rs` gives Find, Replace and Color the shape the file dialogs have). So the dialogs make the same calls in the same order as a program, and show USER's quirks as COMMDLG's code would.
 

@@ -41,4 +41,4 @@ There is one error, whichever code failed last ([[topic:common-dialogs]]):
 - With `COMMDLG.DLL` loaded, the engines keep it where the file does. The doubleword is found from the file's own `CommDlgExtendedError`: the bytes `8E D8 A1` (`mov ds, ax; mov ax, [imm]`) in its first 24, and the offset after them, in the file's data segment. A function of the file's that fails and one of WinBox's are read alike.
 - Without the file, WinBox keeps its own.
 
-`CommDlgExtendedError`, `setError` and `error` in `set_error` and `error` in `crates/winbox-win16/src/commdlg/mod.rs`.
+`CommDlgExtendedError`, `set_error` and `error` in `set_error` and `error` in `crates/winbox-win16/src/commdlg/mod.rs`.

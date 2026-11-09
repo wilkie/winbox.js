@@ -87,7 +87,7 @@ With no `OEMBIN`, there is no "Windows Default" to choose. The scheme on the VGA
 
 - **Rust engine.** A kept module's resources are its file's (`Owner::Kept` in `crates/winbox-win16/src/resources.rs`). `DISPLAY`'s file is the display's own driver (`kept_path`). Before, `GetModuleFileName` answered `VGA.DRV` on every display.
 - **What works.** `FindResource`, `LoadResource`, `LockResource` and `SizeofResource` work on `DISPLAY`'s handle. `GetProcAddress` of 450 answers nought on the drivers without it, and on `SVGA256.DRV`, `8514.DRV` and `XGA.DRV` the entry, which answers as the driver does (`Display::resource_id`).
-- **USER's start-up read.** WinBox reads the display driver's `OEMBIN` as USER does, once as Windows starts: the one `GetDriverResourceID` answers 1 with, else 1. They take its two thumbs, icon and cursor sizes, Kanji window and borders into the display's metrics, and its 19 colours and the two USER adds as the default colours. `oembinValues`, called from `displayResources`; `oembin_values` and `take_display_oembin` in `crates/winbox-win16/src/display.rs`, called as the first program is loaded. The resource is 2001 on `8514s` and `xga640`, and 1 on every other display. Without the driver's file, as in tests with no installation, the tables per display stand; on all seven drivers they agree with `OEMBIN` 1 exactly, so no probe's answer moved.
+- **USER's start-up read.** WinBox reads the display driver's `OEMBIN` as USER does, once as Windows starts: the one `GetDriverResourceID` answers 1 with, else 1. They take its two thumbs, icon and cursor sizes, Kanji window and borders into the display's metrics, and its 19 colours and the two USER adds as the default colours. `oembin_values` and `take_display_oembin` in `crates/winbox-win16/src/display.rs`, called as the first program is loaded. The resource is 2001 on `8514s` and `xga640`, and 1 on every other display. Without the driver's file, as in tests with no installation, the tables per display stand; on all seven drivers they agree with `OEMBIN` 1 exactly, so no probe's answer moved.
 - [[measured]] [[probe:drvres]]: 208 of 208 records on four displays in the Rust engine. [[probe:chrome]], [[probe:sizing]], [[probe:syscol]] and `devcaps` on the 256-colour display agree as before.
 - [[measured]] Control Panel's Color lists "Windows Default" first and writes its colours to `WIN.INI`' sessions.
 
@@ -105,7 +105,7 @@ With no `OEMBIN`, there is no "Windows Default" to choose. The scheme on the VGA
 WinBox follows it ([[topic:display-drivers]]):
 
 - the `OEMBIN` USER reads as it starts;
-- the OEM bitmaps USER draws with, and `LoadBitmap(NULL, ...)`, keyed by the numbers USER asks for (`bitmapsAsAsked`, `Display::as_asked`);
+- the OEM bitmaps USER draws with, and `LoadBitmap(NULL, ...)`, keyed by the numbers USER asks for (`Display::as_asked`);
 - `LoadBitmap` on the display's own handle;
 - `GetProcAddress` of ordinal 450, through each driver's own export table.
 

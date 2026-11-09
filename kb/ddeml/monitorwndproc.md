@@ -19,4 +19,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `monitor_proc` in `crates/winbox-win16/src/ddeml/monitor.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGMonitorClass`; each notice is the `GMEM_DDESHARE` block `send_notice` (`sendNotice`), seg1 `3524`, sends. WinBox agrees with [[probe:ddemgmt]] and [[probe:ddemon]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `monitor_proc` in `crates/winbox-win16/src/ddeml/monitor.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGMonitorClass`; each notice is the `GMEM_DDESHARE` block `send_notice`, seg1 `3524`, sends. WinBox agrees with [[probe:ddemgmt]] and [[probe:ddemon]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).

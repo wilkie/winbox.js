@@ -27,7 +27,7 @@ source: crates/winbox-win16/src/gdi/calls/enum_objects.rs
 
 ## Implementation
 
-`crates/winbox-win16/src/gdi/calls/enum_objects.rs`: the sixteen-colour displays' and the Hercules's as measured; on the 256-colour display the driver's twenty colours in its order (`enumeratedColours`, `enumerated_colours`).
+`crates/winbox-win16/src/gdi/calls/enum_objects.rs`: the sixteen-colour displays' and the Hercules's as measured; on the 256-colour display the driver's twenty colours in its order (`enumerated_colours`).
 
 ## Not yet measured
 

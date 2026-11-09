@@ -22,4 +22,4 @@ source: crates/winbox-win16/src/reply_message.rs
 
 ## Implementation
 
-`crates/winbox-win16/src/reply_message.rs`. The scheduler keeps each message another task sent while it is answered (`Scheduler.takeSent`, `take_sent`).
+`crates/winbox-win16/src/reply_message.rs`. The scheduler keeps each message another task sent while it is answered (`take_sent`).

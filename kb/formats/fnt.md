@@ -43,13 +43,13 @@ The layout is [[documented]]. The offsets are also [[read out]] of GDI: the mapp
 ## The character table and the glyphs
 
 - [[documented]] The table follows the header, one entry per character from `dfFirstChar` to `dfLastChar`: a word width and an offset, a word in a 2.0 font (4 bytes an entry, table at 118) and a dword in a 3.0 font (6 bytes, table at 148). A character outside the range is drawn as the default character.
-- [[documented]] A bitmap glyph is stored in columns eight pixels wide: `dfPixHeight` bytes for the first eight columns, top row first, then the next eight, most significant bit leftmost. winbox.js reads it that way (`characterEntryFor`).
+- [[documented]] A bitmap glyph is stored in columns eight pixels wide: `dfPixHeight` bytes for the first eight columns, top row first, then the next eight, most significant bit leftmost. winbox.js reads it that way.
 - [[measured]] All 91 bitmap strikes on the two drives are version `0x0200` with `dfType` nought; the six plotter fonts are `0x0100` with `dfType` 1. [[read out]] The 386 build of `VGA.DRV`'s `StrBlt` accepts only a version 3.0 font whose `FONTINFO` begins at `0x42` (seg2 `099b`, [[fonts:8u]]); how a 2.0 file reaches it is not yet measured.
 
 ## The plotter fonts
 
 - [[measured]] `ROMAN.FON`, `MODERN.FON` and `SCRIPT.FON` each hold one version `0x0100` font with `dfType` 1, `dfCharSet` 255, characters 32 to 255, a design 32 rows tall (Script's 37) and resolutions of 3 horizontal by 2 vertical. Their `dfPitchAndFamily` is `0x11`, `0x31` and `0x41`.
-- [[inferred]] Their character table starts at 119, which no documentation to hand gives: it is the only offset whose widths reproduce the header's `dfAvgWidth` and `dfMaxWidth` for all three (`tableOffset`).
+- [[inferred]] Their character table starts at 119, which no documentation to hand gives: it is the only offset whose widths reproduce the header's `dfAvgWidth` and `dfMaxWidth` for all three (`table_offset`).
 - [[measured]] An entry's offset is where its strokes **end**; the previous entry's is where they begin, and the first's begin at nought. The strokes are signed byte pairs, each a displacement the pen draws along; a `0x80` byte lifts the pen, and the pair after it is a displacement to move by without drawing. Coordinates measure downward from the top of the design. Roman's `A` is thirty bytes: a lift to (10,4), a draw to (3,25), a lift back and a draw to (17,25), a crossbar and two serifs ([[fonts:4]]).
 - [[measured]] GDI adds `TMPF_VECTOR` to the pitch it reports, which the file does not carry: Roman's 17 is reported as 19 ([[fonts:4]]).
 

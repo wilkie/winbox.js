@@ -17,4 +17,4 @@ source: crates/winbox-win16/src/user_misc.rs
 
 ## Implementation
 
-The table changes as `GetMessage` or `PeekMessage` takes a key message or a mouse button's message out of the queue (`noteKey` and `noteButton`; the Rust engine's `note_key` and `note_button` in `crates/winbox-win16/src/queue.rs`). A key's toggle bit flips each time it goes down after being up.
+The table changes as `GetMessage` or `PeekMessage` takes a key message or a mouse button's message out of the queue (`noteKey` and `note_button`; the Rust engine's `note_key` and `note_button` in `crates/winbox-win16/src/queue.rs`). A key's toggle bit flips each time it goes down after being up.

@@ -53,4 +53,4 @@ The answers come from the display mode chosen when the machine starts (`src/win1
 
 Five more modes are marked `read out`: `8514` and `8514s`, the 8514/a at large and small fonts, and `xga256`, `xga256s` and `xga640`, the XGA at large and small fonts and at 640x480. Their answers are read out of `8514.DRV` and `XGA.DRV` as each driver's `Enable` leaves its table at that setting, because DOSBox runs neither card and so no record supports them. An index the table does not name returns 0. See [[topic:display-drivers]].
 
-A printer driver loaded from the drive answers from the `GDIINFO` its `Enable` wrote (`driverCaps` in `crates/winbox-win16/src/gdi/printer_driver.rs`).
+A printer driver loaded from the drive answers from the `GDIINFO` its `Enable` wrote (`driver_caps` in `crates/winbox-win16/src/gdi/printer_driver.rs`).

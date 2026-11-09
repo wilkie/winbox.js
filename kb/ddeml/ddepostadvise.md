@@ -33,4 +33,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-WinBox's own: `post_advise` in `crates/winbox-win16/src/ddeml/xact.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It walks the instance's links as `2720` walks them; a hot link is asked `XTYP_ADVREQ` at once (`adviseRequest`, `advise_request`, seg1 `3e64`). WinBox agrees with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `post_advise` in `crates/winbox-win16/src/ddeml/xact.rs` follows `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It walks the instance's links as `2720` walks them; a hot link is asked `XTYP_ADVREQ` at once (`advise_request`, seg1 `3e64`). WinBox agrees with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`crates/winbox-win16/tests/ddeml.rs`).
