@@ -546,7 +546,10 @@ const KEPT_LAST: usize = 1_000;
 /// lines, `MODULE.Name = answer @cs:ip`, which keep no arguments; the
 /// TypeScript survey's show them as its argument types decode them. A
 /// run's steps' places (`stepMarks`) are what the run was given, the
-/// TypeScript report's, kept as it has them.
+/// TypeScript report's, kept as it has them. A screen alike pixel for
+/// pixel with the report's already there is written as that file, its bytes
+/// as they were (PNG encoders differ), so `--write corpus/reports` leaves
+/// every unchanged screen unchanged.
 fn write_report(dir: &Path, id: &str, title: &str, out: &str, screens: &Path) -> Vec<String> {
     let calls: Vec<&str> = out.lines().filter(|line| is_call(line)).collect();
     let name = |line: &str| line.split([' ', '(']).next().unwrap_or("").to_string();
@@ -638,18 +641,16 @@ fn write_report(dir: &Path, id: &str, title: &str, out: &str, screens: &Path) ->
     };
     let _ = std::fs::write(dir.join(format!("{id}.calls.txt")), kept.join("\n"));
 
-    // Its screens, and no box an earlier run left.
+    write_screens(dir, id, screens)
+}
+
+/// A program's screens, from the trace's in `screens`, written into `dir`,
+/// and no box an earlier run left there: the files' names. A screen whose
+/// pixels are the report's already there is that file, as it was
+/// encoded, so that writing the reports afresh changes no screen that has
+/// not changed.
+fn write_screens(dir: &Path, id: &str, screens: &Path) -> Vec<String> {
     let mut written = Vec::new();
-
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let file = entry.file_name().to_string_lossy().into_owned();
-
-            if file.starts_with(&format!("{id}.box")) && is_png(&file) {
-                let _ = std::fs::remove_file(entry.path());
-            }
-        }
-    }
 
     if let Ok(entries) = std::fs::read_dir(screens) {
         for entry in entries.flatten() {
@@ -658,8 +659,34 @@ fn write_report(dir: &Path, id: &str, title: &str, out: &str, screens: &Path) ->
                 || (file.starts_with(&format!("{id}-")) && is_png(&file))
                 || (file.starts_with(&format!("{id}.box")) && is_png(&file));
 
-            if own && std::fs::copy(entry.path(), dir.join(&file)).is_ok() {
+            if !own {
+                continue;
+            }
+
+            let there = Path::new("corpus/reports").join(&file);
+            let from = if differing(&entry.path(), &there) == Some(0) {
+                there
+            } else {
+                entry.path()
+            };
+            let to = dir.join(&file);
+            let itself = from
+                .canonicalize()
+                .ok()
+                .is_some_and(|from| to.canonicalize().ok() == Some(from));
+
+            if itself || std::fs::copy(&from, &to).is_ok() {
                 written.push(file);
+            }
+        }
+    }
+
+    if let Ok(entries) = std::fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let file = entry.file_name().to_string_lossy().into_owned();
+
+            if file.starts_with(&format!("{id}.box")) && is_png(&file) && !written.contains(&file) {
+                let _ = std::fs::remove_file(entry.path());
             }
         }
     }
