@@ -31,8 +31,10 @@ export { SHARDS };
  * so Jest can run them side by side: in one file it is ten minutes on one core,
  * and it set the length of every full run. Each shard takes the fixtures
  * `shardOf` gives it, balanced on the measured cost of each fixture in
- * `fixture-costs.json`, and writes its share of the report where the run's
- * global setup said; the global teardown merges the shares. Run one probe
+ * `fixture-costs.json`, and writes its share where the run's global setup
+ * said; the global teardown keeps the costs from them, where asked. The
+ * knowledge base's report, `kb/data/conformance.json`, is written by the Rust
+ * replay alone (`cargo test --release -p winbox-win16 --test conformance`). Run one probe
  * with `npx jest test/oracle/conformance -t "<probe> against"`.
  */
 

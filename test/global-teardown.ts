@@ -1,8 +1,9 @@
 import { mergeShares, shareDirectory } from './oracle/conformance-shares';
 
 /**
- * Merges what the conformance suite's shards wrote into the report the
- * knowledge base reads, if every shard replayed all of its fixtures. See
+ * Clears away what the conformance suite's shards wrote, rewriting the
+ * fixtures' costs from it where asked. The report the knowledge base reads,
+ * `kb/data/conformance.json`, is the Rust replay's alone. See
  * `test/oracle/conformance.ts`.
  */
 export default function globalTeardown(): void {
