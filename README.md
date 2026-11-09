@@ -51,8 +51,8 @@ has not been built, or where the crates have changed since; `pnpm build:web`
 alone builds it again. Where it is not built, the page says so on its status
 line and runs nothing.
 
-Then open `/run.html` on it and drop zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
-memory with 8.3 names, and every Windows program on it gets a Run button. A zip
+Then open `/run.html` on it and drop zip archives on it. Their files go onto a C: drive, a tree of files
+held in memory with 8.3 names, which answers as a folder DOSBox mounts, and every Windows program on it gets a Run button. A zip
 of your own Windows 3.1 directory gives the programs Windows' fonts: it is
 recognised by its `SYSTEM` directory, placed at `C:\WINDOWS`, and remembered in
 the browser so it is dropped once. In its place, drop the images of your
