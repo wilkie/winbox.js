@@ -30,4 +30,4 @@ source: crates/winbox-win16/src/gdi/printer_output.rs
 
 ## Implementation
 
-Both engines refuse a bitmap for any context that is not a memory context. In the TypeScript engine that is a surface without `memoryContext` (`src/win16/gdi/SelectObject.ts`); in the Rust engine a `Dc` without `memory` (`crates/winbox-win16/src/gdi/bitmaps.rs`). A WinG context is a memory context in both.
+Both engines refuse a bitmap for any context that is not a memory context. In the Rust engine that is a `Dc` without `memory` (`crates/winbox-win16/src/gdi/bitmaps.rs`). A WinG context is a memory context in both.

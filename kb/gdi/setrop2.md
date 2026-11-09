@@ -30,4 +30,4 @@ topics: [ellipses]
 
 ## Implementation
 
-The mode is kept on the surface. `ropOfMode` turns it into the raster operation a `PatBlt` would carry out, with the pen or brush as the pattern, and the curve painter in `src/win16/gdi/Ellipse.ts` applies it to the brush's rows and the pen's runs. Before this, `SetROP2` and `GetROP2` were stubs, and Calculator's pressed keys stayed black.
+The mode is kept on the surface. `ropOfMode` turns it into the raster operation a `PatBlt` would carry out, with the pen or brush as the pattern, and the curve painter (`paint_shape` in `crates/winbox-win16/src/gdi/shapes.rs`) applies it to the brush's rows and the pen's runs. Before this, `SetROP2` and `GetROP2` were stubs, and Calculator's pressed keys stayed black.

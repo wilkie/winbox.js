@@ -23,4 +23,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-`GlobalHandle` computes both words from the selector with the conversions in `src/win16/selectors.ts`. It returns 0 when the descriptor has neither a size nor flags, which also makes it return 0 for a block allocated with zero bytes and no flags. Nothing has measured that case.
+`GlobalHandle` computes both words from the selector with the conversions between a selector and a handle. It returns 0 when the descriptor has neither a size nor flags, which also makes it return 0 for a block allocated with zero bytes and no flags. Nothing has measured that case.

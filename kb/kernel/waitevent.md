@@ -24,4 +24,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/task-calls.ts` (the first event in `task-order.ts`), and the Rust engine's `kernel_calls/tasks.rs` (`task_order.rs`).
+`crates/winbox-win16/src/kernel_calls/tasks.rs` (`crates/winbox-win16/src/task_order.rs`).

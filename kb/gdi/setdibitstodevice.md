@@ -43,7 +43,7 @@ winbox.js agrees with all 36 records.
 
 ## Implementation
 
-`src/win16/gdi/dib-to-device.ts` reads the header, colour table and scan lines into a bitmap of the destination's format with the same code as [[fn:GDI.CreateDIBitmap]], and copies the scan lines in range with the raster-operation engine.
+`dib_to_device` in `crates/winbox-raster/src/dib.rs` reads the header, colour table and scan lines into a bitmap of the destination's format with the same code as [[fn:GDI.CreateDIBitmap]], and copies the scan lines in range with the raster-operation engine.
 
 ## On a printer's context
 

@@ -24,4 +24,4 @@ topics: [multimedia-services]
 
 ## Implementation
 
-`src/win16/mmsystem/mmtask.ts` (the image, `mmTaskCreate` and `MMTASK`'s procedure, kept at MMSYSTEM's ordinal 1204, where it exports nothing), and the Rust engine's `crates/winbox-win16/src/mmsystem/mmtask.rs`. Both start it through `startNamed` / `start_named`, `LoadModule`'s own work.
+`crates/winbox-win16/src/mmsystem/mmtask.rs` (the image and `MMTASK`'s procedure, kept at MMSYSTEM's ordinal 1204, where it exports nothing). Both start it through `startNamed` / `start_named`, `LoadModule`'s own work.

@@ -26,4 +26,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`src/win16/kernel/WinExec.ts` (`LoadModule`, `startNamed`), and the Rust engine's `tasks.rs` (`load_module`, `start_named`).
+`crates/winbox-win16/src/tasks.rs` (`load_module`, `start_named`).

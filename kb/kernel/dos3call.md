@@ -15,4 +15,4 @@ topics: [kernel-internals, dos-handles]
 
 ## Implementation
 
-`src/win16/kernel/Dos3Call.ts`, which passes the registers to WinBox's DOS as they are, and the Rust engine's own. See [[topic:kernel-internals]].
+`dos3_call` in `crates/winbox-win16/src/kernel_calls/file_cdr.rs` passes the registers to WinBox's DOS as they are. See [[topic:kernel-internals]].

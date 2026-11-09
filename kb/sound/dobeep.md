@@ -23,4 +23,4 @@ source: crates/winbox-win16/src/sound.rs
 
 ## Implementation
 
-`crates/winbox-win16/src/sound.rs`. The speaker is not sounded. The TypeScript engine's `MessageBeep` now calls it as USER does.
+`crates/winbox-win16/src/sound.rs`. The speaker is not sounded. `MessageBeep` calls it as USER does.

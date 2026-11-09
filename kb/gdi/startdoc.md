@@ -29,6 +29,6 @@ topics: [printing, printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/printing.ts` routes a driver's DC to `printer-driver.ts`. In Rust, `crates/winbox-win16/src/gdi/printing.rs` routes it to `crates/winbox-win16/src/gdi/printer_driver.rs`. WinBox's own printer (`crates/winbox-win16/src/printer.rs`) starts its job itself.
+`crates/winbox-win16/src/gdi/printing.rs` routes a driver's DC to `crates/winbox-win16/src/gdi/printer_driver.rs`. WinBox's own printer (`crates/winbox-win16/src/printer.rs`) starts its job itself.
 
 - Not recorded: `StartDoc` of a device context that is not a printer's, which winbox.js answers -1.

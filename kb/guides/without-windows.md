@@ -74,7 +74,7 @@ Layers are content-addressed, so two programs that install the same DLL, `CTL3D.
 - **Native** (done). `--install NAME MEDIA` runs an installer over a program's stack and keeps its top as a layer. `--layer-from` makes a layer of the user's own files or takes an exchange zip. `--program NAME` runs a kept program on its stack, its user's layer and its deletes kept from run to run. They are stored in the cache folder in the page's format ([[format:layer]], The native build's programs).
 - **Program Manager the shell** (done). An installer is started as `WIN SETUP.EXE` starts one: WinBox's own Program Manager is the run's shell, the first task, and starts the installer with itself as the only other task; the group file and `PROGMAN.INI` it writes are kept in the installer's layer, and a kept program's groups are listed on the page and by the native `--list` ([[topic:program-manager-dde]], "As the shell in install runs"; [[format:layer]], "Its groups").
 - **Drives of images** (done). Floppy, hard disk and CD-ROM images, a `.cue` and its files among them, are drives beside C: in both engines, the native build (`--mount`, swapping disks on the console or by Ctrl+Shift+F12, `--install NAME A:`) and the page (the Drives strip), what is written to a floppy kept apart from the image and saved as a new file, and a kept program remembering its images ([[topic:drives-and-disks]], [[format:fat]], [[topic:cd-rom]]).
-- **Later.** Moving a program's layer between displays by replaying its profile writes. The TypeScript engine answering function 36h for C: as the Rust engine does.
+- **Later.** Moving a program's layer between displays by replaying its profile writes.
 
 The storage, the installing and the owner's decisions are in [[format:layer]].
 
