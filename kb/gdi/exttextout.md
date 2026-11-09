@@ -30,6 +30,6 @@ topics: [turned-text, text-ground-and-rules, printer-drivers]
 
 ## Implementation
 
-`driver_ext_text_out` in `crates/winbox-win16/src/gdi/printer_output.rs` draw on a printer driver's context. Not followed there: alignments other than the top left, the current position, the spacing given (`lpDx`), justification's second call, rotation, a complex region, and GDI's own text for a font it realized itself.
+`driver_ext_text_out` in `crates/winbox-win16/src/gdi/printer_output.rs` draws on a printer driver's context. Not followed there: alignments other than the top left, the current position, the spacing given (`lpDx`), justification's second call, rotation, a complex region, and GDI's own text for a font it realized itself.
 
 Every recording of this call is replayed through it: the rectangle and the distances are placed in guest memory as a `RECT` and an array of words, as the probes passed them, and all of them agree. Until this knowledge base was built it returned `undefined` instead of 1 or 0: it imported its constants from a module that does not export them.

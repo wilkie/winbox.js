@@ -85,7 +85,7 @@ probes: [lzfiles]
 
 ## WinBox's code
 
-`crates/winbox-win16/src/lzexpand/mod.rs` follow each routine: the slots and the current buffers are a state of the system's own (`State`), and the blocks and buffers are global memory, allocated with the same flags and sizes, laid out as LZEXPAND lays them out. Files are read, written and sought through KERNEL's own `_lread`, `_lwrite` and `_llseek`, and the file's time through `Dos3Call`, as the library calls them. With `LZEXPAND.DLL` on the drive the file is loaded, and every import of an export is linked to WinBox's stub (`crates/winbox-win16/src/own_modules.rs`); with none, `LoadLibrary("LZEXPAND.DLL")` finds WinBox's. WinBox agrees with every record of [[probe:lzfiles]], with the file on the drive and without it (`crates/winbox-win16/tests/ver_lzexpand.rs`).
+`crates/winbox-win16/src/lzexpand/mod.rs` follows each routine: the slots and the current buffers are a state of the system's own (`State`), and the blocks and buffers are global memory, allocated with the same flags and sizes, laid out as LZEXPAND lays them out. Files are read, written and sought through KERNEL's own `_lread`, `_lwrite` and `_llseek`, and the file's time through `Dos3Call`, as the library calls them. With `LZEXPAND.DLL` on the drive the file is loaded, and every import of an export is linked to WinBox's stub (`crates/winbox-win16/src/own_modules.rs`); with none, `LoadLibrary("LZEXPAND.DLL")` finds WinBox's. WinBox agrees with every record of [[probe:lzfiles]], with the file on the drive and without it (`crates/winbox-win16/tests/ver_lzexpand.rs`).
 
 ## Not yet done
 

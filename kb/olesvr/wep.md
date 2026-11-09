@@ -16,4 +16,4 @@ topics: [ole]
 
 ## Implementation
 
-WinBox's own: `wep` in `crates/winbox-win16/src/olesvr/mod.rs` answer 1. WinBox's `OLESVR`'s data -- its servers, documents and what it does as it starts -- goes as its library goes (`ownFreed`, `own_modules::freed_named`) ([[topic:ole]]).
+WinBox's own: `wep` in `crates/winbox-win16/src/olesvr/mod.rs` answers 1. WinBox's `OLESVR`'s data -- its servers, documents and what it does as it starts -- goes as its library goes (`ownFreed`, `own_modules::freed_named`) ([[topic:ole]]).

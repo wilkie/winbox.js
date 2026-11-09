@@ -51,7 +51,7 @@ probes: [verinfo, verinst]
 
 ## WinBox's code
 
-`crates/winbox-win16/src/ver/mod.rs` follow each routine, calling WinBox's own `LZEXPAND` as VER calls it, and KERNEL, USER and KEYBOARD through the functions that answer a program's calls. What VER keeps on its stack is kept below the caller's stack, where the calls it makes can be given it. The names of languages are WinBox's data (`crates/winbox-win16/src/ver/languages.rs`), copied from VER's string tables. With `VER.DLL` on the drive the file is loaded, and every import of an export is linked to WinBox's stub; with none, `LoadLibrary("VER.DLL")` finds WinBox's. WinBox agrees with every record of [[probe:verinfo]] and [[probe:verinst]], with the files on the drive and without them.
+`crates/winbox-win16/src/ver/mod.rs` follows each routine, calling WinBox's own `LZEXPAND` as VER calls it, and KERNEL, USER and KEYBOARD through the functions that answer a program's calls. What VER keeps on its stack is kept below the caller's stack, where the calls it makes can be given it. The names of languages are WinBox's data (`crates/winbox-win16/src/ver/languages.rs`), copied from VER's string tables. With `VER.DLL` on the drive the file is loaded, and every import of an export is linked to WinBox's stub; with none, `LoadLibrary("VER.DLL")` finds WinBox's. WinBox agrees with every record of [[probe:verinfo]] and [[probe:verinst]], with the files on the drive and without them.
 
 ## Not yet done
 
