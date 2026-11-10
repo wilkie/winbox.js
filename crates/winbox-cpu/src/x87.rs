@@ -577,9 +577,55 @@ impl<B: Bus> Cpu<B> {
         result
     }
 
-    #[allow(clippy::too_many_lines)]
+    /// An `ESC` instruction whose opcode and ModR/M byte the host has
+    /// already read, run on the unit as it would run after them: IP just
+    /// past the ModR/M byte, where a displacement would be, and a memory
+    /// operand through `segment` where one is named, as a segment prefix
+    /// names it. WIN87EM's emulator runs the instruction after its
+    /// interrupt so, the instruction it stands for, or one it carries out
+    /// as another.
+    pub fn escape(&mut self, opcode: u8, modrm: u8, segment: Option<usize>) -> Result<(), Exit> {
+        self.start = self.ip;
+        self.prefix = segment;
+        self.named = segment;
+        self.wide = false;
+        self.address32 = self.segments[crate::CS].big;
+        self.repeat = 0;
+        self.lock = false;
+
+        let (reg, place) = if self.address32 {
+            self.modrm32(modrm)?
+        } else {
+            self.modrm16(modrm)?
+        };
+
+        if let Place::Memory(segment, _) = place {
+            self.named = Some(segment);
+        }
+
+        let Some(mut fpu) = self.fpu.take() else {
+            return Err(Exit::Unimplemented(opcode));
+        };
+        let result = self.x87_operate(&mut fpu, opcode, reg, place);
+
+        self.fpu = Some(fpu);
+        result
+    }
+
     fn x87_execute(&mut self, fpu: &mut X87, opcode: u8) -> Result<(), Exit> {
         let (reg, place) = self.modrm()?;
+
+        self.x87_operate(fpu, opcode, reg, place)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn x87_operate(
+        &mut self,
+        fpu: &mut X87,
+        opcode: u8,
+        reg: usize,
+        place: Place,
+    ) -> Result<(), Exit> {
         let rm = match place {
             Place::Register(index) => Some(index),
             Place::Memory(..) => None,

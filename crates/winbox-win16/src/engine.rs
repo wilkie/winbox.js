@@ -305,6 +305,7 @@ impl Engine {
                 Event::Returned => return Ok(()),
                 Event::Interrupt(interrupt) => self.deliver_interrupt(interrupt).await?,
                 Event::Fault(vector) => self.application_fault(vector).await?,
+                Event::Floating(code) => crate::win87em::report(self, code).await?,
                 Event::Yield => GiveBack(self, false).await,
                 Event::Stop(stop) => return Err(stop),
                 Event::Call(pending) => {

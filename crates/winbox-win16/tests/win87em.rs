@@ -9,7 +9,7 @@
 //! `INT 3Dh` still.
 
 use winbox_cpu::ES;
-use winbox_machine::segment_selector;
+use winbox_machine::{index_for, segment_selector};
 use winbox_ne::Executable;
 use winbox_win16::{Engine, System};
 
@@ -148,9 +148,6 @@ fn f64_at(system: &System, far: u32) -> f64 {
 /// returns past it: `FLD1`, `FLD1`, `FADDP ST(1),ST`, `FWAIT`, `FSTP qword
 /// DS:[DATA]`, each as its OS fixup left it.
 #[test]
-#[ignore = "finding: the Rust engine has no WIN87EM emulator; with the coprocessor off \
-            (the page's switch), INT 34h-3Ch stop the run (`run.rs`, \
-            Stop::Unsupported(\"the floating-point emulator\"))"]
 fn the_emulator_carries_out_an_instruction_after_its_interrupt_and_returns_past_it() {
     let mut code = vec![
         0xcd, 0x35, 0xe8, // FLD1
@@ -165,7 +162,7 @@ fn the_emulator_carries_out_an_instruction_after_its_interrupt_and_returns_past_
 
     let engine = emulated(&code, |_| ());
     let system = engine.system();
-    let data = u32::from(system.cpu.segments[winbox_cpu::DS].selector);
+    let data = index_for(system.cpu.segments[winbox_cpu::DS].selector) as u32;
 
     assert_eq!(system.cpu.ip, 17);
     assert_eq!(
@@ -177,7 +174,6 @@ fn the_emulator_carries_out_an_instruction_after_its_interrupt_and_returns_past_
 /// `INT 3Ch` is an instruction with a segment override: the byte after it
 /// says which segment, here ES (`DDh` with ES's override bits), not DS.
 #[test]
-#[ignore = "finding: the Rust engine has no WIN87EM emulator (as above)"]
 fn the_emulator_takes_the_segment_from_the_byte_after_int_3ch() {
     let mut code = vec![
         0xcd, 0x35, 0xe8, // FLD1
@@ -201,7 +197,7 @@ fn the_emulator_takes_the_segment_from_the_byte_after_int_3ch() {
             .unwrap();
     });
     let system = engine.system();
-    let data = u32::from(system.cpu.segments[winbox_cpu::DS].selector);
+    let data = index_for(system.cpu.segments[winbox_cpu::DS].selector) as u32;
 
     assert_eq!(
         f64_at(&system, ((extra as u32) << 16) + u32::from(DATA)).to_bits(),
@@ -216,11 +212,120 @@ fn the_emulator_takes_the_segment_from_the_byte_after_int_3ch() {
 /// What it does not emulate it leaves, and marks: `FNOP` after `INT 35h`
 /// passed over, 40h set in WIN87EM's status.
 #[test]
-#[ignore = "finding: the Rust engine has no WIN87EM emulator (as above)"]
 fn the_emulator_leaves_what_it_does_not_emulate_and_marks_it() {
     let engine = emulated(&[0xcd, 0x35, 0xd0, 0xeb, 0xfe], |_| ());
     let system = engine.system();
 
     assert_eq!(system.cpu.ip, 3);
     assert_eq!(system.floating.status & 0x40, 0x40);
+}
+
+/// `INT 3Eh`'s vector, where `dos.rs` keeps it, made a procedure at 20h
+/// in the program's code that keeps AX at `DS:[DATA]` and returns.
+fn report_to_data(system: &mut System) {
+    let index = system.modules.last().unwrap().segments[0];
+    let at = (0xffd << 16) + 0x3e * 4;
+
+    system.cpu.bus.write16(at, 0x20);
+    system.cpu.bus.write16(at + 2, segment_selector(index));
+}
+
+/// The procedure `report_to_data` names, at 20h after `code`.
+fn with_procedure(mut code: Vec<u8>) -> Vec<u8> {
+    code.resize(0x20, 0x90);
+    code.push(0xa3); // MOV [DATA],AX
+    code.extend(DATA.to_le_bytes());
+    code.push(0xcb); // RETF
+    code
+}
+
+/// The word at `DS:[offset]`.
+fn data_word(system: &System, offset: u16) -> u16 {
+    let data = index_for(system.cpu.segments[winbox_cpu::DS].selector) as u32;
+
+    system.cpu.bus.read16((data << 16) + u32::from(offset))
+}
+
+/// What it reports it reports to `INT 3Eh`'s procedure, the code in AX,
+/// and the program goes on past the instruction once it returns
+/// (`WIN87EM.DLL` seg1 `67c`, `6eb`). `FNOP` is unemulated: 87h.
+#[test]
+fn the_emulator_reports_to_int_3eh_and_goes_on_past_the_instruction() {
+    let code = with_procedure(vec![0xcd, 0x35, 0xd0, 0xeb, 0xfe]);
+    let engine = emulated(&code, report_to_data);
+    let system = engine.system();
+
+    assert_eq!(system.cpu.ip, 3);
+    assert_eq!(data_word(&system, DATA), 0x87);
+}
+
+/// A division by nought, which the program's control word as WIN87EM
+/// starts it (1332h) leaves unmasked, is reported as 83h, and gathered.
+#[test]
+fn the_emulator_reports_what_the_control_word_leaves_unmasked() {
+    let code = with_procedure(vec![
+        0xcd, 0x35, 0xe8, // FLD1
+        0xcd, 0x35, 0xee, // FLDZ
+        0xcd, 0x3a, 0xf9, // FDIVP ST(1),ST
+        0xeb, 0xfe,
+    ]);
+    let engine = emulated(&code, report_to_data);
+    let system = engine.system();
+
+    assert_eq!(system.cpu.ip, 9);
+    assert_eq!(data_word(&system, DATA), 0x83);
+    assert_eq!(system.floating.status & 0x04, 0x04);
+}
+
+/// The status word it stores has no TOP, which the emulator keeps none of
+/// (`1f94`); the control word it stores is the program's (`1f8d`).
+#[test]
+fn the_emulator_stores_a_status_word_without_top_and_the_programs_control_word() {
+    let mut code = vec![
+        0xcd, 0x35, 0xe8, // FLD1
+        0xcd, 0x39, 0x3e, // FNSTSW [DATA]
+    ];
+
+    code.extend(DATA.to_le_bytes());
+    code.extend([0xcd, 0x35, 0x3e]); // FNSTCW [DATA+2]
+    code.extend((DATA + 2).to_le_bytes());
+    code.extend([0xeb, 0xfe]);
+
+    let engine = emulated(&code, |_| ());
+    let system = engine.system();
+
+    assert_eq!(data_word(&system, DATA) & 0x3800, 0);
+    assert_eq!(data_word(&system, DATA + 2), 0x1332);
+}
+
+/// With a coprocessor, an `INT 35h` is written back as the instruction it
+/// stands for, the `FWAIT` made a `NOP`, and run on the unit (seg1
+/// `8d4`).
+#[test]
+fn with_a_coprocessor_the_instruction_is_written_back_and_run() {
+    let mut system = System::new();
+
+    system.coprocessor = true;
+
+    let (index, libraries) = system.load(
+        Executable::parse(program(&[0xcd, 0x35, 0xe8, 0xeb, 0xfe], None)).unwrap(),
+        "C:\\BACK.EXE",
+    );
+
+    system.link(index);
+    system.start(index, libraries, "").unwrap();
+
+    let engine = Engine::new(system);
+
+    engine.run(10_000, 10.0);
+
+    let mut system = engine.system();
+    let at = (system.modules[index].segments[0] as u32) << 16;
+    let bytes: Vec<u8> = (0..3).map(|i| system.cpu.bus.read8(at + i)).collect();
+
+    assert_eq!(bytes, [0x90, 0xd9, 0xe8]);
+    assert_eq!(
+        system.cpu.fpu.as_mut().unwrap().st(0).to_bits(),
+        1.0f64.to_bits()
+    );
 }

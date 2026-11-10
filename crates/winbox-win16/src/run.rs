@@ -29,6 +29,9 @@ pub(crate) enum Event {
     /// A fault KERNEL takes the program through its boxes for
     /// (`fault.rs`).
     Fault(u8),
+    /// An exception WIN87EM's emulator reports, its code for `INT 3Eh`'s
+    /// procedure (`win87em.rs`).
+    Floating(u16),
     /// The run's deadline in the host's time come, for its caller to be
     /// given the thread back (`EngineRun::step`).
     Yield,
@@ -158,9 +161,30 @@ impl System {
                             self.instructions += 1;
                         }
 
-                        // The emulator's: there is a coprocessor.
+                        // WIN87EM's: with a coprocessor, the instruction
+                        // written back to run on it; without, carried out
+                        // by the emulator, which may report it
+                        // (`win87em.rs`).
+                        0x34..=0x3c if self.coprocessor => {
+                            crate::win87em::put_back(self, vector);
+                            self.instructions += 1;
+                        }
                         0x34..=0x3c => {
-                            return Event::Stop(Stop::Unsupported("the floating-point emulator"));
+                            let start = self.cpu.ip;
+
+                            self.instructions += 1;
+
+                            match crate::win87em::emulate(self, vector) {
+                                Ok(None) => {}
+                                Ok(Some(code)) => return Event::Floating(code),
+                                Err(exit) => {
+                                    self.cpu.ip = start;
+
+                                    if !self.dpmi_fault(exit) {
+                                        return self.processor_stop(exit);
+                                    }
+                                }
+                            }
                         }
                         // The multiplex interrupt: MSCDEX's calls, as
                         // DOSBox's own answers them (`multiplex_interrupt`).
