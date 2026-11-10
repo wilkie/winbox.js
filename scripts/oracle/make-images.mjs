@@ -43,6 +43,8 @@
  *   partition from sector 63, FAT16 of 512-byte clusters on it.
  * * `imgsw1.iso` and `imgsw2.iso`: two discs mounted as one drive's set for
  *   `imgswap`, swapped while it runs (`swapDisc`).
+ * * `imgread.iso`: a disc of one file of 256 KiB, `READ.DAT`, for `cdread`
+ *   to time reads of it (`readDisc`).
  *
  * Needs `mtools` and `xorriso`.
  */
@@ -655,6 +657,29 @@ function swapDisc(disc) {
     isoOf(scratch, `imgsw${disc}.iso`, files, folders, `SWAPDISC${disc}`, utc(1994, 7, disc));
 }
 
+/**
+ * The disc `cdread` reads (`cdread.mounts`): one file, `READ.DAT`, of 128
+ * sectors, each its number in hexadecimal as a line of eight characters
+ * repeated, so a read's bytes say where they came from.
+ */
+function readDisc(scratch) {
+  const data = Buffer.from(
+    Array.from({ length: 128 }, (_, sector) =>
+      `R${sector.toString(16).padStart(5, '0')}\r\n`.repeat(2048 / 8)
+    ).join(''),
+    'latin1'
+  );
+
+  return isoOf(
+    scratch,
+    'imgread.iso',
+    [['READ.DAT', utc(1994, 8, 9, 10, 11, 12), data]],
+    [['', utc(1994, 8, 9, 10, 11, 14)]],
+    'WINBOXREAD',
+    utc(1994, 8, 9)
+  );
+}
+
 /* ------------------------------------------------------------ CUE/BIN */
 
 /** A number as two binary-coded decimal digits. */
@@ -754,6 +779,7 @@ async function main() {
       ['imgwrite.img', makeWriteFloppy],
       ['imgsw1.iso', swapDisc(1)],
       ['imgsw2.iso', swapDisc(2)],
+      ['imgread.iso', readDisc],
       ['imgcd.bin', async () => rawSectors(await discBytes(), 1)],
       [
         'imgcd.cue',

@@ -1,0 +1,280 @@
+{
+  "probe": "cdread",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "80073,276,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "79822,275,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "first",
+      "args": "D:\\READ.DAT",
+      "result": "8,5230303030300d0a"
+    },
+    {
+      "function": "once",
+      "args": "D,2048,1",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "D,2048,2",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "D,2048,3",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "D,2048,4",
+      "result": "2048,1"
+    },
+    {
+      "function": "once",
+      "args": "D,2048,5",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "D,16384,1",
+      "result": "16384,1"
+    },
+    {
+      "function": "once",
+      "args": "D,16384,2",
+      "result": "16384,0"
+    },
+    {
+      "function": "once",
+      "args": "D,16384,3",
+      "result": "16384,1"
+    },
+    {
+      "function": "once",
+      "args": "D,16384,4",
+      "result": "16384,0"
+    },
+    {
+      "function": "once",
+      "args": "D,16384,5",
+      "result": "16384,1"
+    },
+    {
+      "function": "once",
+      "args": "D,32768,1",
+      "result": "32768,0"
+    },
+    {
+      "function": "once",
+      "args": "D,32768,2",
+      "result": "32768,0"
+    },
+    {
+      "function": "once",
+      "args": "D,32768,3",
+      "result": "32768,1"
+    },
+    {
+      "function": "once",
+      "args": "D,32768,4",
+      "result": "32768,1"
+    },
+    {
+      "function": "once",
+      "args": "D,32768,5",
+      "result": "32768,0"
+    },
+    {
+      "function": "once",
+      "args": "D,65535,1",
+      "result": "65535,2"
+    },
+    {
+      "function": "once",
+      "args": "D,65535,2",
+      "result": "65535,0"
+    },
+    {
+      "function": "once",
+      "args": "D,65535,3",
+      "result": "65535,2"
+    },
+    {
+      "function": "once",
+      "args": "D,65535,4",
+      "result": "65535,1"
+    },
+    {
+      "function": "once",
+      "args": "D,65535,5",
+      "result": "65535,2"
+    },
+    {
+      "function": "many",
+      "args": "D,2048",
+      "result": "9042,18518016,1000,18518"
+    },
+    {
+      "function": "many",
+      "args": "D,16384",
+      "result": "2172,35586048,1000,35586"
+    },
+    {
+      "function": "many",
+      "args": "D,32768",
+      "result": "1422,46596096,1000,46596"
+    },
+    {
+      "function": "many",
+      "args": "D,65535",
+      "result": "713,46726455,1000,46726"
+    },
+    {
+      "function": "first",
+      "args": "C:\\ORACLE\\CDREAD.DAT",
+      "result": "8,5230303030300d0a"
+    },
+    {
+      "function": "once",
+      "args": "C,2048,1",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "C,2048,2",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "C,2048,3",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "C,2048,4",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "C,2048,5",
+      "result": "2048,0"
+    },
+    {
+      "function": "once",
+      "args": "C,16384,1",
+      "result": "16384,0"
+    },
+    {
+      "function": "once",
+      "args": "C,16384,2",
+      "result": "16384,1"
+    },
+    {
+      "function": "once",
+      "args": "C,16384,3",
+      "result": "16384,0"
+    },
+    {
+      "function": "once",
+      "args": "C,16384,4",
+      "result": "16384,0"
+    },
+    {
+      "function": "once",
+      "args": "C,16384,5",
+      "result": "16384,1"
+    },
+    {
+      "function": "once",
+      "args": "C,32768,1",
+      "result": "32768,0"
+    },
+    {
+      "function": "once",
+      "args": "C,32768,2",
+      "result": "32768,1"
+    },
+    {
+      "function": "once",
+      "args": "C,32768,3",
+      "result": "32768,1"
+    },
+    {
+      "function": "once",
+      "args": "C,32768,4",
+      "result": "32768,1"
+    },
+    {
+      "function": "once",
+      "args": "C,32768,5",
+      "result": "32768,1"
+    },
+    {
+      "function": "once",
+      "args": "C,65535,1",
+      "result": "65535,1"
+    },
+    {
+      "function": "once",
+      "args": "C,65535,2",
+      "result": "65535,2"
+    },
+    {
+      "function": "once",
+      "args": "C,65535,3",
+      "result": "65535,1"
+    },
+    {
+      "function": "once",
+      "args": "C,65535,4",
+      "result": "65535,2"
+    },
+    {
+      "function": "once",
+      "args": "C,65535,5",
+      "result": "65535,2"
+    },
+    {
+      "function": "many",
+      "args": "C,2048",
+      "result": "8983,18397184,1000,18397"
+    },
+    {
+      "function": "many",
+      "args": "C,16384",
+      "result": "2175,35635200,1000,35635"
+    },
+    {
+      "function": "many",
+      "args": "C,32768",
+      "result": "1420,46530560,1000,46530"
+    },
+    {
+      "function": "many",
+      "args": "C,65535",
+      "result": "711,46595385,1000,46595"
+    }
+  ]
+}

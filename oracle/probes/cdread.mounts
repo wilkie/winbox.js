@@ -1,0 +1,2 @@
+# D: a disc of one file of 256 KiB: see cdread.c.
+d: imgread.iso iso
