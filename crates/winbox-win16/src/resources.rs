@@ -8,7 +8,7 @@
 use std::rc::Rc;
 use winbox_machine::{handle_for, index_for};
 
-use winbox_ne::{Executable, Resource, ResourceId};
+use winbox_ne::{Executable, NameEntry, Resource, ResourceId};
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::{Engine, GuestArg, Register};
@@ -23,6 +23,7 @@ const FIRST: u16 = 0x4000;
 const HFILE_ERROR: u16 = 0xffff;
 
 /// What a resource is asked for by: a number, or a name.
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Wanted {
     Number(u16),
     Name(String),
@@ -65,25 +66,128 @@ fn named(text: String) -> Wanted {
     }
 }
 
-/// An identity as text: a number in decimal, a name as it is.
-fn text_of(id: &ResourceId) -> String {
-    match id {
-        ResourceId::Number(number) => number.to_string(),
-        ResourceId::Name(name) => name.clone(),
+/// A character of a name asked for in upper case, as KERNEL makes one
+/// (`KRNL386.EXE` seg1 `09af`, `83e9`-`83ff`): a to z, and `E0h` to `FEh` but
+/// `F7h`.
+fn upper(character: char) -> u32 {
+    match u32::from(character) {
+        code @ (0x61..=0x7a | 0xe0..=0xf6 | 0xf8..=0xfe) => code - 0x20,
+        code => code,
     }
 }
 
-/// Whether a type or a resource is the one asked for: a number by its
-/// number; a name, without regard to case, by its name or its identity.
-fn matches(id: &ResourceId, name: Option<&String>, wanted: &Wanted) -> bool {
-    match wanted {
-        Wanted::Number(number) => *id == ResourceId::Number(*number),
-        Wanted::Name(text) => {
-            let shown = name.cloned().unwrap_or_else(|| text_of(id));
+/// Whether a type or a resource of the resource table is the one asked
+/// for, as `FindResource` compares them (`KRNL386.EXE` seg3 `0bed`-`0bf6`,
+/// `0c1f`-`0c2b`, `0af9`-`0b35`): a number with the high bit its word has,
+/// so a numbered one of that number; a name a named one alone, as long and
+/// each of its characters in upper case the table's as it is. A number
+/// never matches a name, nor plain digits a number ([[probe:nametab]]).
+fn matches(id: &ResourceId, wanted: &Wanted) -> bool {
+    match (id, wanted) {
+        (ResourceId::Number(number), Wanted::Number(asked)) => *number == asked & 0x7fff,
+        (ResourceId::Name(name), Wanted::Name(text)) => {
+            name.chars().count() == text.chars().count()
+                && name
+                    .chars()
+                    .zip(text.chars())
+                    .all(|(held, asked)| u32::from(held) == upper(asked))
+        }
+        _ => false,
+    }
+}
 
-            shown.eq_ignore_ascii_case(text) || text_of(id).eq_ignore_ascii_case(text)
+/// Whether a name asked for is a `NAMETABLE`'s, compared as KERNEL's
+/// ordinal 87 compares them, A to Z without regard to case (`KRNL386.EXE`
+/// seg1 `838e`-`83bf`, `8400`).
+fn same_name(held: &str, asked: &str) -> bool {
+    held.eq_ignore_ascii_case(asked)
+}
+
+/// A type and a resource asked for, numbered as the module's `NAMETABLE`
+/// numbers them (`KRNL386.EXE` seg3 `0964`-`0abd`). The table is asked
+/// only where the type is a name, or the resource is a name and the type a
+/// number. Its first entry whose type and resource are those asked -- a
+/// number its word as it is, high bit and all; a name its name -- gives
+/// the type its word, and the resource its word, each only where that has
+/// its high bit; else each stays as asked, and the resource table's own
+/// names are compared (`0bb3`). Without a resource asked
+/// (`SetResourceHandler`, `0b64`), the first entry of the type gives its
+/// word, high bit or not.
+fn numbered(table: &[NameEntry], kind: &Wanted, name: Option<&Wanted>) -> (Wanted, Option<Wanted>) {
+    let number = |wanted: Option<&Wanted>| match wanted {
+        Some(Wanted::Number(number)) => *number,
+        _ => 0,
+    };
+    let mut kind_number = number(Some(kind));
+    let mut name_number = number(name);
+
+    if kind_number == 0 || (name_number == 0 && name.is_some()) {
+        for entry in table {
+            let kind_is = match kind {
+                Wanted::Number(number) => entry.kind == *number,
+                Wanted::Name(text) => same_name(&entry.type_name, text),
+            };
+
+            if !kind_is {
+                continue;
+            }
+
+            let name_is = match name {
+                None => {
+                    kind_number = entry.kind;
+                    break;
+                }
+                Some(Wanted::Number(number)) => entry.id == *number,
+                Some(Wanted::Name(text)) => same_name(&entry.name, text),
+            };
+
+            if name_is {
+                if entry.kind & 0x8000 != 0 {
+                    kind_number = entry.kind;
+                }
+
+                if entry.id & 0x8000 != 0 {
+                    name_number = entry.id;
+                }
+
+                break;
+            }
         }
     }
+
+    (
+        if kind_number == 0 {
+            kind.clone()
+        } else {
+            Wanted::Number(kind_number)
+        },
+        name.map(|name| {
+            if name_number == 0 {
+                name.clone()
+            } else {
+                Wanted::Number(name_number)
+            }
+        }),
+    )
+}
+
+/// A resource in a module's resource table: the first type that is the
+/// one asked for, and the first of its resources that is -- none where
+/// that type has none (`KRNL386.EXE` seg3 `0be9`-`0c46`), whatever types
+/// of the same come after it.
+fn locate(executable: &Executable, name: &Wanted, kind: &Wanted) -> Option<(usize, usize)> {
+    let (kind, name) = numbered(&executable.name_table, kind, Some(name));
+    let name = name?;
+    let type_index = executable
+        .resources
+        .iter()
+        .position(|resource_type| matches(&resource_type.id, &kind))?;
+    let entry_index = executable.resources[type_index]
+        .entries
+        .iter()
+        .position(|entry| matches(&entry.id, &name))?;
+
+    Some((type_index, entry_index))
 }
 
 /// A loaded resource: its block's handle, and its uses; whether a handler
@@ -228,20 +332,7 @@ fn find_in(system: &mut System, instance: u16, name: &Wanted, kind: &Wanted) -> 
     let Some(executable) = system.resource_file(owner) else {
         return 0;
     };
-    let found = executable
-        .resources
-        .iter()
-        .enumerate()
-        .filter(|(_, resource_type)| matches(&resource_type.id, resource_type.name.as_ref(), kind))
-        .find_map(|(type_index, resource_type)| {
-            resource_type
-                .entries
-                .iter()
-                .position(|entry| matches(&entry.id, entry.name.as_ref(), name))
-                .map(|entry_index| (type_index, entry_index))
-        });
-
-    found.map_or(0, |(kind, entry)| {
+    locate(&executable, name, kind).map_or(0, |(kind, entry)| {
         system.resource_handle(owner, kind, entry)
     })
 }
@@ -454,10 +545,9 @@ pub fn sizeof_resource(system: &mut System, args: &mut Args) -> Result<Answer, S
     ))
 }
 
-/// A resource of a type by a name as USER takes one, as `findResource`
-/// finds it: a number; `#` and digits, a number; else a name, compared
-/// without regard to case with the resource's name or its number as text.
-/// Its bytes.
+/// A resource of a numbered type by a name as USER takes one, found as
+/// `FindResource` finds it (`find_in`): a number; `#` and digits, a
+/// number; else a name. Its bytes.
 pub fn find_by<'a>(
     executable: &'a Executable,
     kind: u16,
@@ -465,30 +555,13 @@ pub fn find_by<'a>(
 ) -> Option<&'a [u8]> {
     use crate::menus::MenuName;
 
-    let (id, text) = match name {
-        MenuName::Number(number) => (Some(*number), None),
-        MenuName::Text(text) => match text
-            .strip_prefix('#')
-            .and_then(|digits| digits.parse().ok())
-        {
-            Some(number) => (Some(number), None),
-            None => (None, Some(text.to_ascii_uppercase())),
-        },
+    let name = match name {
+        MenuName::Number(number) => Wanted::Number(*number),
+        MenuName::Text(text) => named(text.clone()),
     };
-    let resource = executable
-        .resources
-        .iter()
-        .filter(|resource_type| resource_type.id == ResourceId::Number(kind))
-        .flat_map(|resource_type| &resource_type.entries)
-        .find(|resource| {
-            id.is_some_and(|id| resource.id == ResourceId::Number(id))
-                || text.as_ref().is_some_and(|text| {
-                    resource.name.as_deref().unwrap_or("").to_ascii_uppercase() == *text
-                        || text_of(&resource.id).to_ascii_uppercase() == *text
-                })
-        })?;
+    let (kind, entry) = locate(executable, &name, &Wanted::Number(kind))?;
 
-    Some(executable.resource_bytes(resource))
+    Some(executable.resource_bytes(&executable.resources[kind].entries[entry]))
 }
 
 /// KERNEL's own handler's ordinal: its stub is at 8 times one more, 88C8h,
@@ -770,10 +843,11 @@ fn set_handler(system: &mut System, instance: u16, kind: &Wanted, handler: u32) 
     let Some(executable) = system.resource_file(owner) else {
         return 0;
     };
+    let (kind, _) = numbered(&executable.name_table, kind, None);
     let Some(index) = executable
         .resources
         .iter()
-        .position(|resource_type| matches(&resource_type.id, resource_type.name.as_ref(), kind))
+        .position(|resource_type| matches(&resource_type.id, &kind))
     else {
         return 0;
     };
@@ -922,8 +996,9 @@ mod tests {
         assert_eq!(number_of("SIERRAD"), None);
     }
 
-    /// The resource of that number matches, and a name as a name, without
-    /// regard to case.
+    /// The resource of that number matches, and a name a name, asked in
+    /// either case of one the table holds in upper case; plain digits are
+    /// a name, and match no number.
     #[test]
     fn a_number_matches_its_resource_and_a_name_its_name() {
         use super::matches;
@@ -933,18 +1008,87 @@ mod tests {
 
         assert!(matches(
             &ResourceId::Number(164),
-            None,
             &named("#164".to_string())
         ));
         assert!(!matches(
             &ResourceId::Number(165),
-            None,
             &named("#164".to_string())
         ));
+        assert!(matches(&ResourceId::Number(2), &Wanted::Number(0x8002)));
         assert!(matches(
             &ResourceId::Name(sierrad.clone()),
-            Some(&sierrad),
             &named("sierrad".to_string())
         ));
+        assert!(!matches(
+            &ResourceId::Name(sierrad.to_lowercase()),
+            &named("SIERRAD".to_string())
+        ));
+        assert!(!matches(
+            &ResourceId::Number(164),
+            &named("164".to_string())
+        ));
+    }
+
+    /// The `NAMETABLE` numbers what [[probe:nametab]] asks as Windows did.
+    #[test]
+    fn a_name_table_numbers_names_as_kernel_does() {
+        use super::numbered;
+        use winbox_ne::NameEntry;
+
+        let entry = |kind: u16, id: u16, type_name: &str, name: &str| NameEntry {
+            kind,
+            id,
+            type_name: type_name.into(),
+            name: name.into(),
+        };
+        let table = [
+            entry(0xff01, 0x2720, "PALT", ""),
+            entry(0xff01, 0xa811, "PALT", ""),
+            entry(0xff01, 0xa812, "PALT", "SECOND"),
+            entry(0x7f02, 0x2900, "NOHI", ""),
+            entry(0x7f03, 0x8005, "", "BYNUM"),
+            entry(0xff01, 0xa813, "PALT", "DUP"),
+            entry(0xff01, 0xa814, "PALT", "DUP"),
+        ];
+        let name = |text: &str| Wanted::Name(text.into());
+        let ask = |kind: Wanted, wanted: Wanted| numbered(&table, &kind, Some(&wanted));
+        let numbers = |kind: u16, id: u16| (Wanted::Number(kind), Some(Wanted::Number(id)));
+
+        // DOGZDLL's: the type's word, the number asked kept.
+        assert_eq!(
+            ask(name("palt"), Wanted::Number(0x2720)),
+            numbers(0xff01, 0x2720)
+        );
+        // No entry for that number: the names stay for the resource table.
+        assert_eq!(
+            ask(name("PALT"), Wanted::Number(0x2721)),
+            (name("PALT"), Some(Wanted::Number(0x2721)))
+        );
+        // An id with its high bit is no plain number's.
+        assert_eq!(ask(name("PALT"), Wanted::Number(0x2811)).0, name("PALT"));
+        assert_eq!(ask(name("Palt"), name("second")), numbers(0xff01, 0xa812));
+        // A type without its high bit is not taken.
+        assert_eq!(ask(name("NOHI"), Wanted::Number(0x2900)).0, name("NOHI"));
+        // A numbered type's word is compared as it is.
+        assert_eq!(
+            ask(Wanted::Number(0x7f03), name("BYNUM")),
+            numbers(0x7f03, 0x8005)
+        );
+        assert_eq!(
+            ask(Wanted::Number(0x7f01), name("SECOND")).1,
+            Some(name("SECOND"))
+        );
+        // The first entry of two.
+        assert_eq!(ask(name("PALT"), name("DUP")), numbers(0xff01, 0xa813));
+        // Two numbers: the table is not asked.
+        assert_eq!(
+            ask(Wanted::Number(0x7f02), Wanted::Number(0x2900)),
+            numbers(0x7f02, 0x2900)
+        );
+        // SetResourceHandler's: the type's first entry, high bit or not.
+        assert_eq!(
+            numbered(&table, &name("NOHI"), None).0,
+            Wanted::Number(0x7f02)
+        );
     }
 }

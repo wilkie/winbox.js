@@ -119,13 +119,7 @@ fn main() {
                 ResourceId::Name(_) => "?".to_string(),
             };
 
-            writeln!(
-                out,
-                "restype {id} name={} count={}",
-                kind.name.clone().unwrap_or_default(),
-                kind.entries.len()
-            )
-            .unwrap();
+            writeln!(out, "restype {id} count={}", kind.entries.len()).unwrap();
 
             for r in &kind.entries {
                 let id = match &r.id {
@@ -135,14 +129,20 @@ fn main() {
 
                 writeln!(
                     out,
-                    "  res {id} offset={} length={} flags={} name={}",
-                    r.offset,
-                    r.length,
-                    r.flags,
-                    r.name.clone().unwrap_or_default()
+                    "  res {id} offset={} length={} flags={}",
+                    r.offset, r.length, r.flags
                 )
                 .unwrap();
             }
+        }
+
+        for entry in &exe.name_table {
+            writeln!(
+                out,
+                "nametable {:04x} {:04x} {} {}",
+                entry.kind, entry.id, entry.type_name, entry.name
+            )
+            .unwrap();
         }
     }
 }

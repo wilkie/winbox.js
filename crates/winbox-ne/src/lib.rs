@@ -1,8 +1,8 @@
 //! Windows 3.x New Executable files, read: the MZ stub's pointer to the NE
 //! header, the header, the segment table with each segment's relocations,
 //! the entry table, the resident and nonresident name tables, the module
-//! references and the resource table, the old `NAMETABLE` resource's names
-//! with it.
+//! references and the resource table, the old `NAMETABLE` resource's
+//! entries with it.
 //!
 //! What is read is what the file says, nothing placed in memory: the
 //! engine's loader gives each segment its selector and applies the
@@ -137,27 +137,36 @@ pub enum ResourceId {
 }
 
 /// A resource: where its bytes are in the file and how many, its flags and
-/// its identity, and the name the old `NAMETABLE` gives it.
+/// its identity.
 #[derive(Debug, Clone)]
 pub struct Resource {
     pub offset: u32,
     pub length: u32,
     pub flags: u16,
     pub id: ResourceId,
-    pub name: Option<String>,
 }
 
 /// A resource type and its resources.
 #[derive(Debug, Clone)]
 pub struct ResourceType {
     pub id: ResourceId,
-    /// The name a `NAMETABLE` gives a numbered type.
-    pub name: Option<String>,
     pub entries: Vec<Resource>,
 }
 
-/// The old `NAMETABLE` resource's type number.
+/// The old `NAMETABLE` resource's type number, `RT_NAMETABLE`.
 pub const NAME_TABLE: u16 = 0x000f;
+
+/// An entry of the old `NAMETABLE`: a type's word and a resource's, each
+/// as the table has it, the high bit and all, and the names it gives them,
+/// either empty. KERNEL takes a word for the number a name stands for only
+/// where its high bit is set (`KRNL386.EXE` seg3 `0a8a`-`0a9e`).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NameEntry {
+    pub kind: u16,
+    pub id: u16,
+    pub type_name: String,
+    pub name: String,
+}
 
 /// What a relocation points at.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -250,6 +259,10 @@ pub struct Executable {
     /// By ordinal: the first, ordinal nought, is never an entry.
     pub entry_points: Vec<EntryPoint>,
     pub resources: Vec<ResourceType>,
+    /// The `NAMETABLE`'s entries, in its order: resource 1 of type 15, as
+    /// KERNEL finds it (`KRNL386.EXE` seg3 `09ce`-`09e7`); none without
+    /// one.
+    pub name_table: Vec<NameEntry>,
     pub segments: Vec<Segment>,
     /// The first is the module's name.
     pub resident_names: Vec<Name>,
@@ -321,6 +334,7 @@ impl Executable {
             header,
             entry_points,
             resources: Vec::new(),
+            name_table: Vec::new(),
             segments,
             resident_names,
             nonresident_names,
@@ -330,7 +344,7 @@ impl Executable {
 
         executable.resources = read_resources(&file, at, &executable.header)?;
         executable.bytes = bytes;
-        executable.name_resources();
+        executable.name_table = executable.read_name_table();
         Ok(executable)
     }
 
@@ -408,36 +422,25 @@ impl Executable {
         &self.bytes
     }
 
-    /// The names the first `NAMETABLE` gives types and resources.
-    fn name_resources(&mut self) {
+    /// The `NAMETABLE`'s entries: KERNEL asks `FindResource` for resource
+    /// 1 of type 15, by number (`KRNL386.EXE` seg3 `09d6`-`09e7`), which
+    /// finds the first type of that number and that resource in it alone
+    /// (seg3 `0be9`-`0c46`). A table elsewhere, as resource 2, is none
+    /// ([[probe:nametab]]).
+    fn read_name_table(&self) -> Vec<NameEntry> {
         let table = self
             .resources
             .iter()
-            .find(|kind| kind.id == ResourceId::Number(NAME_TABLE));
-        let Some(resource) = table.and_then(|kind| kind.entries.first()).cloned() else {
-            return;
-        };
-        let (type_names, names) = read_name_table(self.resource_bytes(&resource), resource.length);
+            .find(|kind| kind.id == ResourceId::Number(NAME_TABLE))
+            .and_then(|kind| {
+                kind.entries
+                    .iter()
+                    .find(|entry| entry.id == ResourceId::Number(1))
+            });
 
-        for kind in &mut self.resources {
-            let ResourceId::Number(number) = kind.id else {
-                continue;
-            };
-
-            if let Some(name) = type_names.iter().find(|(id, _)| *id == number) {
-                kind.name = Some(name.1.clone());
-            }
-
-            for entry in &mut kind.entries {
-                if let ResourceId::Number(id) = entry.id
-                    && let Some(found) = names
-                        .iter()
-                        .find(|(kind_id, entry_id, _)| *kind_id == number && *entry_id == id)
-                {
-                    entry.name = Some(found.2.clone());
-                }
-            }
-        }
+        table.map_or_else(Vec::new, |resource| {
+            name_entries(self.resource_bytes(resource))
+        })
     }
 }
 
@@ -744,14 +747,12 @@ fn read_resources(
                 length: u32::from(file.u16(offset + 2, table)?) << shift,
                 flags: file.u16(offset + 4, table)?,
                 id: id(file.u16(offset + 6, table)?)?,
-                name: None,
             });
             offset += 12;
         }
 
         kinds.push(ResourceType {
             id: id(raw)?,
-            name: None,
             entries,
         });
     }
@@ -759,54 +760,51 @@ fn read_resources(
     Ok(kinds)
 }
 
-/// The type names and the resource names of a `NAMETABLE`: each entry its
-/// length, the type's number and the resource's, then two strings each
-/// ended by a nought -- the type's name and the resource's, either empty --
-/// as far as there are bytes for one.
-#[allow(clippy::type_complexity)]
-fn read_name_table(bytes: &[u8], length: u32) -> (Vec<(u16, String)>, Vec<(u16, u16, String)>) {
-    let mut type_names: Vec<(u16, String)> = Vec::new();
-    let mut names: Vec<(u16, u16, String)> = Vec::new();
-    let word = |at: usize| u16::from(bytes[at]) | (u16::from(bytes[at + 1]) << 8);
-    let mut offset = 0usize;
+/// A `NAMETABLE`'s entries, as KERNEL walks them (`KRNL386.EXE` seg3
+/// `0a1b`-`0a88`): each a word of its length, the type's word and the
+/// resource's, then the type's name ended by a nought and the resource's
+/// name, ended by one, straight after it -- nothing between the words and
+/// the names, and the names read to their noughts whatever the length
+/// says. The length steps to the next entry; one whose length is nought
+/// ends the table after it is read, as a word of nought after the last
+/// does. KERNEL reads no further than the noughts; here, no further than
+/// the resource's bytes.
+pub fn name_entries(bytes: &[u8]) -> Vec<NameEntry> {
+    let byte = |at: usize| bytes.get(at).copied().unwrap_or(0);
+    let word = |at: usize| u16::from(byte(at)) | (u16::from(byte(at + 1)) << 8);
+    let string = |mut at: usize| {
+        let mut text = String::new();
 
-    while offset < length as usize && offset + 6 <= bytes.len() {
-        let size = usize::from(word(offset));
-        let kind = word(offset + 2) & 0x7fff;
-        let id = word(offset + 4) & 0x7fff;
-
-        if size < 6 {
-            break;
-        }
-
-        let end = (offset + size).min(bytes.len());
-        let mut strings = [String::new(), String::new()];
-        let mut at = offset + 6;
-
-        for string in &mut strings {
-            while at < end && bytes[at] != 0 {
-                string.push(char::from(bytes[at]));
-                at += 1;
-            }
-
+        while at < bytes.len() && bytes[at] != 0 {
+            text.push(char::from(bytes[at]));
             at += 1;
         }
 
-        let [type_name, name] = strings;
+        (text, at + 1)
+    };
+    let mut entries = Vec::new();
+    let mut offset = 0usize;
 
-        if !type_name.is_empty() && !type_names.iter().any(|(number, _)| *number == kind) {
-            type_names.push((kind, type_name));
+    while offset + 6 <= bytes.len() {
+        let length = usize::from(word(offset));
+        let (type_name, after) = string(offset + 6);
+        let (name, _) = string(after);
+
+        entries.push(NameEntry {
+            kind: word(offset + 2),
+            id: word(offset + 4),
+            type_name,
+            name,
+        });
+
+        offset += length;
+
+        if length == 0 || word(offset) == 0 {
+            break;
         }
-
-        if !name.is_empty() {
-            names.retain(|(number, entry, _)| !(*number == kind && *entry == id));
-            names.push((kind, id, name));
-        }
-
-        offset += size;
     }
 
-    (type_names, names)
+    entries
 }
 
 /// An iterated segment's records spelled out: each a word of repeats, a
@@ -833,6 +831,75 @@ pub fn expand(records: &[u8]) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// One entry's bytes: its length, its words and its names.
+    fn entry(kind: u16, id: u16, type_name: &str, name: &str, pad: usize) -> Vec<u8> {
+        let length = 6 + type_name.len() + 1 + name.len() + 1 + pad;
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&(length as u16).to_le_bytes());
+        bytes.extend_from_slice(&kind.to_le_bytes());
+        bytes.extend_from_slice(&id.to_le_bytes());
+        bytes.extend_from_slice(type_name.as_bytes());
+        bytes.push(0);
+        bytes.extend_from_slice(name.as_bytes());
+        bytes.push(0);
+        bytes.resize(length, 0);
+        bytes
+    }
+
+    #[test]
+    fn reads_a_name_tables_entries_as_they_are() {
+        // DOGZDLL.DLL's layout: twelve bytes, the type's word with its high
+        // bit, the id's without, "PALT" and an empty name; then one padded
+        // past its names, one naming a resource, and a word of nought.
+        let mut bytes = entry(0xff01, 0x2720, "PALT", "", 0);
+
+        bytes.extend(entry(0xff01, 0x2810, "PALT", "", 2));
+        bytes.extend(entry(0x7f03, 0x8005, "", "BYNUM", 0));
+        bytes.extend([0, 0, 0, 0]);
+        assert_eq!(&bytes[0..12], b"\x0c\x00\x01\xff\x20\x27PALT\0\0");
+
+        let entries = name_entries(&bytes);
+
+        assert_eq!(
+            entries,
+            vec![
+                NameEntry {
+                    kind: 0xff01,
+                    id: 0x2720,
+                    type_name: "PALT".into(),
+                    name: String::new(),
+                },
+                NameEntry {
+                    kind: 0xff01,
+                    id: 0x2810,
+                    type_name: "PALT".into(),
+                    name: String::new(),
+                },
+                NameEntry {
+                    kind: 0x7f03,
+                    id: 0x8005,
+                    type_name: String::new(),
+                    name: "BYNUM".into(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn a_name_tables_entry_of_nought_length_ends_it_once_read() {
+        let mut bytes = entry(0xff01, 0x2720, "PALT", "", 0);
+
+        bytes[0] = 0;
+        bytes.extend(entry(0xff02, 0x2721, "MORE", "", 0));
+
+        let entries = name_entries(&bytes);
+
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].type_name, "PALT");
+        assert!(name_entries(&[1, 0, 2]).is_empty());
+    }
 
     #[test]
     fn spells_out_iterated_records() {

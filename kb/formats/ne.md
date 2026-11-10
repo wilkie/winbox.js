@@ -39,3 +39,7 @@ Every Windows 3.1 program, library, driver and font resource is an NE file: an M
 ## Resources
 
 [[documented]] The resource table starts with the alignment shift, then a run of types, each with its count and its entries — offset and length in units of that shift, flags, and an id, which is a number with the top bit set or an offset to a length-prefixed name. The [[format:fot]] is two resources and nothing else.
+
+### The name table
+
+[[read out]] An old-style name table is resource 1 of type 15 (`RT_NAMETABLE`), which KERNEL finds by number (`KRNL386.EXE` seg3 `09ab`-`09e7`); a table of another number is not read ([[probe:nametab]]). Each entry is a word of its length, a word of a type, a word of a resource's id, then the type's name ended by a nought and the resource's name ended by one, either empty -- nothing between the words and the names. The length steps to the next entry, so bytes past the names are skipped; a length of nought ends the table. A word with its high bit set is the number its name stands for; one without is not taken (seg3 `0a8a`-`0a9e`). `DOGZDLL.DLL`'s two entries are twelve bytes each: type FF01h, ids 2720h and 2810h (no high bit), `PALT` and an empty name. Modern resource compilers write no such table; `build-probes.mjs` lays one out from named constants (`NAME_TABLES`). How [[fn:KERNEL.FindResource]] uses it is on its page.
