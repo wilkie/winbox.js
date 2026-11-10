@@ -1,0 +1,22 @@
+/* NAMETABD.DLL's resources. Each holds its own tag, which the probe reads
+ * back to say which it found. Types 32513-32516 are 7F01h-7F04h, the
+ * numbers the name table gives names; PALT and NOHI are types named in
+ * the resource table itself. */
+
+10016 32513 { "T1-2720\0" }
+10017 32513 { "T1-2721\0" }
+10256 32513 { "T1-2810\0" }
+10257 32513 { "T1-2811\0" }
+10258 32513 { "T1-2812\0" }
+10259 32513 { "T1-2813\0" }
+10260 32513 { "T1-2814\0" }
+10496 32514 { "T2-2900\0" }
+5 32515 { "T3-5\0" }
+7 32516 { "T4-7\0" }
+10017 PALT { "NP-2721\0" }
+NAME1 PALT { "NP-NAME1\0" }
+10496 NOHI { "NN-2900\0" }
+
+/* The name table: its bytes are written by `build-probes.mjs` from the
+ * entries it names for this probe (`NAME_TABLES`). */
+1 15 "NAMETABD.NT"

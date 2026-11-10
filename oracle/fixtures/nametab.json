@@ -1,0 +1,154 @@
+{
+  "probe": "nametab",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "LoadLibrary",
+      "args": "NAMETABD.DLL",
+      "result": "loaded"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=1,n=f",
+      "result": "found,128"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2720,\"PALT\"",
+      "result": "T1-2720,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2810,\"PALT\"",
+      "result": "T1-2810,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2810,\"palt\"",
+      "result": "T1-2810,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2810,\"Palt\"",
+      "result": "T1-2810,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2721,\"PALT\"",
+      "result": "NP-2721,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2811,\"PALT\"",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=a811,\"PALT\"",
+      "result": "T1-2811,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"SECOND\",\"PALT\"",
+      "result": "T1-2812,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"second\",\"palt\"",
+      "result": "T1-2812,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"NAME1\",\"PALT\"",
+      "result": "NP-NAME1,10"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2900,\"NOHI\"",
+      "result": "NN-2900,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"BYNUM\",n=7f03",
+      "result": "T3-5,6"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"VIANUM\",n=7f04",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"VIANUM\",n=ff04",
+      "result": "T4-7,6"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"SECOND\",n=7f01",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"DUP\",\"PALT\"",
+      "result": "T1-2813,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"#10016\",\"PALT\"",
+      "result": "T1-2720,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2720,\"#32513\"",
+      "result": "T1-2720,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"#10016\",\"#32513\"",
+      "result": "T1-2720,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"10016\",\"PALT\"",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2722,\"PALT\"",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:\"NOSUCH\",\"PALT\"",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "dll:n=2720,\"NOSUCH\"",
+      "result": "0"
+    },
+    {
+      "function": "FindResource",
+      "args": "exe:n=2,n=f",
+      "result": "found,14"
+    },
+    {
+      "function": "FindResource",
+      "args": "exe:n=2720,n=7f01",
+      "result": "E-2720,8"
+    },
+    {
+      "function": "FindResource",
+      "args": "exe:n=2720,\"PALT\"",
+      "result": "0"
+    }
+  ]
+}

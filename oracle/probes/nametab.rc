@@ -1,0 +1,6 @@
+/* NAMETAB.EXE's own resources: type 7F01h's 2720h, and a name table that
+ * is resource 2 of type 15, not 1. Its bytes are written by
+ * `build-probes.mjs` (`NAME_TABLES`). */
+
+10016 32513 { "E-2720\0" }
+2 15 "NAMETAB.NT"

@@ -168,6 +168,8 @@ async function buildLibrary(name) {
     BUILD
   );
   await rm(object, { force: true });
+  /* And its resources, in `<name>.dll.rc`, as a program's. */
+  await bindResources(join(PROBES, `${name}.dll.rc`), library);
 
   return library;
 }
@@ -271,6 +273,86 @@ async function unstamp(path) {
   await writeFile(path, data);
 }
 
+/**
+ * Old-style name tables (`RT_NAMETABLE`, type 15), which no resource
+ * compiler of ours writes: for each file, the entries its table holds. A
+ * script names the table's bytes as a file, `<FILE>.NT` -- `1 15
+ * "NAMETABD.NT"` -- and they are written here before it is compiled.
+ *
+ * Each entry is laid out as `KRNL386.EXE` walks one (seg3 `0a1b`-`0a88`):
+ * a word of the entry's length, which steps to the next, a word of the
+ * type, a word of the resource's id, the type's name ended by a nought and
+ * the resource's name ended by one, either empty; `pad` bytes of nought
+ * after them, counted in the length. A word of nought length ends the
+ * table. A type or an id with its high bit (`NUMBERED`) is a number the
+ * name stands for; KERNEL takes only those (seg3 `0a8a`-`0a9e`).
+ */
+const RT_NAMETABLE = 15;
+const NUMBERED = 0x8000;
+const NAME_TABLES = {
+  /* `nametab.c`'s library: its comment lists what each entry tries. */
+  'NAMETABD.NT': [
+    { type: NUMBERED | 0x7f01, id: 0x2720, typeName: 'PALT', name: '' },
+    { type: NUMBERED | 0x7f01, id: 0x2810, typeName: 'PALT', name: '', pad: 2 },
+    { type: NUMBERED | 0x7f01, id: NUMBERED | 0x2811, typeName: 'PALT', name: '' },
+    { type: NUMBERED | 0x7f01, id: NUMBERED | 0x2812, typeName: 'PALT', name: 'SECOND' },
+    { type: 0x7f02, id: 0x2900, typeName: 'NOHI', name: '' },
+    { type: 0x7f03, id: NUMBERED | 5, typeName: '', name: 'BYNUM' },
+    { type: NUMBERED | 0x7f04, id: NUMBERED | 7, typeName: '', name: 'VIANUM' },
+    { type: NUMBERED | 0x7f01, id: NUMBERED | 0x2813, typeName: 'PALT', name: 'DUP' },
+    { type: NUMBERED | 0x7f01, id: NUMBERED | 0x2814, typeName: 'PALT', name: 'DUP' },
+  ],
+  /* `nametab.c`'s program: resource 2 of the type, not 1. */
+  'NAMETAB.NT': [{ type: NUMBERED | 0x7f01, id: 0x2720, typeName: 'PALT', name: '' }],
+};
+
+/** A name table's bytes: its entries, then a word of nought. */
+function nameTable(entries) {
+  const parts = entries.map(({ type, id, typeName, name, pad = 0 }) => {
+    const strings = Buffer.from(`${typeName}\0${name}\0`, 'latin1');
+    const entry = Buffer.alloc(6 + strings.length + pad);
+
+    entry.writeUInt16LE(entry.length, 0);
+    entry.writeUInt16LE(type, 2);
+    entry.writeUInt16LE(id, 4);
+    strings.copy(entry, 6);
+
+    return entry;
+  });
+
+  return Buffer.concat([...parts, Buffer.alloc(2)]);
+}
+
+/**
+ * Compiles a resource script, where there is one, and binds it into a
+ * program or a library once it is linked. `-s0` keeps the linker's order
+ * of the segments. The name tables the script names are written first.
+ */
+async function bindResources(script, target) {
+  if (!(await stat(script).catch(() => null))) {
+    return;
+  }
+
+  const text = await readFile(script, 'latin1');
+
+  for (const [file, entries] of Object.entries(NAME_TABLES)) {
+    if (text.includes(`${RT_NAMETABLE} "${file}"`)) {
+      await writeFile(join(BUILD, file), nameTable(entries));
+    }
+  }
+
+  const compiled = join(BUILD, `${basename(target)}.res`);
+
+  await run('wrc', ['-q', '-r', '-bt=windows', script, `-fo=${compiled}`], BUILD);
+  await unstamp(compiled);
+  await run('wrc', ['-q', '-bt=windows', '-s0', compiled, target], BUILD);
+  await rm(compiled, { force: true });
+
+  for (const file of Object.keys(NAME_TABLES)) {
+    await rm(join(BUILD, file), { force: true });
+  }
+}
+
 /** Compiles and links one probe. */
 async function build(name) {
   const source = join(PROBES, `${name}.c`);
@@ -332,18 +414,8 @@ async function build(name) {
   }
 
   /* A probe that measures resources brings its own, in a script of the same
-   * name, bound into the program once it is linked. `-s0` keeps the linker's
-   * order of the segments. */
-  const script = join(PROBES, `${name}.rc`);
-
-  if (await stat(script).catch(() => null)) {
-    const compiled = join(BUILD, `${name}.res`);
-
-    await run('wrc', ['-q', '-r', '-bt=windows', script, `-fo=${compiled}`], BUILD);
-    await unstamp(compiled);
-    await run('wrc', ['-q', '-bt=windows', '-s0', compiled, executable], BUILD);
-    await rm(compiled, { force: true });
-  }
+   * name, bound into the program once it is linked. */
+  await bindResources(join(PROBES, `${name}.rc`), executable);
 
   /* A probe that defines `PROBE_WIN31` is marked as made for Windows 3.10:
    * its header's expected version, the word at 3Eh, 30Ah where the linker
