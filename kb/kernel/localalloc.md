@@ -6,7 +6,7 @@ ordinal: 5
 summary: Takes a block from the local heap of the current data segment, returning a handle for a moveable block and a near pointer for a fixed one.
 versions:
   '3.1': exact
-probes: [memory, lheapseg]
+probes: [memory, lheapseg, dslimit]
 topics: [global-and-local-memory]
 ---
 
@@ -19,7 +19,7 @@ topics: [global-and-local-memory]
 ## Nuances
 
 - [[documented]] The block comes from the local heap of whatever data segment `DS` names at the time of the call.
-- A heap that is full grows, its segment or block with it ([[topic:global-and-local-memory]], [[probe:localgro]], [[probe:lheapseg]]).
+- A heap that is full grows, its segment or block with it ([[topic:global-and-local-memory]], [[probe:localgro]], [[probe:lheapseg]]). [[measured]] [[probe:dslimit]]: a program's data segment grown so has its new size for its limit, and the caller's DS reaches it after the call: KERNEL pops the DS it pushed (`KRNL386.EXE` seg1 `8ab9`, `8b46`), and its routine that sets the limit reloads SS, ES and DS (seg1 `2385`-`238c`).
 - [[read out]] A moveable block's handle is an entry of one of the heap's handle tables, a fixed block of 32 entries made when a handle is wanted and none is free; the block itself goes at the top of the last free block it fits, a fixed one at the bottom of the first (`KRNL386.EXE` seg1 `8ab6`, `9283`). A moveable block of nought bytes is a handle standing for a discarded block; a fixed one is refused. [[measured]] [[probe:lheapseg]] records the handles and where the heap grows ([[topic:global-and-local-memory]]).
 - Not yet measured: `LMEM_DISCARDABLE`, and `LMEM_ZEROINIT` contents.
 

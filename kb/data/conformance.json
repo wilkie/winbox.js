@@ -6841,6 +6841,36 @@
   },
   "gaps": {}
  },
+ "dslimit": {
+  "probe": "dslimit",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "cs": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ds": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "header": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "editclip": {
   "probe": "editclip",
   "display": "vga",
@@ -7710,8 +7740,8 @@
    },
    "kernel": {
     "total": 11,
-    "agreed": 8,
-    "disagreed": 3,
+    "agreed": 10,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7733,7 +7763,7 @@
   "gaps": {
    "vxd": "WIN386's devices' entry points, which WinBox has none of",
    "dpmi": "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
-   "kernel": "a segment's limit, and GetFreeSpace less the program's own segments"
+   "kernel": "GetFreeSpace less the program's own segments"
   }
  },
  "enhanced/freemem": {
@@ -7767,6 +7797,43 @@
   "gaps": {
    "free": "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments"
   }
+ },
+ "enhanced/w386box": {
+  "probe": "w386box",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "asks": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "end": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "start": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "enhanced/w386dpmi": {
   "probe": "w386dpmi",
@@ -7862,15 +7929,13 @@
    },
    "supervisor": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "supervisor": "a program's data segment's limit, its size in Windows"
-  }
+  "gaps": {}
  },
  "enhanced/w386lib": {
   "probe": "w386lib",
@@ -7956,8 +8021,8 @@
    },
    "kernel": {
     "total": 11,
-    "agreed": 8,
-    "disagreed": 3,
+    "agreed": 10,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7978,7 +8043,7 @@
   },
   "gaps": {
    "dpmi": "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
-   "kernel": "a segment's limit, and GetFreeSpace less the program's own segments"
+   "kernel": "GetFreeSpace less the program's own segments"
   }
  },
  "enumfam-ega": {
@@ -25912,6 +25977,22 @@
   },
   "gaps": {}
  },
+ "procnum": {
+  "probe": "procnum",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 126,
+  "functions": {
+   "procnum": {
+    "total": 126,
+    "agreed": 126,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "profhold": {
   "probe": "profhold",
   "display": "vga",
@@ -33233,6 +33314,43 @@
    "update": {
     "total": 19,
     "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "w386box": {
+  "probe": "w386box",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "asks": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "end": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "start": {
+    "total": 1,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

@@ -1216,7 +1216,7 @@ pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<
 pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
-    "w386lib",
+    "w386lib", "w386box",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1626,13 +1626,12 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "enhmode:dpmi",
         "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
     ),
-    // Its `kernel` records: a code and a data segment's limits, which are
-    // the segments' sizes under Windows and FFFFh in WinBox; and
-    // `GetFreeSpace`, which tells every program what `galimit` was told
-    // (`kb/topics/global-and-local-memory.md`, "How much there is").
+    // Its `kernel` records: `GetFreeSpace`, which tells every program what
+    // `galimit` was told (`kb/topics/global-and-local-memory.md`, "How much
+    // there is"). Its code and data segments' limits agree (`dslimit`).
     (
         "enhmode:kernel",
-        "a segment's limit, and GetFreeSpace less the program's own segments",
+        "GetFreeSpace less the program's own segments",
     ),
     // In enhanced mode, INT 2Fh 1684h gives an entry point for ten of WIN386's
     // devices; WinBox has none of them yet, and answers none for each.
@@ -1688,13 +1687,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "dpmiexc:vector",
         "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox",
-    ),
-    // The Win386 supervisor's own data segment is the program's 16-bit one,
-    // whose limit Windows makes its size and WinBox 64 KiB
-    // (`kb/topics/global-and-local-memory.md`, "Not yet done").
-    (
-        "enhanced/w386env:supervisor",
-        "a program's data segment's limit, its size in Windows",
     ),
     //
     // The records that passed with no adapter, and the recordings in

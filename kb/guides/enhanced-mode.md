@@ -174,7 +174,7 @@ What the Win386 supervisor and the programs it runs need, measured one call at a
 4. **A library as well as a program (done).** [[probe:w386lib]] loads a Win386 library of its own and calls its 32-bit code. Lode Runner's setup, on the owner's disc, now loads `SMACKE16.DLL` and draws Sierra Setup's main menu; on the way, `GetProcAddress` compares a name as KERNEL does, `FindResource` reads `#164` as a number, and the Rust engine's `GetExePtr` takes a module's own handle where two modules share a name ([[topic:win386]]).
 5. **Win32s** after that, a project of its own ([[topic:win32s]]): `W32SYS.DLL` refuses anything but enhanced mode with virtual memory.
 
-**Registered.** `enhanced/w386ver`, `enhanced/w386dpmi` and `enhanced/w386lib` agree whole; `enhanced/w386env` but for its GS's limit, a program's data segment's ([[topic:global-and-local-memory]], "Not yet done").
+**Registered.** `enhanced/w386ver`, `enhanced/w386env`, `enhanced/w386dpmi`, `enhanced/w386lib` and `enhanced/w386box` agree whole, and `w386box` in standard mode, where the supervisor shows its box ([[topic:win386]]).
 
 ### Out of scope: DOS sessions
 
@@ -214,5 +214,4 @@ Phase 2 after its first answers, and phase 4's Win32s; what phase 4's Win386 lea
 - What KERNEL does with a DOS program in each mode (`KRNL386.EXE` seg2 `0506`-`0529`), and the routine it calls without paging (seg1 `b4eb`), are not read further. Nor are GDI's `FinalGDIInit`, TOOLHELP's or COMM's branches.
 - WIN386's own INT 31h dispatcher is not read out: what it answers is what the probes measured ([[topic:dpmi-functions]]).
 - INT 2Fh 160Ah is not answered to a protected-mode program in either mode. Whether it is answered in real mode was not recorded.
-- A Win386 probe's standard-mode run, which stops at the supervisor's box, is a screen, not a fixture.
 - `cputype=386_prefetch` did not start Windows in enhanced mode. Why is not known; no recording needs it.

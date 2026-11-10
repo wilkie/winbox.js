@@ -454,6 +454,7 @@ impl Engine {
         cpu.ip = saved.ip;
         cpu.flags = saved.flags;
         cpu.segments = saved.segments;
+        system.refresh_stale_segments();
         system.depth -= 1;
         Ok((answer, structures))
     }
