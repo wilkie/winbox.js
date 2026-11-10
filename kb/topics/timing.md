@@ -15,6 +15,7 @@ probes:
     jrnlplay,
     spiidle,
     viscost,
+    cdread,
   ]
 ---
 
@@ -161,6 +162,23 @@ A call costs the Rust engine some 0.1 ms more, the TypeScript engine some 0.6 ms
 winbox.js keeps two clocks. The survey's runs 3,000 instructions a millisecond and charges every call 15 instructions: it runs much faster than a faithful one, and the same every time. Most calls are charged less than they are -- a rectangle call about half, `PeekMessage` finding nothing a fourteenth -- and drawing far less: a twelve-hundredth of a WinG blit of the whole screen with its colours one for one, a ninety-thousandth of one without. Its `GetTickCount` steps by the tick, as Windows' does.
 
 The faithful clock, `WINBOX_CLOCK=faithful` in the test harness, runs 80,000 instructions a millisecond, the fixed rate the calls were recorded at, and charges each call the instructions recorded for it, the same at any rate: a call recorded only in a pair, half the pair, and one not recorded, 154, the middle of those recorded alone [[inferred]]. `WinGBitBlt` is charged by its size, and by whether its bitmap's colours are the system palette's one for one. The rate is a choice, made to be one DOSBox can be held to: as fast as the host allows, DOSBox runs no one rate.
+
+## Reading a disc
+
+[[measured]] [[probe:cdread]], at a fixed 80,000 a millisecond, times `mmioRead` of 2, 16, 32 and 64 KiB from a file on a CD-ROM (`images/imgread.iso` as D:) and from the same bytes on the hard disk, by `timeGetTime`: one read at a time after a seek, and one read after another for a second. Bytes a millisecond, one after another:
+
+| Size   | Disc, enhanced mode | Hard disk, enhanced mode | Disc, standard mode | Hard disk, standard mode |
+| ------ | ------------------- | ------------------------ | ------------------- | ------------------------ |
+| 2 KiB  | 16,652              | 71,004                   | 18,518              | 18,397                   |
+| 16 KiB | 34,963              | 417,972                  | 35,586              | 35,635                   |
+| 32 KiB | 45,711              | 618,397                  | 46,596              | 46,530                   |
+| 64 KiB | 45,632              | 691,984                  | 46,726              | 46,595                   |
+
+- In 386 enhanced mode a read of 64 KiB from the disc takes 1.4 ms, and one alone after a seek is timed at 0, 1 or 2 ms; the hard disk's takes 0.09 ms, timed at 0.
+- In standard mode the two drives take the same, both what the disc takes in enhanced mode. Why enhanced mode reads the hard disk faster is not read out.
+- Told as instructions at the run's rate, a disc's read in enhanced mode takes 7,405, 33,777, 52,220 and 105,520 more than the hard disk's at the four sizes: about 5,459 and 1.517 a byte [[inferred]], each size within 3,500.
+
+The faithful clock charges a read from a disc that much more in 386 enhanced mode, through `_lread`, `_hread` and DOS's function 3Fh alike (`call_costs::disc_read`), and nothing more in standard mode. The hard disk's own read is still charged as any call not recorded, 154, in both modes. Lode Runner: The Legend Returns' setup rates the CD-ROM drive by such reads ([[topic:win386]]).
 
 ## The Ad Lib driver's writes
 
