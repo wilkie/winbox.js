@@ -246,17 +246,22 @@ fn data_word(system: &System, offset: u16) -> u16 {
     system.cpu.bus.read16((data << 16) + u32::from(offset))
 }
 
-/// What it reports it reports to `INT 3Eh`'s procedure, the code in AX,
-/// and the program goes on past the instruction once it returns
-/// (`WIN87EM.DLL` seg1 `67c`, `6eb`). `FNOP` is unemulated: 87h.
+/// What it reports it reports to `INT 3Eh`'s procedure, the code in AL,
+/// AH the program's BH, and the program goes on past the instruction
+/// once it returns (`WIN87EM.DLL` seg1 `67c`-`6d1`, `6eb`; as
+/// `oracle/fixtures/fpemu.json` records). `FNOP` is unemulated: 87h.
 #[test]
 fn the_emulator_reports_to_int_3eh_and_goes_on_past_the_instruction() {
-    let code = with_procedure(vec![0xcd, 0x35, 0xd0, 0xeb, 0xfe]);
+    let code = with_procedure(vec![
+        0xbb, 0x00, 0x12, // MOV BX,1200h
+        0xcd, 0x35, 0xd0, // FNOP
+        0xeb, 0xfe,
+    ]);
     let engine = emulated(&code, report_to_data);
     let system = engine.system();
 
-    assert_eq!(system.cpu.ip, 3);
-    assert_eq!(data_word(&system, DATA), 0x87);
+    assert_eq!(system.cpu.ip, 6);
+    assert_eq!(data_word(&system, DATA), 0x1287);
 }
 
 /// A division by nought, which the program's control word as WIN87EM
@@ -273,7 +278,7 @@ fn the_emulator_reports_what_the_control_word_leaves_unmasked() {
     let system = engine.system();
 
     assert_eq!(system.cpu.ip, 9);
-    assert_eq!(data_word(&system, DATA), 0x83);
+    assert_eq!(data_word(&system, DATA) & 0xff, 0x83);
     assert_eq!(system.floating.status & 0x04, 0x04);
 }
 

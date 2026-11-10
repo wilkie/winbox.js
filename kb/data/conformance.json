@@ -8360,7 +8360,7 @@
   },
   "gaps": {
    "pdb": "the task's prefix is at another selector in WinBox",
-   "variable": "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER",
+   "variable": "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER (the owner's decision, 2026-11-09)",
    "count": "WinBox's environment holds windir alone, so the count's place differs",
    "module": "the recorder started the probe from C:\\WINDOWS, the replay from C:\\"
   }
