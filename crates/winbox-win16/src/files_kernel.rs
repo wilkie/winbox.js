@@ -5,6 +5,8 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
+use winbox_machine::Body;
+
 use crate::call::{Answer, Args, Stop};
 use crate::search::{directory_of, has_directory};
 use crate::system::System;
@@ -414,8 +416,11 @@ pub fn lread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let Some(file) = system.files.resolve(handle) else {
         return Ok(Answer::Word(HFILE_ERROR));
     };
+    let disc = matches!(file.body, Body::Disc(_));
     let bytes = file.read(usize::from(count));
     let at = system.linear(buffer);
+
+    crate::call_costs::disc_read(system, disc, bytes.len());
 
     // DOS's read with DS:DX the buffer: on from it past offset FFFFh, where
     // its block goes on (`lwrhuge`).
@@ -455,8 +460,11 @@ pub fn hread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     else {
         return Ok(Answer::Dword(u32::from(HFILE_ERROR)));
     };
+    let disc = matches!(file.body, Body::Disc(_));
     let bytes = file.read(count as usize);
     let at = system.linear(buffer);
+
+    crate::call_costs::disc_read(system, disc, bytes.len());
 
     system.cpu.bus.write(at, &bytes);
     Ok(Answer::Dword(bytes.len() as u32))

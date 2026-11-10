@@ -112,6 +112,27 @@ const LWRITE: (f64, f64) = (582.5, 3.86);
 /// 2 [[inferred]].
 const WSPRINTF: [f64; 4] = [117.0, 138.0, 20.5, 13.8];
 
+/// A read from a file on a CD-ROM drive in 386 enhanced mode: so many
+/// instructions, and so many more a byte, than the same read from the hard
+/// disk (`cdread`, at a fixed 80,000 a millisecond: `mmioRead` of 2, 16, 32
+/// and 64 KiB one after another for a second on each drive, the
+/// difference between the drives at each size, at the rate the run
+/// measured -- 7,405, 33,777, 52,220 and 105,520 -- fitted, each within
+/// 3,500 [[inferred]]). In standard mode the two drives take the same.
+const DISC_READ: (f64, f64) = (5459.0, 1.517);
+
+/// A read of `bytes` from a file on a disc, charged as recorded where
+/// calls are: what Windows in 386 enhanced mode spends on a disc's read
+/// beyond the hard disk's, which a program that times its reads sees
+/// (`cdread`). Nothing in standard mode, nor from any other drive.
+pub fn disc_read(system: &mut System, disc: bool, bytes: usize) {
+    if disc && system.clock.measured_calls && system.mode == crate::system::Mode::Enhanced {
+        system
+            .clock
+            .charge(DISC_READ.0 + DISC_READ.1 * bytes as f64);
+    }
+}
+
 /// The instructions Windows runs for a call as it is made, its arguments
 /// on the stack at `stack` (the caller's return address first).
 pub fn before(system: &System, module: &str, name: &str, stack: u32) -> f64 {
@@ -204,4 +225,37 @@ fn wsprintf(system: &System, stack: u32) -> f64 {
     }
 
     cost
+}
+
+#[cfg(test)]
+mod tests {
+    use winbox_machine::{Clock, FAITHFUL_INSTRUCTIONS_PER_MS};
+
+    use super::{DISC_READ, disc_read};
+    use crate::system::{Mode, System};
+
+    /// A disc's read of 64 KiB costs what `cdread` measured beyond the hard
+    /// disk's in 386 enhanced mode, where calls are charged as recorded;
+    /// nothing in standard mode, from another drive, or on the survey's
+    /// clock.
+    #[test]
+    fn a_disc_read_is_charged_in_enhanced_mode() {
+        let charged = |mode, measured, disc| {
+            let mut system = System::new();
+
+            system.mode = mode;
+            system.clock = Clock::virtual_at(FAITHFUL_INSTRUCTIONS_PER_MS);
+            system.clock.measured_calls = measured;
+            disc_read(&mut system, disc, 65535);
+            system.clock.charged()
+        };
+
+        assert!(
+            (charged(Mode::Enhanced, true, true) - (DISC_READ.0 + DISC_READ.1 * 65535.0)).abs()
+                < 1e-6
+        );
+        assert!(charged(Mode::Enhanced, true, false) == 0.0);
+        assert!(charged(Mode::Standard, true, true) == 0.0);
+        assert!(charged(Mode::Enhanced, false, true) == 0.0);
+    }
 }
