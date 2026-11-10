@@ -639,6 +639,29 @@ impl<B: Bus> Cpu<B> {
         self.bus.write16(at, value).ok_or(Exit::Host)
     }
 
+    /// The instruction's own bytes, through CS at EIP: its offset taken
+    /// whole, the code segment's size having made it ([`Self::fetch_mask`]),
+    /// whatever the instruction's address size.
+    fn code8(&self, offset: u32) -> Result<u8, Exit> {
+        self.bus
+            .read8(self.linear_sized(CS, offset, 1, true)?)
+            .ok_or(Exit::Host)
+    }
+
+    fn code16(&self, offset: u32) -> Result<u16, Exit> {
+        self.bus
+            .read16(self.linear_sized(CS, offset, 2, true)?)
+            .ok_or(Exit::Host)
+    }
+
+    fn code32(&self, offset: u32) -> Result<u32, Exit> {
+        let at = self.linear_sized(CS, offset, 4, true)?;
+        let low = self.bus.read16(at).ok_or(Exit::Host)?;
+        let high = self.bus.read16(at.wrapping_add(2)).ok_or(Exit::Host)?;
+
+        Ok(u32::from(low) | (u32::from(high) << 16))
+    }
+
     fn read32(&self, segment: usize, offset: u32) -> Result<u32, Exit> {
         let at = self.linear(segment, offset, 4)?;
         let low = self.bus.read16(at).ok_or(Exit::Host)?;
@@ -677,7 +700,7 @@ impl<B: Bus> Cpu<B> {
         }
 
         let value = self
-            .read32(CS, self.ip)
+            .code32(self.ip)
             .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(4);
@@ -817,9 +840,7 @@ impl<B: Bus> Cpu<B> {
             return Err(self.fetch_fault(Exit::Fault(13)));
         }
 
-        let value = self
-            .read8(CS, self.ip)
-            .map_err(|exit| self.fetch_fault(exit))?;
+        let value = self.code8(self.ip).map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(1);
         Ok(value)
@@ -833,7 +854,7 @@ impl<B: Bus> Cpu<B> {
         }
 
         let value = self
-            .read16(CS, self.ip)
+            .code16(self.ip)
             .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(2);
@@ -860,7 +881,11 @@ impl<B: Bus> Cpu<B> {
     pub fn ip_ahead(&self, by: u32) -> u32 {
         let at = self.ip.wrapping_add(by);
 
-        if self.segments[CS].big { at } else { at & 0xffff }
+        if self.segments[CS].big {
+            at
+        } else {
+            at & 0xffff
+        }
     }
 
     /// A relative jump: EIP moved by `displacement`, sign-extended, and
@@ -2019,7 +2044,7 @@ impl<B: Bus> Cpu<B> {
         // A byte past the end of the offset space would be fetched past the
         // limit, the fault the instruction then raises first.
         let byte = |ahead: u32| match self.ip.checked_add(ahead) {
-            Some(at) if !self.wrapped && at & !self.fetch_mask == 0 => self.read8(CS, at),
+            Some(at) if !self.wrapped && at & !self.fetch_mask == 0 => self.code8(at),
             _ => Err(Exit::Fault(13)),
         };
         let memory = |modrm: u8| modrm >> 6 != 3;
@@ -3697,5 +3722,131 @@ mod tests {
         assert_eq!(cpu.run(1), (1, Exit::Budget));
         assert_eq!(cpu.run(1), (0, Exit::Fault(13)));
         assert!(!cpu.fetched_past_limit, "a fault of the access");
+    }
+
+    /// A flat machine of 32-bit code, as WATCOM's Win386 supervisor makes
+    /// one (`w386env`): CS 0Fh, 32-bit code; DS, ES and SS 17h, data; both
+    /// of base nought and a limit of 4 GiB. ESP 50000h, the code's bytes at
+    /// the offsets given.
+    fn flat32(code: &[(u32, &[u8])]) -> Cpu<VecBus> {
+        let mut cpu = Cpu::new(VecBus(vec![0; 0x60000]));
+
+        cpu.bus.0[0x5_8008..0x5_8010].copy_from_slice(&[0xff, 0xff, 0, 0, 0, 0xfa, 0xcf, 0]);
+        cpu.bus.0[0x5_8010..0x5_8018].copy_from_slice(&[0xff, 0xff, 0, 0, 0, 0xf2, 0xcf, 0]);
+        cpu.protected = true;
+        cpu.ldt_base = 0x5_8000;
+        cpu.ldt_limit = 0x17;
+        cpu.load_segment(CS, 0x0f).unwrap();
+
+        for index in [DS, ES, SS] {
+            cpu.load_segment(index, 0x17).unwrap();
+        }
+
+        cpu.set_reg32(SP, 0x5_0000);
+
+        for &(at, bytes) in code {
+            let at = at as usize;
+
+            cpu.bus.0[at..at + bytes.len()].copy_from_slice(bytes);
+        }
+
+        cpu
+    }
+
+    #[test]
+    fn fetches_past_64_kib_by_the_code_segments_size() {
+        // mov [13F00h], gs -- the start of WATCOM's C runtime past 64 KiB
+        // in `w386eip`: a 16-bit operand, and its bytes fetched at the
+        // whole EIP, whatever the operand and address sizes.
+        let mut cpu = flat32(&[(0x1_4670, &[0x66, 0x8c, 0x2d, 0x00, 0x3f, 0x01, 0x00])]);
+
+        cpu.segments[GS].selector = 0x1234;
+        cpu.ip = 0x1_4670;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.ip, 0x1_4677);
+        assert_eq!(cpu.bus.0[0x1_3f00..0x1_3f02], [0x34, 0x12]);
+
+        // mov eax, 12345678h across 10000h: its bytes go on past FFFFh.
+        let mut cpu = flat32(&[(0xfffe, &[0xb8, 0x78, 0x56, 0x34, 0x12])]);
+
+        cpu.ip = 0xfffe;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!((cpu.ip, cpu.reg32(AX)), (0x1_0003, 0x1234_5678));
+    }
+
+    #[test]
+    fn calls_and_returns_across_64_kib() {
+        // At FFF0h: call 12000h; at 12000h: ret -- a near call landing past
+        // FFFFh, and back.
+        let mut cpu = flat32(&[
+            (0xfff0, &[0xe8, 0x0b, 0x20, 0x00, 0x00]),
+            (0x1_2000, &[0xc3]),
+        ]);
+
+        cpu.ip = 0xfff0;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.ip, 0x1_2000);
+        assert_eq!(cpu.bus.0[0x4_fffc..0x5_0000], [0xf5, 0xff, 0, 0]);
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.ip, 0xfff5);
+
+        // A short jump back from past FFFFh, the operand size's 32 bits.
+        let mut cpu = flat32(&[(0x1_0002, &[0xeb, 0xf0])]);
+
+        cpu.ip = 0x1_0002;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.ip, 0xfff4);
+
+        // Under the operand-size prefix, a short jump's target is IP's
+        // 16 bits.
+        let mut cpu = flat32(&[(0x1_2000, &[0x66, 0xeb, 0x00])]);
+
+        cpu.ip = 0x1_2000;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.ip, 0x2003);
+    }
+
+    #[test]
+    fn returns_far_and_from_interrupts_past_64_kib() {
+        // RETF and IRETD of double words to EIP 12345h.
+        let mut cpu = flat32(&[(0x100, &[0xcb]), (0x200, &[0xcf])]);
+
+        cpu.bus.0[0x4_fff8..0x5_0000].copy_from_slice(&[0x45, 0x23, 1, 0, 0x0f, 0, 0, 0]);
+        cpu.set_reg32(SP, 0x4_fff8);
+        cpu.ip = 0x100;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!((cpu.ip, cpu.reg32(SP)), (0x1_2345, 0x5_0000));
+
+        let mut cpu = flat32(&[(0x200, &[0xcf])]);
+
+        cpu.bus.0[0x4_fff4..0x5_0000]
+            .copy_from_slice(&[0x45, 0x23, 1, 0, 0x0f, 0, 0, 0, 0x02, 0, 0, 0]);
+        cpu.set_reg32(SP, 0x4_fff4);
+        cpu.ip = 0x200;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!((cpu.ip, cpu.reg32(SP)), (0x1_2345, 0x5_0000));
+
+        // CALL FWORD to 0Fh:12345h, its return pushed as double words.
+        let mut cpu = flat32(&[(0x300, &[0xff, 0x1d, 0x00, 0x04, 0, 0])]);
+
+        cpu.bus.0[0x400..0x406].copy_from_slice(&[0x45, 0x23, 1, 0, 0x0f, 0]);
+        cpu.ip = 0x300;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.ip, 0x1_2345);
+        assert_eq!(
+            cpu.bus.0[0x4_fff8..0x5_0000],
+            [0x06, 0x03, 0, 0, 0x0f, 0, 0, 0]
+        );
+    }
+
+    #[test]
+    fn a_32_bit_transfer_in_16_bit_code_past_64_kib_faults() {
+        // jmp near with a double word's displacement, to 10006h in 16-bit
+        // code: a general protection fault at the jump, nothing changed.
+        let mut cpu = on_stack(&[0x66, 0xe9, 0x00, 0x00, 0x01, 0x00], false, 0xfffe);
+
+        assert_eq!(cpu.run(1), (0, Exit::Fault(13)));
+        assert_eq!(cpu.ip, 0);
+        assert!(!cpu.fetched_past_limit);
     }
 }

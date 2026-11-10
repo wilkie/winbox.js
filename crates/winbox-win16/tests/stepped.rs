@@ -468,6 +468,7 @@ const STEPPED: &[&str] = &[
     "enhanced/w386ver",
     "enhanced/w386dpmi",
     "enhanced/w386lib",
+    "enhanced/w386eip",
 ];
 
 /// The probes whose runs bring up USER's boxes, answered by the hand

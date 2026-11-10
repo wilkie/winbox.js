@@ -108,10 +108,7 @@ impl System {
     fn can_ignore(&mut self) -> bool {
         let setting = profile_int(self, b"KERNEL", b"GPContinue", 1);
 
-        if setting & 1 == 0
-            || self.cpu.regs[winbox_cpu::SP] < 0x80
-            || self.cpu.ip + 10 > 0xffff
-        {
+        if setting & 1 == 0 || self.cpu.regs[winbox_cpu::SP] < 0x80 || self.cpu.ip + 10 > 0xffff {
             return false;
         }
 
