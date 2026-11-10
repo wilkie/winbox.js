@@ -54,7 +54,11 @@ type Install = (Stop, Vec<[String; 3]>, Installed, Vec<Change>);
 /// the top's changes.
 fn install() -> Option<Install> {
     let mut setup = Setup::of("instlay")?;
-    let now = winbox_machine::host_seconds();
+    // Everything placed is stamped at the instant the machine's clock
+    // starts from, not the host's: the probe's writes into `ORACLE` are
+    // stamped by that clock, and a host second other than it would show
+    // the folder as changed.
+    let now = setup.system.epoch_ms / 1000;
     let mut before = setup.beneath.held();
 
     assert!(before.add_folder("ORACLE", now));
@@ -157,7 +161,7 @@ fn hold_fixture(changes: &[Change], installed: &Installed) {
 /// started from where it was installed: its records.
 fn installed_program(installed: &Installed) -> Option<(Stop, Vec<[String; 3]>)> {
     let mut setup = Setup::of("instlay")?;
-    let now = winbox_machine::host_seconds();
+    let now = setup.system.epoch_ms / 1000;
     let mut c: MemoryDrive = setup.beneath.held();
 
     c.apply(&installed.layer.changes().expect("the layer's changes"));
@@ -232,20 +236,11 @@ fn an_installer_into_a_layer_and_the_program_it_installed() {
     }
 
     assert_eq!(entries, expected, "the installer's layer");
-    // Of the media, only the harness's records were written: `ORACLE`'s
-    // own stamp moves where the run's first record is written in a later
-    // second of the host's than the folder was made in.
-    assert!(
-        installed
-            .dropped
-            .iter()
-            .any(|path| path == "ORACLE\\INSTLAY.OUT")
-            && installed
-                .dropped
-                .iter()
-                .all(|path| path == "ORACLE" || path == "ORACLE\\INSTLAY.OUT"),
-        "what was dropped of the media: {:?}",
-        installed.dropped
+    // Of the media, only the harness's records were written.
+    assert_eq!(
+        installed.dropped,
+        ["ORACLE\\INSTLAY.OUT"],
+        "what was dropped of the media"
     );
     // What it wrote that names its media, kept as it wrote it.
     assert_eq!(
