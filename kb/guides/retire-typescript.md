@@ -307,7 +307,7 @@ All five phases are done (2026-11-09). What the retirement leaves:
   - [[probe:seqlen]] (`took`): a play to 250 waited for takes 600 ms here, 500 in Windows. Not yet investigated.
   - [[probe:mciplay]] (`wait`): a play's notification a tenth of a second early, 18 against 19. Not yet investigated.
   - [[probe:mididev]] and [[probe:wavedev]] (`caps`): WinBox's own sound driver's names and numbers. `wavedev`'s `open`: a device opened again answers 11 here, 4 (`MMSYSERR_ALLOCATED`) in Windows. Not yet investigated.
-  - [[probe:environ]] and `enhanced/environ` (`count`, `module`, `pdb`, `variable`): WinBox's environment holds `windir` alone, not DOSBox's `PATH`, `COMSPEC` and `BLASTER`; the recorder started the probe from `C:\WINDOWS`; the prefix's selector.
+  - [[probe:environ]] and `enhanced/environ` (`count`, `module`, `pdb`, `variable`): WinBox's environment holds `windir` alone, not DOSBox's `PATH`, `COMSPEC` and `BLASTER`, by the owner's decision (2026-11-09: WinBox has no Z: and no COMMAND.COM for them to name); the recorder started the probe from `C:\WINDOWS`; the prefix's selector.
   - [[probe:freemem]] and `enhanced/freemem` (`free`): `GetFreeSpace` 1K under Windows' ([[fn:KERNEL.GetFreeSpace]]).
   - [[probe:nullds]] (`calls`, `counter`, `ds`, `read`): the program ends at the null selector's fault, as a real processor would, before it writes them (as `nullds:answer`).
   - [[probe:scalemem]] (`-vga`, `-ega`: `census`, `block`, `bytes`), [[probe:groundsc]] (`census`, `bytes`), [[probe:scalepts]] (`census`, `hunt`, `where`, `window`): TOOLHELP's walk of the global heap and GDI's TrueType scaler's own memory, which WinBox's engine does not keep.
@@ -324,5 +324,4 @@ All five phases are done (2026-11-09). What the retirement leaves:
 - The unit tests' audit is done ([[guide:retire-typescript-tests]]). What its ports found is open, each a Rust test kept as `#[ignore = "finding: …"]` with its evidence, none fixed in phase 1b:
   - an expand-down segment read above its limit stops the Rust engine, where the 80386 reads (Intel 386 manual; `crates/winbox-cpu/tests/units.rs`);
   - an expand-down segment read below its limit stops it, where the 80386 raises #GP(13) (`crates/winbox-win16/src/fault_vector.rs`);
-  - an instruction fetched past CS's limit stops it, where the 80386 raises #GP(0) (`fault_vector.rs`);
-  - the task's environment has no DOS host variables before `windir`, as [[probe:environ]] records (`tests/task_environment.rs`).
+  - an instruction fetched past CS's limit stops it, where the 80386 raises #GP(0) (`fault_vector.rs`).
