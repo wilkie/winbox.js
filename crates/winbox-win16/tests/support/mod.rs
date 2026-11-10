@@ -80,11 +80,13 @@ pub fn mode_of(name: &str) -> (winbox_win16::Mode, &str) {
         })
 }
 
-/// A system made in a mode.
-fn system_in(mode: winbox_win16::Mode) -> System {
+/// A system made as a fixture was recorded: in its mode, and with a
+/// coprocessor or without one.
+fn system_for(name: &str) -> System {
     let mut system = System::new();
 
-    system.mode = mode;
+    system.mode = mode_of(name).0;
+    system.coprocessor = coprocessor_of(name);
     system
 }
 
@@ -188,9 +190,10 @@ pub fn ini_of(name: &str) -> Option<String> {
         .and_then(|fixture| fixture["source"]["ini"].as_str().map(str::to_string))
 }
 
-/// Whether a fixture was recorded on a machine with a coprocessor: not
-/// where its source says `coprocessor: false` (`record.mjs`,
-/// `WITHOUT_COPROCESSOR`).
+/// Whether a fixture was recorded on a machine with a coprocessor, and is
+/// replayed on one: not where its source says `coprocessor: false`
+/// (`record.mjs`, `WITHOUT_COPROCESSOR`), its floating-point instructions
+/// WIN87EM's emulator's.
 pub fn coprocessor_of(name: &str) -> bool {
     std::fs::read_to_string(root().join(format!("oracle/fixtures/{name}.json")))
         .ok()
@@ -590,11 +593,7 @@ impl Setup {
         let upper = probe.to_ascii_uppercase();
         let (built, bytes) = built_in(&upper)?;
 
-        let mut system = system_in(mode_of(name).0);
-
-        // One recorded without a coprocessor runs without one, its
-        // floating-point instructions WIN87EM's emulator's.
-        system.coprocessor = coprocessor_of(name);
+        let mut system = system_for(name);
 
         // The installation with a sound card is recorded at a fixed 3,000
         // cycles a millisecond, the survey's clock's rate: its calls are
