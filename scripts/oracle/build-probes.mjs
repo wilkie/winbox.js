@@ -369,7 +369,8 @@ async function build(name) {
  * `<NAME>D.DLL`, built `-bd` and bound `-d` to the library's supervisor
  * (`binw/w386dll.ext`), as Sierra's `SMACKE16.DLL` is. A program that
  * defines `PROBE_WIN16` is a 16-bit program, built as the other probes are,
- * that loads such a library.
+ * that loads such a library, or starts its `<name>.child.c`, a Win386
+ * program built as `<NAME>C.EXE`.
  */
 async function buildWin386(name) {
   const source = join(WIN386, `${name}.c`);
@@ -424,6 +425,19 @@ async function buildWin386(name) {
     );
   }
 
+  /* And the Win386 program a 16-bit probe starts, `<name>.child.c`, as
+   * `<NAME>C.EXE` beside it. */
+  const childSource = join(WIN386, `${name}.child.c`);
+
+  if (await stat(childSource).catch(() => null)) {
+    await compile386(childSource, `${name}c.obj`, false);
+    await link386(`${name}c.obj`, `${name}c`, false);
+    await rename(
+      join(BUILD_WIN386, `${name}c.exe`),
+      join(BUILD_WIN386, `${name.toUpperCase()}C.EXE`)
+    );
+  }
+
   /* The compilers leave their warnings in a file of the source's name. */
   for (const entry of await readdir(BUILD_WIN386)) {
     if (entry.endsWith('.err')) {
@@ -450,7 +464,9 @@ async function main() {
     .sort();
 
   const win386 = (await readdir(WIN386).catch(() => []))
-    .filter((entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c'))
+    .filter(
+      (entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c') && !entry.endsWith('.child.c')
+    )
     .map((entry) => entry.slice(0, -2))
     .filter((name) => wanted.length === 0 || wanted.includes(name))
     .sort();

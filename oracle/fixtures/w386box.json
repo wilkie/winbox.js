@@ -1,0 +1,54 @@
+{
+  "probe": "w386box",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "asks",
+      "args": "DPMI 0400h BX bit 0",
+      "result": "0"
+    },
+    {
+      "function": "asks",
+      "args": "INT 2Fh FA00h",
+      "result": "ax=fa00 others=kept"
+    },
+    {
+      "function": "start",
+      "args": "WinExec",
+      "result": "given"
+    },
+    {
+      "function": "box",
+      "args": "window",
+      "result": "class=#32770 id=0 style=84c80181 text=Open Watcom Win386"
+    },
+    {
+      "function": "box",
+      "args": "child 0",
+      "result": "class=Button id=2 style=50030001 text=OK"
+    },
+    {
+      "function": "box",
+      "args": "child 1",
+      "result": "class=Static id=-1 style=50020003 text="
+    },
+    {
+      "function": "box",
+      "args": "child 2",
+      "result": "class=Static id=-1 style=50020080 text=Not running on a 386 DPMI implementation"
+    },
+    {
+      "function": "end",
+      "args": "program",
+      "result": "gone"
+    }
+  ]
+}
