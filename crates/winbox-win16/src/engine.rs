@@ -26,7 +26,8 @@ const CALL_FRAME: u16 = 0x60;
 struct Saved {
     regs: [u16; 8],
     high: [u16; 8],
-    ip: u16,
+    /// EIP whole.
+    ip: u32,
     flags: u16,
     segments: [Segment; 6],
 }

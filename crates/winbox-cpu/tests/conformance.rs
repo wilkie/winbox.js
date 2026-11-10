@@ -506,7 +506,7 @@ fn run_286_file(file: &str, memory: Memory, sample: usize) -> (Summary, Memory) 
             cpu.regs[index] = number(&initial[name]) as u16;
         }
 
-        cpu.ip = number(&initial["ip"]) as u16;
+        cpu.ip = u32::from(number(&initial["ip"]) as u16);
         cpu.flags = (number(&initial["flags"]) & FLAG_MASK) as u16 | 2;
 
         let outcome = step(&mut cpu, &mut summary);
@@ -527,7 +527,7 @@ fn run_286_file(file: &str, memory: Memory, sample: usize) -> (Summary, Memory) 
             if last["cs"].as_u64() == Some(u64::from(gp_cs))
                 && last["ip"].as_u64().map(|ip| (ip as u16).wrapping_sub(1)) == Some(gp_ip)
                 && cpu.segments[CS].selector == ss_cs
-                && cpu.ip == ss_ip
+                && cpu.ip == u32::from(ss_ip)
                 && (gp_cs, gp_ip) != (ss_cs, ss_ip)
             {
                 summary.skipped += 1;
@@ -558,7 +558,7 @@ fn compare_286(cpu: &Cpu<Memory>, test: &serde_json::Value) -> Result<(), (Kind,
 
         let value = number(value) as u16;
         let (expected, actual) = if name == "ip" {
-            (value.wrapping_sub(1), cpu.ip)
+            (value.wrapping_sub(1), cpu.ip as u16)
         } else if let Some(&(_, index)) = REGISTERS16.iter().find(|(n, _)| n == name) {
             (value, cpu.regs[index])
         } else if let Some(&(_, index)) = SEGMENTS16.iter().find(|(n, _)| n == name) {
@@ -917,7 +917,7 @@ fn run_386_file(
             cpu.high[index] = (value >> 16) as u16;
         }
 
-        cpu.ip = initial.get("eip").copied().unwrap_or(0) as u16;
+        cpu.ip = initial.get("eip").copied().unwrap_or(0);
         cpu.flags = (initial.get("eflags").copied().unwrap_or(0) & FLAG_MASK) as u16 | 2;
 
         summary.total += 1;
@@ -964,7 +964,7 @@ fn run_386_file(
             }
 
             if let Some(&eip) = last.get("eip") {
-                let expected = (eip as u16).wrapping_sub(1);
+                let expected = eip.wrapping_sub(1);
 
                 if expected != cpu.ip {
                     return Err((

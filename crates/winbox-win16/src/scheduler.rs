@@ -26,7 +26,8 @@ pub struct Context {
     pub task: Option<Task>,
     regs: [u16; 8],
     high: [u16; 8],
-    ip: u16,
+    /// EIP whole: a task of 32-bit code goes on from all of it.
+    ip: u32,
     flags: u16,
     segments: [Segment; 6],
     fpu: Option<X87>,
@@ -42,7 +43,9 @@ pub struct Context {
     pub(crate) directory: (char, String),
 }
 
-/// Where a task was as it gave the processor up: CS, IP, SS, SP and BP.
+/// Where a task was as it gave the processor up: CS, IP, SS, SP and BP,
+/// the words the toolhelp structures and the task's database keep (IP is
+/// EIP's low word).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Frame {
     pub cs: u16,
@@ -56,14 +59,14 @@ impl Context {
     /// Where the task goes on from changed (`TaskSetCSIP`).
     pub(crate) fn set_code(&mut self, segment: Segment, ip: u16) {
         self.segments[winbox_cpu::CS] = segment;
-        self.ip = ip;
+        self.ip = u32::from(ip);
     }
 
     /// Where the task was as it gave the processor up.
     pub fn frame(&self) -> Frame {
         Frame {
             cs: self.segments[winbox_cpu::CS].selector,
-            ip: self.ip,
+            ip: self.ip as u16,
             ss: self.segments[winbox_cpu::SS].selector,
             sp: self.regs[winbox_cpu::SP],
             bp: self.regs[winbox_cpu::BP],
@@ -80,7 +83,7 @@ impl System {
         if self.scheduler.current == Some(slot) {
             return Some(Frame {
                 cs: self.cpu.segments[winbox_cpu::CS].selector,
-                ip: self.cpu.ip,
+                ip: self.cpu.ip as u16,
                 ss: self.cpu.segments[winbox_cpu::SS].selector,
                 sp: self.cpu.regs[winbox_cpu::SP],
                 bp: self.cpu.regs[winbox_cpu::BP],

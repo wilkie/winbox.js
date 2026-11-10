@@ -115,7 +115,7 @@ impl System {
     /// code, as the processor's fetch wraps it.
     fn code(&self, at: u16) -> Option<u8> {
         let segment = self.cpu.segments[CS];
-        let offset = u32::from(self.cpu.ip) + u32::from(at);
+        let offset = self.cpu.ip.wrapping_add(u32::from(at));
         let offset = if segment.big { offset } else { offset & 0xffff };
 
         segment.holds(offset, 1).then(|| {
@@ -444,7 +444,7 @@ impl System {
         let opcode = decoded.opcode;
         let mut accesses = vec![Access {
             segment: CS,
-            offset: u32::from(self.cpu.ip),
+            offset: self.cpu.ip,
             size: u32::from(decoded.at),
         }];
 

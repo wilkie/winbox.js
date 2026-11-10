@@ -369,7 +369,7 @@ pub fn print_trace(system: &System, stop: &Stop, summary: bool, counts: bool) ->
         );
     }
 
-    let at = system.cpu.segments[winbox_cpu::CS].base + u32::from(system.cpu.ip);
+    let at = system.cpu.segments[winbox_cpu::CS].base + system.cpu.ip;
 
     let _ = writeln!(out, "bytes: {:02x?}", system.cpu.bus.read(at, 8));
 

@@ -198,7 +198,9 @@ pub struct Cpu<B: Bus> {
     /// the 386's 32-bit operations.
     pub regs: [u16; 8],
     pub high: [u16; 8],
-    pub ip: u16,
+    /// EIP: in a code segment whose D bit is set, all 32 bits; in a 16-bit
+    /// one, the low word alone, wrapping or faulting past `FFFFh` as IP does.
+    pub ip: u32,
     pub flags: u16,
     pub segments: [Segment; 6],
     /// Whether segment loads read descriptors (CR0's PE bit).
@@ -258,7 +260,16 @@ pub struct Cpu<B: Bus> {
     partial: bool,
     /// Where the instruction began, its prefixes included: where a fault
     /// returns to.
-    start: u16,
+    start: u32,
+    /// The mask of the offset space the instruction is fetched in: `FFFFh`
+    /// in a 16-bit code segment, whole in a 32-bit one.
+    fetch_mask: u32,
+    /// The mask a jump's target takes: `FFFFh` under a 16-bit operand
+    /// size, whole under a 32-bit one -- the size the instruction has
+    /// before the opcodes the operand size does not change are run as
+    /// 16-bit ([`SIZELESS`]): a short jump's target is the operand size's
+    /// (Intel's *80386 Programmer's Reference Manual*, `JMP` and `Jcc`).
+    jump_mask: u32,
     /// Whether the instruction has the LOCK prefix.
     lock: bool,
     /// The segment register the instruction's operand is named through --
@@ -325,6 +336,8 @@ impl<B: Bus> Cpu<B> {
             repeat: 0,
             partial: false,
             start: 0,
+            fetch_mask: 0xffff,
+            jump_mask: 0xffff,
             lock: false,
             named: None,
             wrapped: false,
@@ -664,7 +677,7 @@ impl<B: Bus> Cpu<B> {
         }
 
         let value = self
-            .read32(CS, u32::from(self.ip))
+            .read32(CS, self.ip)
             .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(4);
@@ -794,16 +807,18 @@ impl<B: Bus> Cpu<B> {
         Ok(value)
     }
 
-    /// The next byte of the instruction. IP wraps round past `FFFFh`; an instruction that goes on past it was
-    /// fetched past CS's limit, a general protection fault from its start
-    /// (`fetchedPastLimit`). One that ends exactly at the end is whole.
+    /// The next byte of the instruction. In 16-bit code IP wraps round past
+    /// `FFFFh`, in 32-bit code EIP past `FFFFFFFFh`; an instruction that
+    /// goes on past it was fetched past CS's limit, a general protection
+    /// fault from its start ([`Self::fetched_past_limit`]). One that ends
+    /// exactly at the end is whole.
     fn fetch8(&mut self) -> Result<u8, Exit> {
         if self.wrapped {
             return Err(self.fetch_fault(Exit::Fault(13)));
         }
 
         let value = self
-            .read8(CS, u32::from(self.ip))
+            .read8(CS, self.ip)
             .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(1);
@@ -818,7 +833,7 @@ impl<B: Bus> Cpu<B> {
         }
 
         let value = self
-            .read16(CS, u32::from(self.ip))
+            .read16(CS, self.ip)
             .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(2);
@@ -834,9 +849,35 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// IP moved past `size` bytes fetched, noting a wrap round.
-    fn advance_ip(&mut self, size: u16) {
-        self.ip = self.ip.wrapping_add(size);
+    fn advance_ip(&mut self, size: u32) {
+        self.ip = self.ip.wrapping_add(size) & self.fetch_mask;
         self.wrapped = self.ip < size;
+    }
+
+    /// EIP `by` bytes on, in the code segment's offset space: wrapping in
+    /// 64 KiB in 16-bit code, whole in 32-bit code. For the host, which
+    /// runs an instruction past its bytes.
+    pub fn ip_ahead(&self, by: u32) -> u32 {
+        let at = self.ip.wrapping_add(by);
+
+        if self.segments[CS].big { at } else { at & 0xffff }
+    }
+
+    /// A relative jump: EIP moved by `displacement`, sign-extended, and
+    /// taken to the operand size ([`Self::jump_mask`]).
+    fn jump_by(&mut self, displacement: u32) {
+        self.ip = self.ip.wrapping_add(displacement) & self.jump_mask;
+    }
+
+    /// Whether code may run at `eip` in `segment`, as a transfer of a
+    /// 32-bit operand checks its target before it is taken: within the
+    /// segment's limit, the whole EIP, and in a 16-bit code segment within
+    /// its 64 KiB, IP's room here; else a general protection fault at the
+    /// instruction (Intel's *80386 Programmer's Reference Manual*, `JMP`,
+    /// `CALL`, `RET` and `IRET`: "IF ... not within code segment limit
+    /// THEN #GP(0)").
+    pub(crate) fn runs_at(segment: &Segment, eip: u32) -> bool {
+        (segment.big || eip <= 0xffff) && segment.holds(eip, 1)
     }
 
     fn reg8(&self, index: usize) -> u8 {
@@ -1311,8 +1352,8 @@ impl<B: Bus> Cpu<B> {
         let segment = self.descriptor(CS, selector, false)?;
 
         self.push(self.segments[CS].selector)?;
-        self.push(self.ip)?;
-        self.ip = offset;
+        self.push(self.ip as u16)?;
+        self.ip = u32::from(offset);
         self.set_segment(CS, segment);
         Ok(())
     }
@@ -1594,7 +1635,7 @@ impl<B: Bus> Cpu<B> {
                 let displacement = self.fetch16()?;
 
                 if self.condition(opcode & 0x0f) {
-                    self.ip = self.ip.wrapping_add(displacement);
+                    self.jump_by(i32::from(displacement as i16) as u32);
                 }
             }
             0x90..=0x9f => {
@@ -1946,7 +1987,7 @@ impl<B: Bus> Cpu<B> {
 
                 let taken = match exit {
                     Exit::Fault(vector) if self.takes_interrupts() => {
-                        self.dispatch(vector, ip).is_ok()
+                        self.dispatch(vector, ip as u16).is_ok()
                     }
                     _ => false,
                 };
@@ -1977,8 +2018,8 @@ impl<B: Bus> Cpu<B> {
     fn lockable(&self, opcode: u8) -> Result<bool, Exit> {
         // A byte past the end of the offset space would be fetched past the
         // limit, the fault the instruction then raises first.
-        let byte = |ahead: u16| match self.ip.checked_add(ahead) {
-            Some(at) if !self.wrapped => self.read8(CS, u32::from(at)),
+        let byte = |ahead: u32| match self.ip.checked_add(ahead) {
+            Some(at) if !self.wrapped && at & !self.fetch_mask == 0 => self.read8(CS, at),
             _ => Err(Exit::Fault(13)),
         };
         let memory = |modrm: u8| modrm >> 6 != 3;
@@ -2019,8 +2060,11 @@ impl<B: Bus> Cpu<B> {
     #[allow(clippy::too_many_lines)]
     fn step(&mut self) -> Result<(), Exit> {
         let start = self.ip;
+        // The code segment's size, which the prefixes switch from.
+        let big = self.segments[CS].big;
 
         self.start = start;
+        self.fetch_mask = if big { u32::MAX } else { 0xffff };
         self.prefix = None;
         self.named = None;
         self.wide = false;
@@ -2035,7 +2079,6 @@ impl<B: Bus> Cpu<B> {
 
         // Segment, size, LOCK and repeat prefixes. A size prefix switches
         // from the code segment's size, and given again changes nothing.
-        let big = self.segments[CS].big;
         let (mut operand, mut address) = (false, false);
 
         loop {
@@ -2064,6 +2107,7 @@ impl<B: Bus> Cpu<B> {
 
         self.wide = big != operand;
         self.address32 = big != address;
+        self.jump_mask = if self.wide { u32::MAX } else { 0xffff };
 
         // LOCK anywhere but on a read-modify-write of memory is an undefined
         // opcode (the 80386 suite's tests).
@@ -2263,26 +2307,26 @@ impl<B: Bus> Cpu<B> {
                     };
 
                 if more {
-                    self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
+                    self.jump_by(i32::from(displacement) as u32);
                 }
             }
             0xe9 => {
                 let displacement = self.fetch16()?;
 
-                self.ip = self.ip.wrapping_add(displacement);
+                self.jump_by(i32::from(displacement as i16) as u32);
             }
             0xea => {
                 let offset = self.fetch16()?;
                 let selector = self.fetch16()?;
                 let segment = self.descriptor(CS, selector, false)?;
 
-                self.ip = offset;
+                self.ip = u32::from(offset);
                 self.set_segment(CS, segment);
             }
             0xeb => {
                 let displacement = self.fetch8()? as i8;
 
-                self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
+                self.jump_by(i32::from(displacement) as u32);
             }
             // POP ES, SS and DS.
             0x07 | 0x17 | 0x1f => {
@@ -2361,7 +2405,7 @@ impl<B: Bus> Cpu<B> {
                 let displacement = self.fetch8()? as i8;
 
                 if self.condition(opcode & 0x0f) {
-                    self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
+                    self.jump_by(i32::from(displacement) as u32);
                 }
             }
             // The immediate group: Eb,Ib / Ev,Iv / Ev,Ib sign-extended; 82h
@@ -2525,7 +2569,7 @@ impl<B: Bus> Cpu<B> {
             0xc2 | 0xc3 => {
                 let release = if opcode == 0xc2 { self.fetch16()? } else { 0 };
 
-                self.ip = self.pop()?;
+                self.ip = u32::from(self.pop()?);
                 self.set_stack_top(self.stack_step(self.stack_top(), u32::from(release)));
             }
             // LES and LDS: a far pointer, from memory only, the selector
@@ -2596,21 +2640,21 @@ impl<B: Bus> Cpu<B> {
                 let segment = self.descriptor(CS, selector, false)?;
 
                 self.set_stack_top(self.stack_step(top, 4 + u32::from(release)));
-                self.ip = offset;
+                self.ip = u32::from(offset);
                 self.set_segment(CS, segment);
             }
             0xe3 => {
                 let displacement = self.fetch8()? as i8;
 
                 if self.counter() == 0 {
-                    self.ip = self.ip.wrapping_add(i16::from(displacement) as u16);
+                    self.jump_by(i32::from(displacement) as u32);
                 }
             }
             0xe8 => {
                 let displacement = self.fetch16()?;
 
-                self.push(self.ip)?;
-                self.ip = self.ip.wrapping_add(displacement);
+                self.push(self.ip as u16)?;
+                self.jump_by(i32::from(displacement as i16) as u32);
             }
             0xf5 => self.flags ^= CF,
             // CLI and STI: at privilege nought,
@@ -2661,8 +2705,8 @@ impl<B: Bus> Cpu<B> {
                     2 => {
                         let target = self.get16(place)?;
 
-                        self.push(self.ip)?;
-                        self.ip = target;
+                        self.push(self.ip as u16)?;
+                        self.ip = u32::from(target);
                     }
                     // CALL and JMP far, through a pointer in memory: the
                     // selector after the offset, wrapping as an address of
@@ -2680,11 +2724,11 @@ impl<B: Bus> Cpu<B> {
                         } else {
                             let segment = self.descriptor(CS, selector, false)?;
 
-                            self.ip = offset;
+                            self.ip = u32::from(offset);
                             self.set_segment(CS, segment);
                         }
                     }
-                    4 => self.ip = self.get16(place)?,
+                    4 => self.ip = u32::from(self.get16(place)?),
                     6 => {
                         let value = self.get16(place)?;
 

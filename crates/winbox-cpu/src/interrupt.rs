@@ -45,7 +45,7 @@ impl<B: Bus> Cpu<B> {
     /// error's -- where this core takes interrupts; else the run stops.
     pub(crate) fn fault(&mut self, vector: u8) -> Result<(), Exit> {
         if self.takes_interrupts() {
-            self.dispatch(vector, self.start)
+            self.dispatch(vector, self.start as u16)
         } else {
             Err(Exit::Fault(vector))
         }
@@ -55,7 +55,7 @@ impl<B: Bus> Cpu<B> {
     /// return after the instruction, or the run stopped as `opcode`.
     fn trap(&mut self, vector: u8, opcode: u8) -> Result<(), Exit> {
         if self.takes_interrupts() {
-            self.dispatch(vector, self.ip)
+            self.dispatch(vector, self.ip as u16)
         } else {
             Err(Exit::Unimplemented(opcode))
         }
@@ -84,7 +84,7 @@ impl<B: Bus> Cpu<B> {
 
         self.regs[SP] = sp.wrapping_sub(6);
         self.flags &= !(IF | TF);
-        self.ip = offset;
+        self.ip = u32::from(offset);
         self.load_segment(CS, selector)
     }
 
@@ -95,11 +95,11 @@ impl<B: Bus> Cpu<B> {
 
     /// `INT n`: a call to a thunk this core answers (`quick.rs`) at `INT
     /// 80h`, or the interrupt.
-    pub(crate) fn interrupt(&mut self, start: u16) -> Result<(), Exit> {
+    pub(crate) fn interrupt(&mut self, start: u32) -> Result<(), Exit> {
         let vector = self.fetch8()?;
 
         if vector == 0x80 && self.quick.enabled {
-            return self.quick_call(u32::from(start), self.retired);
+            return self.quick_call(start, self.retired);
         }
 
         self.trap(vector, 0xcd)
@@ -117,9 +117,10 @@ impl<B: Bus> Cpu<B> {
     /// `IRET`, and under the operand-size prefix `IRETD`: IP, CS and FLAGS
     /// popped, each read before any is taken, CS loaded unchecked and FLAGS
     /// as `loadFlags` loads them. `IRETD` reads double words, of which CS
-    /// and FLAGS are their low words, and an EIP past 64 KiB is a general
-    /// protection fault with the stack as it was. Through ESP on a 32-bit
-    /// stack.
+    /// and FLAGS are their low words, and an EIP the code segment it returns
+    /// to cannot run at -- past its limit, or past 64 KiB in 16-bit code
+    /// ([`Self::runs_at`]) -- is a general protection fault with the stack
+    /// as it was. Through ESP on a 32-bit stack.
     pub(crate) fn iret(&mut self, wide: bool) -> Result<(), Exit> {
         let top = self.stack_top();
         let step: u32 = if wide { 4 } else { 2 };
@@ -136,14 +137,14 @@ impl<B: Bus> Cpu<B> {
         let selector = read(self, 1)? as u16;
         let flags = read(self, 2)? as u16;
 
-        if ip > 0xffff {
+        let segment = self.descriptor(CS, selector, false)?;
+
+        if !Self::runs_at(&segment, ip) {
             return self.fault(13);
         }
 
-        let segment = self.descriptor(CS, selector, false)?;
-
         self.set_stack_top(self.stack_step(top, 3 * step));
-        self.ip = ip as u16;
+        self.ip = ip;
         self.set_segment(CS, segment);
         self.load_flags(flags);
         Ok(())

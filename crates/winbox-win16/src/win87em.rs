@@ -511,7 +511,9 @@ fn free(fpu: &mut X87, i: usize) {
 /// table at `cc2`). The emulator never writes the instruction back.
 pub(crate) fn emulate(system: &mut System, vector: u8) -> Result<Option<u16>, Exit> {
     let code = system.cpu.segments[CS].base;
-    let start = system.cpu.ip;
+    // WIN87EM's interrupts are 16-bit code's, its fixups': IP is EIP's low
+    // word.
+    let start = system.cpu.ip as u16;
     let byte = |system: &System, at: u16| system.cpu.bus.read8(code.wrapping_add(u32::from(at)));
     let (opcode, segment, at) = if vector == 0x3c {
         let named = byte(system, start.wrapping_add(2));
@@ -528,14 +530,14 @@ pub(crate) fn emulate(system: &mut System, vector: u8) -> Result<Option<u16>, Ex
     let memory = modrm >> 6 != 3;
     let carried = carried(opcode, modrm);
 
-    system.cpu.ip = at.wrapping_add(1);
+    system.cpu.ip = u32::from(at.wrapping_add(1));
 
     let fpu_status = |system: &System| system.cpu.fpu.as_ref().map_or(0, |fpu| fpu.status);
     let mut word = if memory { IN_MEMORY } else { 0 };
 
     match carried {
         Carried::Unemulated => {
-            system.cpu.ip = system.cpu.ip.wrapping_add(displacement(modrm));
+            system.cpu.ip = u32::from((system.cpu.ip as u16).wrapping_add(displacement(modrm)));
             word |= UNEMULATED;
         }
         Carried::ClearStatus => {
@@ -658,7 +660,7 @@ pub(crate) fn put_back(system: &mut System, vector: u8) {
     const PREFIXES: [u8; 4] = [0x3e, 0x36, 0x2e, 0x26];
 
     let code = system.cpu.segments[CS].base;
-    let ip = system.cpu.ip;
+    let ip = system.cpu.ip as u16;
     let at = |offset: u16| code.wrapping_add(u32::from(ip.wrapping_add(offset)));
     let bus = &mut system.cpu.bus;
     let escape = if vector == 0x3c {

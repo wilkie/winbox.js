@@ -158,7 +158,7 @@ impl System {
         self.cpu
             .load_segment(ES, segment_selector(program_segment))?;
         self.cpu.regs[SP] = (top + stack_size) as u16;
-        self.cpu.ip = header.entry_ip;
+        self.cpu.ip = u32::from(header.entry_ip);
         self.cpu.regs[BX] = header.initial_stack_size;
         self.cpu.regs[CX] = header.initial_heap_size;
         // hModule.

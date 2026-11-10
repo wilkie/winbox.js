@@ -89,11 +89,15 @@ impl System {
     /// The instruction at CS:IP's bytes as KERNEL reads them, through CS;
     /// `None` past its limit. The offset wraps in 64 KiB, as the
     /// processor's byte read wraps it, unless the instruction that
-    /// faulted addresses in 32 bits.
+    /// faulted addresses in 32 bits or is 32-bit code, whose EIP is whole.
     fn code_byte(&self, wide: bool, at: u16) -> Option<u8> {
         let segment = self.cpu.segments[winbox_cpu::CS];
-        let offset = u32::from(self.cpu.ip) + u32::from(at);
-        let offset = if wide { offset } else { offset & 0xffff };
+        let offset = self.cpu.ip.wrapping_add(u32::from(at));
+        let offset = if wide || segment.big {
+            offset
+        } else {
+            offset & 0xffff
+        };
 
         segment.holds(offset, 1).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
@@ -106,7 +110,7 @@ impl System {
 
         if setting & 1 == 0
             || self.cpu.regs[winbox_cpu::SP] < 0x80
-            || u32::from(self.cpu.ip) + 10 > 0xffff
+            || self.cpu.ip + 10 > 0xffff
         {
             return false;
         }
@@ -176,7 +180,11 @@ impl Engine {
                 let wide = system.addresses_in_32_bits();
                 let length = instruction_length(|at| system.code_byte(wide, at)).unwrap_or(0);
 
-                system.cpu.ip = ip.wrapping_add(length);
+                system.cpu.ip = if system.cpu.segments[winbox_cpu::CS].big {
+                    ip.wrapping_add(u32::from(length))
+                } else {
+                    u32::from((ip as u16).wrapping_add(length))
+                };
                 return Ok(());
             }
         }

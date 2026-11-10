@@ -285,7 +285,8 @@ impl System {
         let cs = self.cpu.segments[CS].selector;
         let kept = self.kept_at(index_for(cs)).ok_or(Stop::Interrupt(0x80))?;
         let module = self.module_of(kept);
-        let ordinal = self.cpu.ip / STEP - 1;
+        // The stubs are 16-bit code: IP is the low word.
+        let ordinal = self.cpu.ip as u16 / STEP - 1;
         // An entry where the module exports nothing: MMSYSTEM's own I/O
         // procedures, whose addresses it hands out (`mmsystem/mmio.rs`).
         let export = module

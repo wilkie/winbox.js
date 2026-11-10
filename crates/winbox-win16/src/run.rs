@@ -96,7 +96,7 @@ impl System {
                 // An interrupt the host answers. The `INT` is an instruction
                 // run, counted once what it does is done.
                 Exit::Unimplemented(0xcd) => {
-                    let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
+                    let at = self.cpu.segments[CS].base + self.cpu.ip;
                     let vector = self.cpu.bus.read8(at + 1);
 
                     // A program's own handler for the vector, set through

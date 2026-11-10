@@ -41,7 +41,7 @@ impl System {
     pub(crate) fn port_instruction(&mut self, opcode: u8) -> bool {
         let segment = self.cpu.segments[CS];
         let byte = |system: &Self, at: u16| {
-            let offset = u32::from(system.cpu.ip.wrapping_add(at));
+            let offset = system.cpu.ip_ahead(u32::from(at));
 
             winbox_machine::Memory::read8(&system.cpu.bus, segment.base.wrapping_add(offset))
         };
@@ -108,7 +108,7 @@ impl System {
             }
         }
 
-        self.cpu.ip = self.cpu.ip.wrapping_add(length);
+        self.cpu.ip = self.cpu.ip_ahead(u32::from(length));
         true
     }
 }

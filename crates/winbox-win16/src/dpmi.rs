@@ -100,7 +100,8 @@ struct Context {
     regs: [u16; 8],
     high: [u16; 8],
     flags: u16,
-    ip: u16,
+    /// EIP whole.
+    ip: u32,
     selectors: [u16; 6],
 }
 
@@ -210,7 +211,7 @@ impl System {
     /// WinBox's answer as a program's `INT` does.
     pub(crate) fn at_real_call(&self) -> bool {
         Self::is_host_code(self.cpu.segments[CS].selector)
-            && (REAL_CALL..REAL_CALL + 0x100).contains(&self.cpu.ip)
+            && (u32::from(REAL_CALL)..u32::from(REAL_CALL) + 0x100).contains(&self.cpu.ip)
     }
 
     fn dpmi_reg32(&self, index: usize) -> u32 {
@@ -446,7 +447,8 @@ impl System {
     /// reached: an event where the run stops.
     pub(crate) fn dpmi_interrupt(&mut self) -> Option<Event> {
         if Self::is_host_code(self.cpu.segments[CS].selector) {
-            return self.dpmi_host_returned(self.cpu.ip.wrapping_sub(2));
+            // The host's code is 16-bit: IP is EIP's low word.
+            return self.dpmi_host_returned((self.cpu.ip as u16).wrapping_sub(2));
         }
 
         let function = self.cpu.regs[AX];
@@ -926,7 +928,8 @@ impl System {
 
     /// An `INT` a program's handler is set for, its instruction run (IP
     /// after it): the handler called as the processor calls one. True where
-    /// it was.
+    /// it was. The frame is of words, a 16-bit client's, as every client
+    /// here is; IP is EIP's low word ([[topic:win386]], "Not yet done").
     pub(crate) fn dpmi_vector(&mut self, vector: u8) -> bool {
         let Some(&(cs, ip)) = self.dpmi.vectors.get(&vector) else {
             return false;
@@ -941,14 +944,15 @@ impl System {
 
         self.dpmi_push16(flags);
         self.dpmi_push16(from_cs);
-        self.dpmi_push16(from_ip);
+        self.dpmi_push16(from_ip as u16);
         self.dpmi_load(CS, cs);
-        self.cpu.ip = ip;
+        self.cpu.ip = u32::from(ip);
         true
     }
 
     /// A fault given to the program's handler for it (as `#raise`), from
-    /// the instruction that faulted, at CS:IP.
+    /// the instruction that faulted, at CS:IP. The frame is of words, a
+    /// 16-bit client's: IP is EIP's low word.
     pub(crate) fn dpmi_exception(&mut self, number: u8, code: u16) {
         self.dpmi_host();
 
@@ -963,7 +967,7 @@ impl System {
             self.cpu.regs[SP],
             self.cpu.flags,
             self.cpu.segments[CS].selector,
-            self.cpu.ip,
+            self.cpu.ip as u16,
             code,
             self.dpmi_host_code(),
             EXCEPTION_RETURN,
@@ -979,7 +983,7 @@ impl System {
 
         self.dpmi.stack_tops.push(self.cpu.regs[SP]);
         self.dpmi_load(CS, cs);
-        self.cpu.ip = ip;
+        self.cpu.ip = u32::from(ip);
     }
 
     // --- the host's stubs ---
@@ -994,7 +998,7 @@ impl System {
             self.dpmi_load(SS, frame[5]);
             self.cpu.regs[SP] = frame[4];
             self.dpmi_load(CS, frame[2]);
-            self.cpu.ip = frame[1];
+            self.cpu.ip = u32::from(frame[1]);
             return None;
         }
 
@@ -1028,7 +1032,7 @@ impl System {
         self.dpmi_load(SS, frame[7]);
         self.cpu.regs[SP] = frame[6];
         self.dpmi_load(CS, frame[4]);
-        self.cpu.ip = frame[3];
+        self.cpu.ip = u32::from(frame[3]);
 
         if number == crate::fault::GENERAL_PROTECTION {
             Event::Fault(number)
@@ -1165,7 +1169,7 @@ impl System {
         self.dpmi_load(SS, Self::dpmi_host_stack());
         self.cpu.regs[SP] = top;
         self.dpmi_load(CS, self.dpmi_host_code());
-        self.cpu.ip = stub;
+        self.cpu.ip = u32::from(stub);
     }
 
     fn dpmi_paragraph(&self, selector: u16, scratch: u16, given: u16) -> u16 {
@@ -1326,7 +1330,7 @@ impl System {
         self.dpmi_load(ES, callback.structure.0);
         self.cpu.regs[DI] = callback.structure.1;
         self.dpmi_load(CS, callback.procedure.0);
-        self.cpu.ip = callback.procedure.1;
+        self.cpu.ip = u32::from(callback.procedure.1);
         None
     }
 

@@ -76,7 +76,7 @@ mod divide_errors {
         step(cpu);
         assert_eq!(
             (cpu.segments[CS].selector, cpu.ip),
-            (HANDLER_SEGMENT, HANDLER_OFFSET)
+            (HANDLER_SEGMENT, u32::from(HANDLER_OFFSET))
         );
 
         let at = 0x20000 + usize::from(cpu.regs[SP]);

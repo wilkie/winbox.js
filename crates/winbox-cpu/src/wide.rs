@@ -196,17 +196,14 @@ impl<B: Bus> Cpu<B> {
 
                 self.set_reg32(DX, sign);
             }
-            // CALL far with a double word's offset: CS and IP pushed as
-            // double words, and the offset taken to IP's 16 bits.
+            // CALL far with a double word's offset: CS and EIP pushed as
+            // double words, and the offset taken whole, checked against the
+            // target's limit first ([`Self::runs_at`]).
             0x9a => {
                 let offset = self.fetch32()?;
                 let selector = self.fetch16()?;
-                let segment = self.descriptor(CS, selector, false)?;
 
-                self.push32(u32::from(self.segments[CS].selector))?;
-                self.push32(u32::from(self.ip))?;
-                self.ip = offset as u16;
-                self.set_segment(CS, segment);
+                self.call_far32(selector, offset)?;
             }
             // PUSHFD and POPFD: FLAGS' word, in a double word.
             0x9c => self.push32(u32::from(self.flags_word()))?,
@@ -258,10 +255,12 @@ impl<B: Bus> Cpu<B> {
 
                 self.set32(place, result)?;
             }
-            // RETD and RETFD: what they return to read first, an EIP past
-            // the segment's 64 KiB a general protection fault with the stack
-            // as it was. The count released is the low word of the double
-            // word the JavaScript core's decode reads for it.
+            // RETD and RETFD: what they return to read first, an EIP the
+            // code segment it returns to cannot run at -- past its limit, or
+            // past 64 KiB in 16-bit code -- a general protection fault with
+            // the stack as it was ([`Self::runs_at`]). The count released is
+            // the low word of the double word the JavaScript core's decode
+            // reads for it.
             0xc2 | 0xc3 | 0xca | 0xcb => {
                 let release = if matches!(opcode, 0xc2 | 0xca) {
                     self.fetch32()? as u16
@@ -277,20 +276,20 @@ impl<B: Bus> Cpu<B> {
                     0
                 };
 
-                if eip > 0xffff {
-                    return self.fault(13);
-                }
-
                 let segment = if far {
                     Some(self.descriptor(CS, selector, false)?)
                 } else {
                     None
                 };
 
+                if !Self::runs_at(segment.as_ref().unwrap_or(&self.segments[CS]), eip) {
+                    return self.fault(13);
+                }
+
                 self.set_stack_top(
                     self.stack_step(top, if far { 8 } else { 4 } + u32::from(release)),
                 );
-                self.ip = eip as u16;
+                self.ip = eip;
 
                 if let Some(segment) = segment {
                     self.set_segment(CS, segment);
@@ -335,26 +334,27 @@ impl<B: Bus> Cpu<B> {
                 self.set_reg32(BP, saved);
             }
             0xcf => self.iret(true)?,
-            // CALL and JMP near with a double word's displacement, IP
-            // wrapping in its 16 bits; CALL pushes a double word.
+            // CALL and JMP near with a double word's displacement, EIP
+            // taken whole, a target the code segment cannot run at a
+            // general protection fault ([`Self::runs_at`]); CALL pushes a
+            // double word.
             0xe8 => {
                 let displacement = self.fetch32()?;
+                let target = self.near_target(self.ip.wrapping_add(displacement))?;
 
-                self.push32(u32::from(self.ip))?;
-                self.ip = self.ip.wrapping_add(displacement as u16);
+                self.push32(self.ip)?;
+                self.ip = target;
             }
             0xe9 => {
                 let displacement = self.fetch32()?;
 
-                self.ip = self.ip.wrapping_add(displacement as u16);
+                self.ip = self.near_target(self.ip.wrapping_add(displacement))?;
             }
             0xea => {
                 let offset = self.fetch32()?;
                 let selector = self.fetch16()?;
-                let segment = self.descriptor(CS, selector, false)?;
 
-                self.ip = offset as u16;
-                self.set_segment(CS, segment);
+                self.jump_far32(selector, offset)?;
             }
             0xf7 => {
                 let (reg, place) = self.modrm()?;
@@ -430,10 +430,10 @@ impl<B: Bus> Cpu<B> {
                     }
                     // CALL near: the return pushed as a double word.
                     2 => {
-                        let target = self.get32(place)?;
+                        let target = self.near_target(self.get32(place)?)?;
 
-                        self.push32(u32::from(self.ip))?;
-                        self.ip = target as u16;
+                        self.push32(self.ip)?;
+                        self.ip = target;
                     }
                     // CALL far through memory: CS and IP pushed as double
                     // words, the selector after the double word's offset. A
@@ -444,14 +444,10 @@ impl<B: Bus> Cpu<B> {
                         };
                         let offset = self.read32(through, at)?;
                         let selector = self.read16(through, at.wrapping_add(4))?;
-                        let segment = self.descriptor(CS, selector, false)?;
 
-                        self.push32(u32::from(self.segments[CS].selector))?;
-                        self.push32(u32::from(self.ip))?;
-                        self.ip = offset as u16;
-                        self.set_segment(CS, segment);
+                        self.call_far32(selector, offset)?;
                     }
-                    4 => self.ip = self.get32(place)? as u16,
+                    4 => self.ip = self.near_target(self.get32(place)?)?,
                     // JMP far through memory: as the JavaScript core has it,
                     // not through a register, nor through a segment register
                     // holding the null selector.
@@ -466,10 +462,8 @@ impl<B: Bus> Cpu<B> {
 
                         let offset = self.read32(through, at)?;
                         let selector = self.read16(through, at.wrapping_add(4))?;
-                        let segment = self.descriptor(CS, selector, false)?;
 
-                        self.ip = offset as u16;
-                        self.set_segment(CS, segment);
+                        self.jump_far32(selector, offset)?;
                     }
                     6 => {
                         let value = self.get32(place)?;
@@ -551,21 +545,16 @@ impl<B: Bus> Cpu<B> {
             }
             0xa3 | 0xab | 0xb3 | 0xbb | 0xba | 0xbc | 0xbd => self.bits(second)?,
             0xa4 | 0xa5 | 0xac | 0xad => self.double_shift(second)?,
-            // The near Jcc with a double word's displacement: past the
-            // segment's 64 KiB the jump is a general protection fault, as the
-            // JavaScript core's executeConditional raises it. SimTower jumps
-            // so.
+            // The near Jcc with a double word's displacement: to a target
+            // the code segment cannot run at -- past 64 KiB in 16-bit code,
+            // as the JavaScript core's executeConditional raised it, or past
+            // the limit -- the jump is a general protection fault
+            // ([`Self::runs_at`]). SimTower jumps so.
             0x80..=0x8f => {
                 let displacement = self.fetch32()?;
 
                 if self.condition(second & 0x0f) {
-                    let target = u32::from(self.ip).wrapping_add(displacement);
-
-                    if target > 0xffff {
-                        return self.fault(13);
-                    }
-
-                    self.ip = target as u16;
+                    self.ip = self.near_target(self.ip.wrapping_add(displacement))?;
                 }
             }
             // SETcc sets a byte whatever the operand size.
@@ -611,6 +600,50 @@ impl<B: Bus> Cpu<B> {
             _ => return Err(Exit::Unimplemented(0x66)),
         }
 
+        Ok(())
+    }
+
+    /// A near transfer's target under a 32-bit operand size, taken whole:
+    /// one the code segment cannot run at ([`Self::runs_at`]) is a general
+    /// protection fault at the instruction, nothing changed.
+    fn near_target(&self, target: u32) -> Result<u32, Exit> {
+        if Self::runs_at(&self.segments[CS], target) {
+            Ok(target)
+        } else {
+            Err(Exit::Fault(13))
+        }
+    }
+
+    /// The target of a far `CALL` or `JMP` under a 32-bit operand size: its
+    /// descriptor, read first, and the offset checked against it.
+    fn far_target(&self, selector: u16, offset: u32) -> Result<crate::Segment, Exit> {
+        let segment = self.descriptor(CS, selector, false)?;
+
+        if Self::runs_at(&segment, offset) {
+            Ok(segment)
+        } else {
+            Err(Exit::Fault(13))
+        }
+    }
+
+    /// A far call under a 32-bit operand size: CS and EIP pushed as double
+    /// words, and the target taken whole.
+    fn call_far32(&mut self, selector: u16, offset: u32) -> Result<(), Exit> {
+        let segment = self.far_target(selector, offset)?;
+
+        self.push32(u32::from(self.segments[CS].selector))?;
+        self.push32(self.ip)?;
+        self.ip = offset;
+        self.set_segment(CS, segment);
+        Ok(())
+    }
+
+    /// A far jump under a 32-bit operand size.
+    fn jump_far32(&mut self, selector: u16, offset: u32) -> Result<(), Exit> {
+        let segment = self.far_target(selector, offset)?;
+
+        self.ip = offset;
+        self.set_segment(CS, segment);
         Ok(())
     }
 

@@ -87,7 +87,7 @@ fn runs_a_program_to_its_first_call() {
 
     assert_eq!(kept.module.name, "KERNEL");
     assert_eq!(
-        kept.module.export(cpu.ip / STEP - 1).unwrap().name,
+        kept.module.export(cpu.ip as u16 / STEP - 1).unwrap().name,
         "InitTask"
     );
     // Its segments given after its module's database, its task's database,
