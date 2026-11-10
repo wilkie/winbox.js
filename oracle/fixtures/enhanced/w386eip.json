@@ -1,0 +1,115 @@
+{
+  "probe": "w386eip",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "eip",
+      "args": "low",
+      "result": "000021ea, past ffff no"
+    },
+    {
+      "function": "eip",
+      "args": "crossing",
+      "result": "000023a4, past ffff no"
+    },
+    {
+      "function": "eip",
+      "args": "high",
+      "result": "000143dc, past ffff yes"
+    },
+    {
+      "function": "eip",
+      "args": "high near",
+      "result": "000143ec, past ffff yes"
+    },
+    {
+      "function": "near call",
+      "args": "returned",
+      "result": "48494748"
+    },
+    {
+      "function": "near return",
+      "args": "returned",
+      "result": "16"
+    },
+    {
+      "function": "eip",
+      "args": "near return to",
+      "result": "0000214b, past ffff no"
+    },
+    {
+      "function": "eip",
+      "args": "near return at",
+      "result": "00014460, past ffff yes"
+    },
+    {
+      "function": "far return",
+      "args": "returned",
+      "result": "4c4f4652"
+    },
+    {
+      "function": "eip",
+      "args": "far return to",
+      "result": "00014491, past ffff yes"
+    },
+    {
+      "function": "eip",
+      "args": "far return at",
+      "result": "0001449c, past ffff yes"
+    },
+    {
+      "function": "iretd",
+      "args": "returned",
+      "result": "49524554"
+    },
+    {
+      "function": "eip",
+      "args": "iretd to",
+      "result": "000144fd, past ffff yes"
+    },
+    {
+      "function": "eip",
+      "args": "iretd at",
+      "result": "00014508, past ffff yes"
+    },
+    {
+      "function": "high calls",
+      "args": "returned",
+      "result": "43414c4c"
+    },
+    {
+      "function": "far call",
+      "args": "returned",
+      "result": "48464152, came back low"
+    },
+    {
+      "function": "eip",
+      "args": "far jump went",
+      "result": "0001456a, past ffff yes"
+    },
+    {
+      "function": "far jump",
+      "args": "came back",
+      "result": "low"
+    },
+    {
+      "function": "loop",
+      "args": "times round",
+      "result": "3"
+    },
+    {
+      "function": "eip",
+      "args": "loop ended",
+      "result": "000143cb, past ffff yes"
+    }
+  ]
+}
