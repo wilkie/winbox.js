@@ -87,12 +87,41 @@ pub struct Segment {
     pub selector: u16,
     pub base: u32,
     /// One past the last offset that may be reached: up to `1_0000_0000h`,
-    /// for a segment of 4 GiB.
+    /// for a segment of 4 GiB. For a segment that expands down
+    /// ([`Self::down`]), the first that may be: one past its limit.
     pub past_limit: u64,
     /// The descriptor's D bit: for a code segment, 32-bit operands and
     /// addresses unless a prefix says otherwise; for the stack segment, its
-    /// B bit, a 32-bit stack, ESP for SP.
+    /// B bit, a 32-bit stack, ESP for SP. For a data segment that expands
+    /// down, where its room ends.
     pub big: bool,
+    /// Whether the segment is data that expands down: its room runs from
+    /// one past its limit to `FFFFh`, or `FFFFFFFFh` with its B bit (Intel
+    /// 80386 manual, expand-down data segments). Kept beside the limit,
+    /// not as a second bound, so that the cache of a segment stays
+    /// sixteen bytes: at twenty-four, the benchmark ran 10 to 25% slower.
+    pub down: bool,
+}
+
+impl Segment {
+    /// The first offset that may be reached.
+    pub const fn floor(&self) -> u64 {
+        if self.down { self.past_limit } else { 0 }
+    }
+
+    /// One past the last offset that may be reached.
+    pub const fn end(&self) -> u64 {
+        match (self.down, self.big) {
+            (false, _) => self.past_limit,
+            (true, false) => 0x1_0000,
+            (true, true) => 0x1_0000_0000,
+        }
+    }
+
+    /// Whether `size` bytes at `offset` are all inside the segment.
+    pub const fn holds(&self, offset: u32, size: u32) -> bool {
+        offset as u64 >= self.floor() && offset as u64 + size as u64 <= self.end()
+    }
 }
 
 pub const ES: usize = 0;
@@ -241,6 +270,11 @@ pub struct Cpu<B: Bus> {
     wrapped: bool,
     /// Whether the memory operand's address is based on ESP, by a SIB byte.
     esp_based: bool,
+    /// Whether the instruction that stopped the run as [`Exit::Fault`] 13
+    /// did so fetching its own bytes past CS's limit, rather than in an
+    /// access it makes: a general protection fault, error code nought,
+    /// which the host names as such in protected mode.
+    pub fetched_past_limit: bool,
 }
 
 /// The one-byte opcodes the operand-size prefix does not change:
@@ -295,6 +329,7 @@ impl<B: Bus> Cpu<B> {
             named: None,
             wrapped: false,
             esp_based: false,
+            fetched_past_limit: false,
         }
     }
 
@@ -414,14 +449,15 @@ impl<B: Bus> Cpu<B> {
 
     /// The segment a selector names, for the register `index`.
     ///
-    /// In protected mode, read from its table. A segment this core cannot check accesses to by an upper limit
-    /// alone -- the null selector, one not present, one that expands down
-    /// -- is given no room, so that any access stops the run and the host
-    /// faults. Where the host would fault at the load itself, past a table's
-    /// end or, `checked`, a descriptor unfit for the register, the load is
-    /// the host's ([`Exit::Host`]). A code segment's D bit is its `big`, and
-    /// so is a stack segment's B bit: a 32-bit stack, run as the 80386 runs
-    /// one (`stack32`).
+    /// In protected mode, read from its table. The null selector and a
+    /// segment not present are given no room, so that any access stops the
+    /// run and the host faults; a data segment that expands down has room
+    /// above its limit alone, up to the top its B bit sets. Where the host
+    /// would fault at the load itself, past a table's end or, `checked`, a
+    /// descriptor unfit for the register, the load is the host's
+    /// ([`Exit::Host`]). A code segment's D bit is its `big`, and so is a
+    /// stack segment's B bit: a 32-bit stack, run as the 80386 runs one
+    /// (`stack32`).
     fn descriptor(&self, index: usize, selector: u16, checked: bool) -> Result<Segment, Exit> {
         if !self.protected {
             return Ok(Segment {
@@ -429,6 +465,7 @@ impl<B: Bus> Cpu<B> {
                 base: u32::from(selector) << 4,
                 past_limit: 0x10000,
                 big: false,
+                down: false,
             });
         }
 
@@ -444,6 +481,7 @@ impl<B: Bus> Cpu<B> {
                 base: 0,
                 past_limit: 0,
                 big: false,
+                down: false,
             });
         }
 
@@ -492,16 +530,14 @@ impl<B: Bus> Cpu<B> {
         }
 
         let grows_down = access & 0x1c == 0x14;
+        let down = present && grows_down;
 
         Ok(Segment {
             selector,
             base,
-            past_limit: if present && !grows_down {
-                u64::from(limit) + 1
-            } else {
-                0
-            },
+            past_limit: if present { u64::from(limit) + 1 } else { 0 },
             big: granularity & 0x40 != 0,
+            down,
         })
     }
 
@@ -525,11 +561,24 @@ impl<B: Bus> Cpu<B> {
         let cached = self.segments[segment];
         let offset = if wide { offset } else { offset & 0xffff };
 
-        if u64::from(offset) + u64::from(size) > cached.past_limit {
-            return Err(self.limit_fault(segment));
+        if cached.down || u64::from(offset) + u64::from(size) > cached.past_limit {
+            self.outside(segment, offset, size)?;
         }
 
         Ok(cached.base.wrapping_add(offset))
+    }
+
+    /// An access past the limit, or through a segment that expands down,
+    /// checked both ways off the common path: the fault, or nothing for
+    /// one inside a segment that expands down.
+    #[cold]
+    #[inline(never)]
+    fn outside(&self, segment: usize, offset: u32, size: u32) -> Result<(), Exit> {
+        if self.segments[segment].holds(offset, size) {
+            Ok(())
+        } else {
+            Err(self.limit_fault(segment))
+        }
     }
 
     /// The fault for an access through `segment` past its limit. In real
@@ -611,10 +660,12 @@ impl<B: Bus> Cpu<B> {
 
     fn fetch32(&mut self) -> Result<u32, Exit> {
         if self.wrapped {
-            return Err(Exit::Fault(13));
+            return Err(self.fetch_fault(Exit::Fault(13)));
         }
 
-        let value = self.read32(CS, u32::from(self.ip))?;
+        let value = self
+            .read32(CS, u32::from(self.ip))
+            .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(4);
         Ok(value)
@@ -748,10 +799,12 @@ impl<B: Bus> Cpu<B> {
     /// (`fetchedPastLimit`). One that ends exactly at the end is whole.
     fn fetch8(&mut self) -> Result<u8, Exit> {
         if self.wrapped {
-            return Err(Exit::Fault(13));
+            return Err(self.fetch_fault(Exit::Fault(13)));
         }
 
-        let value = self.read8(CS, u32::from(self.ip))?;
+        let value = self
+            .read8(CS, u32::from(self.ip))
+            .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(1);
         Ok(value)
@@ -761,13 +814,23 @@ impl<B: Bus> Cpu<B> {
     /// would run past the limit is a fault of the access, left to a checked read.
     fn fetch16(&mut self) -> Result<u16, Exit> {
         if self.wrapped {
-            return Err(Exit::Fault(13));
+            return Err(self.fetch_fault(Exit::Fault(13)));
         }
 
-        let value = self.read16(CS, u32::from(self.ip))?;
+        let value = self
+            .read16(CS, u32::from(self.ip))
+            .map_err(|exit| self.fetch_fault(exit))?;
 
         self.advance_ip(2);
         Ok(value)
+    }
+
+    /// What stopped a fetch of the instruction's bytes, noted where it is a
+    /// fault: one past CS's limit ([`Self::fetched_past_limit`]).
+    #[cold]
+    fn fetch_fault(&mut self, exit: Exit) -> Exit {
+        self.fetched_past_limit = matches!(exit, Exit::Fault(_));
+        exit
     }
 
     /// IP moved past `size` bytes fetched, noting a wrap round.
@@ -1966,6 +2029,7 @@ impl<B: Bus> Cpu<B> {
         self.lock = false;
         self.wrapped = false;
         self.esp_based = false;
+        self.fetched_past_limit = false;
 
         let mut opcode = self.fetch8()?;
 
@@ -2003,7 +2067,11 @@ impl<B: Bus> Cpu<B> {
 
         // LOCK anywhere but on a read-modify-write of memory is an undefined
         // opcode (the 80386 suite's tests).
-        if self.lock && !self.lockable(opcode)? {
+        if self.lock
+            && !self
+                .lockable(opcode)
+                .map_err(|exit| self.fetch_fault(exit))?
+        {
             return self.fault(6);
         }
 
@@ -3574,5 +3642,16 @@ mod tests {
         cpu.bus.0[0x1ffff] = 0xb0;
         assert_eq!(cpu.run(1), (0, Exit::Fault(13)));
         assert_eq!(cpu.ip, 0xffff);
+        assert!(cpu.fetched_past_limit, "a fault of the fetch");
+
+        // mov al, [bx] at nought, BX FFFFh, a byte read whole: the next
+        // instruction starts afresh. mov ax, [bx] at FFFFh: the access's
+        // fault, not the fetch's.
+        let mut cpu = machine(&[0x8a, 0x07, 0x8b, 0x07]);
+
+        cpu.regs[BX] = 0xffff;
+        assert_eq!(cpu.run(1), (1, Exit::Budget));
+        assert_eq!(cpu.run(1), (0, Exit::Fault(13)));
+        assert!(!cpu.fetched_past_limit, "a fault of the access");
     }
 }

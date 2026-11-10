@@ -2,16 +2,26 @@
 //! The rules are those of the retired TypeScript engine's JavaScript core
 //! (archived on the branch `typescript-engine`, 2026-11-08), which the
 //! 80386's hardware test vectors held; they are not read out of a 386 here.
+//! The vectors are of real mode, and DOSBox 0.74, the oracle, checks no
+//! segment's limit in protected mode (the `seglim` probe), so the
+//! expand-down segment and the fetch past CS's limit are the Intel 80386
+//! manual's.
 //!
-//! The Rust core runs what it can check by a segment's upper limit alone:
-//! an access through the null selector, a segment not present or one that
-//! expands down is given no room, and stops the run as `Fault(13)`; a
-//! segment load the part checks, or one past the end of its table, stops it
-//! as `Host`. The fault for the instruction is then named here:
+//! The Rust core checks each access against its segment's bounds: the null
+//! selector and a segment not present are given no room, and a data
+//! segment that expands down runs from one past its limit to `FFFFh`, or
+//! `FFFFFFFFh` with its B bit. An access outside them stops the run as
+//! `Fault(13)`, and so does a fetch of the instruction's bytes past CS's
+//! limit, which the core notes (`fetched_past_limit`); a segment load the
+//! part checks, or one past the end of its table, stops it as `Host`. The
+//! fault for the instruction is then named here:
 //!
+//! * A fetch past CS's limit, `#GP(0)`, before anything the instruction
+//!   reaches.
 //! * An access through the null selector, `#GP` (13); through a segment not
-//!   present, `#NP` (11); past the limit of one that is, through the stack
-//!   `#SS` (12), otherwise `#GP`. Whether it was through the stack the
+//!   present, `#NP` (11); outside one that is -- past its limit, or for one
+//!   that expands down at or below it -- through the stack `#SS` (12),
+//!   otherwise `#GP`. Whether it was through the stack the
 //!   core tells by the selector, not the register (`through_stack`).
 //! * A selector past the end of its table, loaded in any way, `#GP`.
 //! * `MOV` into a segment register checks what it loads: the null selector
@@ -23,10 +33,9 @@
 //! here -- its prefixes, its operands' addresses, what it
 //! pushes and pops -- to find the access that ran outside its segment, or
 //! the selector it loads, and names the fault those rules
-//! raise. Where that cannot be told -- a segment that expands down, which
-//! is checked the other way and may not fault on at all,
-//! two accesses that would raise different faults, or a stop for another
-//! reason -- the answer is `None`, and the run stops as it did.
+//! raise. Where that cannot be told -- two accesses that would raise
+//! different faults, or a stop for another reason -- the answer is `None`,
+//! and the run stops as it did.
 
 use winbox_cpu::{AX, BP, BX, CS, CX, DI, DS, ES, Exit, GS, SI, SP, SS};
 
@@ -67,17 +76,7 @@ impl System {
     /// The fault, by the rules above, for the
     /// instruction at CS:IP, where the Rust core stopped with `exit`.
     pub(crate) fn fault_vector(&self, exit: Exit) -> Option<u8> {
-        if !self.cpu.protected {
-            return None;
-        }
-
-        let decoded = self.decode()?;
-
-        match exit {
-            Exit::Fault(_) => self.access_fault(&decoded),
-            Exit::Host => self.load_fault(&decoded).map(|(vector, _)| vector),
-            _ => None,
-        }
+        self.fault_with_code(exit).map(|(vector, _)| vector)
     }
 
     /// The fault, as `fault_vector`, and its error code, as those rules
@@ -87,6 +86,10 @@ impl System {
     pub(crate) fn fault_with_code(&self, exit: Exit) -> Option<(u8, u16)> {
         if !self.cpu.protected {
             return None;
+        }
+
+        if matches!(exit, Exit::Fault(_)) && self.cpu.fetched_past_limit {
+            return Some((13, 0));
         }
 
         let decoded = self.decode()?;
@@ -115,7 +118,7 @@ impl System {
         let offset = u32::from(self.cpu.ip) + u32::from(at);
         let offset = if segment.big { offset } else { offset & 0xffff };
 
-        (u64::from(offset) < segment.past_limit).then(|| {
+        segment.holds(offset, 1).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
         })
     }
@@ -133,7 +136,7 @@ impl System {
     fn word_at(&self, segment: usize, offset: u32) -> Option<u16> {
         let cached = self.cpu.segments[segment];
 
-        (u64::from(offset) + 2 <= cached.past_limit).then(|| {
+        cached.holds(offset, 2).then(|| {
             let at = cached.base.wrapping_add(offset);
 
             u16::from(winbox_machine::Memory::read8(&self.cpu.bus, at))
@@ -298,9 +301,7 @@ impl System {
         let mut vector = None;
 
         for access in accesses {
-            let cached = self.cpu.segments[access.segment];
-
-            if u64::from(access.offset) + u64::from(access.size) <= cached.past_limit {
+            if self.cpu.segments[access.segment].holds(access.offset, access.size) {
                 continue;
             }
 
@@ -317,7 +318,7 @@ impl System {
     }
 
     /// The fault an access outside a segment register's segment raises, by
-    /// what the register holds; `None` for a segment that expands down.
+    /// what the register holds, whether the segment expands up or down.
     /// `named` is the register the instruction names for its memory
     /// operand, by a prefix or by its ModR/M byte's default.
     fn segment_fault(&self, segment: usize, named: Option<usize>) -> Option<u8> {
@@ -331,8 +332,6 @@ impl System {
 
         if access & 0x80 == 0 {
             Some(11)
-        } else if access & 0x1c == 0x14 {
-            None
         } else if self.through_stack(segment, named) {
             Some(12)
         } else {
@@ -909,11 +908,9 @@ mod tests {
         assert_eq!(raised(&mut system), Some(12));
     }
 
+    /// Intel 80386 manual: an instruction fetched past CS's limit is
+    /// #GP(0). DOSBox 0.74 runs on (the `seglim` probe's `fetch`).
     #[test]
-    #[ignore = "finding: `decode` reads the instruction's bytes only within CS's limit, \
-                so for a fetch that runs past it `fault_vector` answers None and the \
-                engine stops (`processor_stop`) where the 80386 raises #GP(0) \
-                (Intel 386 manual, instruction fetch past the limit)"]
     fn faults_when_instruction_fetch_runs_past_the_code_segment() {
         // mov al, [bp] -- three bytes in a segment with room for two.
         let mut system = machine(&[0x8a, 0x46, 0x00], DATA, DATA);
@@ -923,12 +920,27 @@ mod tests {
             .set_limit(&mut system.cpu.bus, CODE, 0x0001);
         system.cpu.load_segment(CS, segment_selector(CODE)).unwrap();
         assert_eq!(raised(&mut system), Some(13));
+        assert_eq!(system.fault_with_code(Exit::Fault(13)), Some((13, 0)));
     }
 
     #[test]
-    #[ignore = "finding: a segment that expands down is given no room by the Rust core \
-                and `segment_fault` answers None for it, so the engine stops; the 80386 \
-                raises #GP below the limit (Intel 386 manual, expand-down segments)"]
+    fn a_fetch_past_the_limit_comes_before_the_access() {
+        // mov al, [bp] -- its operand past SS's limit, a stack fault, and
+        // its displacement past CS's: the fetch's #GP.
+        let mut system = machine(&[0x8a, 0x46, 0x00], DATA, DATA);
+
+        system
+            .descriptors
+            .set_limit(&mut system.cpu.bus, CODE, 0x0001);
+        system.cpu.load_segment(CS, segment_selector(CODE)).unwrap();
+        system.cpu.regs[winbox_cpu::BP] = 0x20;
+        assert_eq!(raised(&mut system), Some(13));
+    }
+
+    /// Intel 80386 manual: an expand-down data segment's offsets run from
+    /// one past its limit; at or below it, #GP, or #SS through SS. DOSBox
+    /// 0.74 reads (the `seglim` probe's `down16` and `stack`).
+    #[test]
     fn an_expand_down_segment_faults_below_the_limit() {
         let mut system = read_through_bx(OTHER, 0x0800);
 
@@ -942,5 +954,27 @@ mod tests {
             .load_segment(DS, segment_selector(OTHER))
             .unwrap();
         assert_eq!(raised(&mut system), Some(13));
+    }
+
+    #[test]
+    fn an_expand_down_stack_faults_below_the_limit_as_the_stack() {
+        // mov al, [bp], SS expanding down past 0FFFh: 0800h is outside,
+        // through the stack.
+        let mut system = machine(&[0x8a, 0x46, 0x00], DATA, DATA);
+
+        system
+            .descriptors
+            .set_limit(&mut system.cpu.bus, OTHER, 0x0fff);
+        winbox_machine::Descriptors::set_rights(&mut system.cpu.bus, OTHER, 0x00f7);
+        system
+            .cpu
+            .load_segment(SS, segment_selector(OTHER))
+            .unwrap();
+        system.cpu.regs[winbox_cpu::BP] = 0x0800;
+        assert_eq!(raised(&mut system), Some(12));
+
+        // Above the limit, the read is made.
+        system.cpu.regs[winbox_cpu::BP] = 0x2000;
+        assert_eq!(system.cpu.run(1).0, 1);
     }
 }

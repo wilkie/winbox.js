@@ -95,7 +95,7 @@ impl System {
         let offset = u32::from(self.cpu.ip) + u32::from(at);
         let offset = if wide { offset } else { offset & 0xffff };
 
-        (u64::from(offset) < segment.past_limit).then(|| {
+        segment.holds(offset, 1).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
         })
     }

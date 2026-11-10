@@ -1,0 +1,259 @@
+{
+  "probe": "seglim",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "setup",
+      "args": "0202h 0Dh",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "0202h 0Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "0203h 0Dh",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "0203h 0Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "up16",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "up16",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "up16",
+      "args": "byte 0fff",
+      "result": "read al=f0 ok=1"
+    },
+    {
+      "function": "up16",
+      "args": "byte 1000",
+      "result": "read al=10 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "down16",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "down16",
+      "args": "byte 0000",
+      "result": "read al=00 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "byte 0800",
+      "result": "read al=08 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "byte 0fff",
+      "result": "read al=f0 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "byte 1000",
+      "result": "read al=10 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "byte 8000",
+      "result": "read al=80 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "byte ffff",
+      "result": "read al=00 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "word 0ffe",
+      "result": "read al=f1 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "word 0fff",
+      "result": "read al=f0 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "word 1000",
+      "result": "read al=10 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "word fffe",
+      "result": "read al=01 ok=1"
+    },
+    {
+      "function": "down16",
+      "args": "word ffff",
+      "result": "read al=00 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "down32",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "down32",
+      "args": "byte 00000fff",
+      "result": "read al=f0 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "byte 00001000",
+      "result": "read al=10 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "byte 0000ffff",
+      "result": "read al=00 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "byte 00010000",
+      "result": "read al=40 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "word 0000ffff",
+      "result": "read al=00 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "word 0001fffe",
+      "result": "read al=41 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "word 16-bit ffff",
+      "result": "read al=00 ok=1"
+    },
+    {
+      "function": "down32",
+      "args": "word 16-bit 0fff",
+      "result": "read al=f0 ok=1"
+    },
+    {
+      "function": "fetch",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "limit 4",
+      "result": "ran al=05"
+    },
+    {
+      "function": "fetch",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "limit 3",
+      "result": "ran al=05"
+    },
+    {
+      "function": "fetch",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "limit 2",
+      "result": "ran al=05"
+    },
+    {
+      "function": "fetch",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "fetch",
+      "args": "limit 1",
+      "result": "ran al=05"
+    },
+    {
+      "function": "stack",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "stack",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "stack",
+      "args": "byte at sp",
+      "result": "read"
+    },
+    {
+      "function": "stack",
+      "args": "byte 0010",
+      "result": "read"
+    },
+    {
+      "function": "setup",
+      "args": "0203h 0Dh back",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "0203h 0Ch back",
+      "result": "cf=0"
+    }
+  ]
+}
