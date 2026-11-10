@@ -30,7 +30,11 @@ import { usePageView } from './use.js';
 /** Where the three columns become one. */
 const WIDE = '@media (min-width: 1100px)';
 
-/** Movement kept to none where the system asks for less: MUI's transitions and ripples among it. */
+/** Movement kept to none where the system asks for less: MUI's transitions and ripples among it.
+ * A transition is none, not a short one: even at 0.01 ms a colour starts from
+ * its old value and is settled only on the next frame, so a scheme change
+ * read in that frame (an outlined button's blue, #90caf9 of the dark scheme
+ * on the light scheme's white, 1.74 to 1) is read half-way. */
 const still = (
   <GlobalStyles
     styles={{
@@ -38,7 +42,7 @@ const still = (
         '*, *::before, *::after': {
           animationDuration: '0.01ms !important',
           animationIterationCount: '1 !important',
-          transitionDuration: '0.01ms !important',
+          transition: 'none !important',
           scrollBehavior: 'auto !important',
         },
       },
