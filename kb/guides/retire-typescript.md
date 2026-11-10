@@ -322,7 +322,4 @@ All five phases are done (2026-11-09). What the retirement leaves:
 - **The 83 frozen summaries** in `kb/data/signatures.json`: each can move to its Rust function's `///` comment once read against the Rust code, the 31 that say what the TypeScript engine does or does not ("not followed") first.
 - **Wrappers ahead of an arm.** 28 GDI exports (`LineTo`, `Rectangle`, `BitBlt`, `SelectObject` and others) are answered first by a printer's wrapper (`printer_output.rs`, `printer_blits.rs`, `printer_stretch.rs`, `printer_driver.rs`) that hands any other device context on to the base arm, and MCISEQ's `DriverProc` by the sequencer's; their pages link the wrapper's file, the arm a call reaches first, while their summary is the base arm's.
 - The unit tests' audit is done ([[guide:retire-typescript-tests]]). What its ports found is open, each a Rust test kept as `#[ignore = "finding: …"]` with its evidence, none fixed in phase 1b:
-  - an expand-down segment read above its limit stops the Rust engine, where the 80386 reads (Intel 386 manual; `crates/winbox-cpu/tests/units.rs`);
-  - an expand-down segment read below its limit stops it, where the 80386 raises #GP(13) (`crates/winbox-win16/src/fault_vector.rs`);
-  - an instruction fetched past CS's limit stops it, where the 80386 raises #GP(0) (`fault_vector.rs`);
   - WIN87EM's emulator is not in the Rust engine, so a program with the coprocessor switched off stops at its first floating-point interrupt (`tests/win87em.rs`);

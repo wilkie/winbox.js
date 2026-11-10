@@ -205,8 +205,8 @@ static void outcome(LPCSTR group, LPCSTR what, WORD start, int checked, BYTE exp
     probe(group, what, probeResult);
 }
 
-/* A read through ES of `selector` at `offset`, the high word of EBX
- * `high`. */
+/* A read through ES of `selector` at `offset`, EBX the whole of it; the
+ * byte read set beside the block's own there. */
 static void readES(LPCSTR group, LPCSTR what, FARPROC reader, UINT selector, DWORD offset,
                    DWORD base)
 {

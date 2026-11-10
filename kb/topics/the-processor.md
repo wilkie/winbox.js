@@ -2,7 +2,7 @@
 kind: topic
 name: The processor
 summary: What winbox.js's 386 is tested against — the SingleStepTests suites captured from a real 80286 and 80386EX, every opcode under every prefix — and what the 386's own tests showed about operand and address sizes, faults and the instructions programs for Windows 3.1 use.
-probes: []
+probes: [seglim]
 ---
 
 Windows 3.1 runs on a 386 in enhanced mode, and programs made for it use the 386's instructions: 32-bit registers under the operand-size prefix, 32-bit addresses under the address-size prefix, and the instructions after 0Fh. winbox.js's processor is a 386, and it is held to two suites of tests captured from real parts by Daniel Balsom's ArduinoX86 board:
@@ -55,6 +55,17 @@ Before the tests, the processor had been fixed an instruction at a time, as prog
 - **The 286's own forms.** IMUL r16's carry and overflow were set, then cleared. BOUND and SALC were missing.
 
 Where the 286's tests disagree with the 386 the core is — LOCK, the real-mode stack fault, and a byte shifted by 16 or 24 — its oracle sets those tests aside. No 286 opcode fails more than before.
+
+## Segment checks in protected mode
+
+The suites are of real mode, where every segment is 64 KiB from its selector times sixteen, so they say nothing of a descriptor's limit. Two of the 386's checks are taken from the manual:
+
+- [[documented]] **A data segment that expands down** (Intel 80386 manual, expand-down data segments): its limit is the last offset _outside_ it, and its room runs from the limit + 1 to `FFFFh`, or to `FFFFFFFFh` with its B bit. An access at or below the limit, or one that runs past the top, is a general protection fault, 13, or a stack fault, 12, through SS, as an access past an ordinary limit is.
+- [[documented]] **An instruction fetched past CS's limit** is a general protection fault with error code nought, before anything the instruction reaches. [[measured]] The 386's own tests hold it in real mode, where the limit is `FFFFh`: an instruction that starts at `FFF8h` and runs past it (`66 81 06 …` in `6681.0`, ten bytes) takes interrupt 13 with the instruction's own address pushed, and one that ends at `FFFFh` (`66 EA …`, eight bytes) runs.
+
+[[measured]] [[probe:seglim]] made those segments under DOSBox, in standard mode, with INT 31h `000Ch`, and caught exceptions 0Dh and 0Ch with handlers of its own (INT 31h `0203h`). DOSBox 0.74 faults on none of them: a byte read at or below an expand-down segment's limit is read, a word at `FFFFh` without the B bit is read, an expand-down SS read below its limit is read, and code whose limit cuts `mov al, 5` in two runs it whole. The probe's control, an ordinary segment read one byte past its limit of `0FFFh`, is read too: DOSBox checks no segment's limit in protected mode, as [[probe:badptr]] found for KERNEL's pointer checks and [[fn:KERNEL.EMSCopy]] for a far call. Its records are no evidence of a 386's checks either way, and WinBox follows the manual, as it does for an ordinary limit. Where the probe's records differ, they are a known gap (`seglim:up16`, `down16`, `down32`, `fetch`, `stack`). The reads above the limit, which the manual and DOSBox agree are inside, are measured.
+
+The core keeps a segment that expands down as its limit and a flag beside it, not as a second bound: a cached segment of 24 bytes rather than 16 made the benchmark 10 to 25% slower. An access through such a segment, or past an ordinary limit, is checked both ways off the common path, in a function of its own the compiler keeps cold (`outside`). [[measured]] So made, the benchmark ran no slower than before on 2026-11-09: in four interleaved rounds its medians were 6 to 19% faster, which is more likely the code's layout than the check. A fault in the fetch of the instruction's own bytes is noted (`fetched_past_limit`), and `fault_vector.rs` names it #GP(0) before looking at what the instruction reaches.
 
 ## Running them
 

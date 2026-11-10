@@ -8360,7 +8360,7 @@
   },
   "gaps": {
    "pdb": "the task's prefix is at another selector in WinBox",
-   "variable": "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER",
+   "variable": "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER (the owner's decision, 2026-11-09)",
    "count": "WinBox's environment holds windir alone, so the count's place differs",
    "module": "the recorder started the probe from C:\\WINDOWS, the replay from C:\\"
   }
@@ -28253,6 +28253,63 @@
   "gaps": {
    "child": "a task's handle is not its task database's selector: 2 of 26 records",
    "between": "a task's handle is not its task database's selector: 1 of 8 records"
+  }
+ },
+ "seglim": {
+  "probe": "seglim",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 49,
+  "functions": {
+   "down16": {
+    "total": 13,
+    "agreed": 7,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "down32": {
+    "total": 10,
+    "agreed": 8,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fetch": {
+    "total": 12,
+    "agreed": 9,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stack": {
+    "total": 4,
+    "agreed": 3,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "up16": {
+    "total": 4,
+    "agreed": 3,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "up16": "DOSBox reads past a limit, where the 80386 faults: 1 of 4 records",
+   "down16": "DOSBox reads at and below an expand-down segment's limit, and a word across FFFFh, where the 80386 faults",
+   "down32": "DOSBox reads at an expand-down segment's limit, where the 80386 faults",
+   "fetch": "DOSBox runs code past CS's limit, where the 80386 raises #GP(0)",
+   "stack": "DOSBox reads below an expand-down SS's limit, where the 80386 raises #SS"
   }
  },
  "segreg": {

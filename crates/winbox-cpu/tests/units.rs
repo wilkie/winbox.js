@@ -586,33 +586,83 @@ mod protected_mode {
     }
 
     mod expand_down {
-        //! A stack segment that grows toward zero inverts the check: the
+        //! A data segment that grows toward zero inverts the check: the
         //! limit is the last offset *outside* the segment, and it runs from
-        //! there up to the top of the address space the D/B bit selects.
-        //! Below the limit is held in `fault_vector.rs`.
+        //! there up to the top of the address space the B bit selects
+        //! (Intel 80386 manual, expand-down data segments). Which fault an
+        //! access below the limit raises is named in `fault_vector.rs`.
+        //! DOSBox 0.74 checks no segment's limit, this one's or any other's
+        //! (the `seglim` probe), so these are the manual's.
 
         use super::*;
 
-        #[test]
-        #[ignore = "finding: the Rust core gives a segment that expands down no room \
-                    (`descriptor`, `grows_down`) and stops any access through it as \
-                    Fault(13), and `fault_vector` answers None for it, so the engine \
-                    stops where the 80386 reads (Intel 386 manual, expand-down data \
-                    segments: offsets limit+1 to FFFFh are inside)"]
-        fn allows_an_access_above_the_limit() {
+        /// Selector 18h: data at 40000h, expanding down past `limit`, the
+        /// B bit `big`.
+        fn expanding_down(limit: u32, big: bool) -> Cpu<VecBus> {
             let mut cpu = protected(&[(
                 3,
                 Descriptor {
                     access: Some(0x96),
-                    ..plain(0x40000, 0x0fff)
+                    big,
+                    ..plain(0x40000, limit)
                 },
             )]);
 
-            cpu.bus.0[0x20000..0x20002].copy_from_slice(&[0x8a, 0x07]);
             cpu.load_segment(CS, CODE_SELECTOR).unwrap();
             cpu.load_segment(DS, 0x18).unwrap();
+            cpu
+        }
+
+        #[test]
+        fn allows_an_access_above_the_limit() {
+            // mov al, [bx]
+            let mut cpu = expanding_down(0x0fff, false);
+
+            cpu.bus.0[0x20000..0x20002].copy_from_slice(&[0x8a, 0x07]);
+            cpu.bus.0[0x42000] = 0x5a;
             cpu.regs[BX] = 0x2000;
             step(&mut cpu);
+            assert_eq!(cpu.regs[AX] & 0xff, 0x5a);
+        }
+
+        #[test]
+        fn faults_at_and_below_the_limit() {
+            for (bx, size) in [(0x0fff, 1), (0x0000, 1), (0x0fff, 2)] {
+                // mov al, [bx] or mov ax, [bx]: the word at 0FFFh has its
+                // first byte at the limit.
+                let mut cpu = expanding_down(0x0fff, false);
+
+                cpu.bus.0[0x20000..0x20002]
+                    .copy_from_slice(&[if size == 1 { 0x8a } else { 0x8b }, 0x07]);
+                cpu.regs[BX] = bx;
+                assert_eq!(cpu.run(1), (0, Exit::Fault(13)), "{size} at {bx:04x}");
+            }
+        }
+
+        #[test]
+        fn ends_at_ffffh_without_the_b_bit() {
+            // mov ax, [bx] at FFFFh: its second byte past the top.
+            let mut cpu = expanding_down(0x0fff, false);
+
+            cpu.bus.0[0x20000..0x20002].copy_from_slice(&[0x8b, 0x07]);
+            cpu.regs[BX] = 0xffff;
+            assert_eq!(cpu.run(1), (0, Exit::Fault(13)));
+        }
+
+        #[test]
+        fn runs_past_ffffh_with_the_b_bit() {
+            // mov ax, [ebx], EBX 0000FFFFh and 00010000h.
+            for (high, low, at) in [(0, 0xffff, 0x4ffff), (1, 0, 0x50000)] {
+                let mut cpu = expanding_down(0x0fff, true);
+
+                cpu.bus.0[0x20000..0x20003].copy_from_slice(&[0x67, 0x8b, 0x03]);
+                cpu.bus.0[at] = 0x34;
+                cpu.bus.0[at + 1] = 0x12;
+                cpu.high[BX] = high;
+                cpu.regs[BX] = low;
+                step(&mut cpu);
+                assert_eq!(cpu.regs[AX], 0x1234);
+            }
         }
     }
 

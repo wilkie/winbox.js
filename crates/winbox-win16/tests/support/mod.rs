@@ -1945,6 +1945,30 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "enhanced/kintrnl:winoldap",
         "KERNEL's WinOldAp hooks answer nought and keep no list in enhanced mode",
     ),
+    // `seglim`: DOSBox 0.74 checks no segment's limit in protected mode, an
+    // ordinary one's (`up16`) or one that expands down, nor CS's for a
+    // fetch. WinBox's processor faults as the Intel 80386 manual has it
+    // (`kb/topics/the-processor.md`, "Segment checks in protected mode").
+    (
+        "seglim:up16",
+        "DOSBox reads past a limit, where the 80386 faults: 1 of 4 records",
+    ),
+    (
+        "seglim:down16",
+        "DOSBox reads at and below an expand-down segment's limit, and a word across FFFFh, where the 80386 faults",
+    ),
+    (
+        "seglim:down32",
+        "DOSBox reads at an expand-down segment's limit, where the 80386 faults",
+    ),
+    (
+        "seglim:fetch",
+        "DOSBox runs code past CS's limit, where the 80386 raises #GP(0)",
+    ),
+    (
+        "seglim:stack",
+        "DOSBox reads below an expand-down SS's limit, where the 80386 raises #SS",
+    ),
 ];
 
 /// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the

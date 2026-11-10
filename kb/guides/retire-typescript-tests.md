@@ -159,9 +159,9 @@ The fabricated recordings (`oracle/fixtures/fabricated/`) were held by no Rust t
 
 The rule was the guide's: where the Rust engine disagrees with a TypeScript test, the expected value is kept, and the evidence decides which engine is right. The Rust test stays, marked `#[ignore = "finding: …"]`. None of these is fixed in phase 1b.
 
-- **An expand-down segment, read above its limit.** [[documented]] The Intel 386 manual says offsets from limit + 1 to FFFFh are inside an expand-down data segment. Rust's `descriptor` gives such a segment no room, and the engine stops with `Fault(13)` (`crates/winbox-cpu/tests/units.rs` `protected_mode::expand_down::allows_an_access_above_the_limit`). The TypeScript engine reads.
-- **An expand-down segment, read below its limit.** [[documented]] The 80386 raises #GP(13). Rust's `fault_vector` answers None for the segment, so the engine stops instead of raising the fault (`crates/winbox-win16/src/fault_vector.rs` `an_expand_down_segment_faults_below_the_limit`).
-- **An instruction fetched past CS's limit.** [[documented]] The 80386 raises #GP(0), and the TypeScript engine raises 13. Rust's `decode` reads code bytes only within the limit, so `fault_vector` answers None and the engine stops (`fault_vector.rs` `faults_when_instruction_fetch_runs_past_the_code_segment`).
+- **An expand-down segment, read above its limit.** [[documented]] The Intel 386 manual says offsets from limit + 1 to FFFFh are inside an expand-down data segment. Rust's `descriptor` gives such a segment no room, and the engine stops with `Fault(13)` (`crates/winbox-cpu/tests/units.rs` `protected_mode::expand_down::allows_an_access_above_the_limit`). The TypeScript engine reads. Fixed 2026-11-09 ([[topic:the-processor]], "Segment checks in protected mode").
+- **An expand-down segment, read below its limit.** [[documented]] The 80386 raises #GP(13). Rust's `fault_vector` answers None for the segment, so the engine stops instead of raising the fault (`crates/winbox-win16/src/fault_vector.rs` `an_expand_down_segment_faults_below_the_limit`). Fixed 2026-11-09, with #SS through SS.
+- **An instruction fetched past CS's limit.** [[documented]] The 80386 raises #GP(0), and the TypeScript engine raises 13. Rust's `decode` reads code bytes only within the limit, so `fault_vector` answers None and the engine stops (`fault_vector.rs` `faults_when_instruction_fetch_runs_past_the_code_segment`). Fixed 2026-11-09: the core notes a fetch's fault (`fetched_past_limit`).
 - **WIN87EM's emulator.** The TypeScript engine carries out a floating-point instruction after `INT 34h`–`3Dh` when the coprocessor is switched off. The Rust engine has no emulator and stops (`Stop::Unsupported("the floating-point emulator")`). Three tests in `crates/winbox-win16/tests/win87em.rs` are ignored for this. The OS fixups themselves agree.
 - **The task's environment under DOSBox.** [[measured]] [[probe:environ]] records `PATH`, `COMSPEC` and `BLASTER` before `windir`, with the count at 75. The Rust engine gives `windir` alone (`tests/task_environment.rs` `a_task_environment_puts_windir_after_the_dos_hosts_variables`). This is one of the records the guide's "What neither engine holds" names for `environ`.
 
@@ -171,6 +171,6 @@ One finding concerns the TypeScript side. [[measured]] `dump-exports.mjs` checke
 
 ## Not yet done
 
-- The five findings above are open: the two expand-down cases and the fetch past CS's limit in the Rust core and `fault_vector`, WIN87EM's emulator, and the environment's DOS variables.
+- Two of the five findings above are open: WIN87EM's emulator, and the environment's DOS variables. The two expand-down cases and the fetch past CS's limit are fixed (2026-11-09).
 - `WindowsMode` and the accessible tree's types are still imported from the engine by type alone (phase 3).
 - `caribb_test.ts`, `widget_test.ts` and `accessible_parity_test.ts` still write their fixtures from the TypeScript engine until phase 1a's Rust writers land.
