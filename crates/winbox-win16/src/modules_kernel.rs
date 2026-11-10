@@ -392,9 +392,45 @@ pub fn get_selector_limit(system: &mut System, args: &mut Args) -> Result<Answer
 /// its number for an export that is one.
 pub fn get_proc_address(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
-    let name = name_at(system, args.dword(system));
+    let name = match name_at(system, args.dword(system)) {
+        Name::Text(text) => ordinal_written(&text).map_or(Name::Text(text), Name::Number),
+        name => name,
+    };
 
     Ok(Answer::Dword(proc_address(system, handle, &name)))
+}
+
+/// The bits of an ordinal KERNEL looks up: the low 15, so 32769 is
+/// ordinal 1 and 32768 none (`KRNL386.EXE` seg1 `4ff2`; the `procnum`
+/// probe, asked by number and as `#32769`).
+const ORDINAL_BITS: u16 = 0x7fff;
+
+/// The characters of a name `GetProcAddress` copies before it looks: its
+/// length is kept in a byte and the copy stops at 127 (`KRNL386.EXE` seg2
+/// `0710`, `CX` 7Fh).
+const NAME_COPIED: usize = 127;
+
+/// A name that is `#` and digits, the ordinal they make, as KERNEL reads it
+/// before any table (`KRNL386.EXE` seg1 `50b3`-`511c`): every character
+/// after the `#` of the 127 copied a decimal digit, the number kept in a
+/// word as it is made (`65537` is 1); one other character, or none, and
+/// the name is looked up as a name. It holds for every module: the
+/// `procnum` probe. An ordinal of nought finds nothing (seg2 `07a2`).
+fn ordinal_written(name: &str) -> Option<u16> {
+    let mut copied = name.chars().take(NAME_COPIED);
+
+    if copied.next() != Some('#') {
+        return None;
+    }
+    let digits: Vec<u32> = copied
+        .map(|digit| digit.to_digit(10))
+        .collect::<Option<_>>()?;
+
+    (!digits.is_empty()).then(|| {
+        digits.iter().fold(0u16, |number, &digit| {
+            number.wrapping_mul(10).wrapping_add(digit as u16)
+        })
+    })
 }
 
 /// A procedure's address in a module by its name, as `GetProcAddress`
@@ -424,7 +460,7 @@ fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
         Name::Text(text) => module.executable.ordinal_found(text),
         Name::Number(number) => *number,
         Name::Null => 0,
-    };
+    } & ORDINAL_BITS;
 
     // An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox answers: its
     // stub (`own_modules.rs`).
@@ -449,7 +485,13 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
         Name::Null => 0,
     };
 
-    if ordinal == 0 || module.export(ordinal).is_none() {
+    let ordinal = ordinal & ORDINAL_BITS;
+
+    if ordinal == 0
+        || module
+            .export(ordinal)
+            .is_none_or(|export| export.holds_place())
+    {
         return 0;
     }
 

@@ -1,0 +1,644 @@
+{
+  "probe": "procnum",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "procnum",
+      "args": "KERNEL #1",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #2",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #01",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #0001",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #0",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #65537",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #65536",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #1x",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #x1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL # 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #+1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #-1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #1 ",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #12345",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #113",
+      "result": "ordinal 113"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #178",
+      "result": "ordinal 178"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #9",
+      "result": "ordinal 9"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #00",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #1#",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL ##1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #32770",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700005",
+      "result": "ordinal 7"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL number 32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL number 32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "KERNEL number 65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #1",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #2",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #01",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #0001",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #0",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #65537",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #65536",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #1x",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #x1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER # 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #+1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #-1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #1 ",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #12345",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #113",
+      "result": "ordinal 113"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #178",
+      "result": "ordinal 178"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #9",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #00",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #1#",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER ##1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #32770",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700005",
+      "result": "ordinal 7"
+    },
+    {
+      "function": "procnum",
+      "args": "USER number 32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "USER number 32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "USER number 65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #1",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #2",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #01",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #0001",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #0",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #65537",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #65536",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #1x",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #x1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI # 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #+1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #-1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #1 ",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #12345",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #113",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #178",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #9",
+      "result": "ordinal 9"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #00",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #1#",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI ##1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #32770",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700005",
+      "result": "ordinal 7"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI number 32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI number 32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "GDI number 65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #1",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #2",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #01",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #0001",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #0",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #65537",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #65536",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #1x",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #x1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG # 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #+1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #-1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #1 ",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #12345",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #113",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #178",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #9",
+      "result": "ordinal 9"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG 1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #00",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #1#",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG ##1",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #32770",
+      "result": "ordinal 2"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG #00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700005",
+      "result": "ordinal 7"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG number 32769",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG number 32768",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG number 65535",
+      "result": "null"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG GETOPENFILENAME",
+      "result": "ordinal 1"
+    },
+    {
+      "function": "procnum",
+      "args": "COMMDLG GetOpenFileName",
+      "result": "ordinal 1"
+    }
+  ]
+}
