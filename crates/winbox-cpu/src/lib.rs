@@ -261,15 +261,6 @@ pub struct Cpu<B: Bus> {
     /// Where the instruction began, its prefixes included: where a fault
     /// returns to.
     start: u32,
-    /// The mask of the offset space the instruction is fetched in: `FFFFh`
-    /// in a 16-bit code segment, whole in a 32-bit one.
-    fetch_mask: u32,
-    /// The mask a jump's target takes: `FFFFh` under a 16-bit operand
-    /// size, whole under a 32-bit one -- the size the instruction has
-    /// before the opcodes the operand size does not change are run as
-    /// 16-bit ([`SIZELESS`]): a short jump's target is the operand size's
-    /// (Intel's *80386 Programmer's Reference Manual*, `JMP` and `Jcc`).
-    jump_mask: u32,
     /// Whether the instruction has the LOCK prefix.
     lock: bool,
     /// The segment register the instruction's operand is named through --
@@ -336,8 +327,6 @@ impl<B: Bus> Cpu<B> {
             repeat: 0,
             partial: false,
             start: 0,
-            fetch_mask: 0xffff,
-            jump_mask: 0xffff,
             lock: false,
             named: None,
             wrapped: false,
@@ -640,7 +629,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     /// The instruction's own bytes, through CS at EIP: its offset taken
-    /// whole, the code segment's size having made it ([`Self::fetch_mask`]),
+    /// whole, the code segment's size having made it ([`Self::advance_ip`]),
     /// whatever the instruction's address size.
     fn code8(&self, offset: u32) -> Result<u8, Exit> {
         self.bus
@@ -835,6 +824,11 @@ impl<B: Bus> Cpu<B> {
     /// goes on past it was fetched past CS's limit, a general protection
     /// fault from its start ([`Self::fetched_past_limit`]). One that ends
     /// exactly at the end is whole.
+    // Inlined into `step` and `modrm` as the base core had it: out of line,
+    // 16-bit code ran 15% more host instructions an instruction (`perf
+    // stat` of `examples/bench`).
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
     fn fetch8(&mut self) -> Result<u8, Exit> {
         if self.wrapped {
             return Err(self.fetch_fault(Exit::Fault(13)));
@@ -869,10 +863,31 @@ impl<B: Bus> Cpu<B> {
         exit
     }
 
-    /// IP moved past `size` bytes fetched, noting a wrap round.
+    /// IP moved past `size` bytes fetched, noting a wrap round: past
+    /// `FFFFh` in 16-bit code, past `FFFFFFFFh` in 32-bit code. Off the
+    /// common path, whose IP stays below 10000h, so that 16-bit code pays
+    /// nothing for EIP's 32 bits.
     fn advance_ip(&mut self, size: u32) {
-        self.ip = self.ip.wrapping_add(size) & self.fetch_mask;
-        self.wrapped = self.ip < size;
+        let (next, carried) = self.ip.overflowing_add(size);
+
+        self.ip = next;
+
+        if next > 0xffff || carried {
+            self.advance_far(carried);
+        }
+    }
+
+    /// IP past `FFFFh` ([`Self::advance_ip`]): a wrap round in 16-bit
+    /// code, and in 32-bit code only past 4 GiB.
+    #[cold]
+    #[inline(never)]
+    fn advance_far(&mut self, carried: bool) {
+        if carried {
+            self.wrapped = true;
+        } else if !self.segments[CS].big {
+            self.ip &= 0xffff;
+            self.wrapped = true;
+        }
     }
 
     /// EIP `by` bytes on, in the code segment's offset space: wrapping in
@@ -888,10 +903,40 @@ impl<B: Bus> Cpu<B> {
         }
     }
 
-    /// A relative jump: EIP moved by `displacement`, sign-extended, and
-    /// taken to the operand size ([`Self::jump_mask`]).
+    /// A relative jump of the 16-bit path: EIP moved by `displacement`,
+    /// sign-extended, and taken to the operand size: IP's 16 bits, but for
+    /// a short jump or loop in 32-bit code without the operand-size prefix,
+    /// whose operand size is 32 bits though it runs here ([`SIZELESS`]):
+    /// its target is whole (Intel's *80386 Programmer's Reference Manual*,
+    /// `JMP`, `Jcc` and `LOOP`).
     fn jump_by(&mut self, displacement: u32) {
-        self.ip = self.ip.wrapping_add(displacement) & self.jump_mask;
+        let target = self.ip.wrapping_add(displacement);
+
+        self.ip = if self.segments[CS].big && !self.operand_prefixed() {
+            target
+        } else {
+            target & 0xffff
+        };
+    }
+
+    /// Whether the instruction has the operand-size prefix, read again
+    /// from its bytes: only a jump in 32-bit code asks.
+    #[cold]
+    #[inline(never)]
+    fn operand_prefixed(&self) -> bool {
+        let mut at = self.start;
+
+        while let Ok(byte) = self.code8(at) {
+            match byte {
+                0x66 => return true,
+                0x26 | 0x2e | 0x36 | 0x3e | 0x64 | 0x65 | 0x67 | 0xf0 | 0xf2 | 0xf3 => {
+                    at = at.wrapping_add(1);
+                }
+                _ => return false,
+            }
+        }
+
+        false
     }
 
     /// Whether code may run at `eip` in `segment`, as a transfer of a
@@ -2044,7 +2089,7 @@ impl<B: Bus> Cpu<B> {
         // A byte past the end of the offset space would be fetched past the
         // limit, the fault the instruction then raises first.
         let byte = |ahead: u32| match self.ip.checked_add(ahead) {
-            Some(at) if !self.wrapped && at & !self.fetch_mask == 0 => self.code8(at),
+            Some(at) if !self.wrapped && (at <= 0xffff || self.segments[CS].big) => self.code8(at),
             _ => Err(Exit::Fault(13)),
         };
         let memory = |modrm: u8| modrm >> 6 != 3;
@@ -2085,11 +2130,8 @@ impl<B: Bus> Cpu<B> {
     #[allow(clippy::too_many_lines)]
     fn step(&mut self) -> Result<(), Exit> {
         let start = self.ip;
-        // The code segment's size, which the prefixes switch from.
-        let big = self.segments[CS].big;
 
         self.start = start;
-        self.fetch_mask = if big { u32::MAX } else { 0xffff };
         self.prefix = None;
         self.named = None;
         self.wide = false;
@@ -2104,6 +2146,7 @@ impl<B: Bus> Cpu<B> {
 
         // Segment, size, LOCK and repeat prefixes. A size prefix switches
         // from the code segment's size, and given again changes nothing.
+        let big = self.segments[CS].big;
         let (mut operand, mut address) = (false, false);
 
         loop {
@@ -2132,7 +2175,6 @@ impl<B: Bus> Cpu<B> {
 
         self.wide = big != operand;
         self.address32 = big != address;
-        self.jump_mask = if self.wide { u32::MAX } else { 0xffff };
 
         // LOCK anywhere but on a read-modify-write of memory is an undefined
         // opcode (the 80386 suite's tests).
