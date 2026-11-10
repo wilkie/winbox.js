@@ -127,9 +127,9 @@ const DISC_READ: (f64, f64) = (5459.0, 1.517);
 /// (`cdread`). Nothing in standard mode, nor from any other drive.
 pub fn disc_read(system: &mut System, disc: bool, bytes: usize) {
     if disc && system.clock.measured_calls && system.mode == crate::system::Mode::Enhanced {
-        system
-            .clock
-            .charge(DISC_READ.0 + DISC_READ.1 * bytes as f64);
+        system.clock.charge(
+            DISC_READ.0 + DISC_READ.1 * f64::from(u32::try_from(bytes).unwrap_or(u32::MAX)),
+        );
     }
 }
 

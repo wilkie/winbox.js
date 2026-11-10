@@ -1026,6 +1026,7 @@ impl System {
         let at = self.linear(buffer);
 
         crate::call_costs::disc_read(self, disc, bytes.len());
+
         // On from DS:DX through the selector's limit, past its first 64 KiB
         // where the block goes on (`lwrhuge`), as the write's are taken.
         self.cpu.bus.write(at, &bytes);
