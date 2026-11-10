@@ -69,6 +69,40 @@ const FONTS = join(BUILD, 'fonts');
  */
 export const FROM_CORPUS = { wavemix: ['simtower/WAVMIX16.DLL'] };
 
+/**
+ * Probes recorded on a machine without a coprocessor: the BIOS's equipment
+ * word's coprocessor bit (bit 1 of the word at 0040:0010) cleared before
+ * Windows starts, by `NOFPU.COM`, which `noCoprocessor` lays out. KERNEL
+ * takes whether there is one from that word (`INT 11h`, `KRNL386.EXE` seg1
+ * `aa67`), and DOSBox's `INT 11h` answers it from there; DOSBox's own unit
+ * still runs, but a program's floating-point instructions never reach it,
+ * the OS fixups having made them WIN87EM's emulator's interrupts. Their
+ * recordings say so in their source (`coprocessor: false`).
+ */
+export const WITHOUT_COPROCESSOR = ['fpemu'];
+
+/** `NOFPU.COM`, a DOS program of four instructions. */
+function noCoprocessor() {
+  const BIOS_DATA = 0x0040;
+  const EQUIPMENT = 0x0010;
+  const COPROCESSOR = 0x02;
+
+  return Buffer.from([
+    /* mov ax, BIOS_DATA */ 0xb8,
+    BIOS_DATA & 0xff,
+    BIOS_DATA >> 8,
+    /* mov ds, ax */ 0x8e,
+    0xd8,
+    /* and byte [EQUIPMENT], ~COPROCESSOR */ 0x80,
+    0x26,
+    EQUIPMENT & 0xff,
+    EQUIPMENT >> 8,
+    ~COPROCESSOR & 0xff,
+    /* int 20h */ 0xcd,
+    0x20,
+  ]);
+}
+
 /** Long enough for Windows to boot and a probe to finish; short enough to fail. */
 const TIMEOUT_SECONDS = 300;
 
@@ -617,6 +651,11 @@ async function runProbe(probe, display, shoot = null, capture = null, corpus = n
   const swapping = (await mountsOf(basename(probe, '.EXE').toLowerCase())).some(
     ({ images }) => images.length > 1
   );
+  const withoutCoprocessor = WITHOUT_COPROCESSOR.includes(basename(probe, '.EXE').toLowerCase());
+
+  if (withoutCoprocessor) {
+    await writeFile(join(SCRATCH, 'NOFPU.COM'), noCoprocessor());
+  }
 
   await writeFile(
     config,
@@ -641,6 +680,7 @@ async function runProbe(probe, display, shoot = null, capture = null, corpus = n
       `mount c ${SCRATCH}`,
       ...mounts,
       'c:',
+      ...(withoutCoprocessor ? ['nofpu'] : []),
       'cd \\WINDOWS',
       /* A program of the corpus started as an install is (`install` in its
        * entry): as Windows started as `WIN SETUP.EXE` runs one, Program
@@ -1247,7 +1287,17 @@ async function main() {
 
     await writeFile(
       join(FIXTURES, `${fixture}.json`),
-      `${JSON.stringify({ probe, display, source, font: fabrication ?? null, records }, null, 2)}\n`
+      `${JSON.stringify(
+        {
+          probe,
+          display,
+          source: WITHOUT_COPROCESSOR.includes(probe) ? { ...source, coprocessor: false } : source,
+          font: fabrication ?? null,
+          records,
+        },
+        null,
+        2
+      )}\n`
     );
 
     log(`  ${records.length} records across ${functions.size} functions -> ${fixture}.json`);

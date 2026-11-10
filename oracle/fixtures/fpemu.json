@@ -1,0 +1,105 @@
+{
+  "probe": "fpemu",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "coprocessor": false
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "flags",
+      "args": "GetWinFlags & 400h",
+      "result": "0000"
+    },
+    {
+      "function": "value",
+      "args": "1 + 1",
+      "result": "2000"
+    },
+    {
+      "function": "site",
+      "args": "sum",
+      "result": "b806000e3ee8b1035589e5cd394606cd38460ecd3d5dca10"
+    },
+    {
+      "function": "value",
+      "args": "sqrt 2",
+      "result": "1414"
+    },
+    {
+      "function": "value",
+      "args": "4 fdivr 10",
+      "result": "2500"
+    },
+    {
+      "function": "value",
+      "args": "pi",
+      "result": "3142"
+    },
+    {
+      "function": "value",
+      "args": "log2 e",
+      "result": "1443"
+    },
+    {
+      "function": "value",
+      "args": "fchs 1",
+      "result": "-1000"
+    },
+    {
+      "function": "value",
+      "args": "fxch",
+      "result": "1000"
+    },
+    {
+      "function": "value",
+      "args": "fistp pi",
+      "result": "3000"
+    },
+    {
+      "function": "word",
+      "args": "fstsw after fld1",
+      "result": "0120 top 0"
+    },
+    {
+      "function": "word",
+      "args": "fstcw",
+      "result": "1332"
+    },
+    {
+      "function": "report",
+      "args": "fnop, BX 1200h",
+      "result": "AX 1287 calls 1 passed 1"
+    },
+    {
+      "function": "report",
+      "args": "fnop, BX 3400h",
+      "result": "AX 3487 calls 1 passed 1"
+    },
+    {
+      "function": "report",
+      "args": "1 / 0",
+      "result": "AX 0583 calls 1 passed 1"
+    },
+    {
+      "function": "report",
+      "args": "sqrt -1",
+      "result": "AX 0588 calls 1 passed 1"
+    },
+    {
+      "function": "report",
+      "args": "finit",
+      "result": "AX 0587 calls 1 passed 1"
+    },
+    {
+      "function": "report",
+      "args": "fldenv",
+      "result": "AX 0587 calls 1 passed 1"
+    }
+  ]
+}

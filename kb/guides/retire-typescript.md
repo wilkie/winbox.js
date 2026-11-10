@@ -325,5 +325,4 @@ All five phases are done (2026-11-09). What the retirement leaves:
   - an expand-down segment read above its limit stops the Rust engine, where the 80386 reads (Intel 386 manual; `crates/winbox-cpu/tests/units.rs`);
   - an expand-down segment read below its limit stops it, where the 80386 raises #GP(13) (`crates/winbox-win16/src/fault_vector.rs`);
   - an instruction fetched past CS's limit stops it, where the 80386 raises #GP(0) (`fault_vector.rs`);
-  - WIN87EM's emulator is not in the Rust engine, so a program with the coprocessor switched off stops at its first floating-point interrupt (`tests/win87em.rs`);
   - the task's environment has no DOS host variables before `windir`, as [[probe:environ]] records (`tests/task_environment.rs`).

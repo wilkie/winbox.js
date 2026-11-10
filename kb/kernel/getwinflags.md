@@ -21,4 +21,4 @@ source: crates/winbox-win16/src/kernel.rs
 - [[read out]] KERNEL learns the mode once, as it starts, from INT 2Fh 1600h: AL 3 is enhanced mode, and it sets `WF_PMODE|WF_ENHANCED`; anything else is standard mode, `WF_PMODE|WF_STANDARD` (`KRNL386.EXE` seg1 `aa76`-`aa90`). WinBox's machine is made in one mode or the other, standard by default, and INT 2Fh 1600h answers by it.
 
 - [[measured]] Before this was recorded, winbox.js said enhanced mode on a 386 with no coprocessor. Standard mode shows: Control Panel's 386 Enhanced applet appears only in enhanced mode, and it is gone, as it is on that Windows.
-- Whether there is a coprocessor is a choice of the machine's. Without one, programs' floating-point instructions are emulated, as WIN87EM does, and bit 400h is clear in either mode.
+- Whether there is a coprocessor is a choice of the machine's. Without one, programs' floating-point instructions are emulated, as WIN87EM does, and bit 400h is clear in either mode. [[measured]] [[probe:fpemu]] is recorded on Windows without a coprocessor and finds the bit clear ([[topic:floating-point]]).

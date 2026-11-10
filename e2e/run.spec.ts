@@ -170,6 +170,7 @@ const PMITEM = join(process.cwd(), 'oracle', 'fixtures', 'pmitem.json');
  * the committed images they read. */
 const IMGFLOP = join(process.cwd(), 'oracle', 'build', 'probes', 'IMGFLOP.EXE');
 const IMGCD = join(process.cwd(), 'oracle', 'build', 'probes', 'IMGCD.EXE');
+const FPEMU = join(process.cwd(), 'oracle', 'build', 'probes', 'FPEMU.EXE');
 const IMAGES = join(process.cwd(), 'oracle', 'probes', 'images');
 
 /** A committed image, as the page's file picker is given it. */
@@ -3376,6 +3377,45 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#status')).toHaveText(ended, { timeout: 60000 });
       expect(await imageOutput(page, 'IMGCD.OUT')).toContain('D: 0\tA_VERY_L.TEX');
       expect(await floppy()).toBe(written);
+      expect(errors).toEqual([]);
+    });
+
+    test("runs a floating-point program without the coprocessor, on WIN87EM's emulator", async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(FPEMU) || !existsSync(NOTEPAD),
+        'the fpemu probe, or the installation, has not been built here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.getByLabel('Math coprocessor').uncheck();
+      await page.locator('#picker').setInputFiles([
+        { name: 'windows.zip', mimeType: 'application/zip', buffer: archive(installation()) },
+        {
+          name: 'oracle.zip',
+          mimeType: 'application/zip',
+          buffer: archive([{ path: 'FPEMU.EXE', data: new Uint8Array(readFileSync(FPEMU)) }]),
+        },
+      ]);
+      await expect(page.locator('#programs')).toContainText('C:\\ORACLE\\FPEMU.EXE');
+
+      /* Its instructions WIN87EM's emulator's, as the probe recorded them
+       * under Windows without a coprocessor (`oracle/fixtures/fpemu.json`). */
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\FPEMU.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(ended, { timeout: 60000 });
+
+      const output = await imageOutput(page, 'FPEMU.OUT');
+
+      expect(output).toContain('flags\tGetWinFlags & 400h\t0000');
+      expect(output).toContain('value\tsqrt 2\t1414');
+      expect(output).toContain('site\tsum\tb806000e3ee8b1035589e5cd394606cd38460ecd3d5dca10');
+      expect(output).toContain('report\t1 / 0\tAX 0583 calls 1 passed 1');
+      expect(output).toContain('report\tfnop, BX 1200h\tAX 1287 calls 1 passed 1');
       expect(errors).toEqual([]);
     });
 

@@ -188,6 +188,17 @@ pub fn ini_of(name: &str) -> Option<String> {
         .and_then(|fixture| fixture["source"]["ini"].as_str().map(str::to_string))
 }
 
+/// Whether a fixture was recorded on a machine with a coprocessor: not
+/// where its source says `coprocessor: false` (`record.mjs`,
+/// `WITHOUT_COPROCESSOR`).
+pub fn coprocessor_of(name: &str) -> bool {
+    std::fs::read_to_string(root().join(format!("oracle/fixtures/{name}.json")))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|fixture| fixture["source"]["coprocessor"].as_bool())
+        .unwrap_or(true)
+}
+
 /// A preset's sections, each with its keys and values in order, as
 /// `scripts/oracle/ini-preset.mjs` reads them.
 pub fn parse_preset(text: &str) -> Vec<(String, Vec<(String, String)>)> {
@@ -580,6 +591,10 @@ impl Setup {
         let (built, bytes) = built_in(&upper)?;
 
         let mut system = system_in(mode_of(name).0);
+
+        // One recorded without a coprocessor runs without one, its
+        // floating-point instructions WIN87EM's emulator's.
+        system.coprocessor = coprocessor_of(name);
 
         // The installation with a sound card is recorded at a fixed 3,000
         // cycles a millisecond, the survey's clock's rate: its calls are
@@ -1943,6 +1958,13 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "enhanced/kintrnl:winoldap",
         "KERNEL's WinOldAp hooks answer nought and keep no list in enhanced mode",
+    ),
+    // WIN87EM's own arithmetic records the precision exception, 20h, in its
+    // status word, where an `FSQRT` or `FISTP` rounds; WinBox's emulator
+    // runs on the processor's unit, which holds doubles and records none.
+    (
+        "fpemu:word",
+        "the precision exception WIN87EM's arithmetic records, the unit not: 1 of 2 records",
     ),
 ];
 

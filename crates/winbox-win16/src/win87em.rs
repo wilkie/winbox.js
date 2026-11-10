@@ -684,14 +684,18 @@ pub(crate) fn put_back(system: &mut System, vector: u8) {
     }
 }
 
-/// The report: `INT 3Eh`'s procedure called with the code in AX, and the
+/// The report: `INT 3Eh`'s procedure called with the code in AL, and the
 /// program on past the instruction once it returns (seg1 `6eb`-`72c`).
+/// AH is the program's BH, as the code is made in BL and exchanged into
+/// AX (`67d`-`6d1`), which [[probe:fpemu]] records.
 pub(crate) async fn report(engine: &Engine, code: u16) -> Result<(), Stop> {
-    let procedure = {
+    let (procedure, ax) = {
         let system = engine.system();
         let at = (0xffd << 16) + 0x3e * 4;
+        let procedure =
+            u32::from(system.cpu.bus.read16(at + 2)) << 16 | u32::from(system.cpu.bus.read16(at));
 
-        u32::from(system.cpu.bus.read16(at + 2)) << 16 | u32::from(system.cpu.bus.read16(at))
+        (procedure, (system.cpu.regs[BX] & 0xff00) | code)
     };
 
     // WIN87EM calls it whatever it is (`6cf` jumps to the next
@@ -702,7 +706,7 @@ pub(crate) async fn report(engine: &Engine, code: u16) -> Result<(), Stop> {
         return Ok(());
     }
 
-    Box::pin(engine.call_with(procedure, &[], &[Register::Word(AX, code)]))
+    Box::pin(engine.call_with(procedure, &[], &[Register::Word(AX, ax)]))
         .await
         .map(|_| ())
 }
