@@ -46,7 +46,9 @@ const PROBES = join(BUILD, 'probes');
 /* The Win386 probes, built apart (`build-probes.mjs`, `buildWin386`): read
  * only in 386 enhanced mode. In standard mode the Win386 supervisor shows
  * "Not running on a 386 DPMI implementation" and waits for its box, so a
- * plain run of every probe never sees them, and one named is refused. */
+ * plain run of every probe never sees them, and one named is refused. A
+ * 16-bit probe whose source defines `PROBE_EITHER_MODE` answers that box
+ * itself, and is read in both modes. */
 const WIN386 = join(BUILD, 'win386');
 const WIN386_SOURCES = join(ROOT, 'oracle', 'probes', 'win386');
 const SCRATCH = join(BUILD, 'record-c');
@@ -1163,27 +1165,42 @@ async function main() {
   }
 
   const win386 = (await readdir(WIN386_SOURCES).catch(() => []))
-    .filter((entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c'))
+    .filter(
+      (entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c') && !entry.endsWith('.child.c')
+    )
     .map((entry) => entry.slice(0, -2));
+  /* Those read in standard mode as well: 16-bit probes that answer the
+   * supervisor's box themselves. */
+  const eitherMode = [];
 
-  if (MODE !== 'enhanced' && wanted.some((name) => win386.includes(name))) {
+  for (const name of win386) {
+    const text = await readFile(join(WIN386_SOURCES, `${name}.c`), 'latin1');
+
+    if (text.includes('#define PROBE_EITHER_MODE')) {
+      eitherMode.push(name);
+    }
+  }
+
+  const enhancedOnly = win386.filter((name) => !eitherMode.includes(name));
+
+  if (MODE !== 'enhanced' && wanted.some((name) => enhancedOnly.includes(name))) {
     throw new Error(
-      `${wanted.filter((name) => win386.includes(name)).join(', ')}: a Win386 probe, ` +
+      `${wanted.filter((name) => enhancedOnly.includes(name)).join(', ')}: a Win386 probe, ` +
         "recorded with --mode enhanced only (in standard mode it stops at the supervisor's box)"
     );
   }
 
+  const readable = MODE === 'enhanced' ? win386 : eitherMode;
   const executables = [
     ...(await readdir(PROBES).catch(() => [])).map((entry) => join(PROBES, entry)),
-    ...(MODE === 'enhanced' ? await readdir(WIN386).catch(() => []) : []).map((entry) =>
-      join(WIN386, entry)
-    ),
+    ...(await readdir(WIN386).catch(() => [])).map((entry) => join(WIN386, entry)),
   ]
     .filter((entry) => entry.endsWith('.EXE'))
-    /* A program of the Win386 folder's own library or child is not a probe. */
+    /* A program of the Win386 folder's own library or child is not a probe,
+     * nor, in standard mode, one recorded in enhanced mode only. */
     .filter(
       (entry) =>
-        !(dirname(entry) === WIN386 && !win386.includes(basename(entry, '.EXE').toLowerCase()))
+        !(dirname(entry) === WIN386 && !readable.includes(basename(entry, '.EXE').toLowerCase()))
     )
     .filter(
       (entry) => wanted.length === 0 || wanted.includes(basename(entry, '.EXE').toLowerCase())

@@ -130,6 +130,12 @@ pub fn within_limit(size: u32) -> bool {
 /// 32 bytes, and past 1 MiB up to a 4 KiB page (`galimit`: 100001h bytes
 /// are given 101000h); nought stays nought, a handle with no memory
 /// (`memory`).
+/// A module's segment's limit for its size: its last byte, within the
+/// 64 KiB a selector of a module's reaches.
+fn segment_limit(size: u32) -> u32 {
+    size.min(0x10000).saturating_sub(1)
+}
+
 pub fn block_size(size: u32) -> u32 {
     if size == 0 {
         return 0;
@@ -283,9 +289,20 @@ impl GlobalHeap {
             .unwrap_or(0)
     }
 
-    /// The size of a segment a module was loaded into.
-    pub fn set_segment_size(&mut self, index: usize, size: u32) {
+    /// The size of a segment a module was loaded into, and its limit: the
+    /// block's last byte, as the global heap gives any block's
+    /// (**recorded** by `dslimit`: a program's data segment's `LSL` is
+    /// its size less one, in either mode, and follows its heap's growth;
+    /// its code segment's the same).
+    pub fn set_segment_size(
+        &mut self,
+        memory: &mut Memory,
+        descriptors: &mut Descriptors,
+        index: usize,
+        size: u32,
+    ) {
         self.segment_sizes.insert(index, size);
+        descriptors.set_limit(memory, index, segment_limit(size));
     }
 
     /// A segment a module was loaded into, freed with its module: its size
@@ -358,6 +375,7 @@ impl GlobalHeap {
                 }
 
                 *segment = block_size(size);
+                descriptors.set_limit(memory, index, segment_limit(*segment));
                 return Some(index);
             }
 

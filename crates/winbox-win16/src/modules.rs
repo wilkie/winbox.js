@@ -16,6 +16,20 @@ pub struct Export {
     pub stub: bool,
 }
 
+/// The name of an entry a kept module's table holds only to keep an
+/// ordinal's place: one Windows' own module leaves empty in its entry
+/// table (each of the tables compared with Windows' files, 2026-11-09).
+pub const PLACEHOLDER: &str = "unknown";
+
+impl Export {
+    /// Whether it only holds an ordinal's place: `GetProcAddress` finds
+    /// nothing there, as KERNEL finds no entry for an ordinal outside the
+    /// table's bundles (`KRNL386.EXE` seg1 `4ffe`-`5026`).
+    pub fn holds_place(&self) -> bool {
+        self.name == PLACEHOLDER
+    }
+}
+
 /// A module winbox.js keeps.
 #[derive(Debug)]
 pub struct Kept {

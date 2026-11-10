@@ -481,7 +481,12 @@ impl System {
 
             // Rounded up to 32 bytes, as the global heap rounds a block
             // (**recorded** by `grround`).
-            self.global.set_segment_size(data, (size + 31) & !31);
+            self.global.set_segment_size(
+                &mut self.cpu.bus,
+                &mut self.descriptors,
+                data,
+                (size + 31) & !31,
+            );
         }
 
         self.load_libraries_for(library, beside, order);
@@ -568,8 +573,12 @@ impl System {
     /// `locinfo`'s heap at the end of its data segment grows from there).
     fn size_segments(&mut self, module: &Module) {
         for (number, &index) in module.segments.iter().enumerate() {
-            self.global
-                .set_segment_size(index, segment_block_size(&module.executable, number + 1));
+            self.global.set_segment_size(
+                &mut self.cpu.bus,
+                &mut self.descriptors,
+                index,
+                segment_block_size(&module.executable, number + 1),
+            );
         }
     }
 

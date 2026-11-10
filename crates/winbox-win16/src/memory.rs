@@ -4,7 +4,7 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use winbox_cpu::DS;
+use winbox_cpu::{DS, ES, FS, GS, SS};
 use winbox_machine::{
     LocalHeap, block_size, handle_for, index_for, segment_selector, within_limit,
 };
@@ -91,6 +91,51 @@ impl System {
         if self.heap_blocks.contains(&index) && end != self.global.size_of(index) {
             self.global
                 .resize(&mut self.cpu.bus, &mut self.descriptors, index, end);
+            self.reload_segments(index);
+        }
+    }
+
+    /// The segment registers that hold a selector whose limit KERNEL has
+    /// just changed, read again from the table. KERNEL's routine that sets
+    /// a selector's limit ends `push ss; pop ss`, then pops the ES and DS
+    /// it pushed (`KRNL386.EXE` seg1 `22ea`-`2391`: DPMI 000Ch at `2382`,
+    /// `2385`-`238c`), so each is cached afresh: a Visual Basic program's
+    /// start-up grows its data segment, its stack's, with `GlobalReAlloc`
+    /// and moves its stack to the new end (`VBRUN200.DLL` seg44 `0000`-
+    /// `003f`). A processor keeps a segment's limit as it was loaded.
+    pub(crate) fn reload_segments(&mut self, index: usize) {
+        for register in [SS, ES, DS] {
+            let selector = self.cpu.segments[register].selector;
+
+            if selector != 0 && index_for(selector) == index {
+                let _ = self.cpu.load_segment(register, selector);
+            }
+        }
+    }
+
+    /// The segment registers put back as they were before a callback or
+    /// a task switch, each read again from the table where its limit has
+    /// changed since: Windows puts them back by `POP` and `MOV`, which read
+    /// the table (KERNEL's limit routine above, `pop ds` of every
+    /// exported function's epilogue), and a program's data segment may
+    /// have grown in between. The corpus's `hanoi` grows its heap past the
+    /// limit it started with, and read a new block through a DS put back
+    /// with the old one, a general protection fault, before.
+    pub(crate) fn refresh_stale_segments(&mut self) {
+        for register in [ES, SS, DS, FS, GS] {
+            let cached = self.cpu.segments[register];
+            let stale = self
+                .peek_descriptor(cached.selector)
+                .is_some_and(|descriptor| {
+                    descriptor.present
+                        && descriptor.segment
+                        && (descriptor.past_limit != cached.past_limit
+                            || descriptor.base != cached.base)
+                });
+
+            if stale {
+                let _ = self.cpu.load_segment(register, cached.selector);
+            }
         }
     }
 
@@ -400,6 +445,10 @@ pub(crate) fn reallocate(system: &mut System, handle: u16, size: u32, flags: u16
         return 0;
     };
     let after = system.global.size_of(moved);
+
+    if moved == index {
+        system.reload_segments(index);
+    }
 
     if flags & GMEM_ZEROINIT != 0 && after > before {
         system

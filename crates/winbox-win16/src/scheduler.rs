@@ -333,6 +333,7 @@ impl System {
         self.cpu.ip = context.ip;
         self.cpu.flags = context.flags;
         self.cpu.segments = context.segments;
+        self.refresh_stale_segments();
         self.cpu.fpu = context.fpu;
         self.depth = context.depth;
         self.transfer_area = context.transfer_area;

@@ -6,7 +6,7 @@ ordinal: 16
 summary: Resizes a global block, and on the recorded cases hands back the same handle with the block still at the same address.
 versions:
   '3.1': exact
-probes: [handles, grround, galimit]
+probes: [handles, grround, galimit, dslimit]
 topics: [global-and-local-memory]
 ---
 
@@ -32,4 +32,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-The allocator rounds the new size as [[fn:KERNEL.GlobalAlloc]] does and keeps the block where it is. Every block already has a whole 64 KiB selector behind it, so a size that still fits in the selectors it was given changes only the bookkeeping. One that needs more selectors moves the block ([[probe:grow]]). A size `0c7c` does not let through is refused, and so is a growth the modelled machine has no room for: the whole new size where the block moves, what it grows by where it stays (see How much there is, in [[topic:global-and-local-memory]]).
+The allocator rounds the new size as [[fn:KERNEL.GlobalAlloc]] does and keeps the block where it is. Every block already has a whole 64 KiB selector behind it, so a size that still fits in the selectors it was given changes only the bookkeeping and the limit. A module's segment is resized the same way, its limit its new size less one ([[probe:dslimit]]). SS, ES and DS are read again from the table where they hold the block's selector, as KERNEL's routine that sets a limit reloads them (`KRNL386.EXE` seg1 `2385`-`238c`): a Visual Basic program grows its data segment, its stack's, and moves its stack to the new end ([[topic:global-and-local-memory]], A module's segments). One that needs more selectors moves the block ([[probe:grow]]). A size `0c7c` does not let through is refused, and so is a growth the modelled machine has no room for: the whole new size where the block moves, what it grows by where it stays (see How much there is, in [[topic:global-and-local-memory]]).
