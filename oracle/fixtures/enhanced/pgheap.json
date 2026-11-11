@@ -1,0 +1,240 @@
+{
+  "probe": "pgheap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "alloc",
+      "args": "64 KiB",
+      "result": "given, size 00010000"
+    },
+    {
+      "function": "alloc",
+      "args": "128 KiB",
+      "result": "given, size 00020000"
+    },
+    {
+      "function": "alloc",
+      "args": "1 MiB",
+      "result": "given, size 00100000"
+    },
+    {
+      "function": "layout",
+      "args": "64 KiB",
+      "result": "00052bc0"
+    },
+    {
+      "function": "layout",
+      "args": "128 KiB",
+      "result": "00062bc0"
+    },
+    {
+      "function": "layout",
+      "args": "128 KiB past the one before",
+      "result": "65536"
+    },
+    {
+      "function": "layout",
+      "args": "1 MiB",
+      "result": "80798000"
+    },
+    {
+      "function": "layout",
+      "args": "1 MiB past the one before",
+      "result": "-2139925440"
+    },
+    {
+      "function": "before",
+      "args": "64 KiB first",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "64 KiB second page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "64 KiB middle",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "64 KiB last page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "64 KiB last",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "128 KiB first",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "128 KiB second page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "128 KiB middle",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "128 KiB last page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "128 KiB last",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "1 MiB first",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "1 MiB second page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "1 MiB middle",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "1 MiB last page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "before",
+      "args": "1 MiB last",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "free",
+      "args": "64 KiB",
+      "result": "0000"
+    },
+    {
+      "function": "free",
+      "args": "128 KiB",
+      "result": "0000"
+    },
+    {
+      "function": "free",
+      "args": "1 MiB",
+      "result": "0000"
+    },
+    {
+      "function": "compact",
+      "args": "GlobalCompact(-1)",
+      "result": "more than nought"
+    },
+    {
+      "function": "after",
+      "args": "64 KiB first",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "64 KiB second page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "64 KiB middle",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "64 KiB last page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "64 KiB last",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "64 KiB pages faulting",
+      "result": "none of 16"
+    },
+    {
+      "function": "after",
+      "args": "128 KiB first",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "128 KiB second page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "128 KiB middle",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "128 KiB last page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "128 KiB last",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "128 KiB pages faulting",
+      "result": "none of 32"
+    },
+    {
+      "function": "after",
+      "args": "1 MiB first",
+      "result": "fault calls=1 vector=0e code=0004 at-fault=1"
+    },
+    {
+      "function": "after",
+      "args": "1 MiB second page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "1 MiB middle",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "1 MiB last page",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "1 MiB last",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "after",
+      "args": "1 MiB pages faulting",
+      "result": "253 of 256, pages 0 to 254"
+    }
+  ]
+}

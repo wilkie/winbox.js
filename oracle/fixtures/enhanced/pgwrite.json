@@ -1,0 +1,110 @@
+{
+  "probe": "pgwrite",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "setup",
+      "args": "0501h 1",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "handlers",
+      "result": "put in"
+    },
+    {
+      "function": "write",
+      "args": "block",
+      "result": "no fault"
+    },
+    {
+      "function": "write",
+      "args": "past the block",
+      "result": "no fault"
+    },
+    {
+      "function": "write",
+      "args": "80000000h",
+      "result": "fault calls=1 vector=0e code=0006 at-fault=1"
+    },
+    {
+      "function": "write",
+      "args": "C0000000h",
+      "result": "fault calls=1 vector=0e code=0006 at-fault=1"
+    },
+    {
+      "function": "write",
+      "args": "FFFFF000h",
+      "result": "fault calls=1 vector=0e code=0006 at-fault=1"
+    },
+    {
+      "function": "rom",
+      "args": "C0000h read",
+      "result": "no fault"
+    },
+    {
+      "function": "rom",
+      "args": "C0000h write",
+      "result": "no fault"
+    },
+    {
+      "function": "rom",
+      "args": "C0000h read after",
+      "result": "no fault, as before"
+    },
+    {
+      "function": "rom",
+      "args": "F0000h read",
+      "result": "no fault"
+    },
+    {
+      "function": "rom",
+      "args": "F0000h write",
+      "result": "no fault"
+    },
+    {
+      "function": "rom",
+      "args": "F0000h read after",
+      "result": "no fault, as before"
+    },
+    {
+      "function": "rom",
+      "args": "FFFF0h read",
+      "result": "no fault"
+    },
+    {
+      "function": "rom",
+      "args": "FFFF0h write",
+      "result": "no fault"
+    },
+    {
+      "function": "rom",
+      "args": "FFFF0h read after",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "read",
+      "args": "block",
+      "result": "no fault, written"
+    },
+    {
+      "function": "read",
+      "args": "80000000h",
+      "result": "fault calls=1 vector=0e code=0004 at-fault=1"
+    },
+    {
+      "function": "setup",
+      "args": "0502h",
+      "result": "cf=0"
+    }
+  ]
+}

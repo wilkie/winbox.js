@@ -1,0 +1,86 @@
+{
+  "probe": "pgbig",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "free",
+      "args": "0500h",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "largest block KiB",
+      "result": "57760"
+    },
+    {
+      "function": "free",
+      "args": "free pages",
+      "result": "3718"
+    },
+    {
+      "function": "free",
+      "args": "paging file",
+      "result": "known"
+    },
+    {
+      "function": "alloc",
+      "args": "0501h 24 MiB",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "KiB given",
+      "result": "24576"
+    },
+    {
+      "function": "time",
+      "args": "write ms",
+      "result": "4448"
+    },
+    {
+      "function": "touch",
+      "args": "write",
+      "result": "6144 pages, 0 faults"
+    },
+    {
+      "function": "time",
+      "args": "read ms",
+      "result": "6756"
+    },
+    {
+      "function": "touch",
+      "args": "read",
+      "result": "6144 pages, 0 faults, 6144 held"
+    },
+    {
+      "function": "time",
+      "args": "read again ms",
+      "result": "1373"
+    },
+    {
+      "function": "touch",
+      "args": "read again",
+      "result": "6144 pages, 0 faults, 6144 held"
+    },
+    {
+      "function": "free after",
+      "args": "largest block KiB",
+      "result": "33184"
+    },
+    {
+      "function": "free after",
+      "args": "0502h",
+      "result": "cf=0"
+    }
+  ]
+}
