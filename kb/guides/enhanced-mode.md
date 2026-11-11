@@ -210,6 +210,7 @@ Phase 2 after its first answers, and phase 4's Win32s; what phase 4's Win386 lea
 - KERNEL's descriptor table growing in enhanced mode (seg1 `1ed4`-`1f0d`), the 1000h [[probe:galimit]] shows, and the first megabyte's selectors in enhanced mode's order ([[probe:kconst]]). Both wait on WinBox's selectors being KERNEL's, or on a program that depends on them; `enhanced/galimit` and `enhanced/kconst` are replayed once the knowledge base tells the modes' records apart.
 - The largest block and `GlobalCompact`'s figure in enhanced mode before their limit are taken from DPMI 0500h's largest block ([[inferred]]); no call shows them below FF0000h.
 - The corpus is not yet surveyed in enhanced mode.
+- Paging: WIN386 faults where it has no page present, and WinBox has no pages. A design, not yet built, is [[guide:paging]].
 
 - What KERNEL does with a DOS program in each mode (`KRNL386.EXE` seg2 `0506`-`0529`), and the routine it calls without paging (seg1 `b4eb`), are not read further. Nor are GDI's `FinalGDIInit`, TOOLHELP's or COMM's branches.
 - WIN386's own INT 31h dispatcher is not read out: what it answers is what the probes measured ([[topic:dpmi-functions]]).
