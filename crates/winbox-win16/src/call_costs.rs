@@ -455,13 +455,13 @@ mod tests {
     fn a_transfer_is_four_a_byte_then_as_measured() {
         assert!(close(transfer(0), 0.0));
         assert!(close(transfer(400), 1600.0));
-        assert!(close(transfer(768), (2051.0 + 4102.0) / 2.0));
+        assert!(close(transfer(768), f64::midpoint(2051.0, 4102.0)));
 
         for (bytes, instructions) in TRANSFER {
             assert!(close(transfer(bytes), instructions));
         }
 
-        assert!(close(transfer(20480), (35540.0 + 54917.0) / 2.0));
+        assert!(close(transfer(20480), f64::midpoint(35540.0, 54917.0)));
         assert!(close(transfer(65535), 55233.0));
     }
 
