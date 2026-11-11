@@ -1711,7 +1711,13 @@ mod tests {
     /// as DOSBox does under Windows (`diskser`): AX stays 6900h.
     #[test]
     fn refuses_the_serial_number_leaving_the_registers() {
-        for (ax, drive) in [(0x6900, 0), (0x6900, 1), (0x6900, 3), (0x6900, 27), (0x6901, 1)] {
+        for (ax, drive) in [
+            (0x6900, 0),
+            (0x6900, 1),
+            (0x6900, 3),
+            (0x6900, 27),
+            (0x6901, 1),
+        ] {
             let mut system = System::new();
 
             system.cpu.flags &= !super::CARRY;
