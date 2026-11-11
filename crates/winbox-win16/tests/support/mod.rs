@@ -1217,7 +1217,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386", "pgfree",
+    "pglock", "pgheap", "pgw386", "mcibang", "pgfree",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1993,6 +1993,14 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "enhanced/pgtouch:scan",
         "WinBox has no pages: a read where WIN386 has no page present does not fault",
+    ),
+    (
+        "enhanced/mcibang:wave",
+        "WinBox's waveaudio driver opens a file that is no waveform (a MIDI file), where MCIWAVE answers 128h",
+    ),
+    (
+        "enhanced/mcibang:unopened",
+        "mciSendString does not open a device a command names that the task has not open (109h here)",
     ),
     // Paging's phase 1 probes (`kb/guides/paging.md`): what WinBox does not
     // do of paging, the fault a named gap until a program needs it (the

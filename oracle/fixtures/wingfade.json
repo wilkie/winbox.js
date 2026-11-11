@@ -1,0 +1,69 @@
+{
+  "probe": "wingfade",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "realize",
+      "args": "colours",
+      "result": "256,a handle of its own"
+    },
+    {
+      "function": "colours",
+      "args": "blitted",
+      "result": "0af580,0bf480,32cd80,807f80,f50a80"
+    },
+    {
+      "function": "realize",
+      "args": "black-table",
+      "result": "256,the handle deleted before"
+    },
+    {
+      "function": "black-table",
+      "args": "black-table,blitted",
+      "result": "000000,000000,000000,000000,000000"
+    },
+    {
+      "function": "black-table",
+      "args": "black-table,animated",
+      "result": "0af580,0bf480,32cd80,807f80,f50a80"
+    },
+    {
+      "function": "realize",
+      "args": "colour-table",
+      "result": "256,the handle deleted before"
+    },
+    {
+      "function": "colour-table",
+      "args": "colour-table,blitted",
+      "result": "008080,008080,008080,808080,800080"
+    },
+    {
+      "function": "colour-table",
+      "args": "colour-table,animated",
+      "result": "008080,008080,008080,808080,800080"
+    },
+    {
+      "function": "realize",
+      "args": "one-off",
+      "result": "256,the handle deleted before"
+    },
+    {
+      "function": "one-off",
+      "args": "one-off,blitted",
+      "result": "000000,000000,000000,000000,ffffff"
+    },
+    {
+      "function": "one-off",
+      "args": "one-off,animated",
+      "result": "0af580,0bf480,32cd80,807f80,ffffff"
+    }
+  ]
+}

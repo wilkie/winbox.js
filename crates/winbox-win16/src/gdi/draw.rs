@@ -293,6 +293,7 @@ pub(crate) struct Sourced {
     pub width: i32,
     pub height: i32,
     pub back: Option<Color>,
+    pub keeps_own: bool,
 }
 
 impl Sourced {
@@ -302,6 +303,7 @@ impl Sourced {
             width: self.width,
             height: self.height,
             back: self.back,
+            keeps_own: self.keeps_own,
         }
     }
 }
@@ -317,7 +319,30 @@ fn source_of(system: &mut System, dc: usize) -> Option<Sourced> {
         height: bitmap.height(),
         bitmap,
         back: Some(back),
+        keeps_own: false,
     })
+}
+
+/// A device context as the source of a blit into another: as `source_of`
+/// has it, but a WinG bitmap's onto a device of 256 colours -- the screen --
+/// keeps each index whose colour in its table is the device's own at that
+/// index, the rest matched to the nearest (**recorded** by `wingfade`: a
+/// picture blitted while a palette's reserved colours are black, its table
+/// black as they are, shows when `AnimatePalette` gives them their colours,
+/// as Lode Runner: The Legend Returns fades its pictures in; a table that is
+/// not the system palette's is matched, and stays as it was matched; a
+/// table that is but for one entry keeps the rest).
+fn source_into(system: &mut System, from: usize, to: usize) -> Option<Sourced> {
+    let mut source = source_of(system, from)?;
+
+    source.keeps_own = system.gdi.dcs[from].wing
+        && !system.gdi.dcs[to].wing
+        && source.bitmap.depth == 8
+        && system
+            .draw_target(to)
+            .is_some_and(|target| target.depth == 8);
+
+    Some(source)
 }
 
 /// A device context's pixels copied into a bitmap of GDI's own by its
@@ -527,7 +552,7 @@ pub fn bit_blt(
     let Some(bitmap) = canvas(system, dc) else {
         return 1;
     };
-    let source = from.and_then(|from| source_of(system, from));
+    let source = from.and_then(|from| source_into(system, from, dc));
 
     raster_op(
         system,
@@ -636,7 +661,7 @@ fn stretch_device(
     at: (i32, i32, i32, i32),
     rop: u32,
 ) {
-    let source = from.and_then(|from| source_of(system, from));
+    let source = from.and_then(|from| source_into(system, from, dc));
 
     stretch_into(system, dc, to, source.as_ref(), at, rop);
 }
@@ -813,6 +838,7 @@ pub(crate) fn stretch_into(
         width: dw,
         height: dh,
         back: source.back,
+        keeps_own: source.keeps_own,
     };
 
     raster_op(
@@ -1284,6 +1310,7 @@ fn dib_source(
         height: lines as i32,
         bitmap,
         back: None,
+        keeps_own: false,
     })
 }
 
@@ -1566,6 +1593,7 @@ fn rle_bitmap(system: &System, dc: usize, info: u32, bits: u32) -> Option<Source
         height: header.height,
         bitmap,
         back: None,
+        keeps_own: false,
     })
 }
 

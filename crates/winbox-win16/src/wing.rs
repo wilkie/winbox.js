@@ -6,7 +6,7 @@
 //! **Recorded** by `wingapi` and `wingprof` on the 256-colour display with
 //! WinG installed (`install-wing.mjs`):
 //!
-//! * `WinGRecommendedDIBFormat` answers 1 and an 8-bit header, 1 by 1 and
+//! * `WinGRecommendDIBFormat` answers 1 and an 8-bit header, 1 by 1 and
 //!   bottom-up (a height of 1), uncompressed.
 //! * `WinGCreateDC` makes a device context of WinG's own DIB driver: its
 //!   `GetDeviceCaps` answer 24 bits a pixel, one plane, `NUMCOLORS` 16 and
@@ -246,7 +246,7 @@ fn wing_create_dc(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(hdc))
 }
 
-fn wing_recommended_dib_format(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+fn wing_recommend_dib_format(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
 
     if far == 0 {
@@ -475,7 +475,7 @@ fn wing_stretch_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(Implementation::Sync(match name {
         "WinGCreateDC" => wing_create_dc,
-        "WinGRecommendedDIBFormat" => wing_recommended_dib_format,
+        "WinGRecommendDIBFormat" => wing_recommend_dib_format,
         "WinGCreateBitmap" => wing_create_bitmap,
         "WinGGetDIBPointer" => wing_get_dib_pointer,
         "WinGGetDIBColorTable" => wing_get_dib_color_table,
@@ -535,5 +535,40 @@ mod tests {
         assert_eq!(HALFTONE[9], 0x00a6_caf0);
         assert_eq!(HALFTONE[246], 0x00ff_fbf0);
         assert_eq!(HALFTONE[255], 0x00ff_ffff);
+    }
+
+    /// WinG's own names for its calls, as `WING.DLL`'s table of names it
+    /// does not keep resident gives them with their ordinals (the table the
+    /// header's 2Ch points to): a program that asks `GetProcAddress` by
+    /// name, as Lode Runner: The Legend Returns does, asks these, and
+    /// `WinGRecommendDIBFormat` is not `WinGRecommendedDIBFormat`.
+    #[test]
+    fn wings_calls_are_named_as_wing_dll_names_them() {
+        let wing = crate::kept::KEPT
+            .iter()
+            .find(|kept| kept.name == "WING")
+            .unwrap();
+
+        for (ordinal, name) in [
+            (1001, "WINGCREATEDC"),
+            (1002, "WINGRECOMMENDDIBFORMAT"),
+            (1003, "WINGCREATEBITMAP"),
+            (1004, "WINGGETDIBPOINTER"),
+            (1005, "WINGGETDIBCOLORTABLE"),
+            (1006, "WINGSETDIBCOLORTABLE"),
+            (1007, "WINGCREATEHALFTONEPALETTE"),
+            (1008, "WINGCREATEHALFTONEBRUSH"),
+            (1009, "WINGSTRETCHBLT"),
+            (1010, "WINGBITBLT"),
+        ] {
+            let export = wing.exports[ordinal].as_ref().unwrap();
+
+            assert!(
+                export.name.eq_ignore_ascii_case(name),
+                "{ordinal}: {}",
+                export.name
+            );
+            assert!(implementation(export.name).is_some(), "{}", export.name);
+        }
     }
 }

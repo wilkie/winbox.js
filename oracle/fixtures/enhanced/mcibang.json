@@ -1,0 +1,201 @@
+{
+  "probe": "mcibang",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mci",
+      "args": "open sequencer!C:\\ORACLE\\BANG.mid alias song",
+      "result": "0 [1]",
+      "section": "the type and the file in one word, as Lode Runner opens its music"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "the type and the file in one word, as Lode Runner opens its music"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "the type and the file in one word, as Lode Runner opens its music"
+    },
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\BANG.MID alias song",
+      "result": "0 [1]",
+      "section": "the file alone"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [4]",
+      "section": "the file alone"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []",
+      "section": "the file alone"
+    },
+    {
+      "function": "mci",
+      "args": "open sequencer!C:\\ORACLE\\NONE.MID alias song",
+      "result": "113 []",
+      "section": "a file that is not there"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "a file that is not there"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "107 []",
+      "section": "a file that is not there"
+    },
+    {
+      "function": "mci",
+      "args": "open sequencer! alias song",
+      "result": "107 []",
+      "section": "the type alone before the mark"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "the type alone before the mark"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "107 []",
+      "section": "the type alone before the mark"
+    },
+    {
+      "function": "mci",
+      "args": "open !C:\\ORACLE\\BANG.MID alias song",
+      "result": "107 []",
+      "section": "nothing before the mark"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "nothing before the mark"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "107 []",
+      "section": "nothing before the mark"
+    },
+    {
+      "function": "mci",
+      "args": "open nothing!C:\\ORACLE\\BANG.MID alias song",
+      "result": "107 []",
+      "section": "a type there is none of"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "a type there is none of"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "107 []",
+      "section": "a type there is none of"
+    },
+    {
+      "function": "wave",
+      "args": "open waveaudio!C:\\ORACLE\\BANG.MID alias song",
+      "result": "128 []",
+      "section": "the waveaudio type given a MIDI file"
+    },
+    {
+      "function": "wave",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "the waveaudio type given a MIDI file"
+    },
+    {
+      "function": "wave",
+      "args": "close song",
+      "result": "107 []",
+      "section": "the waveaudio type given a MIDI file"
+    },
+    {
+      "function": "mci",
+      "args": "open sequencer!BANG.MID alias song",
+      "result": "113 []",
+      "section": "the file relative to the current folder"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "the file relative to the current folder"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "107 []",
+      "section": "the file relative to the current folder"
+    },
+    {
+      "function": "mci",
+      "args": "open sequencer!C:\\ORACLE\\BANG.MID type sequencer alias song",
+      "result": "113 []",
+      "section": "with type as well"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "107 []",
+      "section": "with type as well"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "107 []",
+      "section": "with type as well"
+    },
+    {
+      "function": "mci",
+      "args": "open sequencer!C:\\ORACLE\\BANG.MID",
+      "result": "0 [1]",
+      "section": "no alias"
+    },
+    {
+      "function": "unopened",
+      "args": "status sequencer!C:\\ORACLE\\BANG.MID length",
+      "result": "109 []",
+      "section": "no alias"
+    },
+    {
+      "function": "mci",
+      "args": "status C:\\ORACLE\\BANG.MID length",
+      "result": "0 [4]",
+      "section": "no alias"
+    },
+    {
+      "function": "mci",
+      "args": "close all",
+      "result": "0 []",
+      "section": "no alias"
+    }
+  ]
+}

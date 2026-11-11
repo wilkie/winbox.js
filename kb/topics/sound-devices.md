@@ -80,6 +80,22 @@ Before this, winbox.js answered 108h, out of memory, to every file, and Champion
 - [[measured]] A device the task does not have open answers 107h. A command with no device answers 124h, and an empty string answers 10Bh.
 - [[measured]] The text given back is empty when the answer is an error, or when there is no text.
 
+### A type and a file in one word
+
+Lode Runner: The Legend Returns opens its music as `open sequencer!C:\SIERRA\LODERUNN\MUSIC\LRTITLE1.mid alias song` ([[topic:win386]]). [[measured]] [[probe:mcibang]], in 386 enhanced mode, opens a MIDI file of its own so, and in the forms beside it:
+
+- `open sequencer!C:\ORACLE\BANG.mid alias song` opens the file on the sequencer, its length 4, as the file named alone does.
+- A file after the `!` that is not there answers 113h, and one named relative to the folder the probe was started in 113h as well. With `type sequencer` given too, the whole word is the file's name, and is not there: 113h.
+- `sequencer!` with nothing after the mark, `!` and a file with nothing before it, and a type no `[mci]` key names before it each answer 107h.
+- Opened with no alias, the device is named by its file alone: `status C:\ORACLE\BANG.MID length` answers 4.
+
+[[read out]] How `MMSYSTEM.DLL` comes to that (seg5):
+
+- `mciSendString`'s `open`, where its words gave no `type`, hands the device's name to `MCI_OPEN` as the type, whatever it looks like, with no element; given `type`, as the element (`0feb`-`1033`). `MCI_OPEN` then finds a file's type by its extension (`2249`), or else splits the type at its first `!` (`26f0`-`277c`, its words read by `22d5`): the type the words before the mark, which may be none, and the element the rest. Where nothing follows the mark the type is left as it was given, `!` and all, which no `[mci]` key names.
+- The driver is sent `MCI_OPEN_DRIVER` with the caller's parameters, the type, the element and the alias MMSYSTEM found written into them (`26a8`-`26c5`, `275d`-`277c`, `27cc`-`27dd`), and they are put back as they were given after it (`283d`-`2866`).
+
+winbox.js took a name with a `.`, `\` or `:` in it for a file, so the game's word was a file named `sequencer!C:\...`, whose extension it did not know: 119h, and the game played no music. Its `MCI_OPEN` split `!` as well, but kept the type where nothing followed the mark and answered 131h where nothing came before it; it answers as recorded now.
+
 ## sndPlaySound and SOUND
 
 - [[measured]] [[fn:MMSYSTEM.sndPlaySound]] answers nought for a file, a missing file, a sound's name from `[sounds]` and nothing at all, whether asked to wait or not. There is no waveform device to play on.
@@ -107,6 +123,8 @@ What the card plays is handed to the host with its rate, channels and bits: winb
 ## Not yet done
 
 - The command tables' contents: `mciSendString` here parses its commands itself, and does not load the core table as it first looks a command up (seg5 `3095`).
+- What `MCIWAVE.DRV` answers a file that is not a waveform: [[probe:mcibang]]'s MIDI file opened as `waveaudio!` answers 128h, and WinBox's driver opens it.
+- The devices `mciSendString` opens itself, for a command naming one the task has not open: [[probe:mcibang]]'s `status sequencer!C:\ORACLE\BANG.MID length`, its file open already, answers 109h; WinBox answers 107h.
 
 ## In winbox.js
 

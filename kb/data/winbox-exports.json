@@ -2535,7 +2535,7 @@
    "path": "C:\\WINDOWS\\SYSTEM\\WING.DLL",
    "exports": [
     {"ordinal": 1001, "name": "WinGCreateDC", "argumentBytes": 0, "implemented": true, "kind": "function"},
-    {"ordinal": 1002, "name": "WinGRecommendedDIBFormat", "argumentBytes": 4, "implemented": true, "kind": "function"},
+    {"ordinal": 1002, "name": "WinGRecommendDIBFormat", "argumentBytes": 4, "implemented": true, "kind": "function"},
     {"ordinal": 1003, "name": "WinGCreateBitmap", "argumentBytes": 10, "implemented": true, "kind": "function"},
     {"ordinal": 1004, "name": "WinGGetDIBPointer", "argumentBytes": 6, "implemented": true, "kind": "function"},
     {"ordinal": 1005, "name": "WinGGetDIBColorTable", "argumentBytes": 10, "implemented": true, "kind": "function"},
