@@ -1,0 +1,185 @@
+{
+  "probe": "pgfree",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "free",
+      "args": "0501h 16 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "after 0502h",
+      "result": "xxwxxwx0xwx0xxxxx"
+    },
+    {
+      "function": "heap",
+      "args": "GlobalAlloc 1 MiB",
+      "result": "80798000"
+    },
+    {
+      "function": "heap",
+      "args": "GlobalFree",
+      "result": "0000"
+    },
+    {
+      "function": "heap",
+      "args": "after GlobalFree",
+      "result": "253 of 256 fault; read: 2w 5w 7o"
+    },
+    {
+      "function": "heap",
+      "args": "GlobalCompact(-1)",
+      "result": "more than nought"
+    },
+    {
+      "function": "heap",
+      "args": "after GlobalCompact",
+      "result": "253 of 256 fault; read: 2w 5w 7o"
+    },
+    {
+      "function": "where",
+      "args": "192 KiB",
+      "result": "00045b40"
+    },
+    {
+      "function": "where",
+      "args": "256 KiB",
+      "result": "00045b40"
+    },
+    {
+      "function": "where",
+      "args": "384 KiB",
+      "result": "80798000"
+    },
+    {
+      "function": "where",
+      "args": "512 KiB",
+      "result": "80798000"
+    },
+    {
+      "function": "where",
+      "args": "768 KiB",
+      "result": "80798000"
+    },
+    {
+      "function": "resize",
+      "args": "0501h 8 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "resize",
+      "args": "0503h 2 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "resize",
+      "args": "2 pages moved",
+      "result": "no"
+    },
+    {
+      "function": "resize",
+      "args": "old base after 2 pages",
+      "result": "wwxwwwwwx"
+    },
+    {
+      "function": "resize",
+      "args": "0503h 12 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "resize",
+      "args": "12 pages moved",
+      "result": "no"
+    },
+    {
+      "function": "resize",
+      "args": "base after 12 pages",
+      "result": "wwwwwwww0000x"
+    },
+    {
+      "function": "resize",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "largest",
+      "args": "before",
+      "result": "cf=0 largest 57760 KiB, free pages 3718"
+    },
+    {
+      "function": "largest",
+      "args": "0501h 1 MiB",
+      "result": "cf=0"
+    },
+    {
+      "function": "largest",
+      "args": "given",
+      "result": "cf=0 largest 56736 KiB, free pages 3718"
+    },
+    {
+      "function": "largest",
+      "args": "written",
+      "result": "cf=0 largest 56736 KiB, free pages 3718"
+    },
+    {
+      "function": "largest",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "largest",
+      "args": "freed",
+      "result": "cf=0 largest 57760 KiB, free pages 3718"
+    },
+    {
+      "function": "lock",
+      "args": "0501h 4 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "lock",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "lock",
+      "args": "0600h page 1",
+      "result": "cf=1 ax=0600"
+    },
+    {
+      "function": "lock",
+      "args": "0601h page 1",
+      "result": "cf=1 ax=0601"
+    },
+    {
+      "function": "lock",
+      "args": "0600h page 0",
+      "result": "cf=1 ax=0600"
+    },
+    {
+      "function": "lock",
+      "args": "0601h page 0",
+      "result": "cf=1 ax=0601"
+    },
+    {
+      "function": "lock",
+      "args": "pages after",
+      "result": "xwwx"
+    }
+  ]
+}

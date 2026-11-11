@@ -1,0 +1,84 @@
+{
+  "probe": "pgfree",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "free",
+      "args": "0501h 16 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "after 0502h",
+      "result": "wow00w000w0000000"
+    },
+    {
+      "function": "heap",
+      "args": "GlobalAlloc 1 MiB",
+      "result": "001cb810"
+    },
+    {
+      "function": "heap",
+      "args": "GlobalFree",
+      "result": "0000"
+    },
+    {
+      "function": "heap",
+      "args": "after GlobalFree",
+      "result": "0 of 256 fault; read: 0w 1o 2w 30 40 5w 60 70 80 9w 100 110"
+    },
+    {
+      "function": "heap",
+      "args": "GlobalCompact(-1)",
+      "result": "more than nought"
+    },
+    {
+      "function": "heap",
+      "args": "after GlobalCompact",
+      "result": "0 of 256 fault; read: 0w 1o 2w 30 40 5w 60 70 80 9w 100 110"
+    },
+    {
+      "function": "where",
+      "args": "192 KiB",
+      "result": "0004b280"
+    },
+    {
+      "function": "where",
+      "args": "256 KiB",
+      "result": "0004b280"
+    },
+    {
+      "function": "where",
+      "args": "384 KiB",
+      "result": "001cb810"
+    },
+    {
+      "function": "where",
+      "args": "512 KiB",
+      "result": "001cb810"
+    },
+    {
+      "function": "where",
+      "args": "768 KiB",
+      "result": "001cb810"
+    },
+    {
+      "function": "resize",
+      "args": "0501h 8 pages",
+      "result": "cf=0"
+    }
+  ]
+}
