@@ -145,12 +145,12 @@ Nothing changes. [[read out]] DOSX has no pager: 0600h-0603h answer with nothing
 
 Design (a), at the grain of WinBox's tiles first, in the four phases above, and only after phase 1's probes. It is the only design that makes [[probe:w386lib]]'s routine 2 fault as Windows does without a cost on the common path: the bound rides on the limit compare the core already makes. It matches what a program can see, the fault and its error code, and not what it cannot see, the tables. A page grain and WIN386's layout (c1) can follow if a program is found to need them. Until a program of the corpus or the owner's needs paging, (c2) is a fair place to stop after phase 1.
 
-## Questions for the owner
+## The owner's decisions (2026-11-10)
 
-1. **When.** Build (a) now, or record phase 1's probes and leave the fault a named gap until a program needs it? The one case known is a probe's own routine.
-2. **The grain.** Tiles of 64 KiB, which never fault where a block's segment is, or pages of 4 KiB, which fault just past a block where WIN386 may have put something else and not fault?
-3. **The layout.** Keep WinBox's addresses (index times 64 KiB) and hold [[probe:pgtouch]]'s `layout` as a known gap, or plan (c1)?
-4. **WinBox's own code.** Where KERNEL or USER, which are WinBox's, read or write a program's pointer into a page that is not present, Windows' own code would fault inside its module. Should WinBox raise that fault, naming the module as Windows would, or answer as it does now?
+1. **When.** Phase 1's probes now; the fault stays a named gap until a program needs it.
+2. **The grain.** Tiles of 64 KiB, so that WinBox never faults where Windows would not.
+3. **The layout.** WinBox keeps its own addresses (index times 64 KiB); [[probe:pgtouch]]'s `layout` is a known gap.
+4. **WinBox's own code.** When it is built, WinBox's KERNEL and USER raise the fault where Windows' own code would touch a page that is not present, naming the module as Windows would.
 
 ## Not yet done
 
