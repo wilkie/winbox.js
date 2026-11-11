@@ -1,0 +1,70 @@
+{
+  "probe": "fptask",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "coprocessor": false
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "__FPMATH",
+      "result": "there"
+    },
+    {
+      "function": "view",
+      "args": "at start",
+      "result": "cw 1332 sw 0000 fpmath5 1332 fpmath8 0000 fpmath10 0"
+    },
+    {
+      "function": "view",
+      "args": "its own set",
+      "result": "cw 173f sw 0004 fpmath5 173f fpmath8 0004 fpmath10 1"
+    },
+    {
+      "function": "exec",
+      "args": "child",
+      "result": "inst"
+    },
+    {
+      "function": "exec",
+      "args": "its window",
+      "result": "there"
+    },
+    {
+      "function": "view",
+      "args": "after the child started",
+      "result": "cw 1332 sw 0000 fpmath5 1332 fpmath8 0000 fpmath10 0"
+    },
+    {
+      "function": "view",
+      "args": "after the child set its own",
+      "result": "cw 0f3f sw 0005 fpmath5 0f3f fpmath8 0005 fpmath10 0"
+    },
+    {
+      "function": "view",
+      "args": "after the child's second message",
+      "result": "cw 0f3f sw 0005 fpmath5 0f3f fpmath8 0005 fpmath10 0"
+    },
+    {
+      "function": "value",
+      "args": "left on the stack",
+      "result": "none"
+    },
+    {
+      "function": "view",
+      "args": "after the child ended",
+      "result": "cw 1332 sw 0000 fpmath5 1332 fpmath8 0000 fpmath10 0"
+    },
+    {
+      "function": "child",
+      "args": "all",
+      "result": "at start: cw 1332 sw 0000 fpmath5 1332 fpmath8 0000 fpmath10 0\r\nfirst message: cw 1332 sw 0000 fpmath5 1332 fpmath8 0000 fpmath10 0\r\nits own set: cw 0f3f sw 0005 fpmath5 0f3f fpmath8 0005 fpmath10 0\r\nsecond message: cw 0f3f sw 0005 fpmath5 0f3f fpmath8 0005 fpmath10 0\r\n"
+    }
+  ]
+}

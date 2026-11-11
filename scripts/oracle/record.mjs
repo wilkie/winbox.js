@@ -81,7 +81,7 @@ export const FROM_CORPUS = { wavemix: ['simtower/WAVMIX16.DLL'] };
  * the OS fixups having made them WIN87EM's emulator's interrupts. Their
  * recordings say so in their source (`coprocessor: false`).
  */
-export const WITHOUT_COPROCESSOR = ['fpemu'];
+export const WITHOUT_COPROCESSOR = ['fpemu', 'fptask'];
 
 /** `NOFPU.COM`, a DOS program of four instructions. */
 function noCoprocessor() {
