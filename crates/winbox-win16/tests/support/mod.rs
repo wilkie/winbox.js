@@ -1216,7 +1216,7 @@ pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<
 pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
-    "w386lib", "w386box", "w386eip", "diskser",
+    "w386lib", "w386box", "w386eip", "diskser", "pgtouch",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1981,6 +1981,24 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "seglim:stack",
         "DOSBox reads below an expand-down SS's limit, where the 80386 raises #SS",
+    ),
+    // `pgtouch`: the linear pages a program can reach. WinBox has no pages
+    // and lays memory out by descriptor index (`kb/guides/paging.md`).
+    (
+        "pgtouch:layout",
+        "where things lie: WinBox's segments and blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's",
+    ),
+    (
+        "enhanced/pgtouch:dpmi",
+        "0600h and 0601h of a range that wraps past 4 GiB are answered, where WIN386 refuses them",
+    ),
+    (
+        "enhanced/pgtouch:touch",
+        "WinBox has no pages: a read where WIN386 has no page present does not fault",
+    ),
+    (
+        "enhanced/pgtouch:scan",
+        "WinBox has no pages: a read where WIN386 has no page present does not fault",
     ),
 ];
 

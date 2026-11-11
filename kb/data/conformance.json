@@ -7956,6 +7956,48 @@
    "free": "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments"
   }
  },
+ "enhanced/pgtouch": {
+  "probe": "pgtouch",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 54,
+  "functions": {
+   "dpmi": {
+    "total": 14,
+    "agreed": 12,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "layout": {
+    "total": 13,
+    "agreed": 6,
+    "disagreed": 7,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "scan": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "touch": {
+    "total": 22,
+    "agreed": 16,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "layout": "where things lie: WinBox's segments and blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's",
+   "dpmi": "0600h and 0601h of a range that wraps past 4 GiB are answered, where WIN386 refuses them",
+   "touch": "WinBox has no pages: a read where WIN386 has no page present does not fault",
+   "scan": "WinBox has no pages: a read where WIN386 has no page present does not fault"
+  }
+ },
  "enhanced/w386box": {
   "probe": "w386box",
   "display": "vga",
@@ -24453,6 +24495,45 @@
    }
   },
   "gaps": {}
+ },
+ "pgtouch": {
+  "probe": "pgtouch",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 46,
+  "functions": {
+   "dpmi": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "layout": {
+    "total": 13,
+    "agreed": 6,
+    "disagreed": 7,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "scan": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "touch": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "layout": "where things lie: WinBox's segments and blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's"
+  }
  },
  "plotbig-ega": {
   "probe": "plotbig",

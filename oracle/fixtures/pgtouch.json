@@ -1,0 +1,244 @@
+{
+  "probe": "pgtouch",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "layout",
+      "args": "data segment",
+      "result": "00054bc0"
+    },
+    {
+      "function": "layout",
+      "args": "code segment",
+      "result": "00040d40"
+    },
+    {
+      "function": "layout",
+      "args": "GlobalAlloc 10h",
+      "result": "00016ee0"
+    },
+    {
+      "function": "layout",
+      "args": "0501h 1 first",
+      "result": "cf=0"
+    },
+    {
+      "function": "layout",
+      "args": "0501h 1 first base",
+      "result": "001cb810"
+    },
+    {
+      "function": "layout",
+      "args": "0501h 1 second",
+      "result": "cf=0"
+    },
+    {
+      "function": "layout",
+      "args": "0501h 1 second base",
+      "result": "001cb821"
+    },
+    {
+      "function": "layout",
+      "args": "second past first",
+      "result": "17"
+    },
+    {
+      "function": "layout",
+      "args": "0501h 3001h",
+      "result": "cf=0"
+    },
+    {
+      "function": "layout",
+      "args": "0501h 3001h base",
+      "result": "001cb832"
+    },
+    {
+      "function": "dpmi",
+      "args": "0600h block",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0601h block",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0600h past the block",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0601h past the block",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0600h 80000000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0601h 80000000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0600h FFFFF000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0601h FFFFF000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "0000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "0008h",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "0202h",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "0203h",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "block",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "block's last byte",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "past the block",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "GlobalAlloc",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "GlobalAlloc + 1000h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "GlobalAlloc + 10000h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "far pointer as linear",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "400h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "110000h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "80000000h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "C0000000h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "FFFFF000h",
+      "result": "no fault"
+    },
+    {
+      "function": "scan",
+      "args": "from the first block",
+      "result": "1024 pages, no fault"
+    },
+    {
+      "function": "scan",
+      "args": "before the first block",
+      "result": "1 pages, no fault"
+    },
+    {
+      "function": "scan",
+      "args": "from the second block",
+      "result": "1024 pages, no fault"
+    },
+    {
+      "function": "scan",
+      "args": "before the second block",
+      "result": "1 pages, no fault"
+    },
+    {
+      "function": "scan",
+      "args": "from a block of 3001h",
+      "result": "1024 pages, no fault"
+    },
+    {
+      "function": "layout",
+      "args": "0502h 3001h",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "freed block of 3001h",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "freed GlobalAlloc",
+      "result": "no fault"
+    },
+    {
+      "function": "touch",
+      "args": "0203h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "touch",
+      "args": "0001h",
+      "result": "cf=0"
+    },
+    {
+      "function": "layout",
+      "args": "0502h second",
+      "result": "cf=0"
+    },
+    {
+      "function": "layout",
+      "args": "0502h first",
+      "result": "cf=0"
+    }
+  ]
+}
