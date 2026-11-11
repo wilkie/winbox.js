@@ -17,6 +17,7 @@ probes:
     viscost,
     cdread,
     hdtime,
+    pgbig,
   ]
 ---
 
@@ -250,6 +251,18 @@ The run page runs a machine for each install, each a tab ([[guide:launcher]], st
 A machine whose programs wait for messages costs next to nothing: the Rust engine steps it only when its next timer is due (`wake_at`), and the TypeScript engine's scheduler only when a task is woken. Two machines each kept busy share the thread: on the Rust engine each frame gives each machine the same slice (12 ms), so each runs at some 55 to 60% of its speed alone; on the TypeScript engine the two together run some 75% of one alone, the later-made machine the larger share. The machine in the tab behind runs as the one shown does. Closed, a machine runs no more: its TypeScript engine's processor ran 0 instructions in the ten seconds after.
 
 [[measured]] Memory, the same runs: a Rust machine's WebAssembly instance is 18 MB with Windows up and nothing running, and 24 MB running SkiFree, steady over 40 s; the page's JavaScript heap grows by some 1 to 2 MB for each. A TypeScript machine adds some 6 to 12 MB to the heap. Before step 4 the Rust engine's call log kept every call a run made, and an instance running SkiFree grew to 101, 181, 341 and 661 MB at 5, 10, 15 and 30 s; the log now lets go of each call once the page's trace has read it (`System::forget_calls`). So no limit is set on machines at once: twenty busy machines are some 500 MB. An instance whose machine is closed is kept for the next machine made, as the page cannot let go of a WebAssembly instance's glue, and so of its memory. The script is not kept.
+
+## Paging
+
+[[measured]] [[probe:pgbig]], in 386 enhanced mode at a fixed 80,000 a millisecond (`oracle/fixtures/timings/pgbig-enhanced-c80000.json`), writes a byte to each page of a 0501h block of 24 MiB, 6,144 pages, on DOSBox's 16 MB machine with 3,718 pages free, then reads each back twice, by `GetTickCount`; each page through a selector based once a 64 KiB:
+
+| Pass       | Milliseconds | A page  | As instructions |
+| ---------- | ------------ | ------- | --------------- |
+| Write      | 4,448        | 0.72 ms | 57,900          |
+| Read       | 6,756        | 1.10 ms | 88,000          |
+| Read again | 1,373        | 0.22 ms | 17,900          |
+
+The block is more than is free, so WIN386 pages to its swap file as the passes go; the figures are the passes' whole time over the pages, the probe's own loop and 0007h's calls in them. With DOSBox as fast as the host allowed the same passes took 1,428, 1,593 and 1,154 ms. In standard mode DOSX has no pager: 24 MiB is refused, and the 14,544 KiB given are written and read in under a tick. WinBox does not page, and charges nothing for it ([[guide:paging]]).
 
 ## Not yet done
 

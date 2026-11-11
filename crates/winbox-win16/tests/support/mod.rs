@@ -1216,7 +1216,8 @@ pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<
 pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
-    "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "mcibang",
+    "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
+    "pglock", "pgheap", "pgw386", "mcibang",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -2000,6 +2001,62 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "enhanced/mcibang:unopened",
         "mciSendString does not open a device a command names that the task has not open (109h here)",
+    ),
+    // Paging's phase 1 probes (`kb/guides/paging.md`): what WinBox does not
+    // do of paging, the fault a named gap until a program needs it (the
+    // owner's decision of 2026-11-10). `pgw386` agrees: the replay holds
+    // only the records Windows wrote before its box.
+    (
+        "pgbox:after read 1",
+        "nothing at 80000000h: DOSBox reads nought there in standard mode and WIN386 steps over the faulting read, where WinBox reads garbage of its address (kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pgbox:after read 2",
+        "WinBox has no pages (kb/guides/paging.md): no Page Fault and no KERNEL box, so the program runs on",
+    ),
+    (
+        "pgwrite:rom",
+        "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
+    ),
+    (
+        "pgwrite:read",
+        "a write where WIN386 has no page, or DOSBox no memory, lands in WinBox's memory and reads back (kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pgwrite:write",
+        "WinBox has no pages (kb/guides/paging.md): a write where WIN386 has no page present does not fault (error code 6)",
+    ),
+    (
+        "pgcreg:read",
+        "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)",
+    ),
+    (
+        "pgbig:free after",
+        "0500h's largest free block does not shrink as 0501h gives a block (kb/guides/paging.md)",
+    ),
+    (
+        "pgbig:time",
+        "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
+    ),
+    (
+        "pglock:locked read",
+        "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pglock:setup",
+        "WinBox has no pages (kb/guides/paging.md): the page past a 0501h block does not fault",
+    ),
+    (
+        "enhanced/pglock:lock",
+        "0600h and 0601h of a range reaching the page past a 0501h block are answered, where WIN386 refuses them (kb/guides/paging.md)",
+    ),
+    (
+        "pgheap:layout",
+        "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pgheap:after",
+        "WinBox has no pages (kb/guides/paging.md): a freed block of 1 MiB keeps its pages, where KERNEL gives them back",
     ),
 ];
 

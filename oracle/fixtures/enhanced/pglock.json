@@ -1,0 +1,145 @@
+{
+  "probe": "pglock",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "setup",
+      "args": "0501h 2000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "pages from the block",
+      "result": "2 pages, then code=0004"
+    },
+    {
+      "function": "lock",
+      "args": "0600h block",
+      "result": "cf=0"
+    },
+    {
+      "function": "lock",
+      "args": "0601h block",
+      "result": "cf=0"
+    },
+    {
+      "function": "lock",
+      "args": "0600h across the edge",
+      "result": "cf=1 ax=0600"
+    },
+    {
+      "function": "lock",
+      "args": "0601h across the edge",
+      "result": "cf=1 ax=0601"
+    },
+    {
+      "function": "lock",
+      "args": "0600h the edge",
+      "result": "cf=1 ax=0600"
+    },
+    {
+      "function": "lock",
+      "args": "0601h the edge",
+      "result": "cf=1 ax=0601"
+    },
+    {
+      "function": "lock",
+      "args": "0600h size 0",
+      "result": "cf=0"
+    },
+    {
+      "function": "lock",
+      "args": "0601h size 0",
+      "result": "cf=0"
+    },
+    {
+      "function": "nest",
+      "args": "0600h first",
+      "result": "cf=0"
+    },
+    {
+      "function": "nest",
+      "args": "0600h second",
+      "result": "cf=0"
+    },
+    {
+      "function": "nest",
+      "args": "0601h first",
+      "result": "cf=0"
+    },
+    {
+      "function": "nest",
+      "args": "0601h second",
+      "result": "cf=0"
+    },
+    {
+      "function": "nest",
+      "args": "0601h third",
+      "result": "cf=0"
+    },
+    {
+      "function": "locked read",
+      "args": "0600h 80000000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "locked read",
+      "args": "read 80000000h",
+      "result": "fault calls=1 vector=0e code=0004 at-fault=1"
+    },
+    {
+      "function": "locked read",
+      "args": "0601h 80000000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "real",
+      "args": "0602h",
+      "result": "cf=0"
+    },
+    {
+      "function": "real",
+      "args": "0603h",
+      "result": "cf=0"
+    },
+    {
+      "function": "hint",
+      "args": "write",
+      "result": "no fault"
+    },
+    {
+      "function": "hint",
+      "args": "0702h",
+      "result": "cf=0"
+    },
+    {
+      "function": "hint",
+      "args": "read after 0702h",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "hint",
+      "args": "0703h",
+      "result": "cf=0"
+    },
+    {
+      "function": "hint",
+      "args": "read after 0703h",
+      "result": "no fault, as written"
+    },
+    {
+      "function": "setup",
+      "args": "0502h",
+      "result": "cf=0"
+    }
+  ]
+}

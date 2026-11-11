@@ -1,12 +1,12 @@
 ---
 kind: guide
 name: Paging in 386 enhanced mode
-summary: A design for the pages of 386 enhanced mode — which linear pages WIN386 has present for a program, what a reach of one that is not does, what DPMI's paging functions promise and WIN386 answers, what WinBox does instead, three designs with their costs, and the decisions still open.
+summary: A design for the pages of 386 enhanced mode — which linear pages WIN386 has present for a program, what a reach of one that is not does and what KERNEL shows for it, what DPMI's paging functions promise and WIN386 answers, what WinBox does instead, three designs with their costs, and the decisions still open.
 ---
 
-This page is a design. Nothing on it is built. On 2026-11-10 the owner decided to plan paging before any of it is built. It follows [[guide:enhanced-mode]], whose phase 4 left it open, and the model of [[guide:launcher]].
+This page is a design. Nothing of it is built in WinBox's engine. On 2026-11-10 the owner decided to plan paging before any of it is built; phase 1's probes are recorded (below, "What phase 1's probes measured"). It follows [[guide:enhanced-mode]], whose phase 4 left it open, and the model of [[guide:launcher]].
 
-The question it answers comes from [[probe:w386lib]]. Routine 2 of its Win386 library is given a far pointer to the caller's buffer as a `DLL_PTR`. Under WIN386 the program ends with the box "W386LIB caused a Page Fault in module <unknown> at 186F:2124", and the probe no longer calls it. Why is read out in [[topic:win386]], "Libraries": the supervisor passes the 16:16 pointer through unchanged, the 32-bit routine adds it to its flat segment's base, and the store reaches a page WIN386 has not given the program. WinBox has no pages, so the same store lands and the routine returns.
+The question it answers comes from [[probe:w386lib]]. Routine 2 of its Win386 library is given a far pointer to the caller's buffer as a `DLL_PTR`. Under WIN386 the program ends with KERNEL's box "W386LIB caused a Page Fault in module <unknown>186F:2124" (the recorder's screen), and the probe no longer calls it; [[probe:pgw386]] calls the same routine and records it. Why is read out in [[topic:win386]], "Libraries": the supervisor passes the 16:16 pointer through unchanged, the 32-bit routine adds it to its flat segment's base, and the store reaches a page WIN386 has not given the program. WinBox has no pages, so the same store lands and the routine returns.
 
 ## What WIN386 pages, as a program sees it
 
@@ -49,7 +49,7 @@ The question it answers comes from [[probe:w386lib]]. Routine 2 of its Win386 li
 - When nothing made the page present (`74d8`-`7540`), flag 40h is set where a count the manager keeps at `fdec` is not nought. Otherwise flag 80h or 100h is set, by bit 5 of the first double word of the virtual machine's block. A chain of handlers is asked in turn (`7504`-`751c`, the list at `10afc`, empty in the file). If none takes the fault, it goes on through one of three vectors, by the same tests, with ESI 38h, which is 0Eh times 4. The vectors at `fdf8`, `fe00` and `fe04` are nought in the file and set as WIN386 runs. Another path (`761f`-`762f`) goes on through the vectors at `fdf4` and `fdfc` the same way with 34h, 0Dh times 4.
 - [[inferred]] The count at `fdec` is the manager's own faults, and bit 5 is a virtual machine running in protected mode, so 80h is a fault of a protected-mode program and 100h one in V86 mode. The five double words, their flags (1, 8, 10h, 20h, 40h, 80h, 100h), the types and the chain match the Windows 3.1 DDK's invalid page fault structure, page types and `Hook_Invalid_Page_Fault`. Those names are recalled from the DDK, not read from a copy here. That a fault in a protected-mode program goes to the program's own exception 0Eh handler is what [[probe:pgtouch]] measures.
 
-[[read out]] **KERNEL's handler.** As it starts, `KRNL386.EXE` puts in exception handlers with DPMI 0203h, keeping each one before it (seg1 `af86`-`b00f`). It puts in 0Bh at `5fde`, 0Dh at `5fa2`, 06h at `5fb1`, 0Ch at `5f93` and 0Eh at `5fc0`. Each pushes the handler it replaced and the offset of its fault's name in KERNEL's data. 0Eh's is `07F0h`, "a Page Fault", among "a General Protection Fault", "a Stack Fault", "an Illegal Instruction", "a Not Present Fault" and "an Application Fault". Each then goes to `5f75` and `5e1b`. A fault in code of a ring-3 local selector takes the path a general protection fault takes to KERNEL's boxes (`5e28`, the first box at `9ff7`; WinBox's `fault.rs`), with that name. A fault anywhere else goes on to the handler KERNEL replaced (`5f87`-`5f8a`). That is the "W386LIB caused a Page Fault in module <unknown> at 186F:2124" of [[probe:w386lib]]: 186Fh is the supervisor's 32-bit code selector, in no module.
+[[read out]] **KERNEL's handler.** As it starts, `KRNL386.EXE` puts in exception handlers with DPMI 0203h, keeping each one before it (seg1 `af86`-`b00f`). It puts in 0Bh at `5fde`, 0Dh at `5fa2`, 06h at `5fb1`, 0Ch at `5f93` and 0Eh at `5fc0`. Each pushes the handler it replaced and the offset of its fault's name in KERNEL's data. 0Eh's is `07F0h`, "a Page Fault", among "a General Protection Fault", "a Stack Fault", "an Illegal Instruction", "a Not Present Fault" and "an Application Fault". Each then goes to `5f75` and `5e1b`. A fault in code of a ring-3 local selector takes the path a general protection fault takes to KERNEL's boxes (`5e28`, the first box at `9ff7`; WinBox's `fault.rs`), with that name. A fault anywhere else goes on to the handler KERNEL replaced (`5f87`-`5f8a`). That is the "W386LIB caused a Page Fault in module <unknown>186F:2124" of [[probe:w386lib]]: 186Fh is the supervisor's 32-bit code selector, in no module. [[measured]] [[probe:pgbox]] and [[probe:pgw386]] record both paths (below).
 
 [[measured]] **A program's own handler.** [[probe:pgtouch]]: WIN386 takes 0203h for 0Eh, and its handler is called for each fault above with error code 4, the frame's CS:IP the read that faulted. Moving IP past the read goes on, as [[probe:dpmiexc]] measured for exceptions 0 and 0Dh. [[documented]] DPMI 0.9's exception frame has the error code, CS:IP, the flags and SS:SP, but not the linear address: a 0.9 client cannot tell which page faulted. DPMI 1.0's frame adds CR2, and WIN386 is 0.9 ([[probe:dpmiver]]).
 
@@ -79,17 +79,48 @@ The question it answers comes from [[probe:w386lib]]. Routine 2 of its Win386 li
 - Which devices hook invalid page faults (the chain at `10afc` is filled as WIN386 runs) and what the vectors at `fdf8`-`fe04` are set to. That a program's handler is reached is measured, not read.
 - Whether any page table or page directory is mapped where ring 3 can read it. The handler reaches them through a mapping of physical memory kept at `bdd0`, which was not looked for from a program.
 
-### The probes that would measure the rest
+### What phase 1's probes measured
 
-Each is recorded in both modes unless it says otherwise, under the oracle's lock, as [[probe:pgtouch]] is.
+Each was recorded in 386 enhanced mode and in standard mode, under the oracle's lock, as [[probe:pgtouch]] is, but [[probe:pgw386]], in enhanced mode alone. A program's own handler (0203h) for 0Eh, and for 0Dh and 06h where it says so, notes each fault's vector, error code and CS:IP, and moves IP past the instruction (`oracle/probes/pgreach.h`). Standard mode faults nowhere in any of them: DOSX has no pager.
 
-- `pgbox`: a 16-bit program reads a page that is not present with no handler of its own. What is recorded is KERNEL's boxes, the first one's Ignore, and what the second one names (`--shoot`, `--then`). In standard mode nothing faults and no box shows.
-- `pgwrite`: a write to a page that is not present (error code 6), and a write through a selector based in the first megabyte's ROM.
-- `pgcreg`: `MOV EAX,CR0`, `CR2` and `CR3` at ring 3, under a 0Dh handler of the program's own, and `SMSW`. Whether WIN386 raises the general protection fault the 80386 manual says, or emulates the instruction.
-- `pgbig`: 0501h blocks past the machine's 16 MB, touched page by page. Whether every page is present (committed, then paged out to `WIN386.SWP`), and how long a page read back takes ([[topic:timing]]).
-- `pglock`: 0600h-0603h over ranges partly present, nested locks and unlocks, and 0702h and 0703h followed by a read.
-- `pgheap`: `GlobalAlloc` of blocks of 64 KiB and more, `GlobalFree` and `GlobalCompact`, and whether KERNEL gives the pages of its heap back (0502h): a stale linear alias's read after.
-- `pgw386`, enhanced mode only: [[probe:w386lib]]'s routine 2 called, its Page Fault box read and answered, so the `DLL_PTR` case is a record rather than a screen.
+**[[probe:pgbox]], KERNEL's boxes.** [[measured]] A program with no handler of its own reads a byte at 80000000h (`mov al,es:[bx]`, 3 bytes). In enhanced mode KERNEL shows its first box, as for a general protection fault ([[topic:application-errors]]): the caption the module's name, `PGBOXC`, the same three lines, Close with the focus and Ignore. **Ignore** steps over the read: the program goes on, its window there, and AL is the 5Ah it held before. A second read brings the first box again; **Close** goes on to the second box:
+
+> Application Error
+>
+> PGBOXC caused a Page Fault in
+> module PGBOXC.EXE at 0001:0028.
+
+with one button, Close. 0001:0028 is the read, `26 8A 07` at offset 28h of the program's first segment. After Close the program has ended: its window is gone and [[fn:KERNEL.GetModuleUsage]] answers nought. In standard mode both reads go on and read nought, and no box shows. The boxes were recorded as the screen (`record.mjs --shoot posted:3 --then Tab,Return:8 --then Return:4 --then Return:4`); the records are the program's.
+
+**[[probe:pgw386]], a `DLL_PTR` in a Win386 library.** [[measured]] A 16-bit program calls [[probe:w386lib]]'s routine 2 (`Fill`, the same source, in a library of its own, `PGW386D.DLL`) with a far pointer to its buffer. The routine's store faults in the supervisor's 32-bit code, and KERNEL shows **no first box**: no Ignore is offered. Its one box, Close in the middle:
+
+> Application Error
+>
+> PGW386 caused a Page Fault in
+> module <unknown>186F:20A4
+> PGW386 will close.
+
+No `at` and no full stop after the module, and a third line the box of [[probe:pgbox]] does not have; [[probe:w386lib]]'s screen says the same with `W386LIB` and `186F:2124`. After Close the program has ended, and with it Windows, the probe being the shell: its last record is the call. Why KERNEL offers no Ignore, and builds the text so, for a fault in a selector of no module was not read out (`9ff7`'s tests, [[topic:application-errors]]). The probe is built as [[probe:w386lib]] is, a 16-bit program with its Win386 library in `oracle/build/win386`: the fault is in the library's 32-bit code, not the caller's.
+
+**[[probe:pgwrite]], writes.** [[measured]] In enhanced mode a write at 80000000h, C0000000h and FFFFF000h calls the handler for 0Eh once, with error code 6 (a write at user privilege of a page not present), CS:IP the write; a read of 80000000h after still faults, with code 4: a write does not make a page present. A write to a 0501h block's page and to the page past it goes through. Writes to the first megabyte's ROM do not fault in either mode: at C0000h (the video BIOS) and F0000h the byte read after is the byte before; at FFFF0h it is the byte written, in both modes alike, so that is DOSBox's machine, not WIN386.
+
+**[[probe:pgcreg]], the control registers.** [[measured]] The probe runs at privilege 3 in both modes. In standard mode `MOV EAX,CR0`, `CR2` and `CR3` each raise exception 0Dh with error code nought, CS:IP the instruction, as the 80386 manual says. In enhanced mode **none of them reaches the program's handlers** (0Dh, 06h or 0Eh), and EAX is left as it was (5A5A5A5Ah): the instruction is passed over with nothing read. `SMSW AX` runs in both: 0001h in standard mode (PE), 000Bh in enhanced mode (PE, MP and TS). [[inferred]] WIN386 takes the general protection fault itself and steps over the instruction; which of its handlers does it was not read out.
+
+**[[probe:pgbig]], more than the machine.** [[measured]] In enhanced mode 0500h answers a largest free block of 57,760 KiB, 3,718 free pages (14.5 MiB) and a paging file's size. A block of 24 MiB from 0501h is given, and each of its 6,144 pages is written and read back with no fault, every page holding its byte: committed whole, the pages past what is free paged out to the swap file and back. 0500h's largest block is then 33,184 KiB, 24,576 less. In standard mode 24 MiB is refused (AX kept); the largest block, 14,544 KiB, is given and every page reads back. How long a page takes is in [[topic:timing]], "Paging".
+
+**[[probe:pglock]], locks and hints.** [[measured]] In enhanced mode a 0501h block of 2000h bytes has its two pages present and the third faults (code 4). 0600h and 0601h of the block are answered; of a range from its last page into the page past it, and of that page alone, refused, carry set and AX kept. Of 80000000h, not present either, they are answered, as [[probe:pgtouch]] found, and a read after the lock still faults: a lock does not make a page present. Two locks and three unlocks of one page are all answered: an unlock past the count is not refused. 0602h and 0603h of a block from `GlobalDosAlloc` are answered. After 0702h, and after 0703h, a read of the block's page does not fault and finds the byte written before. In standard mode every call is answered and nothing faults.
+
+**[[probe:pgheap]], KERNEL's heap.** [[measured]] In enhanced mode `GlobalAlloc` of 64 KiB and 128 KiB gives blocks in the first megabyte (about `00052B80h`, 64 KiB apart), and of 1 MiB a block at `80798000h`, on a page above 80000000h, where 0501h's blocks lie. Each block's bytes are read through a selector of the probe's own based at its address. After `GlobalFree` of all three and `GlobalCompact(-1)`, the two small blocks' pages are all present and keep their bytes: KERNEL keeps its heap. Of the 1 MiB block's 256 pages, 253 fault (code 4): KERNEL gave them back. The three that read, and keep their bytes, are pages 1, 128 and 255, three of the four pages the probe had read before the free through the same selector; the first page, also read before, faults. Why those three was not followed. In standard mode nothing faults.
+
+## What changes in the plan
+
+- **KERNEL's box for a page fault** is the general protection fault's path ([[probe:pgbox]]): the first box with Ignore, which steps over the instruction, then "Application Error" naming "a Page Fault", the module and segment:offset. `fault.rs` extends to it with the name, as design (a) supposed.
+- **A fault in a Win386 supervisor's 32-bit code** ([[probe:pgw386]]) gets no first box and a text of its own ("module <unknown>186F:20A4", then "PGW386 will close."). Phase 4's box for [[probe:w386lib]]'s routine 2 is that one, not the first box's path. This page and [[topic:win386]] quoted it with an `at` it does not have.
+- **`MOV` from a control register at ring 3 is not a fault a program sees in enhanced mode** ([[probe:pgcreg]]): WIN386 passes over it. In standard mode it is exception 0Dh. WinBox's core has no such instruction and stops the run. Design (b)'s point holds, more strongly: a program reads nothing of CR2 or CR3.
+- **Tiles of 64 KiB and a freed block.** A freed block of 1 MiB from KERNEL's heap faults in Windows, so the set of design (a) must drop a freed block's tiles, as 0502h's. But three of its pages still read in Windows: with the tiles dropped, a stale alias to such a block faults in WinBox where Windows, for those pages, does not. That is a place where tiles would fault where Windows does not, against the aim of the owner's second decision; how often a program reads a freed block through an alias is not known. Keeping a freed block's tiles instead would never fault there and would miss Windows' faults on the rest.
+- **Locks.** WIN386 refuses 0600h and 0601h of a range that reaches a page not present past a block ([[probe:pglock]]); WinBox answers them. With the set of design (a) WinBox could refuse them by the set, at the tile's grain: the page past a 2000h block lies in its tile, so a tile grain would still answer that range.
+- **Commitment.** A 0501h block is present whole however big ([[probe:pgbig]]): the set needs no notion of memory running out. 0500h's largest free block shrinks as blocks are given, which WinBox's does not.
+- **ROM.** Writes to C0000h and F0000h are dropped without a fault, in both modes; WinBox lets them land. That is a gap of the first megabyte, not of paging.
 
 ## What WinBox does now
 
@@ -99,7 +130,7 @@ Each is recorded in both modes unless it says otherwise, under the oracle's lock
 - **The host's faults.** A fault the processor stops at goes to a program's DPMI exception handler for it, where there is one (`dpmi_fault`, `crates/winbox-win16/src/run.rs`), with error code nought for any vector but 12 and 13. Otherwise only a general protection fault goes on to KERNEL's boxes (`crates/winbox-win16/src/fault.rs`); any other stops the run.
 - **DPMI's paging functions are answered with no pager behind them**, as each host answers them: 0600h-0603h, 0702h and 0703h with the carry clear, 0604h 1000h, and 0504h-0509h refused in enhanced mode as WIN386 refuses them ([[topic:dpmi-functions]]).
 
-[[measured]] So [[probe:pgtouch]] in enhanced mode finds no fault anywhere in WinBox, and 1024 pages from every block. Its `touch`, `scan` and `layout` are known gaps. Its `dpmi` is a known gap too, for 0600h and 0601h of FFFFF000h, which WinBox answers.
+[[measured]] So [[probe:pgtouch]] in enhanced mode finds no fault anywhere in WinBox, and 1024 pages from every block. Its `touch`, `scan` and `layout` are known gaps. Its `dpmi` is a known gap too, for 0600h and 0601h of FFFFF000h, which WinBox answers. Phase 1's probes the same: in WinBox [[probe:pgbox]]'s program reads on and runs, [[probe:pgwrite]]'s writes do not fault and its ROM writes land, [[probe:pgcreg]] stops the run at `MOV EAX,CR0`, [[probe:pglock]]'s locks past a block are answered and [[probe:pgheap]]'s freed block keeps its pages; [[probe:pgbig]]'s 0500h does not shrink. Each is a known gap. [[probe:pgw386]] agrees, the replay holding only the records Windows wrote before its box; in WinBox the routine's store lands and the program goes on.
 
 ## Designs
 
@@ -118,7 +149,7 @@ The DPMI host keeps which linear pages are present: the first megabyte and its h
 
 Phases, each a branch of its own measured against recordings:
 
-1. **The probes** above, recorded in both modes.
+1. **The probes** above, recorded in both modes. Done (above, "What phase 1's probes measured").
 2. **The set, kept but not enforced.** In enhanced mode only, with a check in the replay and the corpus that no access of WinBox's own or a program's lands outside it where Windows' did not fault. This finds what WinBox keeps in linear memory that the set left out.
 3. **The bound and the fault.** `past_present` in the core, vector 14 with its code, a program's handler; the hardware vectors and the bench before and after.
 4. **KERNEL's box** for a page fault, then [[probe:w386lib]]'s routine 2 called again, and its `pgw386` record.
@@ -154,6 +185,8 @@ Design (a), at the grain of WinBox's tiles first, in the four phases above, and 
 
 ## Not yet done
 
-- Every design and phase above; the probes `pgbox`, `pgwrite`, `pgcreg`, `pgbig`, `pglock`, `pgheap` and `pgw386`.
+- Every design and phase above but phase 1.
+- Why KERNEL offers no first box, and words its text as it does, for a fault in a Win386 supervisor's 32-bit code ([[probe:pgw386]]); which WIN386 handler passes over `MOV` from a control register ([[probe:pgcreg]]); why three pages of a freed block of 1 MiB still read ([[probe:pgheap]]); why WIN386 locks 80000000h but not the page past a block ([[probe:pglock]]).
+- A stack's guard page, which no probe looked for.
 - What "could not be read in reasonable time", above: WIN386's service names, `_PageAllocate`'s placing, the pager's path, the fault chain's members, and whether ring 3 can reach a page table.
 - `KRNL386.EXE`'s "Segment Load Failure" (`0826h`), pushed at seg1 `5fcf`-`5fd9` by code none of the 0203h calls names, and "a Divide by Zero" (`07BAh`), which none of the handlers KERNEL puts in names.
