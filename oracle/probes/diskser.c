@@ -22,6 +22,12 @@
  *   A0h + i beforehand (`regcall.h`); then the buffer before the call and
  *   after it, in hexadecimal.
  *
+ * * `real`: the same through DPMI's 0300h, as Dogz's `THINK.DLL` makes it
+ *   (seg2 `0415`): the buffer `GlobalDosAlloc`'s, the structure's DS its
+ *   paragraph and DX nought, BX the drive, CX 0C0Ch. The carry 0300h
+ *   answers, the structure's AX, BX, CX, DX and carry, and the buffer
+ *   before and after.
+ *
  * Last, `calling` `6901 a:`, then `6901` of A:, the floppy image's copy
  * (never C:): the buffer info level nought, serial 12345678h, label
  * `WINBOX` and file system `FAT12`. DOSBox stops at this call
@@ -65,6 +71,82 @@ static char *hexOf(char *to)
     return to;
 }
 
+/* The real mode call structure, 32h bytes. */
+typedef struct {
+    DWORD edi, esi, ebp, reserved, ebx, edx, ecx, eax;
+    WORD flags, es, ds, fs, gs, ip, cs, sp, ss;
+} RMCS;
+
+static RMCS rm;
+static unsigned rmCarry;
+
+/* INT 31h 0300h, INT 21h with `rm`: the carry it answers. */
+static void real21(void)
+{
+    RMCS far *at = &rm;
+    unsigned where = (unsigned)(unsigned long)at;
+    unsigned carry = 0;
+
+    _asm {
+        push di
+        push es
+        mov ax, ds
+        mov es, ax
+        mov di, where
+        mov ax, 0300h
+        mov bx, 0021h
+        xor cx, cx
+        int 31h
+        pop es
+        pop di
+        jnc done
+        mov carry, 1
+    done:
+    }
+
+    rmCarry = carry;
+}
+
+static void realSerial(LPCSTR name, unsigned para, unsigned char far *dos, unsigned drive)
+{
+    char before[BUFFER * 2 + 1];
+    char *to;
+    unsigned i;
+
+    for (i = 0; i < BUFFER; i++) {
+        dos[i] = (unsigned char)(0xa0 + i);
+    }
+
+    to = before;
+
+    for (i = 0; i < BUFFER; i++) {
+        wsprintf(to, "%02x", dos[i]);
+        to += 2;
+    }
+
+    for (i = 0; i < sizeof rm; i++) {
+        ((unsigned char *)&rm)[i] = 0;
+    }
+
+    rm.eax = 0x6900;
+    rm.ebx = drive;
+    rm.ecx = 0x0c0c;
+    rm.edx = 0;
+    rm.ds = para;
+    real21();
+
+    wsprintf(probeResult, "%u %04x %04x %04x %04x %u %s ", rmCarry, (unsigned)rm.eax,
+             (unsigned)rm.ebx, (unsigned)rm.ecx, (unsigned)rm.edx, rm.flags & 1, (LPSTR)before);
+    to = probeResult + lstrlen(probeResult);
+
+    for (i = 0; i < BUFFER; i++) {
+        wsprintf(to, "%02x", dos[i]);
+        to += 2;
+    }
+
+    probe(name, "real 6900", probeResult);
+}
+
 static void serial(LPCSTR name, unsigned function, unsigned drive)
 {
     unsigned char far *at = buffer;
@@ -99,6 +181,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     char name[8];
     unsigned i;
     unsigned j;
+    DWORD dos;
 
     probeOpen(OUTPUT);
 
@@ -109,6 +192,18 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
 
         nameOf(drives[i], name);
         serial(name, 0x6900, drives[i]);
+    }
+
+    dos = GlobalDosAlloc(BUFFER);
+    probe("real", "GlobalDosAlloc", dos ? "given" : "refused");
+
+    if (dos) {
+        for (i = 0; i < sizeof drives / sizeof drives[0]; i++) {
+            nameOf(drives[i], name);
+            realSerial(name, HIWORD(dos), (unsigned char far *)MAKELP(LOWORD(dos), 0), drives[i]);
+        }
+
+        GlobalDosFree(LOWORD(dos));
     }
 
     for (j = 0; j < BUFFER; j++) {
