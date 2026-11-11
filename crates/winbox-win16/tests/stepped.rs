@@ -469,6 +469,9 @@ const STEPPED: &[&str] = &[
     "enhanced/w386dpmi",
     "enhanced/w386lib",
     "enhanced/w386eip",
+    // DOS's 69h, refused (`drives-and-disks.md`).
+    "diskser",
+    "enhanced/diskser",
 ];
 
 /// The probes whose runs bring up USER's boxes, answered by the hand
