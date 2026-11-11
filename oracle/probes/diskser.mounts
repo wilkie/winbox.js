@@ -1,0 +1,4 @@
+# A: a 1.44 MB floppy image, D: a CD-ROM image: see diskser.c. The
+# recorder mounts a copy of the floppy, which 6901h may write.
+a: imgflop.img floppy
+d: imgcd.iso iso
