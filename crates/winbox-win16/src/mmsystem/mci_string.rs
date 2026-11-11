@@ -19,6 +19,10 @@
 //!   124h; nothing at all, 10Bh.
 //! * The text is nothing where the answer is an error or has no text.
 //!
+//! **Recorded** by `mcibang`, in 386 enhanced mode: `open type!file`, as
+//! Lode Runner: The Legend Returns opens its music, opens the file on the
+//! type's device; `MCI_OPEN` splits the word (`mci.rs`).
+//!
 //! Not recorded, and answered as MCI's documentation has them: a command
 //! there is none of (105h, as MMSYSTEM's own error for it), `notify`'s
 //! window, and a return buffer too small (10Ch).
@@ -334,9 +338,17 @@ impl Engine {
                 }
             }
 
-            // A name with a type is its element; alone, a file where it
-            // looks like one, and otherwise a device's type.
-            if flags & MCI_OPEN_TYPE != 0 || name.iter().any(|&byte| b".\\:".contains(&byte)) {
+            // A name with a type is its element; alone, it is the type,
+            // whatever it looks like, and `MCI_OPEN` finds a file's type by
+            // its extension, or splits `type!file` (`MMSYSTEM.DLL` seg5
+            // `0feb`-`1033`: with `MCI_OPEN_TYPE` among the flags the words
+            // gave, the name goes to `lpstrElementName` and
+            // `MCI_OPEN_ELEMENT` is set; else to `lpstrDeviceType`,
+            // `MCI_OPEN_TYPE` set and no element). **Recorded** by
+            // `mcibang`: `open sequencer!C:\...\BANG.mid alias song`, as
+            // Lode Runner: The Legend Returns opens its music, opens the
+            // file on the sequencer, where it was 119h.
+            if flags & MCI_OPEN_TYPE != 0 {
                 flags |= MCI_OPEN_ELEMENT;
 
                 let far = self.text(scratch, &name);

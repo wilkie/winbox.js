@@ -85,7 +85,6 @@ const MCIERR_DEVICE_TYPE_REQUIRED: u32 = 0x11f;
 const MCIERR_DEVICE_LOCKED: u32 = 0x120;
 const MCIERR_DUPLICATE_ALIAS: u32 = 0x121;
 const MCIERR_NULL_PARAMETER_BLOCK: u32 = 0x129;
-const MCIERR_NO_ELEMENT_ALLOWED: u32 = 0x131;
 const MCIERR_DEVICE_NOT_INSTALLED: u32 = 0x132;
 const MCIERR_DEVICE_LENGTH: u32 = 0x136;
 
@@ -404,13 +403,15 @@ impl Engine {
                         kind = Some(named);
                         flags |= MCI_OPEN_ELEMENT;
                     } else if let Some(text) = kind.clone().filter(|text| text.contains(&b'!')) {
-                        let mut pieces = text.split(|&byte| byte == b'!');
-                        let first = pieces.next().unwrap_or_default().to_vec();
-                        let part = pieces.next().unwrap_or_default().to_vec();
-
-                        if first.is_empty() {
-                            return Ok(MCIERR_NO_ELEMENT_ALLOWED);
-                        }
+                        // `type!file` (seg5 `26f0`-`277c`): the type the
+                        // words to the first `!`, which may be none, and
+                        // the file the rest. Where there is no rest the type
+                        // is left as it was given, `!` and all, which no
+                        // `[mci]` key names (107h); so is a type of nothing.
+                        // **Recorded** by `mcibang`.
+                        let bang = text.iter().position(|&byte| byte == b'!').unwrap_or(0);
+                        let first = text[..bang].to_vec();
+                        let part = text[bang + 1..].to_vec();
 
                         if !part.is_empty() {
                             if flags & MCI_OPEN_ALIAS == 0 && find(&system, task, &part) != 0 {
@@ -419,9 +420,8 @@ impl Engine {
 
                             element = Some(part);
                             flags |= MCI_OPEN_ELEMENT;
+                            kind = Some(first);
                         }
-
-                        kind = Some(first);
                     }
                 }
             }
@@ -449,6 +449,8 @@ impl Engine {
                 flags |= MCI_OPEN_ALIAS;
             }
         }
+
+        let named_device = device_name.clone();
 
         let (id, file, block, words_block, open_parms) = {
             let mut system = self.system();
@@ -560,8 +562,56 @@ impl Engine {
             device.type_table = type_table;
         }
 
+        // The driver is handed the caller's parameters with the type, the
+        // element and the alias MMSYSTEM found in their places, and they are
+        // put back as they were given after it (seg5 `26a8`-`26c5`,
+        // `275d`-`277c`, `27cc`-`27dd`, `283d`-`2866`).
+        let given_strings = {
+            let system = self.system();
+
+            [8, 0x0c, 0x10].map(|at| long_at(&system, parms.wrapping_add(at)))
+        };
+        let mut found = Vec::new();
+
+        {
+            let mut system = self.system();
+            let mut put = |at: u32, text: &[u8]| {
+                let (block, far) = system.scratch_block(text.len() as u32 + 1);
+                let mut bytes = text.to_vec();
+
+                bytes.push(0);
+                system.write_far(far, &bytes);
+                system.write_far(parms.wrapping_add(at), &far.to_le_bytes());
+                found.push(block);
+            };
+
+            if flags & MCI_OPEN_ELEMENT != 0 && given & MCI_OPEN_ELEMENT == 0 {
+                put(8, &kind.clone().unwrap_or_default());
+                put(0x0c, &element.clone().unwrap_or_default());
+            }
+
+            if flags & MCI_OPEN_ALIAS != 0
+                && given & MCI_OPEN_ALIAS == 0
+                && let Some(name) = &named_device
+            {
+                put(0x10, name);
+            }
+        }
+
         let answer =
             Box::pin(self.mci_send_command(id, MCI_OPEN_DRIVER, flags, parms)).await? & 0xffff;
+
+        {
+            let mut system = self.system();
+
+            for (at, far) in [8, 0x0c, 0x10].into_iter().zip(given_strings) {
+                system.write_far(parms.wrapping_add(at), &far.to_le_bytes());
+            }
+
+            for block in found {
+                system.free_scratch(block);
+            }
+        }
 
         if answer != 0 {
             Box::pin(self.mci_close(id, 0, 0, false)).await?;
