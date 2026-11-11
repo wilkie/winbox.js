@@ -17,10 +17,16 @@
 //!   adlibgap-trace.json`): the time read, the records formatted, written
 //!   and flushed. Each the part's time less the probe's own instructions
 //!   in it, which WinBox runs itself, the middle of ten.
+//! * `hdtime` and `cdread`, a file's reads and writes timed with
+//!   `timeGetTime` over half a second or a second of them at a fixed
+//!   80,000 a millisecond, in both modes: charged by their bytes, on that
+//!   clock alone (`faithful`).
 //!
 //! A call recorded on neither: the middle of the 37 recorded alone, 154
 //! [[inferred]]. The Super VGA's drawing and WinG are not here: only the
 //! VGA's recordings are run on this clock.
+
+use winbox_machine::FAITHFUL_INSTRUCTIONS_PER_MS;
 
 use crate::system::System;
 
@@ -133,10 +139,175 @@ pub fn disc_read(system: &mut System, disc: bool, bytes: usize) {
     }
 }
 
+/// Whether the clock is the faithful one: calls charged as recorded, at
+/// the recorder's fixed 80,000 a millisecond, where `hdtime`'s times hold.
+/// A file's reads and writes are charged by `file_read`, `huge_read` and
+/// `file_write` there, and as any other call on any other clock.
+pub fn faithful(system: &System) -> bool {
+    system.clock.measured_calls && system.clock.rate() == Some(FAITHFUL_INSTRUCTIONS_PER_MS)
+}
+
+/// The instructions DOSBox charges a read or write of DOS's of so many
+/// bytes, as measured, at 80,000 a millisecond. [[read out]] Its function
+/// 3Fh and 40h take 4 cycles a byte from the processor, but no more than
+/// are left before its next event (`dos.cpp` `modify_cycles`, from
+/// `DATA_TRANSFERS_TAKE_CYCLES`; `pic.cpp` `PIC_RunQueue`): the
+/// millisecond's end, or sooner, a timer's or the display's. So 4 a byte
+/// up to 1 KiB, and past 24 KiB some 55,000 whatever the size. Between,
+/// [[measured]] by `hdtime`: DOS's read in standard mode at each size, less
+/// Windows' own 728 (its time at 512 bytes and 1 KiB less 4 a byte), one
+/// read after another; taken in a line between two sizes.
+const TRANSFER: [(u32, f64); 10] = [
+    (512, 2051.0),
+    (1024, 4102.0),
+    (2048, 7619.0),
+    (4096, 14177.0),
+    (8192, 24008.0),
+    (16384, 35540.0),
+    (24576, 54917.0),
+    (32768, 55074.0),
+    (49152, 54838.0),
+    (65534, 55233.0),
+];
+
+/// DOSBox's charge for a transfer of `bytes`: 4 a byte under 512, then
+/// `TRANSFER` in a line between its sizes.
+fn transfer(bytes: u32) -> f64 {
+    if bytes < TRANSFER[0].0 {
+        return 4.0 * f64::from(bytes);
+    }
+
+    TRANSFER.windows(2).find(|pair| bytes <= pair[1].0).map_or(
+        TRANSFER[TRANSFER.len() - 1].1,
+        |pair| {
+            let ((low, at_low), (high, at_high)) = (pair[0], pair[1]);
+
+            at_low + (at_high - at_low) * f64::from(bytes - low) / f64::from(high - low)
+        },
+    )
+}
+
+/// Windows' own instructions for a read of DOS's in standard mode, beyond
+/// DOSBox's charge for its bytes (`hdtime`: `_lread`, `_hread` and DOS's
+/// 3Fh alike, 512 bytes and 1 KiB less 4 a byte, the middle 728).
+const READ_STANDARD: f64 = 728.0;
+
+/// A read of DOS's in 386 enhanced mode: so many instructions, and so many
+/// more a byte (`hdtime`: the three ways at ten sizes fitted, each within
+/// 130 [[inferred]]). DOSBox's charge for the bytes is not seen there: why
+/// is not read out.
+const READ_ENHANCED: (f64, f64) = (1116.0, 0.0657);
+
+/// Windows' own instructions for a write of DOS's, beyond DOSBox's charge
+/// for its bytes, in standard mode and in 386 enhanced mode (`hdtime`:
+/// `_lwrite` and DOS's 40h of 512 bytes less 4 a byte).
+const WRITE: [f64; 2] = [653.0, 941.0];
+
+/// `_llseek` in standard mode and in 386 enhanced mode (`hdtime`).
+const LLSEEK: [f64; 2] = [573.0, 496.0];
+
+fn enhanced(system: &System) -> bool {
+    system.mode == crate::system::Mode::Enhanced
+}
+
+/// One read of DOS's of `bytes`, from a file on any drive, on the faithful
+/// clock: Windows' own time and DOSBox's for the bytes. A disc's read in
+/// standard mode takes what the hard disk's does (`cdread`); in 386
+/// enhanced mode `disc_read` charges what it takes beyond.
+fn read_cost(system: &System, bytes: u32) -> f64 {
+    if enhanced(system) {
+        READ_ENHANCED.0 + READ_ENHANCED.1 * f64::from(bytes)
+    } else {
+        READ_STANDARD + transfer(bytes)
+    }
+}
+
+fn write_cost(system: &System, bytes: u32) -> f64 {
+    WRITE[usize::from(enhanced(system))] + transfer(bytes)
+}
+
+fn bytes_of(bytes: usize) -> u32 {
+    u32::try_from(bytes).unwrap_or(u32::MAX)
+}
+
+/// A read of DOS's of `bytes` -- `_lread`'s, or DOS's 3Fh a program asks
+/// for -- charged on the faithful clock.
+pub fn file_read(system: &mut System, bytes: usize) {
+    if faithful(system) {
+        let cost = read_cost(system, bytes_of(bytes));
+
+        system.clock.charge(cost);
+    }
+}
+
+/// A write of DOS's of `bytes`, charged on the faithful clock.
+pub fn file_write(system: &mut System, bytes: usize) {
+    if faithful(system) {
+        let cost = write_cost(system, bytes_of(bytes));
+
+        system.clock.charge(cost);
+    }
+}
+
+/// The reads or writes of DOS's that `_hread` and `_hwrite` make of
+/// `asked` bytes at the buffer's `offset`, `done` of them made: [[read
+/// out]] `KRNL286.EXE` seg1 `468c` and `KRNL386.EXE` seg1 `4dec`, each
+/// piece 8000h bytes, or to the segment's end where the offset is past
+/// 8000h, and no more than are left, until one makes fewer than it asked
+/// or none are left. Nought bytes asked is one piece of nought.
+pub fn pieces(offset: u16, asked: u32, done: u32) -> Vec<u32> {
+    let mut pieces = Vec::new();
+    let mut offset = u32::from(offset);
+    let mut left = asked;
+    let mut have = done;
+
+    loop {
+        let piece = if offset <= 0x8000 {
+            0x8000
+        } else {
+            0x1_0000 - offset
+        }
+        .min(left);
+        let made = piece.min(have);
+
+        pieces.push(made);
+
+        if made != piece || left == piece {
+            return pieces;
+        }
+
+        left -= piece;
+        have -= made;
+        offset = (offset + piece) & 0xffff;
+    }
+}
+
+/// `_hread`'s or `_hwrite`'s pieces charged on the faithful clock, as
+/// [`pieces`] makes them.
+pub fn huge_transfer(system: &mut System, write: bool, offset: u16, asked: u32, done: usize) {
+    if faithful(system) {
+        let cost = pieces(offset, asked, bytes_of(done))
+            .into_iter()
+            .map(|piece| {
+                if write {
+                    write_cost(system, piece)
+                } else {
+                    read_cost(system, piece)
+                }
+            })
+            .sum();
+
+        system.clock.charge(cost);
+    }
+}
+
 /// The instructions Windows runs for a call as it is made, its arguments
 /// on the stack at `stack` (the caller's return address first).
 pub fn before(system: &System, module: &str, name: &str, stack: u32) -> f64 {
     match (module, name) {
+        // Charged as their reads and writes are made, by their bytes.
+        ("KERNEL", "_lread" | "_HREAD" | "_lwrite" | "_HWRITE") if faithful(system) => 0.0,
+        ("KERNEL", "_llseek") if faithful(system) => LLSEEK[usize::from(enhanced(system))],
         ("USER", "PeekMessage") => {
             let flags = system.cpu.bus.read16(stack + 4);
 
@@ -231,7 +402,10 @@ fn wsprintf(system: &System, stack: u32) -> f64 {
 mod tests {
     use winbox_machine::{Clock, FAITHFUL_INSTRUCTIONS_PER_MS};
 
-    use super::{DISC_READ, disc_read};
+    use super::{
+        DISC_READ, LLSEEK, READ_ENHANCED, READ_STANDARD, TRANSFER, UNRECORDED, WRITE, before,
+        disc_read, file_read, file_write, huge_transfer, pieces, transfer,
+    };
     use crate::system::{Mode, System};
 
     /// A disc's read of 64 KiB costs what `cdread` measured beyond the hard
@@ -257,5 +431,130 @@ mod tests {
         assert!(charged(Mode::Enhanced, true, false) == 0.0);
         assert!(charged(Mode::Standard, true, true) == 0.0);
         assert!(charged(Mode::Enhanced, false, true) == 0.0);
+    }
+
+    fn close(a: f64, b: f64) -> bool {
+        (a - b).abs() < 1e-6
+    }
+
+    /// What `charge` costs a system in `mode` on a clock at `rate`, calls
+    /// charged as recorded or not.
+    fn charged(mode: Mode, rate: f64, measured: bool, charge: impl FnOnce(&mut System)) -> f64 {
+        let mut system = System::new();
+
+        system.mode = mode;
+        system.clock = Clock::virtual_at(rate);
+        system.clock.measured_calls = measured;
+        charge(&mut system);
+        system.clock.charged()
+    }
+
+    /// DOSBox's charge for a transfer: 4 a byte under 512, each size
+    /// `hdtime` measured as measured, and in a line between.
+    #[test]
+    fn a_transfer_is_four_a_byte_then_as_measured() {
+        assert!(close(transfer(0), 0.0));
+        assert!(close(transfer(400), 1600.0));
+        assert!(close(transfer(768), (2051.0 + 4102.0) / 2.0));
+
+        for (bytes, instructions) in TRANSFER {
+            assert!(close(transfer(bytes), instructions));
+        }
+
+        assert!(close(transfer(20480), (35540.0 + 54917.0) / 2.0));
+        assert!(close(transfer(65535), 55233.0));
+    }
+
+    /// `_hread`'s pieces, as `KRNL386.EXE` seg1 `4dec` makes them: 8000h
+    /// at a time, or to the segment's end; stopped at a short one.
+    #[test]
+    fn a_huge_read_is_made_in_pieces_of_32_kib() {
+        assert_eq!(pieces(0, 49152, 49152), [32768, 16384]);
+        assert_eq!(pieces(0, 65534, 65534), [32768, 32766]);
+        assert_eq!(pieces(0, 2048, 2048), [2048]);
+        assert_eq!(pieces(0x9000, 0x10000, 0x10000), [0x7000, 0x8000, 0x1000]);
+        assert_eq!(pieces(0x8000, 0x10000, 0x10000), [0x8000, 0x8000]);
+        assert_eq!(pieces(0, 65534, 40000), [32768, 7232]);
+        assert_eq!(pieces(0, 65534, 32768), [32768, 0]);
+        assert_eq!(pieces(0, 0, 0), [0]);
+    }
+
+    /// A read from the hard disk on the faithful clock costs Windows' own
+    /// time and DOSBox's for its bytes in standard mode, and the fit in
+    /// 386 enhanced mode; `_hread` each of its pieces. Nothing on the
+    /// survey's clock, nor at the sound card's 3,000 a millisecond, where
+    /// calls are charged as recorded too.
+    #[test]
+    fn a_read_is_charged_on_the_faithful_clock() {
+        let faithful = FAITHFUL_INSTRUCTIONS_PER_MS;
+        let read = |mode, bytes| charged(mode, faithful, true, |s| file_read(s, bytes));
+        let huge = |mode, bytes| {
+            charged(mode, faithful, true, |s| {
+                huge_transfer(s, false, 0, bytes, bytes as usize);
+            })
+        };
+
+        assert!(close(read(Mode::Standard, 2048), READ_STANDARD + 7619.0));
+        assert!(close(read(Mode::Standard, 65534), READ_STANDARD + 55233.0));
+        assert!(close(
+            read(Mode::Enhanced, 2048),
+            READ_ENHANCED.0 + READ_ENHANCED.1 * 2048.0
+        ));
+        assert!(close(
+            huge(Mode::Standard, 49152),
+            2.0 * READ_STANDARD + 55074.0 + 35540.0
+        ));
+        assert!(close(
+            huge(Mode::Enhanced, 65534),
+            2.0 * READ_ENHANCED.0 + READ_ENHANCED.1 * 65534.0
+        ));
+        assert!(charged(Mode::Standard, faithful, false, |s| file_read(s, 2048)) == 0.0);
+        assert!(charged(Mode::Standard, 3000.0, true, |s| file_read(s, 2048)) == 0.0);
+    }
+
+    /// A write costs Windows' own time for it in its mode and DOSBox's for
+    /// its bytes, on the faithful clock only.
+    #[test]
+    fn a_write_is_charged_on_the_faithful_clock() {
+        let faithful = FAITHFUL_INSTRUCTIONS_PER_MS;
+
+        assert!(close(
+            charged(Mode::Standard, faithful, true, |s| file_write(s, 512)),
+            WRITE[0] + 2051.0
+        ));
+        assert!(close(
+            charged(Mode::Enhanced, faithful, true, |s| file_write(s, 8192)),
+            WRITE[1] + 24008.0
+        ));
+        assert!(close(
+            charged(Mode::Enhanced, faithful, true, |s| {
+                huge_transfer(s, true, 0, 65534, 65534);
+            }),
+            2.0 * WRITE[1] + transfer(32768) + transfer(32766)
+        ));
+        assert!(charged(Mode::Standard, 3000.0, true, |s| file_write(s, 512)) == 0.0);
+    }
+
+    /// On the faithful clock a read or write is charged by its bytes, not
+    /// as the call is made, and `_llseek` as `hdtime` timed it; at the
+    /// sound card's rate as before.
+    #[test]
+    fn the_file_calls_cost_by_clock() {
+        let mut system = System::new();
+
+        system.clock = Clock::virtual_at(FAITHFUL_INSTRUCTIONS_PER_MS);
+        system.clock.measured_calls = true;
+
+        for name in ["_lread", "_HREAD", "_lwrite", "_HWRITE"] {
+            assert!(before(&system, "KERNEL", name, 0) == 0.0);
+        }
+
+        assert!(close(before(&system, "KERNEL", "_llseek", 0), LLSEEK[0]));
+        system.mode = Mode::Enhanced;
+        assert!(close(before(&system, "KERNEL", "_llseek", 0), LLSEEK[1]));
+        system.clock = Clock::virtual_at(3000.0);
+        system.clock.measured_calls = true;
+        assert!(close(before(&system, "KERNEL", "_lread", 0), UNRECORDED));
+        assert!(close(before(&system, "KERNEL", "_llseek", 0), 490.0));
     }
 }

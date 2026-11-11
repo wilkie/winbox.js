@@ -450,10 +450,14 @@ fn lwrite(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
             file.truncate(at);
         }
 
+        crate::call_costs::file_write(system, 0);
         return Ok(Answer::Word(0));
     }
 
-    Ok(Answer::Word(file.write(&bytes) as u16))
+    let written = file.write(&bytes);
+
+    crate::call_costs::file_write(system, written);
+    Ok(Answer::Word(written as u16))
 }
 
 fn lclose(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

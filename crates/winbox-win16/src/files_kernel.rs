@@ -421,6 +421,7 @@ pub fn lread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let at = system.linear(buffer);
 
     crate::call_costs::disc_read(system, disc, bytes.len());
+    crate::call_costs::file_read(system, bytes.len());
 
     // DOS's read with DS:DX the buffer: on from it past offset FFFFh, where
     // its block goes on (`lwrhuge`).
@@ -465,6 +466,7 @@ pub fn hread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let at = system.linear(buffer);
 
     crate::call_costs::disc_read(system, disc, bytes.len());
+    crate::call_costs::huge_transfer(system, false, buffer as u16, count, bytes.len());
 
     system.cpu.bus.write(at, &bytes);
     Ok(Answer::Dword(bytes.len() as u32))
@@ -482,8 +484,10 @@ pub fn hwrite(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
     let bytes = system.cpu.bus.read(system.linear(buffer), count as usize);
     let file = system.files.resolve(handle).expect("an open file");
+    let written = file.write(&bytes);
 
-    Ok(Answer::Dword(file.write(&bytes) as u32))
+    crate::call_costs::huge_transfer(system, true, buffer as u16, count, written);
+    Ok(Answer::Dword(written as u32))
 }
 
 /// Bytes copied, as many as 2 GB, across segments, as if through a
