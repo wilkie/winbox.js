@@ -79,12 +79,12 @@ The two modes run the same KERNEL, USER, GDI and drivers. What a program can tel
 
 The DPMI host is DOSX in standard mode and WIN386's virtual machine manager in enhanced mode. Both say version 0.90.
 
-[[read out]] DOSX dispatches INT 31h through a table of function numbers and handlers (`DOSX.EXE`, the table at 6342h in its image, which starts 200h into the file; the dispatcher at 641Ah). Its functions:
+[[read out]] DOSX dispatches INT 31h through a table of function numbers and handlers (`DOSX.EXE`, the table at 186Bh:2A80h of its unpacked image, the dispatcher at 186Bh:2B56h; [[topic:dpmi-functions]] says how its places are named). Its functions:
 
 - **Answered:** 0000h-0003h, 0006h-000Dh, 0100h-0102h, 0200h-0205h, 0300h-0304h, 0400h, 0500h-0503h, 0900h-0902h and 0B00h-0B03h.
 - **Carry clear, nothing done:** 0004h and 0005h (0.9's undocumented lock and unlock of a selector), 0600h-0603h (locking: nothing pages), 0702h and 0703h, and 0800h. With no paging, a physical address is already the linear one, so 0800h gives BX:CX back as it came. 0604h answers a page of 1000h bytes.
 - **Refused, AX nought and the carry set:** 0305h, 0306h, 0700h, 0701h and 0A00h.
-- **Anything else** is not in the table. The dispatcher then takes its handler from the word at 2B89h of its own segment. That word lies inside the refusing handler's first instruction, 0012h, which is DOSX's own start-up code ([[read out]]). [[measured]] DOSX never returns from DPMI 1.0's 000Eh: under DOSBox the emulator itself stops ([[probe:dpmiout]]).
+- **Anything else** is not in the table. The dispatcher then takes its handler from the word at 2B89h of its own segment. That word lies inside the refusing handler's first instruction, 0012h, which is within DOSX's own start-up code ([[read out]]). [[measured]] DOSX never returns from DPMI 1.0's 000Eh: under DOSBox the emulator itself stops ([[probe:dpmiout]]).
 - **What ends Windows.** 0503h faults inside DOSX whatever the block, and so do 0502h and 0101h given nought: Windows goes back to DOS with "Standard Mode: Fault in MS-DOS Extender." ([[read out]] and [[measured]], [[topic:dpmi-functions]], "Windows ends").
 
 [[measured]] [[probe:enhmode]] calls each function with harmless arguments, in both modes:
@@ -210,6 +210,7 @@ Phase 2 after its first answers, and phase 4's Win32s; what phase 4's Win386 lea
 - KERNEL's descriptor table growing in enhanced mode (seg1 `1ed4`-`1f0d`), the 1000h [[probe:galimit]] shows, and the first megabyte's selectors in enhanced mode's order ([[probe:kconst]]). Both wait on WinBox's selectors being KERNEL's, or on a program that depends on them; `enhanced/galimit` and `enhanced/kconst` are replayed once the knowledge base tells the modes' records apart.
 - The largest block and `GlobalCompact`'s figure in enhanced mode before their limit are taken from DPMI 0500h's largest block ([[inferred]]); no call shows them below FF0000h.
 - The corpus is not yet surveyed in enhanced mode.
+- Paging: WIN386 faults where it has no page present, and WinBox has no pages. A design, not yet built, is [[guide:paging]].
 
 - What KERNEL does with a DOS program in each mode (`KRNL386.EXE` seg2 `0506`-`0529`), and the routine it calls without paging (seg1 `b4eb`), are not read further. Nor are GDI's `FinalGDIInit`, TOOLHELP's or COMM's branches.
 - WIN386's own INT 31h dispatcher is not read out: what it answers is what the probes measured ([[topic:dpmi-functions]]).
