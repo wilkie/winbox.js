@@ -485,6 +485,8 @@ const STEPPED: &[&str] = &[
     "enhanced/pglock",
     "enhanced/pgheap",
     "enhanced/pgw386",
+    "pgfree",
+    "enhanced/pgfree",
 ];
 
 /// The probes whose runs bring up USER's boxes, answered by the hand

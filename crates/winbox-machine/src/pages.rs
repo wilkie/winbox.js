@@ -76,7 +76,11 @@ impl std::fmt::Debug for Pages {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let present: u32 = self.present.iter().map(|word| word.count_ones()).sum();
 
-        write!(f, "Pages {{ {present} present, {} own blocks }}", self.own.len())
+        write!(
+            f,
+            "Pages {{ {present} present, {} own blocks }}",
+            self.own.len()
+        )
     }
 }
 
@@ -328,7 +332,9 @@ mod tests {
         now[4] = Some(4);
         pages.free_own(base, &now);
 
-        let left: Vec<bool> = (0..6).map(|page| pages.present(base + page * 0x1000)).collect();
+        let left: Vec<bool> = (0..6)
+            .map(|page| pages.present(base + page * 0x1000))
+            .collect();
 
         assert_eq!(left, [false, false, true, false, true, false]);
         assert!(!pages.lockable(base + 0x2000, 0x1000));
@@ -342,9 +348,14 @@ mod tests {
         pages.own(base, vec![Some(1); 8], 0x10000);
         pages.resize_own(base, 2, &[], &[Some(2); 6]);
 
-        let left: Vec<bool> = (0..9).map(|page| pages.present(base + page * 0x1000)).collect();
+        let left: Vec<bool> = (0..9)
+            .map(|page| pages.present(base + page * 0x1000))
+            .collect();
 
-        assert_eq!(left, [true, true, false, true, true, true, true, true, false]);
+        assert_eq!(
+            left,
+            [true, true, false, true, true, true, true, true, false]
+        );
         pages.resize_own(base, 12, &[Some(1); 10], &[]);
         assert!(pages.present(base + 0xb000));
         assert!(!pages.present(base + 0xc000));

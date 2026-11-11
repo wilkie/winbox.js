@@ -7978,8 +7978,8 @@
    },
    "free after": {
     "total": 2,
-    "agreed": 1,
-    "disagreed": 1,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7999,8 +7999,7 @@
    }
   },
   "gaps": {
-   "time": "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
-   "free after": "0500h's largest free block does not shrink as 0501h gives a block (kb/guides/paging.md)"
+   "time": "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)"
   }
  },
  "enhanced/pgbox": {
@@ -8075,6 +8074,63 @@
    "read": "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)"
   }
  },
+ "enhanced/pgfree": {
+  "probe": "pgfree",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 34,
+  "functions": {
+   "free": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "heap": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "largest": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "lock": {
+    "total": 7,
+    "agreed": 6,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "resize": {
+    "total": 8,
+    "agreed": 5,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "where": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "free": "in enhanced mode a freed 0501h block's pages do not fault, the set of present pages kept, not enforced (kb/guides/paging.md, phase 2); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not",
+   "heap": "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a freed block's pages do not fault: the set is kept, not enforced (kb/guides/paging.md)",
+   "where": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
+   "resize": "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the pages 0503h cuts off do not fault, the set kept, not enforced (kb/guides/paging.md)",
+   "lock": "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block's pages do not fault"
+  }
+ },
  "enhanced/pgheap": {
   "probe": "pgheap",
   "display": "vga",
@@ -8126,7 +8182,7 @@
   },
   "gaps": {
    "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
-   "after": "WinBox has no pages (kb/guides/paging.md): a freed block of 1 MiB keeps its pages, where KERNEL gives them back"
+   "after": "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block of 1 MiB keeps its pages, where KERNEL gives them back"
   }
  },
  "enhanced/pglock": {
@@ -8144,8 +8200,8 @@
    },
    "lock": {
     "total": 8,
-    "agreed": 4,
-    "disagreed": 4,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8179,8 +8235,7 @@
    }
   },
   "gaps": {
-   "setup": "WinBox has no pages (kb/guides/paging.md): the page past a 0501h block does not fault",
-   "lock": "0600h and 0601h of a range reaching the page past a 0501h block are answered, where WIN386 refuses them (kb/guides/paging.md)",
+   "setup": "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): the page past a 0501h block does not fault",
    "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)"
   }
  },
@@ -8192,8 +8247,8 @@
   "functions": {
    "dpmi": {
     "total": 14,
-    "agreed": 12,
-    "disagreed": 2,
+    "agreed": 10,
+    "disagreed": 4,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8221,7 +8276,7 @@
   },
   "gaps": {
    "layout": "where things lie: WinBox's segments and blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's",
-   "dpmi": "0600h and 0601h of a range that wraps past 4 GiB are answered, where WIN386 refuses them",
+   "dpmi": "0600h and 0601h of FFFFF000h, WinBox's own local table, are answered, where WIN386 refuses them; of the page past a 0501h block, another's in Windows and no one's in WinBox, refused (kb/guides/paging.md)",
    "touch": "WinBox has no pages: a read where WIN386 has no page present does not fault",
    "scan": "WinBox has no pages: a read where WIN386 has no page present does not fault"
   }
@@ -24896,8 +24951,8 @@
    },
    "free after": {
     "total": 2,
-    "agreed": 1,
-    "disagreed": 1,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24917,8 +24972,7 @@
    }
   },
   "gaps": {
-   "time": "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
-   "free after": "0500h's largest free block does not shrink as 0501h gives a block (kb/guides/paging.md)"
+   "time": "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)"
   }
  },
  "pgbox": {
@@ -24990,6 +25044,47 @@
   },
   "gaps": {
    "read": "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)"
+  }
+ },
+ "pgfree": {
+  "probe": "pgfree",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 14,
+  "functions": {
+   "free": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "heap": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "resize": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "where": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "free": "in enhanced mode a freed 0501h block's pages do not fault, the set of present pages kept, not enforced (kb/guides/paging.md, phase 2); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not",
+   "heap": "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a freed block's pages do not fault: the set is kept, not enforced (kb/guides/paging.md)",
+   "where": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)"
   }
  },
  "pgheap": {

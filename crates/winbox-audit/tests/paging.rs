@@ -90,13 +90,18 @@ const CASES: &[(&str, &str)] = &[
     ("pgfree:resize:base after 12 pages", GROWN),
 ];
 
-const LAYOUT: &str = "where things lie: WinBox's addresses are its own (descriptor index times 64 KiB)";
-const NEIGHBOUR: &str = "the page past a 0501h block: another's in Windows, no one's in WinBox's 64 KiB";
-const OWN_TABLE: &str = "FFFFF000h is WinBox's own local descriptor table, present, where Windows has nothing";
+const LAYOUT: &str =
+    "where things lie: WinBox's addresses are its own (descriptor index times 64 KiB)";
+const NEIGHBOUR: &str =
+    "the page past a 0501h block: another's in Windows, no one's in WinBox's 64 KiB";
+const OWN_TABLE: &str =
+    "FFFFF000h is WinBox's own local descriptor table, present, where Windows has nothing";
 const BOX: &str = "no handler of the program's: KERNEL's box for a page fault is phase 4's, and the audit lets the read through";
-const READ_ALONE: &str = "a page read alone keeps its frame in Windows; WinBox does not see a read, and drops the page";
+const READ_ALONE: &str =
+    "a page read alone keeps its frame in Windows; WinBox does not see a read, and drops the page";
 const SAME_BYTES: &str = "a page written with the bytes an earlier block left at the same WinBox address: no change WinBox can see, so the page is dropped";
-const GROWN: &str = "0503h grew the block in place in Windows, the pages after it free; WinBox moves it";
+const GROWN: &str =
+    "0503h grew the block in place in Windows, the pages after it free; WinBox moves it";
 
 /// A record's case, where it has one.
 fn case_of(probe: &str, function: &str, args: &str) -> Option<(&'static str, &'static str)> {
@@ -179,7 +184,11 @@ fn paging_probes_agree_with_the_set_enforced() {
                 miss.at,
                 miss.cs,
                 miss.ip,
-                if miss.handled { ", to the handler" } else { ", let through" }
+                if miss.handled {
+                    ", to the handler"
+                } else {
+                    ", let through"
+                }
             );
         }
     }

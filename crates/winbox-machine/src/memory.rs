@@ -179,9 +179,15 @@ impl Memory {
         };
         let pages = length.div_ceil(PAGE_SIZE).max(1) as usize;
         let (grown, cut) = if pages > had {
-            (self.prints(base + ((had as u32) << PAGE_BITS), pages - had), Vec::new())
+            (
+                self.prints(base + ((had as u32) << PAGE_BITS), pages - had),
+                Vec::new(),
+            )
         } else {
-            (Vec::new(), self.prints(base + ((pages as u32) << PAGE_BITS), had - pages))
+            (
+                Vec::new(),
+                self.prints(base + ((pages as u32) << PAGE_BITS), had - pages),
+            )
         };
 
         self.pages.resize_own(base, pages, &grown, &cut);

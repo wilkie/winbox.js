@@ -1217,7 +1217,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386",
+    "pglock", "pgheap", "pgw386", "pgfree",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1984,7 +1984,7 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     (
         "enhanced/pgtouch:dpmi",
-        "0600h and 0601h of a range that wraps past 4 GiB are answered, where WIN386 refuses them",
+        "0600h and 0601h of FFFFF000h, WinBox's own local table, are answered, where WIN386 refuses them; of the page past a 0501h block, another's in Windows and no one's in WinBox, refused (kb/guides/paging.md)",
     ),
     (
         "enhanced/pgtouch:touch",
@@ -2023,10 +2023,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)",
     ),
     (
-        "pgbig:free after",
-        "0500h's largest free block does not shrink as 0501h gives a block (kb/guides/paging.md)",
-    ),
-    (
         "pgbig:time",
         "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
     ),
@@ -2036,11 +2032,7 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     (
         "enhanced/pglock:setup",
-        "WinBox has no pages (kb/guides/paging.md): the page past a 0501h block does not fault",
-    ),
-    (
-        "enhanced/pglock:lock",
-        "0600h and 0601h of a range reaching the page past a 0501h block are answered, where WIN386 refuses them (kb/guides/paging.md)",
+        "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): the page past a 0501h block does not fault",
     ),
     (
         "pgheap:layout",
@@ -2048,7 +2040,30 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     (
         "enhanced/pgheap:after",
-        "WinBox has no pages (kb/guides/paging.md): a freed block of 1 MiB keeps its pages, where KERNEL gives them back",
+        "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block of 1 MiB keeps its pages, where KERNEL gives them back",
+    ),
+    // `pgfree`: which pages of a freed block still read. With the set
+    // enforced, the paging audit (`crates/winbox-audit`) agrees but for
+    // its named cases.
+    (
+        "pgfree:free",
+        "in enhanced mode a freed 0501h block's pages do not fault, the set of present pages kept, not enforced (kb/guides/paging.md, phase 2); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not",
+    ),
+    (
+        "pgfree:heap",
+        "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a freed block's pages do not fault: the set is kept, not enforced (kb/guides/paging.md)",
+    ),
+    (
+        "pgfree:where",
+        "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pgfree:resize",
+        "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the pages 0503h cuts off do not fault, the set kept, not enforced (kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pgfree:lock",
+        "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block's pages do not fault",
     ),
 ];
 
