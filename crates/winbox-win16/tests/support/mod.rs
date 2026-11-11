@@ -1216,7 +1216,7 @@ pub fn answers<'a>(recorded: &[[String; 3]], records: &'a [[String; 3]]) -> Vec<
 pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
-    "w386lib", "w386box", "w386eip",
+    "w386lib", "w386box", "w386eip", "diskser",
 ];
 
 /// Functions a module declares but answers with a stub: their records are

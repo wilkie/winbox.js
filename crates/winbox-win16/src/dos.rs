@@ -431,6 +431,20 @@ impl System {
                 }
             },
             0x5b => Some(self.create(true)),
+            // A disk's serial number, label and file system, got (AL 0) or
+            // set (AL 1) through DS:DX: neither KERNEL nor DOSX translates
+            // the buffer (`KRNL386.EXE` seg1 `1a5a`'s 69h is `1bc7`, the
+            // vector kept at `[cs:3Ch]`; DOSX's table at `d0h` of its
+            // protected-mode segment has nought for 69h), and DOSBox answers
+            // 6900h with the carry set and nothing else, whatever the drive
+            // (`dos.cpp` 1033-1039): AX stays 6900h and the buffer as it was
+            // (**recorded** by `diskser`, in both modes). DOSBox stops the
+            // machine at 6901h, or any other AL (1040-1043), a stop no
+            // program sees past; WinBox answers it as 6900h.
+            0x69 => {
+                self.cpu.flags |= CARRY;
+                None
+            }
             0x6c => Some(self.extended_open()),
             _ => match ax {
                 0x3305 => {
@@ -1670,7 +1684,7 @@ impl Searches {
 
 #[cfg(test)]
 mod tests {
-    use winbox_cpu::{AX, CX, DX};
+    use winbox_cpu::{AX, BX, CX, DX};
     use winbox_machine::days_from_civil;
 
     use crate::system::System;
@@ -1690,5 +1704,29 @@ mod tests {
         assert_eq!(system.cpu.regs[DX], 0x0919);
         assert_eq!(system.cpu.regs[AX] & 0xff, 5);
         assert_eq!(system.date(), [2026, 9, 25, 12, 0, 0, 5]);
+    }
+
+    /// INT 21h function 69h, a disk's serial number got or set, sets the
+    /// carry and leaves every register as it was, whatever the drive in BL,
+    /// as DOSBox does under Windows (`diskser`): AX stays 6900h.
+    #[test]
+    fn refuses_the_serial_number_leaving_the_registers() {
+        for (ax, drive) in [(0x6900, 0), (0x6900, 1), (0x6900, 3), (0x6900, 27), (0x6901, 1)] {
+            let mut system = System::new();
+
+            system.cpu.flags &= !super::CARRY;
+            system.cpu.regs[AX] = ax;
+            system.cpu.regs[BX] = drive;
+            system.cpu.regs[CX] = 0x0c0c;
+            system.cpu.regs[DX] = 0x0186;
+            system.dos_call().unwrap();
+
+            assert_eq!(system.cpu.flags & super::CARRY, super::CARRY);
+            assert_eq!(system.cpu.regs[AX], ax);
+            assert_eq!(system.cpu.regs[BX], drive);
+            assert_eq!(system.cpu.regs[CX], 0x0c0c);
+            assert_eq!(system.cpu.regs[DX], 0x0186);
+            assert!(system.unanswered_dos.is_empty());
+        }
     }
 }
