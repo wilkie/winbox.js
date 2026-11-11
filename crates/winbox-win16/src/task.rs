@@ -101,8 +101,11 @@ impl System {
             self.read_drivers();
         }
 
-        // The floating-point unit, the coprocessor's or WIN87EM's emulator's.
-        self.cpu.fpu = Some(winbox_cpu::X87::default());
+        // The floating-point unit, the coprocessor's or WIN87EM's emulator's:
+        // the machine's, made with the first task and shared by the others.
+        if self.cpu.fpu.is_none() {
+            self.cpu.fpu = Some(winbox_cpu::X87::default());
+        }
 
         if !self.descriptors.used(IDT_SEGMENT) {
             self.descriptors

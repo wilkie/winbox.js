@@ -329,6 +329,9 @@ const UNEMULATED: u16 = 0x0040;
 /// operation.
 const SQUARE_ROOT_NEGATIVE: u16 = 0x0080;
 const INVALID: u16 = 0x0001;
+/// A division by nought: gathered with the invalid operation for nought by
+/// nought too (`1081`, from the table at `a48`).
+const ZERO_DIVIDE: u16 = 0x0004;
 /// The stack's faults, with the invalid operation (`260`, `270`, `e77`).
 const STACK_OVERFLOW: u16 = 0x0200;
 const STACK_UNDERFLOW: u16 = 0x0400;
@@ -470,7 +473,7 @@ fn report_code(unmasked: u16) -> u16 {
         (SQUARE_ROOT_NEGATIVE, 0x88),
         (0x0100, 0x89),
         (INVALID, 0x81),
-        (0x0004, 0x83),
+        (ZERO_DIVIDE, 0x83),
         (0x0008, 0x84),
         (0x0010, 0x85),
         (0x0020, 0x86),
@@ -480,11 +483,26 @@ fn report_code(unmasked: u16) -> u16 {
     .map_or(0x87, |&(_, code)| code)
 }
 
+/// Whether an instruction is a division with ST(0), one of its operands,
+/// nought: one that raises the invalid operation divides nought by nought.
+fn divides_nought(system: &System, opcode: u8, modrm: u8) -> bool {
+    matches!(opcode, D8 | DA | DC | DE)
+        && (modrm >> 3) & 6 == 6
+        && system
+            .cpu
+            .fpu
+            .as_ref()
+            .is_some_and(|fpu| holds(fpu, 0) && fpu.registers[top(fpu)] == 0.0)
+}
+
+/// The physical register `ST(0)` is.
+fn top(fpu: &X87) -> usize {
+    usize::from((fpu.status & TOP) >> 11)
+}
+
 /// Whether `ST(i)` holds a value.
 fn holds(fpu: &X87, i: usize) -> bool {
-    let top = usize::from((fpu.status & TOP) >> 11);
-
-    !fpu.empty[(top + i) & 7]
+    !fpu.empty[(top(fpu) + i) & 7]
 }
 
 /// `ST(i)` taken out of the stack, those above it moved down over it.
@@ -588,6 +606,7 @@ pub(crate) fn emulate(system: &mut System, vector: u8) -> Result<Option<u16>, Ex
         }
         Carried::As { opcode, modrm, pop } => {
             let before = fpu_status(system) & 0xff;
+            let nought_by_nought = divides_nought(system, opcode, modrm);
 
             set_unit_status(system, fpu_status(system) & !0xff);
             system.cpu.escape(opcode, modrm, segment)?;
@@ -607,6 +626,13 @@ pub(crate) fn emulate(system: &mut System, vector: u8) -> Result<Option<u16>, Ex
 
                 if opcode == D9 && modrm == 0xfa && raised & UNIT_INVALID != 0 {
                     word |= SQUARE_ROOT_NEGATIVE;
+                }
+
+                // WIN87EM's division takes nought by nought as a division
+                // by nought as well as invalid (seg1 `1081`), where the
+                // unit, as the 387, takes it as invalid alone.
+                if nought_by_nought && raised & UNIT_INVALID != 0 {
+                    word |= ZERO_DIVIDE;
                 }
             }
 

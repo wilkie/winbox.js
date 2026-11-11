@@ -12,7 +12,7 @@ use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-use winbox_cpu::{Segment, X87};
+use winbox_cpu::Segment;
 use winbox_machine::TimerId;
 
 use crate::engine::Wait;
@@ -30,7 +30,14 @@ pub struct Context {
     ip: u32,
     flags: u16,
     segments: [Segment; 6],
-    fpu: Option<X87>,
+    /// Its control word for the coprocessor, which KERNEL keeps in the
+    /// task's database at 14h: stored as the task gives the processor up,
+    /// and loaded, the exceptions cleared, as it takes it again, where
+    /// SYSTEM's `Get80x87SaveSize` answers a size (`KRNL386.EXE` seg1
+    /// `8216`-`8220`, `818b`-`8195`). The unit is the machine's, its stack
+    /// shared, as WIN87EM's state is without a coprocessor
+    /// ([[probe:fptask]], [[probe:fptsk87]]).
+    control: u16,
     depth: usize,
     transfer_area: (u16, u16),
     error_mode: u16,
@@ -317,7 +324,7 @@ impl System {
             ip: cpu.ip,
             flags: cpu.flags,
             segments: cpu.segments,
-            fpu: cpu.fpu.clone(),
+            control: cpu.fpu.as_ref().map_or(0, |fpu| fpu.control),
             depth: self.depth,
             transfer_area: self.transfer_area,
             error_mode: self.error_mode,
@@ -334,7 +341,6 @@ impl System {
         self.cpu.flags = context.flags;
         self.cpu.segments = context.segments;
         self.refresh_stale_segments();
-        self.cpu.fpu = context.fpu;
         self.depth = context.depth;
         self.transfer_area = context.transfer_area;
         self.error_mode = context.error_mode;
@@ -362,7 +368,12 @@ impl System {
         self.depth = 0;
 
         let started = make(self);
-        let theirs = self.take_context();
+        let mut theirs = self.take_context();
+
+        // A task's database is made noughts (`KRNL386.EXE` seg2 `2154`-
+        // `215e`): its control word is nought until it first gives the
+        // processor up.
+        theirs.control = 0;
 
         self.put_context(mine);
         self.task_handle = task_handle;
@@ -439,13 +450,30 @@ impl System {
             }
 
             if let Some(context) = self.scheduler.slots[slot].saved.take() {
+                let control = context.control;
+
                 self.put_context(*context);
+                self.unit_switched_in(control);
             }
 
             self.task_handle = self.scheduler.slots[slot].handle;
             self.scheduler.current = Some(slot);
             self.task_ran(self.task_handle);
             return;
+        }
+    }
+
+    /// The coprocessor as a task takes the processor again: `FNCLEX`, and
+    /// its control word loaded (`KRNL386.EXE` seg1 `818b`-`8195`). Without
+    /// a coprocessor, nothing: WIN87EM's state is its one data segment's.
+    fn unit_switched_in(&mut self, control: u16) {
+        if !self.coprocessor {
+            return;
+        }
+
+        if let Some(fpu) = self.cpu.fpu.as_mut() {
+            fpu.status &= !0x80ff;
+            fpu.control = control;
         }
     }
 

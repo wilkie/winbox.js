@@ -1951,13 +1951,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "enhanced/kintrnl:winoldap",
         "KERNEL's WinOldAp hooks answer nought and keep no list in enhanced mode",
     ),
-    // WIN87EM's own arithmetic records the precision exception, 20h, in its
-    // status word, where an `FSQRT` or `FISTP` rounds; WinBox's emulator
-    // runs on the processor's unit, which holds doubles and records none.
-    (
-        "fpemu:word",
-        "the precision exception WIN87EM's arithmetic records, the unit not: 1 of 2 records",
-    ),
     // `seglim`: DOSBox 0.74 checks no segment's limit in protected mode, an
     // ordinary one's (`up16`) or one that expands down, nor CS's for a
     // fetch. WinBox's processor faults as the Intel 80386 manual has it

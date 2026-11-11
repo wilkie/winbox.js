@@ -5,6 +5,14 @@
 //! the JavaScript core hold them, and exceptions are recorded as masked ones,
 //! never raised.
 //!
+//! The precision exception is recorded where a result the unit holds, or
+//! stores, is not the exact one: the arithmetic, the square root, `FSCALE`,
+//! `FRNDINT`, and a store as a single or as an integer. Each is told
+//! exactly, from the operands and the result. The loads and the constants
+//! raise none, as the 387's do not, though a double rounds what a long
+//! integer, an eighty-bit value or pi holds. The transcendental
+//! instructions are not looked at.
+//!
 //! The host turns it on ([`Cpu::fpu`]); off, an `ESC` is the
 //! host's, as it is to the hybrid beside the JavaScript core, which keeps
 //! its own unit.
@@ -26,6 +34,7 @@ const ROUND_CHOP: u16 = 3;
 
 const IE: u16 = 0x0001;
 const ZE: u16 = 0x0004;
+const PE: u16 = 0x0020;
 const SF: u16 = 0x0040;
 const C0: u16 = 0x0100;
 const C1: u16 = 0x0200;
@@ -96,6 +105,85 @@ pub fn round_even(value: f64) -> f64 {
 
 fn is_denormal(value: f64) -> bool {
     value != 0.0 && value.abs() < f64::MIN_POSITIVE
+}
+
+/// A finite double other than nought as an odd integer and a power of two:
+/// its magnitude is `m` times 2 to the `e`.
+fn odd_parts(value: f64) -> (u64, i32) {
+    let bits = value.abs().to_bits();
+    let exponent = (bits >> 52) as i32;
+    let fraction = bits & 0x000f_ffff_ffff_ffff;
+    let (m, e) = if exponent == 0 {
+        (fraction, -1074)
+    } else {
+        (fraction | 0x0010_0000_0000_0000, exponent - 1075)
+    };
+    let shift = m.trailing_zeros();
+
+    (m >> shift, e + shift as i32)
+}
+
+/// Whether `a + b` rounded to `sum`: the error of the sum, which a double
+/// always holds, is not nought. A result that overflowed rounded; one that
+/// is a NaN is invalid, not inexact.
+fn sum_inexact(a: f64, b: f64, sum: f64) -> bool {
+    if sum.is_nan() {
+        return false;
+    }
+
+    if sum.is_infinite() {
+        return a.is_finite() && b.is_finite();
+    }
+
+    let b_part = sum - a;
+    let a_part = sum - b_part;
+
+    (a - a_part) + (b - b_part) != 0.0
+}
+
+/// Whether `a * b` rounded to `product`: the product of the odd parts,
+/// which a 128-bit integer holds, is not the result's, or their powers of
+/// two do not add up.
+fn product_inexact(a: f64, b: f64, product: f64) -> bool {
+    if product.is_nan() || a == 0.0 || b == 0.0 || a.is_infinite() || b.is_infinite() {
+        return false;
+    }
+
+    if product.is_infinite() || product == 0.0 {
+        return true;
+    }
+
+    let ((ma, ea), (mb, eb), (mp, ep)) = (odd_parts(a), odd_parts(b), odd_parts(product));
+
+    u128::from(ma) * u128::from(mb) != u128::from(mp) || ea + eb != ep
+}
+
+/// Whether `a / b` rounded to `quotient`: the quotient times the divisor,
+/// exactly, is not the dividend.
+fn quotient_inexact(a: f64, b: f64, quotient: f64) -> bool {
+    if quotient.is_nan() || b == 0.0 || a == 0.0 || a.is_infinite() || b.is_infinite() {
+        return false;
+    }
+
+    if quotient.is_infinite() || quotient == 0.0 {
+        return true;
+    }
+
+    let ((ma, ea), (mb, eb), (mq, eq)) = (odd_parts(a), odd_parts(b), odd_parts(quotient));
+
+    u128::from(mq) * u128::from(mb) != u128::from(ma) || eq + eb != ea
+}
+
+/// Whether the square root rounded: the root squared, exactly, is not the
+/// operand.
+fn root_inexact(value: f64, root: f64) -> bool {
+    if !(value > 0.0 && value.is_finite()) {
+        return false;
+    }
+
+    let ((mv, ev), (mr, er)) = (odd_parts(value), odd_parts(root));
+
+    u128::from(mr) * u128::from(mr) != u128::from(mv) || 2 * er != ev
 }
 
 /// A double as the extended format: a significand with its integer bit,
@@ -285,7 +373,36 @@ impl X87 {
             self.status |= ZE;
         }
 
-        self.set_st(destination, dividend / divisor);
+        let quotient = dividend / divisor;
+
+        self.made(dividend, divisor, quotient);
+        self.inexact(quotient_inexact(dividend, divisor, quotient));
+        self.set_st(destination, quotient);
+    }
+
+    /// The precision exception, where a result rounded.
+    fn inexact(&mut self, rounded: bool) {
+        if rounded {
+            self.status |= PE;
+        }
+    }
+
+    /// A NaN made of two operands that are not NaNs -- nought by nought,
+    /// infinity by infinity, nought times infinity, or infinities of the two
+    /// signs added -- is an invalid operation.
+    fn made(&mut self, a: f64, b: f64, result: f64) {
+        if result.is_nan() && !a.is_nan() && !b.is_nan() {
+            self.status |= IE;
+        }
+    }
+
+    /// A sum held, or a difference as the sum of the negation.
+    fn add(&mut self, destination: usize, a: f64, b: f64) {
+        let sum = a + b;
+
+        self.made(a, b, sum);
+        self.inexact(sum_inexact(a, b, sum));
+        self.set_st(destination, sum);
     }
 
     /// `destination op= source` for add, multiply, subtract, reversed
@@ -295,8 +412,14 @@ impl X87 {
         let target = self.st(destination);
 
         match reg {
-            0 => self.set_st(destination, target + source),
-            1 => self.set_st(destination, target * source),
+            0 => self.add(destination, target, source),
+            1 => {
+                let product = target * source;
+
+                self.made(target, source, product);
+                self.inexact(product_inexact(target, source, product));
+                self.set_st(destination, product);
+            }
             2 => {
                 let top = self.st(0);
 
@@ -308,22 +431,20 @@ impl X87 {
                 self.compare(top, source, false);
                 self.pop();
             }
-            4 => self.set_st(
-                destination,
+            4 => {
                 if reversed {
-                    source - target
+                    self.add(destination, source, -target);
                 } else {
-                    target - source
-                },
-            ),
-            5 => self.set_st(
-                destination,
+                    self.add(destination, target, -source);
+                }
+            }
+            5 => {
                 if reversed {
-                    target - source
+                    self.add(destination, target, -source);
                 } else {
-                    source - target
-                },
-            ),
+                    self.add(destination, source, -target);
+                }
+            }
             6 => {
                 let (a, b) = if reversed {
                     (source, target)
@@ -522,7 +643,9 @@ impl<B: Bus> Cpu<B> {
         let limit = 2f64.powi(bits as i32 - 1);
         let fits = value.is_finite() && value >= -limit && value < limit;
 
-        if !fits {
+        if fits {
+            fpu.inexact(value != top);
+        } else {
             fpu.status |= IE;
         }
 
@@ -709,8 +832,10 @@ impl<B: Bus> Cpu<B> {
                     fpu.push(value);
                 }
                 2 | 3 => {
-                    let value = fpu.st(0) as f32;
+                    let top = fpu.st(0);
+                    let value = top as f32;
 
+                    fpu.inexact(top.is_finite() && f64::from(value) != top);
                     self.x87_write(place, 0, &value.to_le_bytes())?;
 
                     if reg == 3 {
@@ -813,7 +938,10 @@ impl<B: Bus> Cpu<B> {
                         fpu.status |= IE;
                     }
 
-                    fpu.set_st(0, value.sqrt());
+                    let root = value.sqrt();
+
+                    fpu.inexact(root_inexact(value, root));
+                    fpu.set_st(0, root);
                 }
                 (7, 3) => fpu.trigonometric(|fpu| {
                     let value = fpu.st(0);
@@ -825,12 +953,16 @@ impl<B: Bus> Cpu<B> {
                     let value = fpu.st(0);
                     let rounded = fpu.round_integer(value);
 
+                    fpu.inexact(value.is_finite() && rounded != value);
                     fpu.set_st(0, rounded);
                 }
                 (7, 5) => {
                     let (value, scale) = (fpu.st(0), fpu.st(1));
+                    let factor = 2f64.powf(scale.trunc());
+                    let scaled = value * factor;
 
-                    fpu.set_st(0, value * 2f64.powf(scale.trunc()));
+                    fpu.inexact(product_inexact(value, factor, scaled));
+                    fpu.set_st(0, scaled);
                 }
                 (7, 6) => fpu.trigonometric(|fpu| {
                     let value = fpu.st(0);
@@ -963,16 +1095,18 @@ impl<B: Bus> Cpu<B> {
                     // FBLD: eighteen packed digits, the low byte first, and a
                     // sign byte.
                     let bytes = self.x87_read(place, 0, 10)?;
-                    let value = bytes[..9].iter().rev().fold(0.0, |value, &byte| {
-                        value * 100.0 + f64::from(byte >> 4) * 10.0 + f64::from(byte & 0xf)
+                    let digits = bytes[..9].iter().rev().fold(0u64, |value, &byte| {
+                        value * 100 + u64::from(byte >> 4) * 10 + u64::from(byte & 0xf)
                     });
+                    let value = digits as f64;
 
                     fpu.push(if bytes[9] & 0x80 != 0 { -value } else { value });
                 }
                 5 => {
                     let bytes = self.x87_read(place, 0, 8)?;
+                    let integer = i64::from_le_bytes(bytes.try_into().expect("eight bytes"));
 
-                    fpu.push(i64::from_le_bytes(bytes.try_into().expect("eight bytes")) as f64);
+                    fpu.push(integer as f64);
                 }
                 6 => {
                     // FBSTP.
@@ -984,6 +1118,8 @@ impl<B: Bus> Cpu<B> {
                         fpu.status |= IE;
                         bytes = [0, 0, 0, 0, 0, 0, 0, 0xc0, 0xff, 0xff];
                     } else {
+                        fpu.inexact(value != top);
+
                         let mut digits = value.abs() as u64;
 
                         for byte in bytes.iter_mut().take(9) {
@@ -1303,5 +1439,101 @@ mod tests {
             .collect();
 
         assert_eq!(rounded, wanted);
+    }
+
+    /// The status word's exception bits after the instructions.
+    fn raised(instructions: &[&[u8]], data: &[(u16, Vec<u8>)]) -> u16 {
+        run(instructions, data).fpu.unwrap().status & 0x3f
+    }
+
+    /// A double at DS:100h and `offset`, loaded.
+    fn load(offset: u16) -> Vec<u8> {
+        mem(0xdd, 0, offset)
+    }
+
+    fn double(value: f64) -> Vec<u8> {
+        value.to_le_bytes().to_vec()
+    }
+
+    #[test]
+    fn records_the_precision_exception_where_a_result_rounds() {
+        let two = [(0, double(2.0)), (8, double(4.0)), (16, double(3.0))];
+        let sqrt: &[u8] = &[0xd9, 0xfa];
+
+        // The square root of 2 rounds; of 4, it is 2.
+        assert_eq!(raised(&[&load(0), sqrt], &two), PE);
+        assert_eq!(raised(&[&load(8), sqrt], &two), 0);
+        // 1 / 3 rounds; 2 / 4 does not.
+        assert_eq!(raised(&[FLD1, &mem(0xdc, 6, 16)], &two), PE);
+        assert_eq!(raised(&[&load(0), &mem(0xdc, 6, 8)], &two), 0);
+        // 1 + 2^-60 rounds to 1; 1 + 1 does not.
+        assert_eq!(
+            raised(
+                &[FLD1, &load(0), &[0xde, 0xc1]],
+                &[(0, double(2f64.powi(-60)))]
+            ),
+            PE
+        );
+        assert_eq!(raised(&[FLD1, FLD1, &[0xde, 0xc1]], &[]), 0);
+        // (1 + 2^-30) squared needs 61 bits.
+        let near = [(0, double(1.0 + 2f64.powi(-30)))];
+
+        assert_eq!(raised(&[&load(0), &load(0), &[0xde, 0xc9]], &near), PE);
+        assert_eq!(raised(&[&load(0), FLD1, &[0xde, 0xc9]], &near), 0);
+        // The largest double doubled overflows; the least halved underflows.
+        assert_eq!(
+            raised(
+                &[&load(0), &load(0), &[0xde, 0xc1]],
+                &[(0, double(f64::MAX))]
+            ),
+            PE
+        );
+        assert_eq!(
+            raised(
+                &[&load(0), &load(8), &[0xde, 0xf9]],
+                &[(0, double(f64::from_bits(1))), (8, double(2.0))]
+            ),
+            PE
+        );
+    }
+
+    #[test]
+    fn records_the_precision_exception_where_a_store_rounds() {
+        let values = [(0, double(3.25)), (8, double(3.0)), (16, double(0.1))];
+
+        // FIST of 3.25 rounds, of 3 not; FRNDINT the same.
+        assert_eq!(raised(&[&load(0), &mem(0xdf, 2, 32)], &values), PE);
+        assert_eq!(raised(&[&load(8), &mem(0xdf, 2, 32)], &values), 0);
+        assert_eq!(raised(&[&load(0), &[0xd9, 0xfc]], &values), PE);
+        assert_eq!(raised(&[&load(8), &[0xd9, 0xfc]], &values), 0);
+        // 0.1 as a single rounds; 3.25 is one.
+        assert_eq!(raised(&[&load(16), &mem(0xd9, 2, 32)], &values), PE);
+        assert_eq!(raised(&[&load(0), &mem(0xd9, 2, 32)], &values), 0);
+        // As a double: never.
+        assert_eq!(raised(&[&load(16), &mem(0xdd, 2, 32)], &values), 0);
+        // The loads and the constants raise none, as the 387's: pi, 2^63 - 1
+        // as a long, sixty-four bits of significand as an eighty-bit value.
+        let mut long = u64::MAX.to_le_bytes().to_vec();
+
+        long.extend_from_slice(&0x3fffu16.to_le_bytes());
+        assert_eq!(raised(&[FLDPI], &[]), 0);
+        assert_eq!(
+            raised(&[&mem(0xdf, 5, 0)], &[(0, i64::MAX.to_le_bytes().to_vec())]),
+            0
+        );
+        assert_eq!(raised(&[&mem(0xdb, 5, 0)], &[(0, long)]), 0);
+    }
+
+    #[test]
+    fn makes_a_nan_of_numbers_an_invalid_operation() {
+        let infinity = [(0, double(f64::INFINITY))];
+
+        // 0 / 0: invalid, not a division by nought.
+        assert_eq!(raised(&[FLDZ, FLDZ, &[0xde, 0xf9]], &[]), IE);
+        assert_eq!(raised(&[FLD1, FLDZ, &[0xde, 0xf9]], &[]), ZE);
+        // Infinity less infinity, nought times infinity.
+        assert_eq!(raised(&[&load(0), &load(0), &[0xde, 0xe9]], &infinity), IE);
+        assert_eq!(raised(&[FLDZ, &load(0), &[0xde, 0xc9]], &infinity), IE);
+        assert_eq!(raised(&[&load(0), &load(0), &[0xde, 0xc1]], &infinity), 0);
     }
 }
