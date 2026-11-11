@@ -10,5 +10,10 @@ repository.workspace = true
 [dependencies]
 winbox-cpu.workspace = true
 
+[features]
+# The paging audit's test alone (`kb/guides/paging.md`, "The audit"):
+# an access to a page the set does not hold stops the processor.
+audit = []
+
 [lints]
 workspace = true

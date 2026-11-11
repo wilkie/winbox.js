@@ -1,0 +1,23 @@
+[package]
+name = "winbox-audit"
+description = "The paging audit: paging's probes run with the set of present pages enforced, their records set beside Windows'"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+# The audit is a test of its own crate so that the `audit` feature, which
+# puts a check on the processor's every access, is built only where this
+# crate's tests are: `cargo test --workspace` builds it in, and a build of
+# the engine alone (the corpus, the page, the native front end) leaves it
+# out (`kb/guides/paging.md`, "The audit").
+[dev-dependencies]
+winbox-machine = { workspace = true, features = ["audit"] }
+winbox-ne.workspace = true
+winbox-win16 = { workspace = true, features = ["audit"] }
+serde_json = "1"
+
+[lints]
+workspace = true

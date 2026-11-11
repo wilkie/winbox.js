@@ -2119,6 +2119,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "winbox-audit"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "winbox-machine",
+ "winbox-ne",
+ "winbox-win16",
+]
+
+[[package]]
 name = "winbox-cpu"
 version = "0.1.0"
 dependencies = [

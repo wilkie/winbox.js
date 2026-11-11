@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use crate::{Descriptors, Memory};
+use crate::{Descriptors, Memory, OWN_PAGES_ABOVE};
 
 /// The first descriptor index a block is given.
 pub const FIRST_SELECTOR: usize = 100;
@@ -200,6 +200,13 @@ impl GlobalHeap {
         }
 
         self.set_limits(memory, descriptors, index);
+
+        // Too big for the first megabyte, Windows gives it pages of its
+        // own (`pages.rs`).
+        if size > OWN_PAGES_ABOVE {
+            memory.own_pages((index as u32) << 16, size, (selectors as u32) << 16);
+        }
+
         Some(index)
     }
 
@@ -232,6 +239,7 @@ impl GlobalHeap {
     ) -> bool {
         if let Some(block) = self.blocks.remove(&index) {
             self.held -= u64::from(block.size);
+            memory.free_own_pages((index as u32) << 16);
 
             for tile in 0..block.selectors {
                 descriptors.give(memory, index + tile);
@@ -400,6 +408,7 @@ impl GlobalHeap {
         block.selectors = selectors;
         self.held = self.held - u64::from(block.size) + u64::from(size);
         block.size = size;
+        memory.resize_own_pages((index as u32) << 16, size);
         self.set_limits(memory, descriptors, index);
         Some(index)
     }

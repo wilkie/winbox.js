@@ -8,6 +8,7 @@ mod files;
 mod global;
 mod local;
 mod memory;
+mod pages;
 
 pub use clock::{
     CALL_INSTRUCTIONS, Clock, FAITHFUL_INSTRUCTIONS_PER_MS, HostTime, INSTRUCTIONS_PER_MS, TimerId,
@@ -28,3 +29,8 @@ pub use files::{
 pub use global::{Block, FIRST_SELECTOR, Figures, GlobalHeap, block_size, within_limit};
 pub use local::{LocalHeap, Options as LocalOptions};
 pub use memory::Memory;
+#[cfg(feature = "audit")]
+pub use memory::Audit;
+pub use pages::{
+    BLOCKS_END, FIRST_MEGABYTE_LENGTH, OWN_PAGES_ABOVE, PAGE_BITS, PAGE_SIZE, Pages, Print,
+};

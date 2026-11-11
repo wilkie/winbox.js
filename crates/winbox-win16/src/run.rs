@@ -217,6 +217,8 @@ impl System {
                 }
                 // A byte of GDI's segment, made as the program reads it; the
                 // instruction then runs again.
+                #[cfg(feature = "audit")]
+                Exit::Host if self.audit_missed() => {}
                 Exit::Host => match (self.cpu.bus.asked(), self.gdi_data) {
                     (Some(at), Some(start)) if at.wrapping_sub(start) < 0x10000 => {
                         let byte = self.gdi_heap_read(at - start);
@@ -408,6 +410,38 @@ impl System {
         self.cpu.bus.write16(stack + u32::from(sp), self.cpu.flags);
         self.cpu.regs[winbox_cpu::SP] = sp;
         self.cpu.ip += 2;
+    }
+
+    /// The paging audit's stop (`kb/guides/paging.md`, "The audit"): an
+    /// access to a page the set does not hold, taken as WIN386 would take
+    /// it -- a page fault given to the program's handler for exception
+    /// 0Eh, its error code 4 for a read and 6 for a write, CS:IP the
+    /// instruction -- where the program has one; else the page let
+    /// through, and the access noted for the audit's report. True where
+    /// the stop was the audit's.
+    #[cfg(feature = "audit")]
+    fn audit_missed(&mut self) -> bool {
+        let Some((at, write)) = self.cpu.bus.audit().take_missed() else {
+            return false;
+        };
+        let code = if write { 6 } else { 4 };
+        let handled = self.dpmi.handles_exception(14);
+
+        self.dpmi.audit.push(crate::dpmi::AuditMiss {
+            at,
+            write,
+            cs: self.cpu.segments[CS].selector,
+            ip: self.cpu.ip,
+            handled,
+        });
+
+        if handled {
+            self.dpmi_exception(14, code);
+        } else {
+            self.cpu.bus.audit_mut().allow(at);
+        }
+
+        true
     }
 
     /// A fault given to a program's exception handler for it, set through

@@ -11,6 +11,8 @@ use std::collections::HashMap;
 
 use winbox_cpu::Bus;
 
+use crate::pages::{PAGE_BITS, PAGE_SIZE, Pages, Print, print_of};
+
 /// A block is a mebibyte.
 const BLOCK_BITS: u32 = 20;
 const BLOCK_SIZE: usize = 1 << BLOCK_BITS;
@@ -27,6 +29,41 @@ pub struct Memory {
     host: Option<(u32, u32)>,
     answers: HashMap<u32, u8>,
     asked: Cell<Option<u32>>,
+    /// The pages WIN386 would have present (`pages.rs`), kept as blocks
+    /// are given and freed, and asked by no access.
+    pages: Pages,
+    /// The paging audit's (`kb/guides/paging.md`, "The audit"): a test's
+    /// alone, built with the `audit` feature.
+    #[cfg(feature = "audit")]
+    audit: Audit,
+}
+
+/// The paging audit: with `on`, an access by the processor to a page the
+/// set does not hold stops it before its instruction, as a page fault
+/// would, the address kept for the host (`missed`), unless the page has
+/// been let through since. Built only with the `audit` feature, for the
+/// paging audit's test: nothing of it is on the processor's path
+/// otherwise.
+#[cfg(feature = "audit")]
+#[derive(Debug, Default)]
+pub struct Audit {
+    pub on: bool,
+    allowed: std::collections::HashSet<u32>,
+    missed: Cell<Option<(u32, bool)>>,
+}
+
+#[cfg(feature = "audit")]
+impl Audit {
+    /// The access the processor last stopped at: its address and whether
+    /// it was a write.
+    pub fn take_missed(&self) -> Option<(u32, bool)> {
+        self.missed.take()
+    }
+
+    /// The page holding `at` let through from now on.
+    pub fn allow(&mut self, at: u32) {
+        self.allowed.insert(at >> PAGE_BITS);
+    }
 }
 
 impl std::fmt::Debug for Memory {
@@ -60,7 +97,94 @@ impl Memory {
             host: None,
             answers: HashMap::new(),
             asked: Cell::new(None),
+            pages: Pages::new(),
+            #[cfg(feature = "audit")]
+            audit: Audit::default(),
         }
+    }
+
+    /// The pages WIN386 would have present.
+    pub fn pages(&self) -> &Pages {
+        &self.pages
+    }
+
+    pub fn pages_mut(&mut self) -> &mut Pages {
+        &mut self.pages
+    }
+
+    #[cfg(feature = "audit")]
+    pub fn audit(&self) -> &Audit {
+        &self.audit
+    }
+
+    #[cfg(feature = "audit")]
+    pub fn audit_mut(&mut self) -> &mut Audit {
+        &mut self.audit
+    }
+
+    /// Whether the audit stops an access at `at`.
+    #[cfg(feature = "audit")]
+    fn audit_stops(&self, at: u32, write: bool) -> bool {
+        if !self.audit.on
+            || self.pages.present(at)
+            || self.audit.allowed.contains(&(at >> PAGE_BITS))
+        {
+            return false;
+        }
+
+        self.audit.missed.set(Some((at, write)));
+        true
+    }
+
+    /// A page's fingerprint as its bytes are now, `None` where its
+    /// mebibyte was never written.
+    pub fn print(&self, at: u32) -> Print {
+        let at = at & !(PAGE_SIZE - 1);
+        let block = self.blocks[(at >> BLOCK_BITS) as usize].as_ref()?;
+        let start = (at & BLOCK_MASK) as usize;
+
+        Some(print_of(&block[start..start + PAGE_SIZE as usize]))
+    }
+
+    fn prints(&self, base: u32, pages: usize) -> Vec<Print> {
+        (0..pages as u32)
+            .map(|page| self.print(base.wrapping_add(page << PAGE_BITS)))
+            .collect()
+    }
+
+    /// A block given pages of its own (`Pages::own`): `length` bytes from
+    /// `base`, on a page, in `room` bytes WinBox gave it.
+    pub fn own_pages(&mut self, base: u32, length: u32, room: u32) {
+        let pages = length.div_ceil(PAGE_SIZE).max(1) as usize;
+        let prints = self.prints(base, pages);
+
+        self.pages.own(base, prints, room);
+    }
+
+    /// A block with pages of its own freed (`Pages::free_own`): whether it
+    /// had them.
+    pub fn free_own_pages(&mut self, base: u32) -> bool {
+        let Some(pages) = self.pages.own_pages(base) else {
+            return false;
+        };
+        let now = self.prints(base, pages);
+
+        self.pages.free_own(base, &now).is_some()
+    }
+
+    /// A block with pages of its own given `length` bytes in place.
+    pub fn resize_own_pages(&mut self, base: u32, length: u32) {
+        let Some(had) = self.pages.own_pages(base) else {
+            return;
+        };
+        let pages = length.div_ceil(PAGE_SIZE).max(1) as usize;
+        let (grown, cut) = if pages > had {
+            (self.prints(base + ((had as u32) << PAGE_BITS), pages - had), Vec::new())
+        } else {
+            (Vec::new(), self.prints(base + ((pages as u32) << PAGE_BITS), had - pages))
+        };
+
+        self.pages.resize_own(base, pages, &grown, &cut);
     }
 
     fn block_mut(&mut self, address: u32) -> &mut [u8] {
@@ -207,6 +331,11 @@ impl Memory {
 /// so nothing is left to a host.
 impl Bus for Memory {
     fn read8(&self, at: u32) -> Option<u8> {
+        #[cfg(feature = "audit")]
+        if self.audit_stops(at, false) {
+            return None;
+        }
+
         if self.hosted(at) {
             let answer = self.answers.get(&at).copied();
 
@@ -221,6 +350,11 @@ impl Bus for Memory {
     }
 
     fn write8(&mut self, at: u32, value: u8) -> Option<()> {
+        #[cfg(feature = "audit")]
+        if self.audit_stops(at, true) {
+            return None;
+        }
+
         if !self.hosted(at) {
             Memory::write8(self, at, value);
         }
@@ -229,6 +363,11 @@ impl Bus for Memory {
     }
 
     fn read16(&self, at: u32) -> Option<u16> {
+        #[cfg(feature = "audit")]
+        if self.audit_stops(at, false) || self.audit_stops(at.wrapping_add(1), false) {
+            return None;
+        }
+
         if self.hosted(at) || self.hosted(at.wrapping_add(1)) {
             let low = Bus::read8(self, at)?;
             let high = Bus::read8(self, at.wrapping_add(1))?;
@@ -240,6 +379,11 @@ impl Bus for Memory {
     }
 
     fn write16(&mut self, at: u32, value: u16) -> Option<()> {
+        #[cfg(feature = "audit")]
+        if self.audit_stops(at, true) || self.audit_stops(at.wrapping_add(1), true) {
+            return None;
+        }
+
         if self.hosted(at) || self.hosted(at.wrapping_add(1)) {
             Bus::write8(self, at, value as u8)?;
             return Bus::write8(self, at.wrapping_add(1), (value >> 8) as u8);

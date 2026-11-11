@@ -166,6 +166,22 @@ pub struct Host {
     answered_vectors: HashMap<u8, u32>,
     /// What ended Windows, where the host did.
     pub fault: Option<String>,
+    /// The paging audit's stops, in order (`run.rs`, `audit_missed`).
+    #[cfg(feature = "audit")]
+    pub audit: Vec<AuditMiss>,
+}
+
+/// An access the paging audit stopped: its linear address, whether it was
+/// a write, the instruction's CS:IP, and whether the program's handler
+/// for exception 0Eh was given it.
+#[cfg(feature = "audit")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AuditMiss {
+    pub at: u32,
+    pub write: bool,
+    pub cs: u16,
+    pub ip: u32,
+    pub handled: bool,
 }
 
 impl Host {
@@ -594,7 +610,8 @@ impl System {
             0x0501 => self.dpmi_allocate_block(),
             0x0502 => self.dpmi_free_block(),
             0x0503 => self.dpmi_resize_block(),
-            0x0004 | 0x0005 | 0x0600..=0x0603 | 0x0702 | 0x0703 | 0x0e00 | 0x0e01 => self.dpmi_ok(),
+            0x0600 | 0x0601 => self.dpmi_lock(),
+            0x0004 | 0x0005 | 0x0602 | 0x0603 | 0x0702 | 0x0703 | 0x0e00 | 0x0e01 => self.dpmi_ok(),
             0x0604 => {
                 self.cpu.regs[BX] = 0;
                 self.cpu.regs[CX] = 0x1000;
@@ -1419,16 +1436,48 @@ impl System {
 
     // --- 0500h-0503h ---
 
+    /// The host's largest free block, in bytes, less what every 0501h
+    /// block given since takes. WIN386's: as `enhmode` found it, less each
+    /// block's pages (**recorded** by `pgbig`, 24 MiB less, and `pgfree`,
+    /// 1 MiB less while given and back when freed, writing the pages moving
+    /// it no further); its 0500h writes the free pages times 1000h and the
+    /// free pages as its first two double words (`b70b`-`b770`), so both
+    /// shrink. KERNEL's blocks given pages of their own, which KERNEL asks
+    /// 0501h for too, are not counted: no probe has measured them. DOSX's:
+    /// less each block and its 10h-byte header (**recorded** by `pgbig`:
+    /// 14,545 KiB, then 1 KiB with a block of 14,544 KiB given).
+    fn dpmi_largest(&self) -> u32 {
+        let blocks = self.dpmi.blocks.values();
+
+        if self.dpmi_enhanced() {
+            let pages: u32 = blocks.map(|block| block.size.div_ceil(0x1000)).sum();
+
+            FREE_ENHANCED[0].saturating_sub(pages << 12)
+        } else {
+            let taken: u32 = blocks.map(|block| block.size + 0x10).sum();
+
+            FREE_LARGEST.saturating_sub(taken)
+        }
+    }
+
     fn dpmi_free_information(&mut self) -> Option<Event> {
         let at = self.dpmi_linear(ES, self.cpu.regs[DI]);
 
         if self.dpmi_enhanced() {
+            let largest = self.dpmi_largest();
+
             for (index, value) in (0u32..).zip(FREE_ENHANCED) {
+                let value = match index {
+                    0 => largest,
+                    1 => largest >> 12,
+                    _ => value,
+                };
+
                 self.cpu.bus.write32(at + 4 * index, value);
             }
         } else {
             self.cpu.bus.write(at, &[0xff; 0x30]);
-            self.cpu.bus.write32(at, FREE_LARGEST);
+            self.cpu.bus.write32(at, self.dpmi_largest());
             self.cpu.bus.write32(at + 0x14, FREE_PAGES);
             self.cpu.bus.write32(at + 0x1c, FREE_PAGES);
             self.cpu.bus.write32(at + 0x20, 0);
@@ -1440,13 +1489,7 @@ impl System {
     /// 0501h (as `#allocateBlock`).
     fn dpmi_allocate_block(&mut self) -> Option<Event> {
         let size = u32::from(self.cpu.regs[BX]) << 16 | u32::from(self.cpu.regs[CX]);
-        let largest = if self.dpmi_enhanced() {
-            FREE_ENHANCED[0]
-        } else {
-            FREE_LARGEST
-        };
-
-        if (self.dpmi_enhanced() && size == 0) || size > largest {
+        if (self.dpmi_enhanced() && size == 0) || size > self.dpmi_largest() {
             return self.dpmi_refuse(None);
         }
 
@@ -1478,6 +1521,10 @@ impl System {
             );
             u32::from(selector) * 0x10001
         };
+
+        if self.dpmi_enhanced() {
+            self.cpu.bus.own_pages(base, size, (count as u32) << 16);
+        }
 
         self.dpmi.blocks.insert(
             handle,
@@ -1523,6 +1570,10 @@ impl System {
             return self.dpmi_refuse(None);
         };
 
+        if self.dpmi_enhanced() {
+            self.cpu.bus.free_own_pages(block.base);
+        }
+
         self.dpmi_release_block(block);
         self.dpmi_ok()
     }
@@ -1565,10 +1616,14 @@ impl System {
             let bytes = self.cpu.bus.read(block.base, block.size.min(size) as usize);
 
             self.cpu.bus.write(base, &bytes);
+            self.cpu.bus.own_pages(base, size, (count as u32) << 16);
+            self.cpu.bus.free_own_pages(block.base);
             self.dpmi_release_block(block);
             block.index = index;
             block.count = count;
             block.base = base;
+        } else {
+            self.cpu.bus.resize_own_pages(block.base, size);
         }
 
         block.size = size;
@@ -1576,6 +1631,21 @@ impl System {
         self.cpu.regs[BX] = (block.base >> 16) as u16;
         self.cpu.regs[CX] = block.base as u16;
         self.dpmi_ok()
+    }
+
+    /// 0600h and 0601h, WIN386's: refused where the range holds a page of
+    /// WinBox's blocks not committed to one (`Pages::lockable`), the carry
+    /// set and AX kept; answered otherwise, with nothing locked, nothing
+    /// paging.
+    fn dpmi_lock(&mut self) -> Option<Event> {
+        let base = u32::from(self.cpu.regs[BX]) << 16 | u32::from(self.cpu.regs[CX]);
+        let size = u32::from(self.cpu.regs[SI]) << 16 | u32::from(self.cpu.regs[DI]);
+
+        if self.cpu.bus.pages().lockable(base, size) {
+            self.dpmi_ok()
+        } else {
+            self.dpmi_refuse(None)
+        }
     }
 
     // --- 0900h-0902h, 0B00h-0B03h ---

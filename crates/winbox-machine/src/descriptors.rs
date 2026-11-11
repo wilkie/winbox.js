@@ -193,6 +193,9 @@ impl Descriptors {
             ],
         );
         memory.write(base, bytes);
+        // Present whole: a module's segment or a block of KERNEL's heap,
+        // which Windows keeps in memory it has present (`pages.rs`).
+        memory.pages_mut().give(base, 0x10000);
     }
 
     /// A segment's limit, its last offset: up to twenty bits, so that the
