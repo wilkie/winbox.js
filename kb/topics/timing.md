@@ -16,6 +16,7 @@ probes:
     spiidle,
     viscost,
     cdread,
+    hdtime,
   ]
 ---
 
@@ -177,10 +178,39 @@ The faithful clock, `WINBOX_CLOCK=faithful` in the test harness, runs 80,000 ins
 | 64 KiB | 45,632              | 691,984                  | 46,726              | 46,595                   |
 
 - In 386 enhanced mode a read of 64 KiB from the disc takes 1.4 ms, and one alone after a seek is timed at 0, 1 or 2 ms; the hard disk's takes 0.09 ms, timed at 0.
-- In standard mode the two drives take the same, both what the disc takes in enhanced mode. Why enhanced mode reads the hard disk faster is not read out.
+- In standard mode the two drives take the same, both what the disc takes in enhanced mode: DOSBox's charge for the bytes (see the next section). Why enhanced mode reads the hard disk without it is not read out.
 - Told as instructions at the run's rate, a disc's read in enhanced mode takes 7,405, 33,777, 52,220 and 105,520 more than the hard disk's at the four sizes: about 5,459 and 1.517 a byte [[inferred]], each size within 3,500.
 
-The faithful clock charges a read from a disc that much more in 386 enhanced mode, through `_lread`, `_hread` and DOS's function 3Fh alike (`call_costs::disc_read`), and nothing more in standard mode. The hard disk's own read is still charged as any call not recorded, 154, in both modes. Lode Runner: The Legend Returns' setup rates the CD-ROM drive by such reads ([[topic:win386]]).
+The faithful clock charges a read from a disc that much more in 386 enhanced mode, through `_lread`, `_hread` and DOS's function 3Fh alike (`call_costs::disc_read`), beyond the hard disk's read, and nothing more in standard mode. Lode Runner: The Legend Returns' setup rates the CD-ROM drive by such reads ([[topic:win386]]).
+
+## Reading and writing the hard disk
+
+[[measured]] [[probe:hdtime]], at a fixed 80,000 a millisecond in both modes, reads a file on C: (a folder DOSBox mounts) one read after another for half a second at ten sizes from 512 bytes to 64 KiB, through `_lread`, `_hread` and DOS's function 3Fh; writes one at five sizes through `_lwrite` and DOS's 40h; and seeks, and opens and closes. Each time as instructions at the run's rate, less the loop's own (`timeGetTime` and the loop: 428 in standard mode, 546 in enhanced mode). DOS's read and write, and `_lread`'s, `_hread`'s and `_lwrite`'s to 32 KiB, within 1% of each other:
+
+| Size   | Read, standard mode | Write, standard mode | Read, enhanced mode | Write, enhanced mode |
+| ------ | ------------------- | -------------------- | ------------------- | -------------------- |
+| 512    | 2,779               | 2,705                | 1,114               | 3,003                |
+| 1 KiB  | 4,830               |                      | 1,113               |                      |
+| 2 KiB  | 8,347               | 8,305                | 1,380               | 8,998                |
+| 4 KiB  | 14,905              |                      | 1,384               |                      |
+| 8 KiB  | 24,736              | 24,657               | 1,653               | 24,505               |
+| 16 KiB | 36,268              |                      | 2,189               |                      |
+| 24 KiB | 55,645              |                      | 2,737               |                      |
+| 32 KiB | 55,802              | 55,645               | 3,272               | 55,560               |
+| 48 KiB | 55,566              |                      | 4,357               |                      |
+| 64 KiB | 55,961              | 55,961               | 5,421               | 58,776               |
+
+A seek takes 573 in standard mode and 496 in enhanced mode; an open and a close of the file together 1,723 and 1,505.
+
+In standard mode, and for writes in enhanced mode, a fixed cost and a cost a byte do not fit: fitted to the reads, 13,417 and 0.884 a byte, off by 399% at 512 bytes and by 37% at 24 KiB. [[read out]] What DOSBox 0.74-3 does with DOS's read and write: after the bytes are moved, `modify_cycles` (`src/dos/dos.cpp`, under `DATA_TRANSFERS_TAKE_CYCLES`) takes 4 cycles a byte from the processor, but no more than are left before DOSBox's next event (`src/hardware/pic.cpp`, `PIC_RunQueue`): the millisecond's end, or sooner, the timer's or the display's, of which there are some 1,420 a second here (the reads past 24 KiB, each ending one, 711 in half a second). So a read is 4 instructions a byte to 1 KiB -- 512 bytes and 1 KiB both 728 more than that -- and from 24 KiB on some 55,000 whatever its size. The time is DOSBox's model of a disk, not Windows': it is the oracle's, which the faithful clock is held to.
+
+[[read out]] `_hread` and `_hwrite` make DOS's call 32 KiB at a time (`KRNL286.EXE` seg1 `468c`, `KRNL386.EXE` seg1 `4dec`): each piece 8000h bytes, or to the end of the segment where the buffer's offset is past 8000h, until a piece makes fewer than it asked. So `_hread` of 48 and 64 KiB is two calls of DOS's, and takes 75,686 and 112,033 in standard mode, against `_lread`'s 56,040 and 55,881; in enhanced mode 1,119 and 1,130 more than `_lread`.
+
+In enhanced mode the hard disk's read is not charged for its bytes: 1,116 and 0.0657 a byte [[inferred]], fitted to the three ways at the ten sizes, each within 130 (9% at 2 KiB, 0.3% from 4 KiB on). Why Win386's read of a DOSBox drive escapes `modify_cycles`, when its write and the disc's read do not, is not read out.
+
+The faithful clock charges each of DOS's reads and writes (`call_costs::file_read`, `file_write`, and `huge_transfer` for `_hread`'s and `_hwrite`'s pieces) Windows' own part -- a read 728 in standard mode, a write 653 and 941 -- and DOSBox's for its bytes: 4 a byte under 512, then the reads' times above less 728, in a line between two sizes; in enhanced mode a read the fit. `_llseek` is charged 573 and 496. Against the recordings, each read or write within 1% in standard mode, and each in enhanced mode within 9% (reads) and 5% (writes), but `_hread` of 48 KiB in standard mode, charged 92,070 against 75,686: its second piece comes straight after a first that ended DOSBox's slice, and is cut sooner than a read alone [[inferred]]. `cdread`'s hard-disk reads, through `mmioRead`, come within 1.3% at each size in standard mode and 3.9% in enhanced mode, with a fixed 679 and 930 for the rest of its loop. The open and close are left as `adlibgap` timed them, 1,599 together, between the two modes'. On any other clock, and at the sound card's 3,000 a millisecond, these calls are charged as before.
+
+Run on WinBox's faithful clock, `hdtime`'s reads come out as recorded but for the loop: `timeGetTime` is charged 212 (from `adlibgap`), where at 80,000 a millisecond it and the loop take 428 and 546.
 
 ## The Ad Lib driver's writes
 
@@ -220,3 +250,10 @@ The run page runs a machine for each install, each a tab ([[guide:launcher]], st
 A machine whose programs wait for messages costs next to nothing: the Rust engine steps it only when its next timer is due (`wake_at`), and the TypeScript engine's scheduler only when a task is woken. Two machines each kept busy share the thread: on the Rust engine each frame gives each machine the same slice (12 ms), so each runs at some 55 to 60% of its speed alone; on the TypeScript engine the two together run some 75% of one alone, the later-made machine the larger share. The machine in the tab behind runs as the one shown does. Closed, a machine runs no more: its TypeScript engine's processor ran 0 instructions in the ten seconds after.
 
 [[measured]] Memory, the same runs: a Rust machine's WebAssembly instance is 18 MB with Windows up and nothing running, and 24 MB running SkiFree, steady over 40 s; the page's JavaScript heap grows by some 1 to 2 MB for each. A TypeScript machine adds some 6 to 12 MB to the heap. Before step 4 the Rust engine's call log kept every call a run made, and an instance running SkiFree grew to 101, 181, 341 and 661 MB at 5, 10, 15 and 30 s; the log now lets go of each call once the page's trace has read it (`System::forget_calls`). So no limit is set on machines at once: twenty busy machines are some 500 MB. An instance whose machine is closed is kept for the next machine made, as the page cannot let go of a WebAssembly instance's glue, and so of its memory. The script is not kept.
+
+## Not yet done
+
+- Why 386 enhanced mode reads a file of DOSBox's hard disk without DOSBox's charge for its bytes, when it writes one with it, and reads a disc with it ("Reading and writing the hard disk").
+- `_hread`'s second piece, cut sooner than a read alone: the faithful clock charges `_hread` of 48 KiB 22% more than recorded.
+- `timeGetTime` at 80,000 a millisecond: `hdtime`'s loop of it alone takes 428 instructions in standard mode and 546 in enhanced mode, where the faithful clock charges 212 from `adlibgap`.
+- An open and a close timed apart at 80,000 a millisecond; and DOS's seek, open and close that a program asks for itself, which the faithful clock does not charge.

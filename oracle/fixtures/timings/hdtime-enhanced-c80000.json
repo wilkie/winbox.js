@@ -1,0 +1,251 @@
+{
+  "probe": "hdtime",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "76919,265,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80693,278,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "78661,271,2032"
+    },
+    {
+      "function": "empty",
+      "args": "",
+      "result": "72051,0,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,512",
+      "result": "23793,12182016,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,1024",
+      "result": "23773,24343552,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,2048",
+      "result": "20530,42045440,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,4096",
+      "result": "20475,83865600,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,8192",
+      "result": "17947,147021824,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,16384",
+      "result": "14444,236650496,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,24576",
+      "result": "12011,295182336,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,32768",
+      "result": "10320,338165760,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,49152",
+      "result": "8033,394838016,500"
+    },
+    {
+      "function": "read",
+      "args": "lread,65534",
+      "result": "6601,432589934,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,512",
+      "result": "23725,12147200,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,1024",
+      "result": "23714,24283136,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,2048",
+      "result": "20475,41932800,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,4096",
+      "result": "20464,83820544,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,8192",
+      "result": "17918,146784256,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,16384",
+      "result": "14382,235634688,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,24576",
+      "result": "11995,294789120,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,32768",
+      "result": "10350,339148800,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,49152",
+      "result": "6539,321404928,500"
+    },
+    {
+      "function": "read",
+      "args": "hread,65534",
+      "result": "5549,363648166,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,512",
+      "result": "23689,12128768,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,1024",
+      "result": "23708,24276992,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,2048",
+      "result": "20419,41818112,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,4096",
+      "result": "20379,83472384,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,8192",
+      "result": "17889,146546688,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,16384",
+      "result": "14379,235585536,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,24576",
+      "result": "11981,294445056,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,32768",
+      "result": "10300,337510400,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,49152",
+      "result": "8021,394248192,500"
+    },
+    {
+      "function": "read",
+      "args": "dos,65534",
+      "result": "6591,431934594,500"
+    },
+    {
+      "function": "seek",
+      "args": "",
+      "result": "37732,0,500"
+    },
+    {
+      "function": "open",
+      "args": "",
+      "result": "19178,0,500"
+    },
+    {
+      "function": "write",
+      "args": "lwrite,512",
+      "result": "11169,5718528,500"
+    },
+    {
+      "function": "write",
+      "args": "lwrite,2048",
+      "result": "4126,8450048,500"
+    },
+    {
+      "function": "write",
+      "args": "lwrite,8192",
+      "result": "1572,12877824,500"
+    },
+    {
+      "function": "write",
+      "args": "lwrite,32768",
+      "result": "701,22970368,500"
+    },
+    {
+      "function": "write",
+      "args": "lwrite,65534",
+      "result": "664,43514576,501"
+    },
+    {
+      "function": "write",
+      "args": "dos,512",
+      "result": "11083,5674496,500"
+    },
+    {
+      "function": "write",
+      "args": "dos,2048",
+      "result": "4121,8439808,500"
+    },
+    {
+      "function": "write",
+      "args": "dos,8192",
+      "result": "1570,12861440,500"
+    },
+    {
+      "function": "write",
+      "args": "dos,32768",
+      "result": "701,22970368,500"
+    },
+    {
+      "function": "write",
+      "args": "dos,65534",
+      "result": "663,43449042,500"
+    },
+    {
+      "function": "empty",
+      "args": "",
+      "result": "72018,0,500"
+    }
+  ]
+}

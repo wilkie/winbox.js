@@ -1040,6 +1040,7 @@ impl System {
         let at = self.linear(buffer);
 
         crate::call_costs::disc_read(self, disc, bytes.len());
+        crate::call_costs::file_read(self, bytes.len());
 
         // On from DS:DX through the selector's limit, past its first 64 KiB
         // where the block goes on (`lwrhuge`), as the write's are taken.
@@ -1075,6 +1076,7 @@ impl System {
             file.write(&bytes)
         };
 
+        crate::call_costs::file_write(self, written);
         self.cpu.regs[AX] = written as u16;
         Ok(())
     }
