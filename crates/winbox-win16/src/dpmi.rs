@@ -2,9 +2,9 @@
 //! DOSX.EXE, or 386 enhanced mode's WIN386 (`kb/topics/dpmi-functions.md`,
 //! `kb/guides/enhanced-mode.md`). Each function is answered as the
 //! machine's mode's host answers it. The read-out: DOSX's table at 2A80h of
-//! its protected-mode segment (image 6342h), its handlers answering with
-//! the carry clear (2B92h), set with AX as it was (2B8Ch), or set with AX
-//! nought (2B87h); WIN386's answers as the probes recorded them
+//! its protected-mode segment, 186Bh of its unpacked image, its handlers
+//! answering with the carry clear (2B92h), set with AX as it was (2B8Ch),
+//! or set with AX nought (2B87h); WIN386's answers as the probes recorded them
 //! (`enhmode`, `dpmildt`, `dpmimem`, `dpmirm`, `dpmiexc`, `dpmigrw`,
 //! `dpminul`, `dpmiout`), a refusal leaving AX as it was.
 
@@ -18,8 +18,8 @@ use crate::call::Stop;
 use crate::run::Event;
 use crate::system::System;
 
-/// 0400h's answers: DOSX's version 0.90 and flags (`DOSX.EXE` 2FC1h), and
-/// WIN386's flags. **Recorded** by `dpmiver` in each mode.
+/// 0400h's answers: DOSX's version 0.90 and flags (`DOSX.EXE`
+/// 186Bh:2FC1h), and WIN386's flags. **Recorded** by `dpmiver` in each mode.
 pub const DPMI_VERSION: u16 = 0x005a;
 pub const DPMI_FLAGS: u16 = 0x000a;
 pub const DPMI_FLAGS_ENHANCED: u16 = 0x0005;
@@ -472,7 +472,7 @@ impl System {
         }
     }
 
-    /// DOSX's table (`DOSX.EXE` 2A80h).
+    /// DOSX's table (`DOSX.EXE` 186Bh:2A80h).
     fn dpmi_dosx(&mut self, function: u16) -> Option<Event> {
         let bx = self.cpu.regs[BX];
 
