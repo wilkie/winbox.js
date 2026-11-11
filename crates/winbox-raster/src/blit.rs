@@ -87,6 +87,11 @@ pub struct Source<'a> {
     /// source carried into monochrome is white at; none for a source that
     /// is no device context's, which is white at index nought.
     pub back: Option<Color>,
+    /// Whether an index whose colour is the destination's own colour at the
+    /// same index is copied as it is, not matched: WinG's blits onto the
+    /// screen, where its colour table is the system palette's there
+    /// (`wingfade`).
+    pub keeps_own: bool,
 }
 
 thread_local! {
@@ -307,6 +312,14 @@ pub fn raster_op(
 
                 let [red, green, blue] = source.colours.get(index).copied().unwrap_or([0, 0, 0]);
 
+                if from.keeps_own
+                    && !own
+                    && to.device_palette.borrow().colours.get(index) == Some(&[red, green, blue])
+                {
+                    *slot = index as u8;
+                    continue;
+                }
+
                 *slot = if own {
                     to.device_palette.borrow().table_index(red, green, blue)
                 } else {
@@ -479,6 +492,7 @@ mod tests {
                 width: 2,
                 height: 1,
                 back: None,
+                keeps_own: false,
             }),
             0,
             0,

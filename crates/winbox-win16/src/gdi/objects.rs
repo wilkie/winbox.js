@@ -608,6 +608,17 @@ pub fn delete_object(system: &mut System, handle: u16) -> bool {
     system.gdi_heap_forget_words(handle);
     super::metafile::forget_in_metafiles(system, handle);
 
+    // A palette deleted that was the one realized last is that no longer,
+    // so a palette given its handle after it is realized afresh (`GDI.EXE`
+    // seg1 `19f4`-`1a13`, `DeleteObject`'s palette; **recorded** by
+    // `wingfade`, whose palettes each take the handle of the one deleted
+    // before them).
+    if matches!(system.gdi.objects[object], GdiObject::Palette(_))
+        && system.palette_state.1 == handle
+    {
+        system.palette_state.1 = 0;
+    }
+
     system.handles.free(handle);
     system.gdi.deleted.insert(object, handle);
     true
@@ -830,6 +841,15 @@ pub(crate) fn unrealize_object(system: &mut System, args: &mut Args) -> Result<A
             GdiObject::Palette(palette) => {
                 palette.slots = None;
                 palette.taken = None;
+
+                // GDI's foreground palette, or the one realized last,
+                // unrealized is no longer the one realized last (`GDI.EXE`
+                // seg1 `27f2`-`282f`).
+                let (foreground, realized) = system.palette_state;
+
+                if handle == foreground || handle == realized {
+                    system.palette_state.1 = 0;
+                }
             }
             _ => {}
         }
