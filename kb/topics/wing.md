@@ -11,9 +11,11 @@ The oracle installs WinG with its own Setup, on the 256-colour display ([[topic:
 
 winbox.js answers for `WING.DLL` itself, with no file of it on the disk. The probes find WING.DLL by name and its functions by ordinal: 1001 to 1010.
 
+[[read out]] A program may find them by name instead, with [[fn:KERNEL.GetProcAddress]], as Lode Runner: The Legend Returns does ([[topic:win386]]). `WING.DLL`'s table of names it does not keep resident (the one its header's 2Ch points to) names them `WINGCREATEDC` (1001), `WINGRECOMMENDDIBFORMAT` (1002), `WINGCREATEBITMAP` (1003), `WINGGETDIBPOINTER` (1004), `WINGGETDIBCOLORTABLE` (1005), `WINGSETDIBCOLORTABLE` (1006), `WINGCREATEHALFTONEPALETTE` (1007), `WINGCREATEHALFTONEBRUSH` (1008), `WINGSTRETCHBLT` (1009) and `WINGBITBLT` (1010). WinBox named 1002 `WinGRecommendedDIBFormat`, so `GetProcAddress` of `WinGRecommendDIBFormat` answered nought, and the game called through it to 0000:0000; it is named as WinG names it now (`wings_calls_are_named_as_wing_dll_names_them`). The table also has `WINGINITIALIZETHUNK16` (1500), `WINGTHUNK16` (1501), `REGISTERWINGPAL` (2000) and `EXCEPTIONHANDLER` (2001), which WinBox does not have.
+
 ## The recommended format and the device context
 
-- [[measured]] `WinGRecommendedDIBFormat` (1002) answers 1, and a header of 40 bytes, 1 by 1, one plane, 8 bits a pixel, uncompressed. The height of 1 is above nought, so the recommended DIB is bottom-up. [[probe:wingprof]].
+- [[measured]] `WinGRecommendDIBFormat` (1002) answers 1, and a header of 40 bytes, 1 by 1, one plane, 8 bits a pixel, uncompressed. The height of 1 is above nought, so the recommended DIB is bottom-up. [[probe:wingprof]].
 - [[measured]] `WinGCreateDC` (1001) makes a device context of WinG's own DIB driver. Its [[fn:GDI.GetDeviceCaps]] answers 24 bits a pixel, one plane, `NUMCOLORS` 16 and `RASTERCAPS` `EE99h`. The bitmap it starts with is 1 by 1. [[probe:wingapi]].
 
 ## Bitmaps

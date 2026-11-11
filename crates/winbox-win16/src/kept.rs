@@ -3740,7 +3740,7 @@ pub static KEPT: &[Kept] = &[
             None,
             None,
             Some(Export { name: "WinGCreateDC", pops: 0, returns: 2, stub: false }),
-            Some(Export { name: "WinGRecommendedDIBFormat", pops: 4, returns: 2, stub: false }),
+            Some(Export { name: "WinGRecommendDIBFormat", pops: 4, returns: 2, stub: false }),
             Some(Export { name: "WinGCreateBitmap", pops: 10, returns: 2, stub: false }),
             Some(Export { name: "WinGGetDIBPointer", pops: 6, returns: 4, stub: false }),
             Some(Export { name: "WinGGetDIBColorTable", pops: 10, returns: 2, stub: false }),
