@@ -7956,6 +7956,234 @@
    "free": "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments"
   }
  },
+ "enhanced/pgbig": {
+  "probe": "pgbig",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 14,
+  "functions": {
+   "alloc": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free after": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "time": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "touch": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "time": "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
+   "free after": "0500h's largest free block does not shrink as 0501h gives a block (kb/guides/paging.md)"
+  }
+ },
+ "enhanced/pgbox": {
+  "probe": "pgbox",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "after read 1": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "after read 2": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "exec": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "posted": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "posted again": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "after read 1": "nothing at 80000000h: DOSBox reads nought there in standard mode and WIN386 steps over the faulting read, where WinBox reads garbage of its address (kb/guides/paging.md)",
+   "after read 2": "WinBox has no pages (kb/guides/paging.md): no Page Fault and no KERNEL box, so the program runs on"
+  }
+ },
+ "enhanced/pgcreg": {
+  "probe": "pgcreg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "cpl": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "read": "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)"
+  }
+ },
+ "enhanced/pgheap": {
+  "probe": "pgheap",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 45,
+  "functions": {
+   "after": {
+    "total": 18,
+    "agreed": 16,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "alloc": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "before": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "compact": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "layout": {
+    "total": 5,
+    "agreed": 1,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
+   "after": "WinBox has no pages (kb/guides/paging.md): a freed block of 1 MiB keeps its pages, where KERNEL gives them back"
+  }
+ },
+ "enhanced/pglock": {
+  "probe": "pglock",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "hint": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "lock": {
+    "total": 8,
+    "agreed": 4,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "locked read": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nest": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "real": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "setup": "WinBox has no pages (kb/guides/paging.md): the page past a 0501h block does not fault",
+   "lock": "0600h and 0601h of a range reaching the page past a 0501h block are answered, where WIN386 refuses them (kb/guides/paging.md)",
+   "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)"
+  }
+ },
  "enhanced/pgtouch": {
   "probe": "pgtouch",
   "display": "vga",
@@ -7996,6 +8224,70 @@
    "dpmi": "0600h and 0601h of a range that wraps past 4 GiB are answered, where WIN386 refuses them",
    "touch": "WinBox has no pages: a read where WIN386 has no page present does not fault",
    "scan": "WinBox has no pages: a read where WIN386 has no page present does not fault"
+  }
+ },
+ "enhanced/pgw386": {
+  "probe": "pgw386",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "fill": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "load": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/pgwrite": {
+  "probe": "pgwrite",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 19,
+  "functions": {
+   "read": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rom": {
+    "total": 9,
+    "agreed": 7,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "write": "WinBox has no pages (kb/guides/paging.md): a write where WIN386 has no page present does not fault (error code 6)",
+   "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
+   "read": "a write where WIN386 has no page, or DOSBox no memory, lands in WinBox's memory and reads back (kb/guides/paging.md)"
   }
  },
  "enhanced/w386box": {
@@ -24582,6 +24874,230 @@
   },
   "gaps": {}
  },
+ "pgbig": {
+  "probe": "pgbig",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 15,
+  "functions": {
+   "alloc": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free after": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "time": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "touch": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "time": "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
+   "free after": "0500h's largest free block does not shrink as 0501h gives a block (kb/guides/paging.md)"
+  }
+ },
+ "pgbox": {
+  "probe": "pgbox",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 9,
+  "functions": {
+   "after read 1": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "after read 2": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "exec": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "posted": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "posted again": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "after read 1": "nothing at 80000000h: DOSBox reads nought there in standard mode and WIN386 steps over the faulting read, where WinBox reads garbage of its address (kb/guides/paging.md)"
+  }
+ },
+ "pgcreg": {
+  "probe": "pgcreg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 5,
+  "functions": {
+   "cpl": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "read": "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)"
+  }
+ },
+ "pgheap": {
+  "probe": "pgheap",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 45,
+  "functions": {
+   "after": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "alloc": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "before": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "compact": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "layout": {
+    "total": 5,
+    "agreed": 1,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)"
+  }
+ },
+ "pglock": {
+  "probe": "pglock",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "hint": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "lock": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "locked read": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nest": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "real": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)"
+  }
+ },
  "pgtouch": {
   "probe": "pgtouch",
   "display": "vga",
@@ -24619,6 +25135,46 @@
   },
   "gaps": {
    "layout": "where things lie: WinBox's segments and blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's"
+  }
+ },
+ "pgwrite": {
+  "probe": "pgwrite",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "read": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rom": {
+    "total": 9,
+    "agreed": 7,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
+   "read": "a write where WIN386 has no page, or DOSBox no memory, lands in WinBox's memory and reads back (kb/guides/paging.md)"
   }
  },
  "plotbig-ega": {
