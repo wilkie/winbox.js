@@ -92,6 +92,12 @@ impl System {
             return Some((13, 0));
         }
 
+        // A page not present, as the core raises it with its error code
+        // (`kb/guides/paging.md`).
+        if exit == Exit::Fault(crate::fault::PAGE_FAULT) {
+            return Some((crate::fault::PAGE_FAULT, self.cpu.page_error.get()));
+        }
+
         let decoded = self.decode()?;
 
         match exit {

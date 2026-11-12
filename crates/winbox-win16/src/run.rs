@@ -6,6 +6,7 @@
 use winbox_cpu::{CS, Exit};
 
 use crate::call::{Pending, Stop};
+use crate::fault::PAGE_FAULT;
 use crate::system::System;
 
 /// How many instructions the processor runs between looks at the clock.
@@ -44,6 +45,13 @@ impl System {
     #[allow(clippy::too_many_lines)]
     pub(crate) fn run_until_event(&mut self, end: u64, until: f64, deadline: f64) -> Event {
         while self.instructions < end {
+            // A page fault in WinBox's own KERNEL or USER, reaching a
+            // program's pointer to a page not present (`System::read_far`),
+            // taken as the call it was made in returns.
+            if let Some(event) = self.host_page_fault_due() {
+                return event;
+            }
+
             // The run's caller given the thread back as the host's time
             // reaches its deadline: only here, between two slices, and
             // never for a count of instructions, so the slices, and what
@@ -80,6 +88,11 @@ impl System {
 
                 slice = slice.min(left);
             }
+
+            // In 386 enhanced mode a page not present faults (the owner's
+            // decisions of 2026-11-11, `kb/guides/paging.md`); standard
+            // mode has no pager.
+            self.enforce_pages();
 
             let (ran, exit) = self.cpu.run(slice);
 
@@ -448,6 +461,7 @@ impl System {
     /// the DPMI host (`dpmi.rs`): true where one was.
     fn dpmi_fault(&mut self, exit: Exit) -> bool {
         let found = match exit {
+            Exit::Fault(PAGE_FAULT) => Some((PAGE_FAULT, self.cpu.page_error.get())),
             Exit::Fault(vector) if vector != 12 && vector != 13 => Some((vector, 0)),
             Exit::Fault(_) | Exit::Host => self.fault_with_code(exit),
             _ => None,

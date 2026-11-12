@@ -1,17 +1,19 @@
 //! The paging audit (`kb/guides/paging.md`, "The audit"): each of paging's
-//! probes run in 386 enhanced mode as the replay runs it, but with the set
-//! of present pages (`winbox_machine::Pages`) enforced -- an access by the
-//! processor to a page the set does not hold given to the program's
-//! handler for exception 0Eh as WIN386 gives it, error code 4 for a read
-//! and 6 for a write -- and its records set beside Windows'. A record that
+//! probes run in 386 enhanced mode as the replay runs it, the pages
+//! enforced as the engine enforces them -- an access to a page not present
+//! a page fault, given to the program's handler for exception 0Eh as
+//! WIN386 gives it, error code 4 for a read and 6 for a write, or else to
+//! KERNEL's boxes -- and its records set beside Windows'. A record that
 //! differs is either one of the cases named in [`CASES`], each with its
-//! cause, or a failure. So every access a probe records that faulted in
-//! Windows faults here, and every one that did not does not, but for the
-//! named cases.
+//! kind and cause, or a failure. No case may be one where WinBox faults and
+//! Windows does not (the owner's decisions of 2026-11-11): each is either
+//! one where Windows faults and WinBox does not ([`Kind::Laxer`], checked
+//! against Windows' record) or no fault either way.
 //!
-//! An access with no handler of the program's to take it -- WinBox's own
-//! code, a program's own before it puts one in -- is let through and
-//! listed: the set must hold what WinBox keeps for itself.
+//! The `audit` feature adds a check of every access the processor makes
+//! against the set, as a cross-check of the core's reach: an access it
+//! stops goes to the program's handler for 0Eh, or with none is let
+//! through and listed. With the core's fault in place it stops none.
 
 #[path = "../../winbox-win16/tests/support/mod.rs"]
 mod support;
@@ -24,86 +26,97 @@ const PROBES: &[&str] = &[
     "pgtouch", "pgbox", "pgwrite", "pgbig", "pglock", "pgheap", "pgw386", "pgfree",
 ];
 
-/// The records that differ from Windows' with the set enforced, by
-/// `probe:function:args` (`*` for every record of a function), each with
-/// its cause.
-const CASES: &[(&str, &str)] = &[
+/// What a named case is. The owner's decisions of 2026-11-11: WinBox
+/// faults only where Windows certainly does, so no case may be one where
+/// WinBox faults and Windows does not; where Windows faults and WinBox,
+/// treating memory its layout leaves unused as present, does not, the case
+/// is named in the permitted direction.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Kind {
+    /// Windows faults, or refuses a lock, where WinBox does not.
+    Laxer,
+    /// No fault either way: where things lie, values, a lock refused.
+    Other,
+}
+
+/// The records that differ from Windows', by `probe:function:args` (`*`
+/// for every record of a function), each with its kind and cause.
+const CASES: &[(&str, Kind, &str)] = &[
     // Where things lie: WinBox's own addresses, a descriptor index's 64 KiB
     // (the owner's decision of 2026-11-10), not KERNEL's heap or WIN386's.
-    ("pgtouch:layout:*", LAYOUT),
-    ("pgheap:layout:*", LAYOUT),
-    ("pgfree:where:*", LAYOUT),
-    ("pgfree:heap:GlobalAlloc 1 MiB", LAYOUT),
+    ("pgtouch:layout:*", Kind::Other, LAYOUT),
+    ("pgheap:layout:*", Kind::Other, LAYOUT),
+    ("pgfree:where:*", Kind::Other, LAYOUT),
+    ("pgfree:heap:GlobalAlloc 1 MiB", Kind::Other, LAYOUT),
     // The page past a 0501h block of one byte: Windows had something else
-    // given there (`pgtouch`'s 223 pages up to the second block, and the
-    // block of 3001h bytes right after it), present and locked; WinBox's
-    // block has its 64 KiB to itself, the page past it no one's.
-    ("pgtouch:dpmi:0600h past the block", NEIGHBOUR),
-    ("pgtouch:dpmi:0601h past the block", NEIGHBOUR),
-    ("pgtouch:touch:past the block", NEIGHBOUR),
-    ("pgtouch:touch:write past the block", NEIGHBOUR),
-    ("pgwrite:write:past the block", NEIGHBOUR),
-    ("pgtouch:scan:from the first block", NEIGHBOUR),
-    ("pgtouch:scan:from the second block", NEIGHBOUR),
-    ("pgtouch:scan:before the second block", NEIGHBOUR),
+    // given there, which 0600h locks; WinBox's block has its 64 KiB to
+    // itself, the page past it committed to nothing, and 0600h refuses it.
+    ("pgtouch:dpmi:0600h past the block", Kind::Other, NEIGHBOUR),
+    ("pgtouch:dpmi:0601h past the block", Kind::Other, NEIGHBOUR),
+    // Past a block's last page: memory WinBox's layout leaves unused,
+    // present, where Windows has nothing there.
+    ("pgtouch:scan:from the first block", Kind::Laxer, UNUSED),
+    ("pgtouch:scan:from the second block", Kind::Laxer, UNUSED),
+    ("pgtouch:scan:from a block of 3001h", Kind::Laxer, UNUSED),
+    ("pglock:setup:pages from the block", Kind::Laxer, UNUSED),
+    ("pgfree:free:after 0502h", Kind::Laxer, UNUSED),
+    ("pgfree:resize:old base after 2 pages", Kind::Laxer, UNUSED),
     (
-        "pgtouch:touch:GlobalAlloc + 10000h",
-        "a small block of KERNEL's lies in the first megabyte, every page around it present; 64 KiB past WinBox's is the next descriptor index's, given to nothing",
+        "pgtouch:touch:far pointer as linear",
+        Kind::Laxer,
+        "the probe's far pointer taken as a linear address lands among WinBox's blocks, below 20000000h, memory WinBox's layout leaves unused or gives",
     ),
     (
         "pgtouch:touch:110000h",
+        Kind::Laxer,
         "110000h, just past the first megabyte in Windows, is in WinBox the segment of descriptor index 11h, one of WinBox's own modules' (`SYSTEM_FIRST`)",
     ),
-    // FFFFF000h is WinBox's local descriptor table's last page, present.
-    ("pgtouch:touch:FFFFF000h", OWN_TABLE),
-    ("pgtouch:dpmi:0600h FFFFF000h", OWN_TABLE),
-    ("pgtouch:dpmi:0601h FFFFF000h", OWN_TABLE),
-    ("pgwrite:write:FFFFF000h", OWN_TABLE),
+    // FFFFF000h is WinBox's own local descriptor table's last page, present.
+    ("pgtouch:touch:FFFFF000h", Kind::Laxer, OWN_TABLE),
+    ("pgtouch:dpmi:0600h FFFFF000h", Kind::Laxer, OWN_TABLE),
+    ("pgtouch:dpmi:0601h FFFFF000h", Kind::Laxer, OWN_TABLE),
+    ("pgwrite:write:FFFFF000h", Kind::Laxer, OWN_TABLE),
     (
         "pgwrite:rom:*",
+        Kind::Other,
         "the first megabyte's ROM: a write at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM; not paging's",
     ),
     (
         "pgbig:time:*",
+        Kind::Other,
         "DOSBox's host's milliseconds, paging to WIN386.SWP",
     ),
-    // `pgbox` has no handler of its own: KERNEL's box for a page fault is
-    // phase 4's. The audit lets the read through and lists it, the read
-    // Windows faulted on.
-    ("pgbox:after read 1:AL", BOX),
-    ("pgbox:after read 2:*", BOX),
     // A page of KERNEL's block read alone: present after the free in both,
     // but in Windows it reads a byte not nought, and in WinBox nought. Why
     // was not followed: the pages of 0501h's block read alone read nought
     // in both.
-    ("pgfree:heap:after GlobalFree", READ_ALONE),
-    ("pgfree:heap:after GlobalCompact", READ_ALONE),
+    ("pgfree:heap:after GlobalFree", Kind::Other, READ_ALONE),
+    ("pgfree:heap:after GlobalCompact", Kind::Other, READ_ALONE),
     // 0503h growing a block: WIN386 grew it in place, the pages after it
     // free; WinBox moves a block that needs more pages, as `dpmigrw` found
-    // WIN386 doing where they were not.
-    ("pgfree:resize:12 pages moved", GROWN),
-    ("pgfree:resize:base after 12 pages", GROWN),
+    // WIN386 doing where they were not. Its page past the block is unused
+    // memory in WinBox, present.
+    ("pgfree:resize:12 pages moved", Kind::Other, GROWN),
+    ("pgfree:resize:base after 12 pages", Kind::Laxer, GROWN),
 ];
 
 const LAYOUT: &str =
     "where things lie: WinBox's addresses are its own (descriptor index times 64 KiB)";
-const NEIGHBOUR: &str =
-    "the page past a 0501h block: another's in Windows, no one's in WinBox's 64 KiB";
+const NEIGHBOUR: &str = "the page past a 0501h block: another's in Windows, which 0600h locks; committed to nothing in WinBox, and refused";
+const UNUSED: &str = "past a block's pages: memory WinBox's layout leaves unused, present (the owner's decision of 2026-11-11), where Windows has nothing";
 const OWN_TABLE: &str =
     "FFFFF000h is WinBox's own local descriptor table, present, where Windows has nothing";
-const BOX: &str = "no handler of the program's: KERNEL's box for a page fault is phase 4's, and the audit lets the read through";
 const READ_ALONE: &str = "a page of KERNEL's block read alone reads a byte not nought in Windows, nought in WinBox; not followed";
-const GROWN: &str =
-    "0503h grew the block in place in Windows, the pages after it free; WinBox moves it";
+const GROWN: &str = "0503h grew the block in place in Windows, the pages after it free; WinBox moves it, and the page past it is unused memory, present";
 
 /// A record's case, where it has one.
-fn case_of(probe: &str, function: &str, args: &str) -> Option<(&'static str, &'static str)> {
+fn case_of(probe: &str, function: &str, args: &str) -> Option<(&'static str, Kind, &'static str)> {
     let exact = format!("{probe}:{function}:{args}");
     let any = format!("{probe}:{function}:*");
 
     CASES
         .iter()
-        .find(|&&(key, _)| key == exact || key == any)
+        .find(|&&(key, _, _)| key == exact || key == any)
         .copied()
 }
 
@@ -154,7 +167,17 @@ fn paging_probes_agree_with_the_set_enforced() {
             let ours = ours.unwrap_or("(none)");
 
             match case_of(probe, function, args) {
-                Some((key, cause)) => {
+                Some((key, kind, cause)) => {
+                    if kind == Kind::Laxer
+                        && !["fault", "code=", "cf=1", "x"]
+                            .iter()
+                            .any(|mark| windows.contains(mark))
+                    {
+                        failures.push(format!(
+                            "{key}: named as Windows faulting, but Windows {windows:?}"
+                        ));
+                    }
+
                     used.insert(key);
                     eprintln!("{name}: {function} {args}: {ours:?}, Windows {windows:?}: {cause}");
                 }
@@ -187,7 +210,7 @@ fn paging_probes_agree_with_the_set_enforced() {
     }
 
     // A case no record needs any more is stale: the set has come to agree.
-    for (key, _) in CASES {
+    for (key, _, _) in CASES {
         if !used.contains(key) {
             failures.push(format!("{key}: named, but the record agrees"));
         }

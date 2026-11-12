@@ -207,6 +207,10 @@ pub struct System {
     /// Each fault a program's task was ended for, as its Application Error
     /// box words it, the box shown or not.
     pub application_faults: Vec<String>,
+    /// A page fault WinBox's own KERNEL or USER met reaching a program's
+    /// pointer: the address, whether a write, and the call's depth, taken
+    /// as that call returns (`fault.rs`).
+    pub host_page_fault: std::cell::Cell<Option<(u32, bool, usize)>>,
     /// The host's hand at USER's system error box, where it has one.
     pub box_hand: Option<crate::sys_error_box::BoxHand>,
     /// While USER's system error box is up, the host's mouse and keyboard
@@ -614,6 +618,7 @@ impl System {
             heap_blocks: HashSet::new(),
             error_mode: 0,
             application_faults: Vec::new(),
+            host_page_fault: std::cell::Cell::new(None),
             box_hand: None,
             modal_input: None,
             depth: 0,
@@ -991,17 +996,36 @@ impl System {
         self.linear((far & 0xffff_0000) | (far.wrapping_add(step) & 0xffff))
     }
 
+    /// The byte at `at` through a program's pointer, as Windows' own code
+    /// reads it: nought where its page is not present, the read a page
+    /// fault (`System::host_reaches`).
+    fn far_byte(&self, at: u32) -> u8 {
+        if self.host_reaches(at, false) {
+            self.cpu.bus.read8(at)
+        } else {
+            0
+        }
+    }
+
+    /// `length` bytes through a program's far pointer, as WinBox's own
+    /// KERNEL and USER read one: each page reached, or a page fault where
+    /// one is not present (the owner's decision 4 of 2026-11-10).
     pub fn read_far(&self, far: u32, length: usize) -> Vec<u8> {
         (0..length as u32)
-            .map(|step| self.cpu.bus.read8(self.far_step(far, step)))
+            .map(|step| self.far_byte(self.far_step(far, step)))
             .collect()
     }
 
+    /// `bytes` written through a program's far pointer, as `read_far`
+    /// reads: a byte whose page is not present is not written, the write
+    /// a page fault.
     pub fn write_far(&mut self, far: u32, bytes: &[u8]) {
         for (step, byte) in bytes.iter().enumerate() {
             let at = self.far_step(far, step as u32);
 
-            self.cpu.bus.write8(at, *byte);
+            if self.host_reaches(at, true) {
+                self.cpu.bus.write8(at, *byte);
+            }
         }
     }
 
@@ -1023,7 +1047,7 @@ impl System {
     /// The string a far pointer points at, to its nought.
     pub fn read_string(&self, far: u32) -> Vec<u8> {
         (0..0x10000)
-            .map(|step| self.cpu.bus.read8(self.far_step(far, step)))
+            .map(|step| self.far_byte(self.far_step(far, step)))
             .take_while(|&byte| byte != 0)
             .collect()
     }

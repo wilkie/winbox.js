@@ -15,10 +15,19 @@
 //! debugger's Cancel, a procedure TOOLHELP's `InterruptRegister` was given,
 //! and a fault in KERNEL's or USER's own code, which winbox.js has none of.
 //!
-//! Only a general protection fault reaches
-//! here: a processor's other faults -- a stack fault, a segment not
-//! present -- are taken by no handler of the engine's, and the run stops at
-//! them. The exit code is KERNEL's own; the engine has no host told
+//! A general protection fault and a page fault reach here: a processor's
+//! other faults -- a stack fault, a segment not present -- are taken by no
+//! handler of the engine's, and the run stops at them.
+//!
+//! A page fault (386 enhanced mode, `kb/guides/paging.md`) takes the same
+//! path, KERNEL's handler for exception 0Eh going on to `5e1b` with its own
+//! name (seg1 `5fc0`, "a Page Fault" at `07F0h`). **Recorded** by `pgbox`:
+//! the first box, Ignore stepping over the read, then Application Error,
+//! "PGBOXC caused a Page Fault in module PGBOXC.EXE at 0001:0028."; and by
+//! `pgw386`, a fault in a Win386 supervisor's 32-bit code, a selector of no
+//! module: no first box, and a box of three lines, "PGW386 caused a Page
+//! Fault in", "module <unknown>186F:20A4", "PGW386 will close." Why KERNEL
+//! words that one so was not read out. The exit code is KERNEL's own; the engine has no host told
 //! of a task's end to give it to.
 
 use winbox_machine::segment_selector;
@@ -31,8 +40,9 @@ use crate::run::Event;
 use crate::sys_error_box::{SEB_CLOSE, SEB_DEFBUTTON, SEB_IGNORE};
 use crate::system::System;
 
-/// The fault the engine takes a program through KERNEL's boxes for.
+/// The faults the engine takes a program through KERNEL's boxes for.
 pub const GENERAL_PROTECTION: u8 = 0x0d;
+pub const PAGE_FAULT: u8 = 0x0e;
 
 const FIRST_BOX: &[u8] = b"An error has occurred in your application.\n\
 If you choose Ignore, you should save your work in a new file.\n\
@@ -46,6 +56,7 @@ fn fault_name(vector: u8) -> &'static str {
         0x06 => "an Illegal Instruction",
         0x0c => "a Stack Fault",
         0x0d => "a General Protection Fault",
+        0x0e => "a Page Fault",
         _ => "an Application Fault",
     }
 }
@@ -66,7 +77,7 @@ impl System {
     /// anything else, the stop as it was (`fault_vector.rs`).
     pub(crate) fn processor_stop(&self, exit: winbox_cpu::Exit) -> Event {
         match self.fault_vector(exit) {
-            Some(GENERAL_PROTECTION) => Event::Fault(GENERAL_PROTECTION),
+            Some(vector @ (GENERAL_PROTECTION | PAGE_FAULT)) => Event::Fault(vector),
             Some(vector) => Event::Stop(Stop::Processor(winbox_cpu::Exit::Fault(vector))),
             None => Event::Stop(Stop::Processor(exit)),
         }
@@ -102,6 +113,63 @@ impl System {
         segment.holds(offset, 1).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
         })
+    }
+
+    /// Pages enforced as the mode has them: in 386 enhanced mode an access
+    /// to a page not present faults; standard mode has no pager.
+    pub(crate) fn enforce_pages(&mut self) {
+        let enhanced = self.mode == crate::Mode::Enhanced;
+
+        if self.cpu.bus.pages().enforced() != enhanced {
+            self.cpu.bus.pages_mut().enforce(enhanced);
+        }
+    }
+
+    /// Whether WinBox's own code may reach the byte at `at` through a
+    /// program's pointer, as Windows' own KERNEL and USER code would: the
+    /// page reached, or, not present, a page fault noted for the call to
+    /// raise as it returns (`host_page_fault_due`), the first one kept.
+    pub(crate) fn host_reaches(&self, at: u32, write: bool) -> bool {
+        if self.cpu.bus.pages().reach(at, 1) {
+            return true;
+        }
+
+        if self.host_page_fault.get().is_none() {
+            self.host_page_fault.set(Some((at, write, self.depth)));
+        }
+
+        false
+    }
+
+    /// A page fault WinBox's own code met in the call that has returned:
+    /// taken as KERNEL takes a fault in its own or USER's code, at the
+    /// call's place in WinBox's module (the owner's decision 4 of
+    /// 2026-11-10).
+    pub(crate) fn host_page_fault_due(&mut self) -> Option<Event> {
+        let (_, _, depth) = self.host_page_fault.get()?;
+
+        if depth != self.depth {
+            return None;
+        }
+
+        // Kept, marked taken, for `application_fault` to tell it from the
+        // processor's.
+        self.host_page_fault.set(Some((0, false, usize::MAX)));
+        Some(Event::Fault(PAGE_FAULT))
+    }
+
+    /// The module and place of a fault in WinBox's own code, a kept
+    /// module's stub where the call returns: the module's file, and the
+    /// stub's selector and offset, WinBox's own addresses (the owner's
+    /// decision 3 of 2026-11-10); where Windows' own code would fault in
+    /// its segments is not read out.
+    fn host_place(&self, cs: u16) -> (u16, String) {
+        let index = winbox_machine::index_for(cs);
+
+        match self.kept.iter().position(|kept| kept.stubs == Some(index)) {
+            Some(kept) => (cs, file_part(&self.kept_path(kept))),
+            None => (cs, "<unknown>".to_string()),
+        }
     }
 
     /// Whether the first box is offered (seg1 `9ff7`).
@@ -148,19 +216,28 @@ impl Engine {
     /// past it (Ignore), else the task ended, `Stop::Ended`. A fault with no
     /// program's task running stops the run, as no handler takes it.
     pub async fn application_fault(&self, vector: u8) -> Result<(), Stop> {
-        let (name, offered, cs, ip) = {
+        let (name, offered, cs, ip, host, supervisor) = {
             let mut system = self.system();
             let Some(name) = system.faulted_name() else {
                 return Err(Stop::Processor(winbox_cpu::Exit::Fault(vector)));
             };
-            let offered = vector == GENERAL_PROTECTION && system.can_ignore();
+            let cs = system.cpu.segments[winbox_cpu::CS].selector;
+            // A fault WinBox's own code met (`host_page_fault_due`): no
+            // instruction of Windows' to step over, so no first box.
+            let host = vector == PAGE_FAULT
+                && matches!(system.host_page_fault.take(), Some((_, _, usize::MAX)));
+            // A page fault in a Win386 supervisor's 32-bit code, a selector
+            // of no module's: one box, no Ignore (`pgw386`).
+            let supervisor = vector == PAGE_FAULT
+                && !host
+                && system.cpu.segments[winbox_cpu::CS].big
+                && system.faulted_place(cs).1 == "<unknown>";
+            let offered = (vector == GENERAL_PROTECTION || vector == PAGE_FAULT)
+                && !host
+                && !supervisor
+                && system.can_ignore();
 
-            (
-                name,
-                offered,
-                system.cpu.segments[winbox_cpu::CS].selector,
-                system.cpu.ip,
-            )
+            (name, offered, cs, system.cpu.ip, host, supervisor)
         };
 
         if offered {
@@ -187,18 +264,36 @@ impl Engine {
         }
 
         let shown = self.system().error_mode & SEM_NOGPFAULTERRORBOX == 0;
-        let (number, file) = self.system().faulted_place(cs);
+        let (number, file) = if host {
+            self.system().host_place(cs)
+        } else {
+            self.system().faulted_place(cs)
+        };
 
-        self.system().application_faults.push(format!(
-            "{name} caused {} in module {file} at {number:04X}:{ip:04X}",
-            fault_name(vector),
-        ));
+        self.system().application_faults.push(if supervisor {
+            format!(
+                "{name} caused {} in module {file}{cs:04X}:{ip:04X}",
+                fault_name(vector)
+            )
+        } else {
+            format!(
+                "{name} caused {} in module {file} at {number:04X}:{ip:04X}",
+                fault_name(vector),
+            )
+        });
 
         if shown {
-            let text = format!(
-                "{name} caused {} in\nmodule {file} at {number:04X}:{ip:04X}.\n\nChoose close. {name} will close.",
-                fault_name(vector),
-            );
+            let text = if supervisor {
+                format!(
+                    "{name} caused {} in\nmodule {file}{cs:04X}:{ip:04X}\n{name} will close.",
+                    fault_name(vector),
+                )
+            } else {
+                format!(
+                    "{name} caused {} in\nmodule {file} at {number:04X}:{ip:04X}.\n\nChoose close. {name} will close.",
+                    fault_name(vector),
+                )
+            };
 
             self.sys_error_box(
                 text.as_bytes(),

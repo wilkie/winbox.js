@@ -185,6 +185,15 @@ impl Pages {
         };
 
         pages.give(0, FIRST_MEGABYTE_LENGTH);
+
+        // Memory WinBox's layout leaves unused -- the rest of a block's
+        // 64 KiB past its pages, a descriptor's slot given to nothing -- is
+        // present, committed to nothing (the owner's decision of
+        // 2026-11-11): WinBox faults only where Windows certainly does.
+        for page in pages_over(FIRST_MEGABYTE_LENGTH, BLOCKS_END - FIRST_MEGABYTE_LENGTH) {
+            pages.set_present(page, true);
+        }
+
         pages.give(crate::FIRST_MEGABYTE, FIRST_MEGABYTE_LENGTH);
         pages.give(crate::GDT_BASE, 0u32.wrapping_sub(crate::GDT_BASE));
         pages
@@ -271,11 +280,11 @@ impl Pages {
         self.moved();
     }
 
-    /// The pages over `length` bytes from `base` neither present nor
-    /// committed, nor any block's.
+    /// The pages over `length` bytes from `base` committed to nothing, nor
+    /// any block's: present still, as memory WinBox's layout leaves unused.
     pub fn take(&mut self, base: u32, length: u32) {
         for page in pages_over(base, length) {
-            self.set_present(page, false);
+            self.set_present(page, true);
             put(&mut self.committed, page, false);
             self.set_unreached(page, false);
         }
@@ -290,7 +299,7 @@ impl Pages {
 
     /// A block given `pages` pages of its own, from `base`: present and
     /// committed, not yet reached where pages are tracked, and the rest of
-    /// the `room` it lies in none of these.
+    /// the `room` it lies in committed to nothing.
     pub fn own(&mut self, base: u32, pages: usize, room: u32) {
         self.take(base, room);
         self.give(base, page_at(pages));
@@ -521,7 +530,10 @@ mod tests {
 
         assert!(pages.present(0x400));
         assert!(pages.present(0x10_ffff));
-        assert!(!pages.present(0x11_0000));
+        // Unused by WinBox's layout, present.
+        assert!(pages.present(0x11_0000));
+        assert!(pages.present(BLOCKS_END - 1));
+        assert!(!pages.present(BLOCKS_END));
         assert!(pages.present(crate::FIRST_MEGABYTE + 0x400));
         assert!(pages.present(crate::LDT_BASE));
         assert!(pages.present(0xffff_f000));
@@ -536,7 +548,8 @@ mod tests {
         pages.track(true);
         pages.own(base, 6, 0x10000);
         assert!(pages.present(base + 0x5fff));
-        assert!(!pages.present(base + 0x6000));
+        assert!(pages.present(base + 0x6000));
+        assert!(!pages.committed(base + 0x6000));
         assert!(!pages.lockable(base + 0x5000, 0x2000));
 
         assert!(pages.reach(base, 1));
@@ -584,11 +597,11 @@ mod tests {
 
         assert_eq!(
             left,
-            [true, true, false, true, true, true, true, true, false]
+            [true, true, false, true, true, true, true, true, true]
         );
         pages.resize_own(base, 12);
         assert!(pages.present(base + 0xb000));
-        assert!(!pages.present(base + 0xc000));
+        assert!(!pages.committed(base + 0xc000));
         assert!(pages.unreached(base + 0xb000));
         assert_eq!(pages.own_committed(), 12);
     }
@@ -640,11 +653,22 @@ mod tests {
         let mut pages = Pages::new();
 
         pages.enforce(true);
-        assert_eq!(pages.reached(0, 0x1_0000_0000), 0x11_0000);
+        assert_eq!(pages.reached(0, 0x1_0000_0000), u64::from(BLOCKS_END));
         assert_eq!(pages.reached(0xffe0_0000, 0x10000), 0x10000);
         assert!(!pages.reach(0x8000_0000, 1));
         assert!(pages.reach(0x400, 2));
-        assert!(!pages.reach(0x10_fffe, 4));
+        assert!(!pages.reach(BLOCKS_END - 2, 4));
+
+        // A freed block's first page, and its pages never reached.
+        pages.track(true);
+        pages.own(0x0100_0000, 3, 0x10000);
+        pages.reach(0x0100_0000, 1);
+        pages.reach(0x0100_2000, 1);
+        pages.free_own(0x0100_0000);
+        assert_eq!(pages.reached(0x0100_0000, 0x10000), 0);
+        assert_eq!(pages.reached(0x0100_2000, 0x10000), 0x10000);
+        assert_eq!(pages.reached(0x0100_0000 - 0x10, 0x100), 0x10);
+        assert!(!pages.reach(0x0100_1000, 1));
     }
 
     #[test]

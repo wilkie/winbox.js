@@ -8043,15 +8043,15 @@
   "functions": {
    "after read 1": {
     "total": 3,
-    "agreed": 2,
-    "disagreed": 1,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "after read 2": {
     "total": 2,
-    "agreed": 0,
-    "disagreed": 2,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8077,10 +8077,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "after read 1": "nothing at 80000000h: DOSBox reads nought there in standard mode and WIN386 steps over the faulting read, where WinBox reads garbage of its address (kb/guides/paging.md)",
-   "after read 2": "WinBox has no pages (kb/guides/paging.md): no Page Fault and no KERNEL box, so the program runs on"
-  }
+  "gaps": {}
  },
  "enhanced/pgcreg": {
   "probe": "pgcreg",
@@ -8136,8 +8133,8 @@
    },
    "lock": {
     "total": 7,
-    "agreed": 6,
-    "disagreed": 1,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8157,11 +8154,10 @@
    }
   },
   "gaps": {
-   "free": "in enhanced mode a freed 0501h block's pages do not fault, the set of present pages kept, not enforced (kb/guides/paging.md, phase 2); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not",
-   "heap": "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a freed block's pages do not fault: the set is kept, not enforced (kb/guides/paging.md)",
+   "free": "in enhanced mode the page past the freed 0501h block is memory WinBox's layout leaves unused, present (the owner's decision of 2026-11-11); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not (kb/guides/paging.md)",
+   "heap": "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a page read alone reads nought where Windows reads another byte (kb/guides/paging.md)",
    "where": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
-   "resize": "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the pages 0503h cuts off do not fault, the set kept, not enforced (kb/guides/paging.md)",
-   "lock": "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block's pages do not fault"
+   "resize": "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the page past a block is memory WinBox's layout leaves unused, present (kb/guides/paging.md)"
   }
  },
  "enhanced/pgheap": {
@@ -8172,8 +8168,8 @@
   "functions": {
    "after": {
     "total": 18,
-    "agreed": 16,
-    "disagreed": 2,
+    "agreed": 18,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8214,8 +8210,7 @@
    }
   },
   "gaps": {
-   "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
-   "after": "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block of 1 MiB keeps its pages, where KERNEL gives them back"
+   "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)"
   }
  },
  "enhanced/pglock": {
@@ -8240,8 +8235,8 @@
    },
    "locked read": {
     "total": 3,
-    "agreed": 2,
-    "disagreed": 1,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8268,8 +8263,7 @@
    }
   },
   "gaps": {
-   "setup": "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): the page past a 0501h block does not fault",
-   "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)"
+   "setup": "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): the page past a 0501h block does not fault (kb/guides/paging.md)"
   }
  },
  "enhanced/pgtouch": {
@@ -8301,8 +8295,8 @@
    },
    "touch": {
     "total": 22,
-    "agreed": 16,
-    "disagreed": 6,
+    "agreed": 19,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    }
@@ -8310,8 +8304,8 @@
   "gaps": {
    "layout": "where things lie: WinBox's segments and blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's",
    "dpmi": "0600h and 0601h of FFFFF000h, WinBox's own local table, are answered, where WIN386 refuses them; of the page past a 0501h block, another's in Windows and no one's in WinBox, refused (kb/guides/paging.md)",
-   "touch": "WinBox has no pages: a read where WIN386 has no page present does not fault",
-   "scan": "WinBox has no pages: a read where WIN386 has no page present does not fault"
+   "touch": "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): 110000h, the far pointer taken as linear and FFFFF000h, WinBox's own table, do not fault where WIN386 has no page (kb/guides/paging.md)",
+   "scan": "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): the pages past a 0501h block do not fault, where in Windows they run out (kb/guides/paging.md)"
   }
  },
  "enhanced/pgw386": {
@@ -8345,8 +8339,8 @@
   "functions": {
    "read": {
     "total": 2,
-    "agreed": 1,
-    "disagreed": 1,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8366,16 +8360,15 @@
    },
    "write": {
     "total": 5,
-    "agreed": 2,
-    "disagreed": 3,
+    "agreed": 4,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
   "gaps": {
-   "write": "WinBox has no pages (kb/guides/paging.md): a write where WIN386 has no page present does not fault (error code 6)",
-   "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
-   "read": "a write where WIN386 has no page, or DOSBox no memory, lands in WinBox's memory and reads back (kb/guides/paging.md)"
+   "write": "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)",
+   "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)"
   }
  },
  "enhanced/w386box": {
@@ -25051,7 +25044,7 @@
    }
   },
   "gaps": {
-   "after read 1": "nothing at 80000000h: DOSBox reads nought there in standard mode and WIN386 steps over the faulting read, where WinBox reads garbage of its address (kb/guides/paging.md)"
+   "after read 1": "nothing at 80000000h: DOSBox reads nought there in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)"
   }
  },
  "pgcreg": {
@@ -25115,8 +25108,8 @@
    }
   },
   "gaps": {
-   "free": "in enhanced mode a freed 0501h block's pages do not fault, the set of present pages kept, not enforced (kb/guides/paging.md, phase 2); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not",
-   "heap": "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a freed block's pages do not fault: the set is kept, not enforced (kb/guides/paging.md)",
+   "free": "in enhanced mode the page past the freed 0501h block is memory WinBox's layout leaves unused, present (the owner's decision of 2026-11-11); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not (kb/guides/paging.md)",
+   "heap": "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a page read alone reads nought where Windows reads another byte (kb/guides/paging.md)",
    "where": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)"
   }
  },
@@ -25223,7 +25216,7 @@
    }
   },
   "gaps": {
-   "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)"
+   "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)"
   }
  },
  "pgtouch": {
@@ -25302,7 +25295,7 @@
   },
   "gaps": {
    "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
-   "read": "a write where WIN386 has no page, or DOSBox no memory, lands in WinBox's memory and reads back (kb/guides/paging.md)"
+   "read": "a write where DOSBox has no memory lands in WinBox's memory and reads back (kb/guides/paging.md)"
   }
  },
  "plotbig-ega": {

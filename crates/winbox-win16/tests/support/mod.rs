@@ -336,6 +336,18 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
         &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
     ),
     ("sebhook", &[&[Step::Key(VK_RETURN)]]),
+    // KERNEL's boxes for a page fault in 386 enhanced mode, as `pgbox` was
+    // recorded (`--then Tab,Return:8 --then Return:4 --then Return:4`):
+    // Ignore at the first read's, Close at the second's, then Close.
+    (
+        "pgbox",
+        &[
+            &[Step::Key(VK_TAB), Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+        ],
+    ),
+    ("pgw386", &[&[Step::Key(VK_RETURN)]]),
     ("undefdl", &[&[Step::Key(VK_RETURN)]]),
     (
         "mbseb",
@@ -1988,11 +2000,11 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     (
         "enhanced/pgtouch:touch",
-        "WinBox has no pages: a read where WIN386 has no page present does not fault",
+        "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): 110000h, the far pointer taken as linear and FFFFF000h, WinBox's own table, do not fault where WIN386 has no page (kb/guides/paging.md)",
     ),
     (
         "enhanced/pgtouch:scan",
-        "WinBox has no pages: a read where WIN386 has no page present does not fault",
+        "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): the pages past a 0501h block do not fault, where in Windows they run out (kb/guides/paging.md)",
     ),
     (
         "enhanced/mcibang:wave",
@@ -2002,29 +2014,24 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "enhanced/mcibang:unopened",
         "mciSendString does not open a device a command names that the task has not open (109h here)",
     ),
-    // Paging's phase 1 probes (`kb/guides/paging.md`): what WinBox does not
-    // do of paging, the fault a named gap until a program needs it (the
-    // owner's decision of 2026-11-10). `pgw386` agrees: the replay holds
-    // only the records Windows wrote before its box.
+    // Paging's phase 1 probes (`kb/guides/paging.md`). In 386 enhanced mode
+    // a page not present faults since phase 3 (the owner's decisions of
+    // 2026-11-11), and KERNEL's boxes follow: `pgbox` and `pgw386` agree.
     (
-        "pgbox:after read 1",
-        "nothing at 80000000h: DOSBox reads nought there in standard mode and WIN386 steps over the faulting read, where WinBox reads garbage of its address (kb/guides/paging.md)",
-    ),
-    (
-        "enhanced/pgbox:after read 2",
-        "WinBox has no pages (kb/guides/paging.md): no Page Fault and no KERNEL box, so the program runs on",
+        "standard/pgbox:after read 1",
+        "nothing at 80000000h: DOSBox reads nought there in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)",
     ),
     (
         "pgwrite:rom",
         "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
     ),
     (
-        "pgwrite:read",
-        "a write where WIN386 has no page, or DOSBox no memory, lands in WinBox's memory and reads back (kb/guides/paging.md)",
+        "standard/pgwrite:read",
+        "a write where DOSBox has no memory lands in WinBox's memory and reads back (kb/guides/paging.md)",
     ),
     (
         "enhanced/pgwrite:write",
-        "WinBox has no pages (kb/guides/paging.md): a write where WIN386 has no page present does not fault (error code 6)",
+        "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)",
     ),
     (
         "pgcreg:read",
@@ -2035,31 +2042,26 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "DOSBox's host's milliseconds, paging to WIN386.SWP in enhanced mode (kb/guides/paging.md, kb/topics/timing.md)",
     ),
     (
-        "pglock:locked read",
-        "nothing at 80000000h: DOSBox reads nought in standard mode and WIN386 faults, where WinBox reads garbage of its address (kb/guides/paging.md)",
+        "standard/pglock:locked read",
+        "nothing at 80000000h: DOSBox reads nought in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)",
     ),
     (
         "enhanced/pglock:setup",
-        "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): the page past a 0501h block does not fault",
+        "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): the page past a 0501h block does not fault (kb/guides/paging.md)",
     ),
     (
         "pgheap:layout",
         "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)",
     ),
-    (
-        "enhanced/pgheap:after",
-        "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block of 1 MiB keeps its pages, where KERNEL gives them back",
-    ),
-    // `pgfree`: which pages of a freed block still read. With the set
-    // enforced, the paging audit (`crates/winbox-audit`) agrees but for
-    // its named cases.
+    // `pgfree`: which pages of a freed block still read. The paging audit
+    // (`crates/winbox-audit`) names each record that differs.
     (
         "pgfree:free",
-        "in enhanced mode a freed 0501h block's pages do not fault, the set of present pages kept, not enforced (kb/guides/paging.md, phase 2); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not",
+        "in enhanced mode the page past the freed 0501h block is memory WinBox's layout leaves unused, present (the owner's decision of 2026-11-11); in standard mode what a freed block's pages hold is what DOSX's arena left, which WinBox's memory does not (kb/guides/paging.md)",
     ),
     (
         "pgfree:heap",
-        "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a freed block's pages do not fault: the set is kept, not enforced (kb/guides/paging.md)",
+        "where things lie (WinBox's block is 64 KiB by descriptor index), and in enhanced mode a page read alone reads nought where Windows reads another byte (kb/guides/paging.md)",
     ),
     (
         "pgfree:where",
@@ -2067,11 +2069,7 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     (
         "enhanced/pgfree:resize",
-        "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the pages 0503h cuts off do not fault, the set kept, not enforced (kb/guides/paging.md)",
-    ),
-    (
-        "enhanced/pgfree:lock",
-        "the set of present pages is kept, not enforced (kb/guides/paging.md, phase 2): a freed block's pages do not fault",
+        "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the page past a block is memory WinBox's layout leaves unused, present (kb/guides/paging.md)",
     ),
 ];
 
