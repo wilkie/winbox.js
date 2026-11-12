@@ -37,6 +37,8 @@ Each function's page carries its own: how long each way it was recorded took, an
 
 [[measured]] A check of every access against a set of present pages, for paging in enhanced mode ([[guide:paging]], design (a)), prototyped and not committed: the same workloads in protected mode over WinBox's `Memory`, 2026-11-10 on the development machine with other work running (load average about 14), the median of five runs. A bitmap of present pages asked on every access, the instruction fetches included, cost 13% on register arithmetic, 11% on loads and stores, 33% on pushes and pops and 17% on the mix; a flat table of page translations, 11%, 18%, 29% and 20%. Both against `Memory` alone, which ran 39,000, 31,200, 60,000 and 36,300 instructions a millisecond.
 
+[[measured]] Paging's first touch ([[guide:paging]], "Phase 3: first touch"): each segment's reach, kept beside its limit and compared in its place, 32 bits where the limit was 64. The bench against the commit before, the two side by side five times, 2026-11-11: each of the eight workloads 5% to 30% faster; `perf stat`, 248 and 249 host instructions an emulated instruction before, 247 and 246 after. The corpus's 38 programs took 102 to 105 seconds before and 98 to 103 after.
+
 [[probe:callcost]] and [[probe:wingcost]] time the same register arithmetic in the run they measure, so their calls can be told as instructions at that run's own rate: about 405,000 a millisecond in `callcost`'s runs and 400,000 in `wingcost`'s, or 405 and 400 instructions a microsecond.
 
 ## How `GetTickCount` steps
