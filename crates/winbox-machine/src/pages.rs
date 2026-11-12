@@ -1,7 +1,8 @@
 //! The linear pages WIN386 would have present for a program in 386
 //! enhanced mode, kept beside the machine's memory as blocks are given and
-//! freed, and asked by no access: paging's phase 2
-//! (`kb/guides/paging.md`, "The set of present pages").
+//! freed (paging's phase 2, `kb/guides/paging.md`, "The set of present
+//! pages"), and which pages of a block the processor has reached (phase 3,
+//! "First touch").
 //!
 //! A page is 4 KiB, WIN386's (the owner's decision of 2026-11-11). WinBox
 //! keeps its own addresses, a descriptor index's segment at the index
@@ -24,11 +25,17 @@
 //!   KERNEL's too big for the first megabyte ([`OWN_PAGES_ABOVE`]) -- has
 //!   its pages present and no more: the page past it faults (**recorded**
 //!   by `pglock`). It is committed whole (`pgbig`).
+//! * **Reached.** In 386 enhanced mode ([`Pages::track`]) each page of a
+//!   block with pages of its own starts unreached. The processor's segments
+//!   are cut short of the first such page (`winbox_cpu::Bus::reached`), so
+//!   that its first access goes off the common path, which takes the page
+//!   as reached (`winbox_cpu::Bus::reach`) and lets the access run.
 //! * **A block freed** (0502h, `GlobalFree`, or the pages 0503h cuts off)
 //!   keeps the pages WIN386's `_PageFree` leaves in its page tables
-//!   ([`Pages::freed`]).
+//!   ([`Pages::freed`]): those reached, but the first.
 
-use std::collections::HashMap;
+use std::cell::Cell;
+use std::collections::BTreeMap;
 
 /// A page's size, and its address's bits below the page.
 pub const PAGE_BITS: u32 = 12;
@@ -58,18 +65,30 @@ pub const BLOCKS_END: u32 = (crate::SELECTORS as u32) << 16;
 /// for; 257 to 383 KiB were not measured.
 pub const OWN_PAGES_ABOVE: u32 = 0x4_0000;
 
-/// A page's fingerprint, or `None` where its mebibyte of memory was never
-/// written.
-pub type Print = Option<u64>;
-
 /// The set: which linear pages are present, which are committed to a
-/// block (what 0600h locks), and the blocks with pages of their own, each
-/// page's fingerprint as it was given.
+/// block (what 0600h locks), and the blocks with pages of their own and
+/// which of their pages are not yet reached.
 #[derive(Clone)]
 pub struct Pages {
     present: Vec<u64>,
+    /// A bit for each word of `present` whose 64 pages are all present,
+    /// passed over whole where the first page not present is looked for.
+    whole: Vec<u64>,
     committed: Vec<u64>,
-    own: HashMap<u32, Vec<Print>>,
+    /// The pages of blocks with pages of their own not yet reached, a bit
+    /// each, and how many there are. Marked reached by the processor's
+    /// reads, which see the set through `&self`.
+    unreached: Vec<Cell<u64>>,
+    left: Cell<usize>,
+    /// The blocks with pages of their own, by base: how many pages each.
+    own: BTreeMap<u32, usize>,
+    /// Whether a block's pages start unreached: 386 enhanced mode's.
+    tracked: bool,
+    /// Whether an access to a page not present is a page fault.
+    enforced: bool,
+    /// A count moved by every change the processor's segments' reach
+    /// depends on: a page reached, given or taken.
+    epoch: Cell<u64>,
 }
 
 impl std::fmt::Debug for Pages {
@@ -78,8 +97,9 @@ impl std::fmt::Debug for Pages {
 
         write!(
             f,
-            "Pages {{ {present} present, {} own blocks }}",
-            self.own.len()
+            "Pages {{ {present} present, {} own blocks, {} unreached }}",
+            self.own.len(),
+            self.left.get()
         )
     }
 }
@@ -92,6 +112,10 @@ impl Default for Pages {
 
 fn page_of(at: u32) -> usize {
     (at >> PAGE_BITS) as usize
+}
+
+fn page_at(page: usize) -> u32 {
+    (page as u32) << PAGE_BITS
 }
 
 /// The pages from the one holding `base` to the one holding its
@@ -110,6 +134,10 @@ fn get(set: &[u64], page: usize) -> bool {
     set[page / 64] & (1 << (page % 64)) != 0
 }
 
+fn get_cell(set: &[Cell<u64>], page: usize) -> bool {
+    set[page / 64].get() & (1 << (page % 64)) != 0
+}
+
 fn put(set: &mut [u64], page: usize, on: bool) {
     if on {
         set[page / 64] |= 1 << (page % 64);
@@ -118,20 +146,78 @@ fn put(set: &mut [u64], page: usize, on: bool) {
     }
 }
 
+/// The first page from `from` up to `to` whose bit is `on`, the set read a
+/// word of 64 pages at a time.
+fn first_bit(word_of: impl Fn(usize) -> u64, from: usize, to: usize, on: bool) -> Option<usize> {
+    let mut page = from;
+
+    while page < to {
+        let word = word_of(page / 64);
+        let word = if on { word } else { !word };
+        let left = word >> (page % 64);
+
+        if left != 0 {
+            let found = page + left.trailing_zeros() as usize;
+
+            return (found < to).then_some(found);
+        }
+
+        page = (page / 64 + 1) * 64;
+    }
+
+    None
+}
+
 impl Pages {
     /// The set as the machine starts: the first megabyte at nought and
     /// WinBox's copy of it, and WinBox's descriptor tables.
     pub fn new() -> Self {
         let mut pages = Self {
             present: vec![0; WORDS],
+            whole: vec![0; WORDS / 64],
             committed: vec![0; WORDS],
-            own: HashMap::new(),
+            unreached: vec![Cell::new(0); WORDS],
+            left: Cell::new(0),
+            own: BTreeMap::new(),
+            tracked: false,
+            enforced: false,
+            epoch: Cell::new(0),
         };
 
         pages.give(0, FIRST_MEGABYTE_LENGTH);
         pages.give(crate::FIRST_MEGABYTE, FIRST_MEGABYTE_LENGTH);
         pages.give(crate::GDT_BASE, 0u32.wrapping_sub(crate::GDT_BASE));
         pages
+    }
+
+    /// Whether the pages of blocks given from now on start unreached, as
+    /// in 386 enhanced mode; off, every page is taken as reached.
+    pub fn track(&mut self, on: bool) {
+        self.tracked = on;
+    }
+
+    pub fn tracked(&self) -> bool {
+        self.tracked
+    }
+
+    /// Whether an access to a page not present is a page fault.
+    pub fn enforce(&mut self, on: bool) {
+        self.enforced = on;
+        self.moved();
+    }
+
+    pub fn enforced(&self) -> bool {
+        self.enforced
+    }
+
+    fn moved(&self) {
+        self.epoch.set(self.epoch.get() + 1);
+    }
+
+    /// A count that moves with every change of the pages the processor
+    /// must ask of.
+    pub fn epoch(&self) -> u64 {
+        self.epoch.get()
     }
 
     /// Whether the page holding `at` is present.
@@ -144,21 +230,57 @@ impl Pages {
         get(&self.committed, page_of(at))
     }
 
+    /// Whether the page holding `at` is a page of a block not yet reached.
+    pub fn unreached(&self, at: u32) -> bool {
+        get_cell(&self.unreached, page_of(at))
+    }
+
+    fn set_present(&mut self, page: usize, on: bool) {
+        put(&mut self.present, page, on);
+        put(
+            &mut self.whole,
+            page / 64,
+            self.present[page / 64] == u64::MAX,
+        );
+    }
+
+    /// A page of a block marked not yet reached, or reached.
+    fn set_unreached(&self, page: usize, on: bool) {
+        let word = &self.unreached[page / 64];
+        let bit = 1 << (page % 64);
+
+        if (word.get() & bit != 0) == on {
+            return;
+        }
+
+        word.set(word.get() ^ bit);
+        self.left.set(if on {
+            self.left.get() + 1
+        } else {
+            self.left.get() - 1
+        });
+    }
+
     /// The pages over `length` bytes from `base` present and committed.
     pub fn give(&mut self, base: u32, length: u32) {
         for page in pages_over(base, length) {
-            put(&mut self.present, page, true);
+            self.set_present(page, true);
             put(&mut self.committed, page, true);
         }
+
+        self.moved();
     }
 
     /// The pages over `length` bytes from `base` neither present nor
-    /// committed.
+    /// committed, nor any block's.
     pub fn take(&mut self, base: u32, length: u32) {
         for page in pages_over(base, length) {
-            put(&mut self.present, page, false);
+            self.set_present(page, false);
             put(&mut self.committed, page, false);
+            self.set_unreached(page, false);
         }
+
+        self.moved();
     }
 
     /// Whether a block at `base` has pages of its own.
@@ -166,55 +288,81 @@ impl Pages {
         self.own.contains_key(&base)
     }
 
-    /// A block given pages of its own, from `base`, each with its
-    /// fingerprint as given: present and committed, and the rest of the
-    /// `room` it lies in neither.
-    pub fn own(&mut self, base: u32, prints: Vec<Print>, room: u32) {
+    /// A block given `pages` pages of its own, from `base`: present and
+    /// committed, not yet reached where pages are tracked, and the rest of
+    /// the `room` it lies in none of these.
+    pub fn own(&mut self, base: u32, pages: usize, room: u32) {
         self.take(base, room);
-        self.give(base, (prints.len() as u32) << PAGE_BITS);
-        self.own.insert(base, prints);
+        self.give(base, page_at(pages));
+
+        if self.tracked {
+            for page in pages_over(base, page_at(pages)) {
+                self.set_unreached(page, true);
+            }
+        }
+
+        self.own.insert(base, pages);
     }
 
     /// How many pages a block with pages of its own has.
     pub fn own_pages(&self, base: u32) -> Option<usize> {
-        self.own.get(&base).map(Vec::len)
+        self.own.get(&base).copied()
     }
 
-    /// A block with pages of its own freed, `now` each page's fingerprint
-    /// as it is freed: the pages WIN386's `_PageFree` leaves present
-    /// ([`Pages::freed`]); none of them committed. Its pages, or `None`
-    /// where the block has none of its own.
-    pub fn free_own(&mut self, base: u32, now: &[Print]) -> Option<usize> {
-        let prints = self.own.remove(&base)?;
+    /// A block with pages of its own freed: the pages WIN386's `_PageFree`
+    /// leaves present ([`Pages::freed`]); none of them committed. Its
+    /// pages, or `None` where the block has none of its own.
+    pub fn free_own(&mut self, base: u32) -> Option<usize> {
+        let pages = self.own.remove(&base)?;
 
-        self.freed(base, &prints, now);
-        Some(prints.len())
+        self.freed(base, pages);
+        Some(pages)
     }
 
-    /// A block with pages of its own given `pages` pages, `prints` the new
-    /// pages' fingerprints where it grows, `now` the fingerprints of the
-    /// pages it gives up where it shrinks.
-    pub fn resize_own(&mut self, base: u32, pages: usize, prints: &[Print], now: &[Print]) {
-        let Some(mut kept) = self.own.remove(&base) else {
+    /// A block with pages of its own given `pages` pages in place: the
+    /// pages it gives up freed, the new ones not yet reached.
+    pub fn resize_own(&mut self, base: u32, pages: usize) {
+        let Some(&had) = self.own.get(&base) else {
             return;
         };
 
-        if pages < kept.len() {
-            let cut = base + ((pages as u32) << PAGE_BITS);
-
-            self.freed(cut, &kept[pages..], now);
-            kept.truncate(pages);
+        if pages < had {
+            self.freed(base + page_at(pages), had - pages);
         } else {
-            let from = base + ((kept.len() as u32) << PAGE_BITS);
+            let from = base + page_at(had);
 
-            self.give(from, ((pages - kept.len()) as u32) << PAGE_BITS);
-            kept.extend_from_slice(prints);
+            self.give(from, page_at(pages - had));
+
+            if self.tracked {
+                for page in pages_over(from, page_at(pages - had)) {
+                    self.set_unreached(page, true);
+                }
+            }
         }
 
-        self.own.insert(base, kept);
+        self.own.insert(base, pages);
     }
 
-    /// The pages from `base` freed as WIN386's `_PageFree` frees them.
+    /// A block with pages of its own moved to `to`, given `pages` pages in
+    /// `room` there: each page it keeps reached where it was, and the old
+    /// block freed.
+    pub fn move_own(&mut self, from: u32, to: u32, pages: usize, room: u32) {
+        let Some(&had) = self.own.get(&from) else {
+            return;
+        };
+
+        self.own(to, pages, room);
+
+        for page in 0..had.min(pages) {
+            if !self.unreached(from + page_at(page)) {
+                self.set_unreached(page_of(to) + page, false);
+            }
+        }
+
+        self.free_own(from);
+    }
+
+    /// `count` pages from `base` freed as WIN386's `_PageFree` frees them.
     /// **Read out** of `WIN386.EXE`'s virtual machine manager, object 1:
     /// service 55h (`30eb`) calls `31e6` for the block's pages. Its loop
     /// (`323a`-`3294`) clears each page's record and gives its frame back,
@@ -231,19 +379,110 @@ impl Pages {
     /// at `10d2`-`10e5`). **Recorded** by `pgfree`: pages written or read
     /// alone read after 0502h, `GlobalFree` and 0503h's shrink, the first
     /// and those untouched fault; by `pgheap`: pages 1, 128 and 255 of 1 MiB.
-    ///
-    /// WinBox does not see a page reached: a page whose fingerprint has
-    /// changed since it was given stands for one given a frame. A page
-    /// only read, its bytes as they were, is taken for one never reached
-    /// (`pgfree`'s pages read alone, a known case of the audit).
-    pub fn freed(&mut self, base: u32, then: &[Print], now: &[Print]) {
-        for (page, (was, is)) in then.iter().zip(now).enumerate() {
-            let at = base + ((page as u32) << PAGE_BITS);
-            let reached = page > 0 && touched(*was, *is);
+    pub fn freed(&mut self, base: u32, count: usize) {
+        for (index, page) in pages_over(base, page_at(count)).enumerate() {
+            let reached = index > 0 && !get_cell(&self.unreached, page);
 
-            put(&mut self.committed, page_of(at), false);
-            put(&mut self.present, page_of(at), reached);
+            self.set_unreached(page, false);
+            put(&mut self.committed, page, false);
+            self.set_present(page, reached);
         }
+
+        self.moved();
+    }
+
+    /// How many of `length` bytes from `base` lie before the first page
+    /// that must be asked of: one not yet reached, or, enforced, one not
+    /// present. Linear addresses wrap round 4 GiB.
+    pub fn reached(&self, base: u32, length: u64) -> u64 {
+        if length == 0 || (self.left.get() == 0 && !self.enforced) {
+            return length;
+        }
+
+        let first = page_of(base);
+        let last = page_of(base.wrapping_add((length - 1) as u32));
+        let found = if length > u64::from(u32::MAX) || last < first {
+            self.first_asked(first, PAGES)
+                .or_else(|| self.first_asked(0, last + 1))
+        } else {
+            self.first_asked(first, last + 1)
+        };
+
+        match found {
+            None => length,
+            Some(page) if page == first => 0,
+            Some(page) => u64::from(page_at(page).wrapping_sub(base)).min(length),
+        }
+    }
+
+    /// The first page from `from` up to `to` that must be asked of.
+    fn first_asked(&self, from: usize, to: usize) -> Option<usize> {
+        let mut found = if self.enforced {
+            self.first_absent(from, to)
+        } else {
+            None
+        };
+
+        if self.left.get() > 0 {
+            for (&base, &pages) in &self.own {
+                let start = page_of(base).max(from);
+                let end = (page_of(base) + pages).min(found.unwrap_or(to));
+
+                if start < end
+                    && let Some(page) =
+                        first_bit(|word| self.unreached[word].get(), start, end, true)
+                {
+                    found = Some(page);
+                }
+            }
+        }
+
+        found
+    }
+
+    /// The first page from `from` up to `to` not present, each word of 64
+    /// pages all present passed over whole.
+    fn first_absent(&self, from: usize, to: usize) -> Option<usize> {
+        let mut page = from;
+
+        while page < to {
+            let word = page / 64;
+
+            if get(&self.whole, word) {
+                page = (word + 1) * 64;
+                continue;
+            }
+
+            let stop = ((word + 1) * 64).min(to);
+
+            if let Some(found) = first_bit(|at| self.present[at], page, stop, false) {
+                return Some(found);
+            }
+
+            page = stop;
+        }
+
+        None
+    }
+
+    /// An access of `size` bytes at `at` asked of: false where enforced and
+    /// one of its pages is not present; else each of its pages taken as
+    /// reached.
+    pub fn reach(&self, at: u32, size: u32) -> bool {
+        let pages = [page_of(at), page_of(at.wrapping_add(size.max(1) - 1))];
+
+        if self.enforced && pages.iter().any(|&page| !get(&self.present, page)) {
+            return false;
+        }
+
+        for page in pages {
+            if get_cell(&self.unreached, page) {
+                self.set_unreached(page, false);
+                self.moved();
+            }
+        }
+
+        true
     }
 
     /// Whether 0600h or 0601h of `length` bytes from `base` are answered:
@@ -259,7 +498,7 @@ impl Pages {
     /// refused, those that still read too).
     pub fn lockable(&self, base: u32, length: u32) -> bool {
         pages_over(base, length).all(|page| {
-            let at = (page as u32) << PAGE_BITS;
+            let at = page_at(page);
 
             !(FIRST_MEGABYTE_LENGTH..BLOCKS_END).contains(&at) || get(&self.committed, page)
         })
@@ -268,33 +507,7 @@ impl Pages {
     /// The pages committed to blocks with pages of their own: 0500h's
     /// largest free block is less by them.
     pub fn own_committed(&self) -> usize {
-        self.own.values().map(Vec::len).sum()
-    }
-}
-
-/// The fingerprint of a page of noughts, a mebibyte made since the page
-/// was given.
-pub fn nought_print() -> u64 {
-    print_of(&[0; PAGE_SIZE as usize])
-}
-
-/// A page's bytes' fingerprint (FNV-1a, a word at a time).
-pub fn print_of(bytes: &[u8]) -> u64 {
-    bytes.chunks(8).fold(0xcbf2_9ce4_8422_2325, |hash, word| {
-        let mut eight = [0; 8];
-
-        eight[..word.len()].copy_from_slice(word);
-        (hash ^ u64::from_le_bytes(eight)).wrapping_mul(0x0000_0100_0000_01b3)
-    })
-}
-
-/// Whether a page was reached between two fingerprints: they differ, but
-/// not where its mebibyte, never written, was made noughts by a write to
-/// another page.
-fn touched(was: Print, is: Print) -> bool {
-    match (was, is) {
-        (None, Some(print)) => print != nought_print(),
-        _ => was != is,
+        self.own.values().sum()
     }
 }
 
@@ -319,25 +532,36 @@ mod tests {
     fn frees_as_page_free_does() {
         let mut pages = Pages::new();
         let base = 0x0100_0000;
-        let then = vec![Some(1); 6];
-        let mut now = then.clone();
 
-        pages.own(base, then, 0x10000);
+        pages.track(true);
+        pages.own(base, 6, 0x10000);
         assert!(pages.present(base + 0x5fff));
         assert!(!pages.present(base + 0x6000));
         assert!(!pages.lockable(base + 0x5000, 0x2000));
 
-        now[0] = Some(2);
-        now[2] = Some(3);
-        now[4] = Some(4);
-        pages.free_own(base, &now);
+        assert!(pages.reach(base, 1));
+        assert!(pages.reach(base + 0x2fff, 2));
+        assert!(pages.reach(base + 0x4000, 4));
+        pages.free_own(base);
 
         let left: Vec<bool> = (0..6)
             .map(|page| pages.present(base + page * 0x1000))
             .collect();
 
-        assert_eq!(left, [false, false, true, false, true, false]);
+        assert_eq!(left, [false, false, true, true, true, false]);
         assert!(!pages.lockable(base + 0x2000, 0x1000));
+    }
+
+    #[test]
+    fn untracked_every_page_is_reached() {
+        let mut pages = Pages::new();
+        let base = 0x0100_0000;
+
+        pages.own(base, 3, 0x10000);
+        assert_eq!(pages.reached(base, 0x10000), 0x10000);
+        pages.free_own(base);
+        assert!(!pages.present(base));
+        assert!(pages.present(base + 0x2000));
     }
 
     #[test]
@@ -345,8 +569,14 @@ mod tests {
         let mut pages = Pages::new();
         let base = 0x0100_0000;
 
-        pages.own(base, vec![Some(1); 8], 0x10000);
-        pages.resize_own(base, 2, &[], &[Some(2); 6]);
+        pages.track(true);
+        pages.own(base, 8, 0x10000);
+
+        for page in 0..8 {
+            pages.reach(base + page * 0x1000, 1);
+        }
+
+        pages.resize_own(base, 2);
 
         let left: Vec<bool> = (0..9)
             .map(|page| pages.present(base + page * 0x1000))
@@ -356,10 +586,65 @@ mod tests {
             left,
             [true, true, false, true, true, true, true, true, false]
         );
-        pages.resize_own(base, 12, &[Some(1); 10], &[]);
+        pages.resize_own(base, 12);
         assert!(pages.present(base + 0xb000));
         assert!(!pages.present(base + 0xc000));
+        assert!(pages.unreached(base + 0xb000));
         assert_eq!(pages.own_committed(), 12);
+    }
+
+    #[test]
+    fn a_moved_block_keeps_its_pages_reached() {
+        let mut pages = Pages::new();
+        let (from, to) = (0x0100_0000, 0x0200_0000);
+
+        pages.track(true);
+        pages.own(from, 2, 0x10000);
+        pages.reach(from + 0x1000, 1);
+        pages.move_own(from, to, 4, 0x10000);
+        assert!(pages.unreached(to));
+        assert!(!pages.unreached(to + 0x1000));
+        assert!(pages.unreached(to + 0x2000));
+        assert!(pages.present(from + 0x1000));
+        assert!(!pages.owns(from));
+    }
+
+    #[test]
+    fn a_segment_reaches_up_to_the_first_page_not_reached() {
+        let mut pages = Pages::new();
+        let base = 0x0100_0000;
+
+        assert_eq!(pages.reached(0, 0x1_0000_0000), 0x1_0000_0000);
+        pages.track(true);
+        pages.own(base, 4, 0x10000);
+        assert_eq!(pages.reached(base, 0x10000), 0);
+        assert_eq!(pages.reached(base - 0x10, 0x10000), 0x10);
+        assert_eq!(pages.reached(0, 0x1_0000_0000), u64::from(base));
+
+        pages.reach(base, 1);
+        pages.reach(base + 0x2000, 1);
+        assert_eq!(pages.reached(base, 0x10000), 0x1000);
+        assert_eq!(pages.reached(base + 0x2000, 0x10000), 0x1000);
+        assert_eq!(pages.reached(base + 0x2100, 0x10000), 0xf00);
+
+        // A flat segment that wraps round 4 GiB.
+        assert_eq!(pages.reached(0x8000_0000, 0x1_0000_0000), 0x8100_1000);
+
+        pages.reach(base + 0x1000, 1);
+        pages.reach(base + 0x3000, 1);
+        assert_eq!(pages.reached(base, 0x10000), 0x10000);
+    }
+
+    #[test]
+    fn enforced_a_segment_reaches_up_to_the_first_page_not_present() {
+        let mut pages = Pages::new();
+
+        pages.enforce(true);
+        assert_eq!(pages.reached(0, 0x1_0000_0000), 0x11_0000);
+        assert_eq!(pages.reached(0xffe0_0000, 0x10000), 0x10000);
+        assert!(!pages.reach(0x8000_0000, 1));
+        assert!(pages.reach(0x400, 2));
+        assert!(!pages.reach(0x10_fffe, 4));
     }
 
     #[test]

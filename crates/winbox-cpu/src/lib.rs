@@ -63,6 +63,31 @@ pub trait Bus {
         self.write8(at, value as u8)?;
         self.write8(at.wrapping_add(1), (value >> 8) as u8)
     }
+
+    /// How many of `length` bytes from `base` the core may reach without
+    /// asking: up to the first page that must be asked of
+    /// ([`Self::reach`]) -- for WinBox's memory, a page of a block not yet
+    /// reached, or one not present where pages fault
+    /// (`kb/guides/paging.md`, "Phase 3"). A segment's [`Segment::reach`]
+    /// is cut there. All of them by default.
+    fn reached(&self, _base: u32, length: u64) -> u64 {
+        length
+    }
+
+    /// An access of `size` bytes at `at` past a segment's reach and inside
+    /// its limit: each of its pages taken as reached. False where a page is
+    /// not present, the access a page fault ([`Exit::Fault`] 14). Asked off
+    /// the common path alone.
+    fn reach(&self, _at: u32, _size: u32, _write: bool) -> bool {
+        true
+    }
+
+    /// A count that moves whenever what [`Self::reached`] answers may have
+    /// changed -- a page reached, given or taken: the core then works out
+    /// its segments' reach again as its next run starts.
+    fn epoch(&self) -> u64 {
+        0
+    }
 }
 
 /// Memory of a fixed size in a `Vec`, for tests and for running natively.
@@ -82,14 +107,9 @@ impl Bus for VecBus {
 
 /// A segment register as the part caches it: the selector loaded, and the
 /// base and limit its descriptor gave.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Segment {
     pub selector: u16,
-    pub base: u32,
-    /// One past the last offset that may be reached: up to `1_0000_0000h`,
-    /// for a segment of 4 GiB. For a segment that expands down
-    /// ([`Self::down`]), the first that may be: one past its limit.
-    pub past_limit: u64,
     /// The descriptor's D bit: for a code segment, 32-bit operands and
     /// addresses unless a prefix says otherwise; for the stack segment, its
     /// B bit, a 32-bit stack, ESP for SP. For a data segment that expands
@@ -97,22 +117,74 @@ pub struct Segment {
     pub big: bool,
     /// Whether the segment is data that expands down: its room runs from
     /// one past its limit to `FFFFh`, or `FFFFFFFFh` with its B bit (Intel
-    /// 80386 manual, expand-down data segments). Kept beside the limit,
-    /// not as a second bound, so that the cache of a segment stays
-    /// sixteen bytes: at twenty-four, the benchmark ran 10 to 25% slower.
+    /// 80386 manual, expand-down data segments). Every access through it
+    /// is checked off the common path. A segment with no room -- the null
+    /// selector, one not present -- is kept as one that expands down from
+    /// `FFFFFFFFh`.
     pub down: bool,
+    pub base: u32,
+    /// The last offset that may be reached: the limit, in bytes.
+    pub limit: u32,
+    /// One past the last offset the common path lets through unasked: one
+    /// past the limit, or less where a page that must be asked of lies
+    /// below it ([`Bus::reached`]), and at most `FFFFFFFFh`, the last byte
+    /// of 4 GiB asked. Kept beside the limit, not in its place, so that
+    /// the cache of a segment stays sixteen bytes: at twenty-four, the
+    /// benchmark ran 10 to 25% slower.
+    pub reach: u32,
+}
+
+/// No room, as the null selector has.
+impl Default for Segment {
+    fn default() -> Self {
+        Self::empty(0)
+    }
 }
 
 impl Segment {
+    /// A segment from `base` whose last offset is `limit`, all of it
+    /// reached.
+    pub const fn new(selector: u16, base: u32, limit: u32) -> Self {
+        Self {
+            selector,
+            big: false,
+            down: false,
+            base,
+            limit,
+            reach: if limit == u32::MAX {
+                u32::MAX
+            } else {
+                limit + 1
+            },
+        }
+    }
+
+    /// A segment with no room: every access faults.
+    pub const fn empty(selector: u16) -> Self {
+        Self {
+            selector,
+            big: false,
+            down: true,
+            base: 0,
+            limit: u32::MAX,
+            reach: 0,
+        }
+    }
+
+    /// One past the limit.
+    pub const fn past_limit(&self) -> u64 {
+        self.limit as u64 + 1
+    }
+
     /// The first offset that may be reached.
     pub const fn floor(&self) -> u64 {
-        if self.down { self.past_limit } else { 0 }
+        if self.down { self.past_limit() } else { 0 }
     }
 
     /// One past the last offset that may be reached.
     pub const fn end(&self) -> u64 {
         match (self.down, self.big) {
-            (false, _) => self.past_limit,
+            (false, _) => self.past_limit(),
             (true, false) => 0x1_0000,
             (true, true) => 0x1_0000_0000,
         }
@@ -121,6 +193,16 @@ impl Segment {
     /// Whether `size` bytes at `offset` are all inside the segment.
     pub const fn holds(&self, offset: u32, size: u32) -> bool {
         offset as u64 >= self.floor() && offset as u64 + size as u64 <= self.end()
+    }
+
+    /// The reach of a segment that does not expand down, up to
+    /// `reached` bytes from its base reached ([`Bus::reached`]).
+    fn reach_of(&self, reached: u64) -> u32 {
+        if self.down {
+            0
+        } else {
+            reached.min(self.past_limit()).min(u64::from(u32::MAX)) as u32
+        }
     }
 }
 
@@ -277,6 +359,13 @@ pub struct Cpu<B: Bus> {
     /// access it makes: a general protection fault, error code nought,
     /// which the host names as such in protected mode.
     pub fetched_past_limit: bool,
+    /// The linear address of the last page fault ([`Exit::Fault`] 14), as
+    /// the 80386 keeps it in CR2, and its error code: 4 for a read, 6 for
+    /// a write.
+    pub cr2: std::cell::Cell<u32>,
+    pub page_error: std::cell::Cell<u16>,
+    /// The bus's [`Bus::epoch`] as the segments' reach was last worked out.
+    reach_epoch: u64,
 }
 
 /// The one-byte opcodes the operand-size prefix does not change:
@@ -332,6 +421,9 @@ impl<B: Bus> Cpu<B> {
             wrapped: false,
             esp_based: false,
             fetched_past_limit: false,
+            cr2: std::cell::Cell::new(0),
+            page_error: std::cell::Cell::new(0),
+            reach_epoch: 0,
         }
     }
 
@@ -462,13 +554,7 @@ impl<B: Bus> Cpu<B> {
     /// (`stack32`).
     fn descriptor(&self, index: usize, selector: u16, checked: bool) -> Result<Segment, Exit> {
         if !self.protected {
-            return Ok(Segment {
-                selector,
-                base: u32::from(selector) << 4,
-                past_limit: 0x10000,
-                big: false,
-                down: false,
-            });
+            return Ok(self.reaching(Segment::new(selector, u32::from(selector) << 4, 0xffff)));
         }
 
         let stack = index == SS;
@@ -478,13 +564,7 @@ impl<B: Bus> Cpu<B> {
                 return Err(Exit::Host);
             }
 
-            return Ok(Segment {
-                selector,
-                base: 0,
-                past_limit: 0,
-                big: false,
-                down: false,
-            });
+            return Ok(Segment::empty(selector));
         }
 
         let (table, table_limit) = if selector & 4 != 0 {
@@ -531,23 +611,61 @@ impl<B: Bus> Cpu<B> {
             }
         }
 
-        let grows_down = access & 0x1c == 0x14;
-        let down = present && grows_down;
+        if !present {
+            return Ok(Segment::empty(selector));
+        }
 
-        Ok(Segment {
-            selector,
-            base,
-            past_limit: if present { u64::from(limit) + 1 } else { 0 },
+        Ok(self.reaching(Segment {
             big: granularity & 0x40 != 0,
-            down,
-        })
+            down: access & 0x1c == 0x14,
+            ..Segment::new(selector, base, limit)
+        }))
+    }
+
+    /// A segment's reach worked out afresh: up to the first page from its
+    /// base that must be asked of ([`Bus::reached`]).
+    fn reaching(&self, segment: Segment) -> Segment {
+        let reached = if segment.down {
+            0
+        } else {
+            self.bus.reached(segment.base, segment.past_limit())
+        };
+
+        Segment {
+            reach: segment.reach_of(reached),
+            ..segment
+        }
+    }
+
+    /// Every segment's reach worked out afresh where the bus's pages have
+    /// changed since it was last ([`Bus::epoch`]): as each run starts, so a
+    /// page reached in a run is asked of until the next.
+    fn reach_again(&mut self) {
+        let epoch = self.bus.epoch();
+
+        if epoch == self.reach_epoch {
+            return;
+        }
+
+        self.reach_epoch = epoch;
+
+        for index in 0..self.segments.len() {
+            self.segments[index] = self.reaching(self.segments[index]);
+        }
+    }
+
+    /// The segment registers set by the host, as a task switch puts back
+    /// the ones it kept: each one's reach worked out again as the next run
+    /// starts, the pages having changed since it was kept.
+    pub fn segments_set(&mut self) {
+        self.reach_epoch = u64::MAX;
     }
 
     /// Where an access is, by linear address. A 16-bit address wraps within
     /// its 64 KiB; a
     /// 32-bit one does not, and an access that runs past the limit faults.
-    fn linear(&self, segment: usize, offset: u32, size: u32) -> Result<u32, Exit> {
-        self.linear_sized(segment, offset, size, self.address32)
+    fn linear(&self, segment: usize, offset: u32, size: u32, write: bool) -> Result<u32, Exit> {
+        self.linear_sized(segment, offset, size, self.address32, write)
     }
 
     /// Where an access is, by linear address, its offset 32-bit (`wide`)
@@ -559,28 +677,50 @@ impl<B: Bus> Cpu<B> {
         offset: u32,
         size: u32,
         wide: bool,
+        write: bool,
     ) -> Result<u32, Exit> {
         let cached = self.segments[segment];
         let offset = if wide { offset } else { offset & 0xffff };
 
-        if cached.down || u64::from(offset) + u64::from(size) > cached.past_limit {
-            self.outside(segment, offset, size)?;
+        if cached.down || u64::from(offset) + u64::from(size) > u64::from(cached.reach) {
+            self.outside(segment, offset, size, write)?;
         }
 
         Ok(cached.base.wrapping_add(offset))
     }
 
-    /// An access past the limit, or through a segment that expands down,
-    /// checked both ways off the common path: the fault, or nothing for
-    /// one inside a segment that expands down.
+    /// An access past the reach, or through a segment that expands down,
+    /// checked off the common path: past the limit, the fault; inside it,
+    /// its pages asked of ([`Bus::reach`]) -- taken as reached, or a page
+    /// fault where one is not present, its address kept as CR2
+    /// ([`Self::cr2`]) and its error code ([`Self::page_error`]).
     #[cold]
     #[inline(never)]
-    fn outside(&self, segment: usize, offset: u32, size: u32) -> Result<(), Exit> {
-        if self.segments[segment].holds(offset, size) {
-            Ok(())
-        } else {
-            Err(self.limit_fault(segment))
+    fn outside(&self, segment: usize, offset: u32, size: u32, write: bool) -> Result<(), Exit> {
+        let cached = self.segments[segment];
+
+        if !cached.holds(offset, size) {
+            return Err(self.limit_fault(segment));
         }
+
+        let at = cached.base.wrapping_add(offset);
+
+        if self.bus.reach(at, size, write) {
+            return Ok(());
+        }
+
+        // The 80386's error code: not present (bit 0 clear), a write
+        // (bit 1), at user privilege (bit 2) -- Intel's *80386 Programmer's
+        // Reference Manual*, "Page-Fault Exception". The address is the
+        // access's first page that is not present.
+        let missing = (0..size)
+            .map(|byte| at.wrapping_add(byte))
+            .find(|&byte| !self.bus.reach(byte, 1, write))
+            .unwrap_or(at);
+
+        self.cr2.set(missing);
+        self.page_error.set(if write { 6 } else { 4 });
+        Err(Exit::Fault(14))
     }
 
     /// The fault for an access through `segment` past its limit. In real
@@ -605,24 +745,24 @@ impl<B: Bus> Cpu<B> {
 
     fn read8(&self, segment: usize, offset: u32) -> Result<u8, Exit> {
         self.bus
-            .read8(self.linear(segment, offset, 1)?)
+            .read8(self.linear(segment, offset, 1, false)?)
             .ok_or(Exit::Host)
     }
 
     fn read16(&self, segment: usize, offset: u32) -> Result<u16, Exit> {
         self.bus
-            .read16(self.linear(segment, offset, 2)?)
+            .read16(self.linear(segment, offset, 2, false)?)
             .ok_or(Exit::Host)
     }
 
     fn write8(&mut self, segment: usize, offset: u32, value: u8) -> Result<(), Exit> {
-        let at = self.linear(segment, offset, 1)?;
+        let at = self.linear(segment, offset, 1, true)?;
 
         self.bus.write8(at, value).ok_or(Exit::Host)
     }
 
     fn write16(&mut self, segment: usize, offset: u32, value: u16) -> Result<(), Exit> {
-        let at = self.linear(segment, offset, 2)?;
+        let at = self.linear(segment, offset, 2, true)?;
 
         self.writable(at, 2)?;
         self.bus.write16(at, value).ok_or(Exit::Host)
@@ -633,18 +773,18 @@ impl<B: Bus> Cpu<B> {
     /// whatever the instruction's address size.
     fn code8(&self, offset: u32) -> Result<u8, Exit> {
         self.bus
-            .read8(self.linear_sized(CS, offset, 1, true)?)
+            .read8(self.linear_sized(CS, offset, 1, true, false)?)
             .ok_or(Exit::Host)
     }
 
     fn code16(&self, offset: u32) -> Result<u16, Exit> {
         self.bus
-            .read16(self.linear_sized(CS, offset, 2, true)?)
+            .read16(self.linear_sized(CS, offset, 2, true, false)?)
             .ok_or(Exit::Host)
     }
 
     fn code32(&self, offset: u32) -> Result<u32, Exit> {
-        let at = self.linear_sized(CS, offset, 4, true)?;
+        let at = self.linear_sized(CS, offset, 4, true, false)?;
         let low = self.bus.read16(at).ok_or(Exit::Host)?;
         let high = self.bus.read16(at.wrapping_add(2)).ok_or(Exit::Host)?;
 
@@ -652,7 +792,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     fn read32(&self, segment: usize, offset: u32) -> Result<u32, Exit> {
-        let at = self.linear(segment, offset, 4)?;
+        let at = self.linear(segment, offset, 4, false)?;
         let low = self.bus.read16(at).ok_or(Exit::Host)?;
         let high = self.bus.read16(at.wrapping_add(2)).ok_or(Exit::Host)?;
 
@@ -660,7 +800,7 @@ impl<B: Bus> Cpu<B> {
     }
 
     fn write32(&mut self, segment: usize, offset: u32, value: u32) -> Result<(), Exit> {
-        let at = self.linear(segment, offset, 4)?;
+        let at = self.linear(segment, offset, 4, true)?;
 
         self.writable(at, 4)?;
         self.bus.write16(at, value as u16).ok_or(Exit::Host)?;
@@ -763,12 +903,12 @@ impl<B: Bus> Cpu<B> {
 
     pub(crate) fn stack_read16(&self, offset: u32) -> Result<u16, Exit> {
         self.bus
-            .read16(self.linear_sized(SS, offset, 2, self.stack32())?)
+            .read16(self.linear_sized(SS, offset, 2, self.stack32(), false)?)
             .ok_or(Exit::Host)
     }
 
     pub(crate) fn stack_read32(&self, offset: u32) -> Result<u32, Exit> {
-        let at = self.linear_sized(SS, offset, 4, self.stack32())?;
+        let at = self.linear_sized(SS, offset, 4, self.stack32(), false)?;
         let low = self.bus.read16(at).ok_or(Exit::Host)?;
         let high = self.bus.read16(at.wrapping_add(2)).ok_or(Exit::Host)?;
 
@@ -776,14 +916,14 @@ impl<B: Bus> Cpu<B> {
     }
 
     pub(crate) fn stack_write16(&mut self, offset: u32, value: u16) -> Result<(), Exit> {
-        let at = self.linear_sized(SS, offset, 2, self.stack32())?;
+        let at = self.linear_sized(SS, offset, 2, self.stack32(), true)?;
 
         self.writable(at, 2)?;
         self.bus.write16(at, value).ok_or(Exit::Host)
     }
 
     pub(crate) fn stack_write32(&mut self, offset: u32, value: u32) -> Result<(), Exit> {
-        let at = self.linear_sized(SS, offset, 4, self.stack32())?;
+        let at = self.linear_sized(SS, offset, 4, self.stack32(), true)?;
 
         self.writable(at, 4)?;
         self.bus.write16(at, value as u16).ok_or(Exit::Host)?;
@@ -2035,6 +2175,8 @@ impl<B: Bus> Cpu<B> {
     pub fn run(&mut self, budget: u64) -> (u64, Exit) {
         let mut ran = 0;
 
+        self.reach_again();
+
         while ran < budget {
             let (ip, regs, high, flags) = (self.ip, self.regs, self.high, self.flags);
             let (segments, loaded, load_count) = (self.segments, self.loaded, self.load_count);
@@ -3082,7 +3224,8 @@ mod tests {
         // mov cx, 4; xor di, di; mov al, 7; rep stosb -- past ES's limit at 2
         let mut cpu = machine(&[0xb9, 0x04, 0x00, 0x31, 0xff, 0xb0, 0x07, 0xf3, 0xaa]);
 
-        cpu.segments[ES].past_limit = 2;
+        cpu.segments[ES].limit = 1;
+        cpu.segments[ES].reach = 2;
         assert_eq!(cpu.run(100), (3, Exit::Fault(13)));
         assert_eq!(&cpu.bus.0[0x20000..0x20003], &[7, 7, 0]);
         assert_eq!((cpu.ip, cpu.regs[CX], cpu.regs[DI]), (7, 2, 2));

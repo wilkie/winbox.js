@@ -1523,6 +1523,7 @@ impl System {
         };
 
         if self.dpmi_enhanced() {
+            self.cpu.bus.pages_mut().track(true);
             self.cpu.bus.own_pages(base, size, (count as u32) << 16);
         }
 
@@ -1616,8 +1617,9 @@ impl System {
             let bytes = self.cpu.bus.read(block.base, block.size.min(size) as usize);
 
             self.cpu.bus.write(base, &bytes);
-            self.cpu.bus.own_pages(base, size, (count as u32) << 16);
-            self.cpu.bus.free_own_pages(block.base);
+            self.cpu
+                .bus
+                .move_own_pages(block.base, base, size, (count as u32) << 16);
             self.dpmi_release_block(block);
             block.index = index;
             block.count = count;

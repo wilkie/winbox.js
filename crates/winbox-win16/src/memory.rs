@@ -129,7 +129,7 @@ impl System {
                 .is_some_and(|descriptor| {
                     descriptor.present
                         && descriptor.segment
-                        && (descriptor.past_limit != cached.past_limit
+                        && (descriptor.past_limit != cached.past_limit()
                             || descriptor.base != cached.base)
                 });
 
@@ -137,6 +137,11 @@ impl System {
                 let _ = self.cpu.load_segment(register, cached.selector);
             }
         }
+
+        // Their reach, too, is as it was when they were kept: worked out
+        // again as the next run starts (`kb/guides/paging.md`, "First
+        // touch").
+        self.cpu.segments_set();
     }
 
     /// What was kept for each selector of a block let go -- a local heap
@@ -193,6 +198,11 @@ pub(crate) fn allocate(system: &mut System, size: u32, flags: u16) -> Option<usi
         return None;
     }
 
+    // In 386 enhanced mode a block given pages of its own has each start
+    // unreached (`winbox_machine::Pages::track`).
+    let enhanced = system.mode == crate::Mode::Enhanced;
+
+    system.cpu.bus.pages_mut().track(enhanced);
     system
         .global
         .allocate(&mut system.cpu.bus, &mut system.descriptors, size, flags)

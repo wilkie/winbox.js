@@ -11,7 +11,9 @@ use std::collections::HashMap;
 
 use winbox_cpu::Bus;
 
-use crate::pages::{PAGE_BITS, PAGE_SIZE, Pages, Print, print_of};
+#[cfg(feature = "audit")]
+use crate::pages::PAGE_BITS;
+use crate::pages::{PAGE_SIZE, Pages};
 
 /// A block is a mebibyte.
 const BLOCK_BITS: u32 = 20;
@@ -30,7 +32,8 @@ pub struct Memory {
     answers: HashMap<u32, u8>,
     asked: Cell<Option<u32>>,
     /// The pages WIN386 would have present (`pages.rs`), kept as blocks
-    /// are given and freed, and asked by no access.
+    /// are given and freed, and which of a block's pages the processor has
+    /// reached.
     pages: Pages,
     /// The paging audit's (`kb/guides/paging.md`, "The audit"): a test's
     /// alone, built with the `audit` feature.
@@ -78,6 +81,11 @@ impl Default for Memory {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// The pages a block of `length` bytes is given: one at least.
+fn pages_of(length: u32) -> usize {
+    length.div_ceil(PAGE_SIZE).max(1) as usize
 }
 
 /// What a read of `length` bytes from `address` finds in memory never
@@ -136,61 +144,27 @@ impl Memory {
         true
     }
 
-    /// A page's fingerprint as its bytes are now, `None` where its
-    /// mebibyte was never written.
-    pub fn print(&self, at: u32) -> Print {
-        let at = at & !(PAGE_SIZE - 1);
-        let block = self.blocks[(at >> BLOCK_BITS) as usize].as_ref()?;
-        let start = (at & BLOCK_MASK) as usize;
-
-        Some(print_of(&block[start..start + PAGE_SIZE as usize]))
-    }
-
-    fn prints(&self, base: u32, pages: usize) -> Vec<Print> {
-        (0..pages as u32)
-            .map(|page| self.print(base.wrapping_add(page << PAGE_BITS)))
-            .collect()
-    }
-
     /// A block given pages of its own (`Pages::own`): `length` bytes from
     /// `base`, on a page, in `room` bytes WinBox gave it.
     pub fn own_pages(&mut self, base: u32, length: u32, room: u32) {
-        let pages = length.div_ceil(PAGE_SIZE).max(1) as usize;
-        let prints = self.prints(base, pages);
-
-        self.pages.own(base, prints, room);
+        self.pages.own(base, pages_of(length), room);
     }
 
     /// A block with pages of its own freed (`Pages::free_own`): whether it
     /// had them.
     pub fn free_own_pages(&mut self, base: u32) -> bool {
-        let Some(pages) = self.pages.own_pages(base) else {
-            return false;
-        };
-        let now = self.prints(base, pages);
-
-        self.pages.free_own(base, &now).is_some()
+        self.pages.free_own(base).is_some()
     }
 
     /// A block with pages of its own given `length` bytes in place.
     pub fn resize_own_pages(&mut self, base: u32, length: u32) {
-        let Some(had) = self.pages.own_pages(base) else {
-            return;
-        };
-        let pages = length.div_ceil(PAGE_SIZE).max(1) as usize;
-        let (grown, cut) = if pages > had {
-            (
-                self.prints(base + ((had as u32) << PAGE_BITS), pages - had),
-                Vec::new(),
-            )
-        } else {
-            (
-                Vec::new(),
-                self.prints(base + ((pages as u32) << PAGE_BITS), had - pages),
-            )
-        };
+        self.pages.resize_own(base, pages_of(length));
+    }
 
-        self.pages.resize_own(base, pages, &grown, &cut);
+    /// A block with pages of its own moved to `to`, given `length` bytes
+    /// in `room` there (`Pages::move_own`).
+    pub fn move_own_pages(&mut self, from: u32, to: u32, length: u32, room: u32) {
+        self.pages.move_own(from, to, pages_of(length), room);
     }
 
     fn block_mut(&mut self, address: u32) -> &mut [u8] {
@@ -397,6 +371,18 @@ impl Bus for Memory {
 
         Memory::write16(self, at, value);
         Some(())
+    }
+
+    fn reached(&self, base: u32, length: u64) -> u64 {
+        self.pages.reached(base, length)
+    }
+
+    fn reach(&self, at: u32, size: u32, _write: bool) -> bool {
+        self.pages.reach(at, size)
+    }
+
+    fn epoch(&self) -> u64 {
+        self.pages.epoch()
     }
 }
 

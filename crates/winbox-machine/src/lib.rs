@@ -31,6 +31,4 @@ pub use local::{LocalHeap, Options as LocalOptions};
 #[cfg(feature = "audit")]
 pub use memory::Audit;
 pub use memory::Memory;
-pub use pages::{
-    BLOCKS_END, FIRST_MEGABYTE_LENGTH, OWN_PAGES_ABOVE, PAGE_BITS, PAGE_SIZE, Pages, Print,
-};
+pub use pages::{BLOCKS_END, FIRST_MEGABYTE_LENGTH, OWN_PAGES_ABOVE, PAGE_BITS, PAGE_SIZE, Pages};

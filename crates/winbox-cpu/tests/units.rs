@@ -442,7 +442,7 @@ mod protected_mode {
         #[test]
         fn decodes_a_twenty_bit_limit() {
             assert_eq!(
-                loaded(plain(0, 0xfabcd)).segments[DS].past_limit,
+                loaded(plain(0, 0xfabcd)).segments[DS].past_limit(),
                 0xfabcd + 1
             );
         }
@@ -496,7 +496,7 @@ mod protected_mode {
                     ..plain(0, 1)
                 })
                 .segments[DS]
-                    .past_limit,
+                    .past_limit(),
                 0x2000
             );
         }
@@ -511,7 +511,7 @@ mod protected_mode {
 
             cpu.load_segment(DS, 0x1234).unwrap();
             assert_eq!(
-                (cpu.segments[DS].base, cpu.segments[DS].past_limit),
+                (cpu.segments[DS].base, cpu.segments[DS].past_limit()),
                 (0x12340, 0x10000)
             );
         }

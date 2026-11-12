@@ -73,7 +73,8 @@ impl<B: Bus> Cpu<B> {
         let sp = self.regs[SP];
 
         for at in 1..=3u16 {
-            let place = self.linear_sized(SS, u32::from(sp.wrapping_sub(2 * at)), 2, false)?;
+            let place =
+                self.linear_sized(SS, u32::from(sp.wrapping_sub(2 * at)), 2, false, true)?;
 
             self.writable(place, 2)?;
         }

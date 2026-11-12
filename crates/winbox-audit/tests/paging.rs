@@ -72,17 +72,12 @@ const CASES: &[(&str, &str)] = &[
     // Windows faulted on.
     ("pgbox:after read 1:AL", BOX),
     ("pgbox:after read 2:*", BOX),
-    // A page read alone and never written: WIN386 gave it a frame, which
-    // `_PageFree` leaves present; WinBox does not see a read, and takes it
-    // for a page never reached (`Pages::freed`).
-    ("pgfree:free:after 0502h", READ_ALONE),
+    // A page of KERNEL's block read alone: present after the free in both,
+    // but in Windows it reads a byte not nought, and in WinBox nought. Why
+    // was not followed: the pages of 0501h's block read alone read nought
+    // in both.
     ("pgfree:heap:after GlobalFree", READ_ALONE),
     ("pgfree:heap:after GlobalCompact", READ_ALONE),
-    // A page written with the byte it already held, left by an earlier
-    // block at the same WinBox address: its fingerprint does not change,
-    // and WinBox takes it for a page never reached.
-    ("pgfree:resize:old base after 2 pages", SAME_BYTES),
-    ("pgfree:lock:pages after", SAME_BYTES),
     // 0503h growing a block: WIN386 grew it in place, the pages after it
     // free; WinBox moves a block that needs more pages, as `dpmigrw` found
     // WIN386 doing where they were not.
@@ -97,9 +92,7 @@ const NEIGHBOUR: &str =
 const OWN_TABLE: &str =
     "FFFFF000h is WinBox's own local descriptor table, present, where Windows has nothing";
 const BOX: &str = "no handler of the program's: KERNEL's box for a page fault is phase 4's, and the audit lets the read through";
-const READ_ALONE: &str =
-    "a page read alone keeps its frame in Windows; WinBox does not see a read, and drops the page";
-const SAME_BYTES: &str = "a page written with the bytes an earlier block left at the same WinBox address: no change WinBox can see, so the page is dropped";
+const READ_ALONE: &str = "a page of KERNEL's block read alone reads a byte not nought in Windows, nought in WinBox; not followed";
 const GROWN: &str =
     "0503h grew the block in place in Windows, the pages after it free; WinBox moves it";
 
