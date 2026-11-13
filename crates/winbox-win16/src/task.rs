@@ -26,30 +26,18 @@ pub fn task_environment(windows: &str) -> Vec<u8> {
 }
 
 /// The first megabyte's pages that keep no write a program makes, by
-/// number (C0h for `C0000h`), as DOSBox's machine keeps them
-/// (`kb/guides/paging.md`, "ROM"). DOSBox 0.74-3 makes `C0000h-C7FFFh`, the
-/// video BIOS, and `F0000h-FFFFFh`, the system BIOS, ROM
-/// (`src/hardware/memory.cpp` 576-583), whose handler drops a write
-/// (`ROMPageHandler`, 105-119). Its dynamic core, on a page where it has
-/// run code, puts in a handler of its own that writes the page as any
-/// other (`src/cpu/core_dynrec/cache.h` 143-147; the core for x86 has a
-/// check for ROM there, `core_dyn_x86/cache.h` 111, this one none). So
-/// **recorded** by `pgrom`, at `FF0h` of each page from `C0000h`: `F1000h`, its
-/// callbacks' page (`CB_SOFFSET`, `include/callback.h` 39), and `FF000h`, the
-/// timer's handler at `F000h:FEA5h` (`include/bios.h` 106), keep a write in
-/// both modes, and `FE000h`, the keyboard's handler at `F000h:E987h` (107), in
-/// standard mode alone; the rest of the ROM keeps none, and `C8000h-EFFFFh`
-/// keeps every one. `pgwrite` agrees: `C0000h` and `F0000h` dropped, `FFFF0h`
-/// kept.
-fn rom_pages(mode: crate::Mode) -> impl Iterator<Item = u32> {
-    let keeps_none = move |page: &u32| match page {
-        0xf1 | 0xff => false,
-        0xfe => mode != crate::Mode::Standard,
-        _ => true,
-    };
-
-    (0xc0..0xc8).chain(0xf0..0x100).filter(keeps_none)
-}
+/// number (C0h for `C0000h`): the whole of its ROM, as a PC's is, in both
+/// modes (the owner's decision of 2026-11-13, `kb/guides/paging.md`,
+/// "ROM"). DOSBox 0.74-3 makes `C0000h-C7FFFh`, the video BIOS, and
+/// `F0000h-FFFFFh`, the system BIOS, ROM (`src/hardware/memory.cpp`
+/// 576-583), whose handler drops a write (`ROMPageHandler`, 105-119).
+/// **Recorded** by `pgrom`, three of those pages keep a write in DOSBox:
+/// `F1000h` and `FF000h` in both modes, `FE000h` in standard mode. Its
+/// dynamic core puts a handler of its own on a page where it has run code,
+/// which writes the page as any other (`src/cpu/core_dynrec/cache.h`
+/// 143-147). That is DOSBox's, not a PC's, and is not followed here: those
+/// records are known gaps.
+const ROM_PAGES: [std::ops::Range<u32>; 2] = [0xc0..0xc8, 0xf0..0x100];
 
 /// `SW_SHOWNORMAL`, how a program is shown when nothing says otherwise.
 pub(crate) const SW_SHOWNORMAL: u16 = 1;
@@ -127,7 +115,7 @@ impl System {
             0x0001
         });
         // The first megabyte's ROM, which keeps no write a program makes.
-        self.cpu.bus.set_rom(rom_pages(self.mode));
+        self.cpu.bus.set_rom(ROM_PAGES.into_iter().flatten());
         // A program's own `IN` and `OUT` answered here (`ports.rs`).
         self.cpu.ports = true;
         // The installation's drivers' icons and cursors, where there is one.

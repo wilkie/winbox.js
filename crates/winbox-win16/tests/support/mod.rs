@@ -2022,6 +2022,14 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "nothing at 80000000h: DOSBox reads nought there in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)",
     ),
     (
+        "pgwrite:rom",
+        "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): FFFF0h, in DOSBox's page of BIOS code, keeps the write",
+    ),
+    (
+        "pgrom:rom",
+        "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): F1000h and FF000h in both modes, FE000h in standard mode, keep the write in DOSBox",
+    ),
+    (
         "standard/pgwrite:read",
         "a write where DOSBox has no memory lands in WinBox's memory and reads back (kb/guides/paging.md)",
     ),

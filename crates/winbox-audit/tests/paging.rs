@@ -76,6 +76,12 @@ const CASES: &[(&str, Kind, &str)] = &[
     ("pgtouch:dpmi:0600h FFFFF000h", Kind::Laxer, OWN_TABLE),
     ("pgtouch:dpmi:0601h FFFFF000h", Kind::Laxer, OWN_TABLE),
     ("pgwrite:write:FFFFF000h", Kind::Laxer, OWN_TABLE),
+    // The first megabyte's ROM, read-only whole in WinBox as a PC's is (the
+    // owner's decision of 2026-11-13); DOSBox's dynamic core leaves a page
+    // writable once it has run code there.
+    ("pgwrite:rom:FFFF0h read after", Kind::Other, ROM),
+    ("pgrom:rom:F1FF0h", Kind::Other, ROM),
+    ("pgrom:rom:FFFF0h", Kind::Other, ROM),
     (
         "pgbig:time:*",
         Kind::Other,
@@ -95,6 +101,7 @@ const CASES: &[(&str, Kind, &str)] = &[
     ("pgfree:resize:base after 12 pages", Kind::Laxer, GROWN),
 ];
 
+const ROM: &str = "DOSBox's dynamic core leaves a ROM page writable once it has run code there; WinBox drops every write to the ROM, as the hardware does (the owner's decision of 2026-11-13)";
 const LAYOUT: &str =
     "where things lie: WinBox's addresses are its own (descriptor index times 64 KiB)";
 const NEIGHBOUR: &str = "the page past a 0501h block: another's in Windows, which 0600h locks; committed to nothing in WinBox, and refused";

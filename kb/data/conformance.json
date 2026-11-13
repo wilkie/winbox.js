@@ -8272,13 +8272,15 @@
   "functions": {
    "rom": {
     "total": 64,
-    "agreed": 64,
-    "disagreed": 0,
+    "agreed": 62,
+    "disagreed": 2,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "rom": "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): F1000h and FF000h in both modes, FE000h in standard mode, keep the write in DOSBox"
+  }
  },
  "enhanced/pgtouch": {
   "probe": "pgtouch",
@@ -8360,8 +8362,8 @@
    },
    "rom": {
     "total": 9,
-    "agreed": 9,
-    "disagreed": 0,
+    "agreed": 8,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8381,7 +8383,8 @@
    }
   },
   "gaps": {
-   "write": "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)"
+   "write": "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)",
+   "rom": "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): FFFF0h, in DOSBox's page of BIOS code, keeps the write"
   }
  },
  "enhanced/w386box": {
@@ -25238,13 +25241,15 @@
   "functions": {
    "rom": {
     "total": 64,
-    "agreed": 64,
-    "disagreed": 0,
+    "agreed": 61,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "rom": "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): F1000h and FF000h in both modes, FE000h in standard mode, keep the write in DOSBox"
+  }
  },
  "pgtouch": {
   "probe": "pgtouch",
@@ -25300,8 +25305,8 @@
    },
    "rom": {
     "total": 9,
-    "agreed": 9,
-    "disagreed": 0,
+    "agreed": 8,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -25321,6 +25326,7 @@
    }
   },
   "gaps": {
+   "rom": "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): FFFF0h, in DOSBox's page of BIOS code, keeps the write",
    "read": "a write where DOSBox has no memory lands in WinBox's memory and reads back (kb/guides/paging.md)"
   }
  },
