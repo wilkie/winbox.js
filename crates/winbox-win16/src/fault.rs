@@ -331,13 +331,12 @@ impl Engine {
         }
 
         let shown = self.system().error_mode & SEM_NOGPFAULTERRORBOX == 0;
-        let (number, file, ip) = match host_write {
-            Some(write) => self.system().host_place(cs, ip, write),
-            None => {
-                let (number, file) = self.system().faulted_place(cs);
+        let (number, file, ip) = if let Some(write) = host_write {
+            self.system().host_place(cs, ip, write)
+        } else {
+            let (number, file) = self.system().faulted_place(cs);
 
-                (number, file, ip)
-            }
+            (number, file, ip)
         };
 
         self.system().application_faults.push(if supervisor {
@@ -389,54 +388,6 @@ impl Engine {
         }
 
         Err(Stop::Ended)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{fault_name, file_part};
-    use crate::instruction_length::instruction_length;
-    use crate::system::System;
-
-    #[test]
-    fn kernel_reads_an_instruction_on_past_ffffh_from_nought() {
-        // Eleven ES prefixes from FFF5h, and the NOP they lead to at 0.
-        let mut bytes = vec![0u8; 0x10000];
-
-        bytes[0] = 0x90;
-        bytes[0xfff5..].fill(0x26);
-
-        let mut system = System::new();
-
-        system.cpu.protected = true;
-        system
-            .descriptors
-            .map(&mut system.cpu.bus, 0x40, &bytes, true);
-        system
-            .cpu
-            .load_segment(winbox_cpu::CS, winbox_machine::segment_selector(0x40))
-            .unwrap();
-        system.cpu.ip = 0xfff5;
-
-        let wide = system.addresses_in_32_bits();
-
-        assert!(!wide);
-        assert_eq!(
-            instruction_length(|at| system.code_byte(wide, at)),
-            Some(12)
-        );
-    }
-
-    #[test]
-    fn a_file_is_named_by_what_follows_its_folders() {
-        assert_eq!(file_part("C:\\WINDOWS\\faultc.exe"), "FAULTC.EXE");
-        assert_eq!(file_part("FAULT.EXE"), "FAULT.EXE");
-    }
-
-    #[test]
-    fn a_fault_kernel_has_no_name_for_is_an_application_fault() {
-        assert_eq!(fault_name(13), "a General Protection Fault");
-        assert_eq!(fault_name(11), "an Application Fault");
     }
 }
 
@@ -521,3 +472,51 @@ pub(crate) const WINDOWS_PLACES: &[WindowsPlace] = &[
     // `mov byte es:[bx],0`), in no range of USER's table: KERNEL's boxes.
     place("USER", "GetWindowText", None, 1, 0x1979, false),
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::{fault_name, file_part};
+    use crate::instruction_length::instruction_length;
+    use crate::system::System;
+
+    #[test]
+    fn kernel_reads_an_instruction_on_past_ffffh_from_nought() {
+        // Eleven ES prefixes from FFF5h, and the NOP they lead to at 0.
+        let mut bytes = vec![0u8; 0x10000];
+
+        bytes[0] = 0x90;
+        bytes[0xfff5..].fill(0x26);
+
+        let mut system = System::new();
+
+        system.cpu.protected = true;
+        system
+            .descriptors
+            .map(&mut system.cpu.bus, 0x40, &bytes, true);
+        system
+            .cpu
+            .load_segment(winbox_cpu::CS, winbox_machine::segment_selector(0x40))
+            .unwrap();
+        system.cpu.ip = 0xfff5;
+
+        let wide = system.addresses_in_32_bits();
+
+        assert!(!wide);
+        assert_eq!(
+            instruction_length(|at| system.code_byte(wide, at)),
+            Some(12)
+        );
+    }
+
+    #[test]
+    fn a_file_is_named_by_what_follows_its_folders() {
+        assert_eq!(file_part("C:\\WINDOWS\\faultc.exe"), "FAULTC.EXE");
+        assert_eq!(file_part("FAULT.EXE"), "FAULT.EXE");
+    }
+
+    #[test]
+    fn a_fault_kernel_has_no_name_for_is_an_application_fault() {
+        assert_eq!(fault_name(13), "a General Protection Fault");
+        assert_eq!(fault_name(11), "an Application Fault");
+    }
+}
