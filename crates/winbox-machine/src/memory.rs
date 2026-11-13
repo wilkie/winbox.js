@@ -11,9 +11,7 @@ use std::collections::HashMap;
 
 use winbox_cpu::Bus;
 
-#[cfg(feature = "audit")]
-use crate::pages::PAGE_BITS;
-use crate::pages::{PAGE_SIZE, Pages};
+use crate::pages::{PAGE_BITS, PAGE_SIZE, Pages};
 
 /// A block is a mebibyte.
 const BLOCK_BITS: u32 = 20;
@@ -31,6 +29,14 @@ pub struct Memory {
     host: Option<(u32, u32)>,
     answers: HashMap<u32, u8>,
     asked: Cell<Option<u32>>,
+    /// The first megabyte's pages that keep no write by the processor, as
+    /// a ROM's (`set_rom`), a bit each.
+    rom: [u64; 4],
+    /// The linear addresses a processor's write is checked in for the host
+    /// range and ROM, from where and how many (wrapping): the rest is
+    /// written straight away.
+    guard_start: u32,
+    guard_length: u32,
     /// The pages WIN386 would have present (`pages.rs`), kept as blocks
     /// are given and freed, and which of a block's pages the processor has
     /// reached.
@@ -83,6 +89,18 @@ impl Default for Memory {
     }
 }
 
+/// The first megabyte, as a page of its ROM is told: at linear nought and
+/// at WinBox's copy of it ([`crate::FIRST_MEGABYTE`]).
+const MEGABYTE: u32 = 0x10_0000;
+
+/// Where a processor's write is checked: from the first megabyte's copy's
+/// C0000h, where its ROM begins, round the top of the 4 GiB to the end of
+/// the first megabyte at nought -- the ROM in both, and the host's range
+/// (GDI's data segment, in the first megabyte), and nothing a program is
+/// given: its segments are from descriptor index 100, 640000h.
+const GUARD_START: u32 = crate::FIRST_MEGABYTE + 0xc_0000;
+const GUARD_LENGTH: u32 = MEGABYTE.wrapping_sub(GUARD_START);
+
 /// The pages a block of `length` bytes is given: one at least.
 fn pages_of(length: u32) -> usize {
     length.div_ceil(PAGE_SIZE).max(1) as usize
@@ -105,6 +123,9 @@ impl Memory {
             host: None,
             answers: HashMap::new(),
             asked: Cell::new(None),
+            rom: [0; 4],
+            guard_start: GUARD_START,
+            guard_length: GUARD_LENGTH,
             pages: Pages::new(),
             #[cfg(feature = "audit")]
             audit: Audit::default(),
@@ -187,6 +208,56 @@ impl Memory {
     pub fn set_host(&mut self, start: u32, length: u32) {
         self.host = Some((start, length));
         self.answers.clear();
+
+        // A range outside the stretch writes are checked in: every write
+        // then checked.
+        let inside = |at: u32| at.wrapping_sub(GUARD_START) < GUARD_LENGTH;
+
+        if !(inside(start) && inside(start.wrapping_add(length.saturating_sub(1)))) {
+            self.guard_start = 0;
+            self.guard_length = u32::MAX;
+        }
+    }
+
+    /// The first megabyte's pages, by number (C0h for C0000h), whose bytes
+    /// keep no write the processor makes, as a ROM's -- at linear nought,
+    /// where a program's own selector based there reaches the virtual
+    /// machine's first megabyte, and at WinBox's copy of it, where
+    /// KERNEL's selectors for its fixed places reach it -- and the rest's
+    /// writes kept. The engine's own writes land in both.
+    pub fn set_rom(&mut self, pages: impl IntoIterator<Item = u32>) {
+        self.rom = [0; 4];
+
+        for page in pages {
+            if page < MEGABYTE >> PAGE_BITS {
+                self.rom[(page >> 6) as usize] |= 1 << (page & 63);
+            }
+        }
+    }
+
+    /// Whether a processor's write at `at` is checked, off the common path.
+    #[inline]
+    fn guarded(&self, at: u32) -> bool {
+        at.wrapping_sub(self.guard_start) < self.guard_length
+    }
+
+    /// Whether `at` is in a page of the first megabyte's ROM.
+    fn in_rom(&self, at: u32) -> bool {
+        let offset = if at < MEGABYTE {
+            at
+        } else {
+            at.wrapping_sub(crate::FIRST_MEGABYTE)
+        };
+        let page = offset >> PAGE_BITS;
+
+        offset < MEGABYTE && self.rom[(page >> 6) as usize] & (1 << (page & 63)) != 0
+    }
+
+    /// Whether a processor's write at `at` is lost: to the host's range,
+    /// which takes no writes, or to the ROM.
+    #[cold]
+    fn write_lost(&self, at: u32) -> bool {
+        self.hosted(at) || self.in_rom(at)
     }
 
     fn hosted(&self, address: u32) -> bool {
@@ -335,7 +406,7 @@ impl Bus for Memory {
             return None;
         }
 
-        if !self.hosted(at) {
+        if !(self.guarded(at) && self.write_lost(at)) {
             Memory::write8(self, at, value);
         }
 
@@ -364,7 +435,7 @@ impl Bus for Memory {
             return None;
         }
 
-        if self.hosted(at) || self.hosted(at.wrapping_add(1)) {
+        if self.guarded(at) || self.guarded(at.wrapping_add(1)) {
             Bus::write8(self, at, value as u8)?;
             return Bus::write8(self, at.wrapping_add(1), (value >> 8) as u8);
         }
@@ -409,5 +480,51 @@ mod tests {
         memory.write(0x000f_fffe, &[1, 2, 3, 4]);
         assert_eq!(memory.read32(0x000f_fffe), 0x0403_0201);
         assert_eq!(memory.read(0x000f_fffd, 6), vec![0, 1, 2, 3, 4, 0]);
+    }
+
+    #[test]
+    fn rom_keeps_no_write_by_the_processor() {
+        let mut memory = Memory::new();
+        let copy = crate::FIRST_MEGABYTE;
+
+        memory.set_rom((0xc0..0xc8).chain([0xf0]));
+
+        for at in [
+            0xc_0000,
+            0xc_7fff,
+            0xf_0ff0,
+            copy + 0xc_0000,
+            copy + 0xf_0ff0,
+        ] {
+            memory.write8(at, 0x12);
+            Bus::write8(&mut memory, at, 0x34).unwrap();
+            assert_eq!(memory.read8(at), 0x12, "{at:08x}, the engine's write kept");
+        }
+
+        // A word across the ROM's end: its second byte kept.
+        Bus::write16(&mut memory, 0xc_7fff, 0x5678).unwrap();
+        assert_eq!(memory.read16(0xc_7fff), 0x5612);
+
+        // Pages that are not ROM, and the tables past the copy.
+        for at in [
+            0xc_8000,
+            0xf_1ff0,
+            copy + 0xc_8000,
+            copy + 0x10_0000,
+            0x10_0000,
+        ] {
+            Bus::write8(&mut memory, at, 0x34).unwrap();
+            assert_eq!(memory.read8(at), 0x34, "{at:08x}");
+        }
+    }
+
+    #[test]
+    fn a_host_range_outside_the_guard_still_takes_no_writes() {
+        let mut memory = Memory::new();
+
+        memory.set_host(0x20_0000, 0x10);
+        memory.write8(0x20_0004, 0x12);
+        Bus::write8(&mut memory, 0x20_0004, 0x34).unwrap();
+        assert_eq!(memory.read8(0x20_0004), 0x12);
     }
 }

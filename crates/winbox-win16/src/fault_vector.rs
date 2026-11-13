@@ -72,7 +72,56 @@ struct Decoded {
     second: Option<u8>,
 }
 
+impl Decoded {
+    /// Whether the instruction is `MOV` to or from a control, debug or test
+    /// register (`0F 20h`-`24h`, `26h`), which the core faults at a
+    /// program's privilege.
+    fn moves_special_register(&self) -> bool {
+        self.opcode == 0x0f && matches!(self.second, Some(0x20..=0x24 | 0x26))
+    }
+}
+
 impl System {
+    /// WIN386's own answer to a general protection fault of a program's
+    /// `MOV` to or from a control or debug register, in 386 enhanced mode:
+    /// the instruction passed over, nothing read or written, the program's
+    /// handlers not called (**recorded** by `pgcreg`: EAX kept). **Read
+    /// out** of `WIN386.EXE`'s virtual machine manager, object 1: the
+    /// fault's gate (`5eb8`) goes through the common entry (`5ca1`) to the
+    /// handler for a protected-mode fault in the table at `ff88`, which
+    /// the manager's start-up sets for 0Dh to `75e8` (object 2, `155a9`).
+    /// `75e8` reads the instruction's first byte at CS:EIP and goes by a
+    /// table at `10ee0`: a prefix (`7635`-`768d`) is noted and passed;
+    /// `0Fh` goes to `76ae`, which for a second byte of 20h to 23h adds 3
+    /// to EIP and returns (`76cc`), and for 06h runs `CLTS` and adds 2.
+    /// Any other -- a test register's 24h or 26h among them -- takes back
+    /// the prefixes and goes on to the fault's handler before it
+    /// (`760f`-`762f`), which gives it to the program's (`afcd`). True
+    /// where it was passed over: IP is then past it.
+    pub(crate) fn win386_passes_over(&mut self) -> bool {
+        if self.mode != crate::Mode::Enhanced || self.cpu.fetched_past_limit {
+            return false;
+        }
+
+        let Some(decoded) = self.decode() else {
+            return false;
+        };
+
+        if decoded.opcode != 0x0f || !matches!(decoded.second, Some(0x20..=0x23)) {
+            return false;
+        }
+
+        // The prefixes, the two opcode bytes and the ModR/M byte.
+        let next = self.cpu.ip.wrapping_add(u32::from(decoded.at) + 1);
+
+        self.cpu.ip = if self.cpu.segments[CS].big {
+            next
+        } else {
+            next & 0xffff
+        };
+        true
+    }
+
     /// The fault, by the rules above, for the
     /// instruction at CS:IP, where the Rust core stopped with `exit`.
     pub(crate) fn fault_vector(&self, exit: Exit) -> Option<u8> {
@@ -99,6 +148,12 @@ impl System {
         }
 
         let decoded = self.decode()?;
+
+        // `MOV` to or from a special register at the program's privilege:
+        // `#GP(0)`, as the core raises it.
+        if exit == Exit::Fault(13) && decoded.moves_special_register() {
+            return Some((13, 0));
+        }
 
         match exit {
             Exit::Fault(_) => self.access_fault(&decoded).map(|vector| (vector, 0)),

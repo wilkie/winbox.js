@@ -472,8 +472,7 @@ const STEPPED: &[&str] = &[
     // DOS's 69h, refused (`drives-and-disks.md`).
     "diskser",
     "enhanced/diskser",
-    // Paging's probes (`kb/guides/paging.md`); `pgcreg` is not here, the
-    // core stopping at its first `MOV` from a control register.
+    // Paging's probes (`kb/guides/paging.md`).
     "pgbox",
     "pgwrite",
     "pgbig",
@@ -487,6 +486,10 @@ const STEPPED: &[&str] = &[
     "enhanced/pgw386",
     "pgfree",
     "enhanced/pgfree",
+    "pgcreg",
+    "enhanced/pgcreg",
+    "pgrom",
+    "enhanced/pgrom",
 ];
 
 /// The probes whose runs bring up USER's boxes, answered by the hand

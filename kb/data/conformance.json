@@ -8094,15 +8094,13 @@
    },
    "read": {
     "total": 4,
-    "agreed": 0,
-    "disagreed": 4,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "read": "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)"
-  }
+  "gaps": {}
  },
  "enhanced/pgfree": {
   "probe": "pgfree",
@@ -8266,6 +8264,22 @@
    "setup": "memory WinBox's layout leaves unused is present (the owner's decision of 2026-11-11): the page past a 0501h block does not fault (kb/guides/paging.md)"
   }
  },
+ "enhanced/pgrom": {
+  "probe": "pgrom",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 64,
+  "functions": {
+   "rom": {
+    "total": 64,
+    "agreed": 64,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enhanced/pgtouch": {
   "probe": "pgtouch",
   "display": "vga",
@@ -8346,8 +8360,8 @@
    },
    "rom": {
     "total": 9,
-    "agreed": 7,
-    "disagreed": 2,
+    "agreed": 9,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8367,8 +8381,7 @@
    }
   },
   "gaps": {
-   "write": "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)",
-   "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)"
+   "write": "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)"
   }
  },
  "enhanced/w386box": {
@@ -25062,15 +25075,13 @@
    },
    "read": {
     "total": 4,
-    "agreed": 0,
-    "disagreed": 4,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "read": "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)"
-  }
+  "gaps": {}
  },
  "pgfree": {
   "probe": "pgfree",
@@ -25219,6 +25230,22 @@
    "locked read": "nothing at 80000000h: DOSBox reads nought in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)"
   }
  },
+ "pgrom": {
+  "probe": "pgrom",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 64,
+  "functions": {
+   "rom": {
+    "total": 64,
+    "agreed": 64,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "pgtouch": {
   "probe": "pgtouch",
   "display": "vga",
@@ -25273,8 +25300,8 @@
    },
    "rom": {
     "total": 9,
-    "agreed": 7,
-    "disagreed": 2,
+    "agreed": 9,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -25294,7 +25321,6 @@
    }
   },
   "gaps": {
-   "rom": "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
    "read": "a write where DOSBox has no memory lands in WinBox's memory and reads back (kb/guides/paging.md)"
   }
  },

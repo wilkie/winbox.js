@@ -241,6 +241,10 @@ impl System {
                     _ if self.dpmi_fault(Exit::Host) => {}
                     _ => return self.processor_stop(Exit::Host),
                 },
+                // A program's `MOV` to or from a control or debug register,
+                // in 386 enhanced mode: WIN386 passes over it
+                // (`fault_vector.rs`), counted as run.
+                Exit::Fault(13) if self.win386_passes_over() => self.instructions += 1,
                 other if self.dpmi_fault(other) => {}
                 other => return self.processor_stop(other),
             }

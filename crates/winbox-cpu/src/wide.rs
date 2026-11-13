@@ -597,6 +597,9 @@ impl<B: Bus> Cpu<B> {
                     return Err(Exit::Unimplemented(0x0f));
                 }
             }
+            // `MOV` to or from a special register: the prefix changes
+            // nothing, its operand always 32 bits.
+            0x20..=0x24 | 0x26 => return self.special_move(),
             _ => return Err(Exit::Unimplemented(0x66)),
         }
 

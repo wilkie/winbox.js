@@ -20,10 +20,10 @@ mod support;
 
 use winbox_win16::dpmi::AuditMiss;
 
-/// The probes audited. `pgcreg` is not: the core stops at its first `MOV`
-/// from a control register, before it reaches anything.
+/// The probes audited.
 const PROBES: &[&str] = &[
-    "pgtouch", "pgbox", "pgwrite", "pgbig", "pglock", "pgheap", "pgw386", "pgfree",
+    "pgtouch", "pgbox", "pgwrite", "pgbig", "pglock", "pgheap", "pgw386", "pgfree", "pgcreg",
+    "pgrom",
 ];
 
 /// What a named case is. The owner's decisions of 2026-11-11: WinBox
@@ -76,11 +76,6 @@ const CASES: &[(&str, Kind, &str)] = &[
     ("pgtouch:dpmi:0600h FFFFF000h", Kind::Laxer, OWN_TABLE),
     ("pgtouch:dpmi:0601h FFFFF000h", Kind::Laxer, OWN_TABLE),
     ("pgwrite:write:FFFFF000h", Kind::Laxer, OWN_TABLE),
-    (
-        "pgwrite:rom:*",
-        Kind::Other,
-        "the first megabyte's ROM: a write at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM; not paging's",
-    ),
     (
         "pgbig:time:*",
         Kind::Other,

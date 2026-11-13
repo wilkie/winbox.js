@@ -1229,7 +1229,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386", "mcibang", "pgfree",
+    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pgrom",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -2022,20 +2022,12 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "nothing at 80000000h: DOSBox reads nought there in standard mode, where WinBox reads garbage of its address (kb/guides/paging.md)",
     ),
     (
-        "pgwrite:rom",
-        "a write to the first megabyte's ROM at C0000h and F0000h lands in WinBox, where DOSBox's machine keeps the ROM (kb/guides/paging.md)",
-    ),
-    (
         "standard/pgwrite:read",
         "a write where DOSBox has no memory lands in WinBox's memory and reads back (kb/guides/paging.md)",
     ),
     (
         "enhanced/pgwrite:write",
         "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)",
-    ),
-    (
-        "pgcreg:read",
-        "the core has no MOV from a control register (0F 20h) and stops the run, where the 80386 faults and WIN386 steps over it (kb/guides/paging.md)",
     ),
     (
         "pgbig:time",

@@ -1,0 +1,334 @@
+{
+  "probe": "pgrom",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rom",
+      "args": "C0FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C1FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C2FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C3FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C4FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C5FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C6FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C7FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "C8FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "C9FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "CAFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "CBFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "CCFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "CDFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "CEFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "CFFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D0FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D1FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D2FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D3FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D4FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D5FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D6FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D7FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D8FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "D9FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "DAFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "DBFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "DCFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "DDFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "DEFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "DFFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E0FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E1FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E2FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E3FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E4FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E5FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E6FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E7FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E8FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "E9FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "EAFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "EBFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "ECFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "EDFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "EEFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "EFFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "F0FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F1FF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "F2FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F3FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F4FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F5FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F6FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F7FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F8FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "F9FF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "FAFF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "FBFF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "FCFF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "FDFF0h",
+      "result": "as before"
+    },
+    {
+      "function": "rom",
+      "args": "FEFF0h",
+      "result": "as written"
+    },
+    {
+      "function": "rom",
+      "args": "FFFF0h",
+      "result": "as written"
+    }
+  ]
+}

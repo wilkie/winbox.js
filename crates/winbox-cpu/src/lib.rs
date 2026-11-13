@@ -1932,6 +1932,7 @@ impl<B: Bus> Cpu<B> {
             }
             // CLTS: no task-switched flag is kept to clear.
             0x06 => {}
+            0x20..=0x24 | 0x26 => return self.special_move(),
             // IMUL Gv, Ev: the low word kept, flags as F7 /5's.
             0xaf => {
                 let (reg, place) = self.modrm()?;
@@ -1964,6 +1965,28 @@ impl<B: Bus> Cpu<B> {
         }
 
         Ok(())
+    }
+
+    /// `MOV` to or from a control register (`0F 20h`, `0F 22h`), a debug
+    /// register (`21h`, `23h`) or a test register (`24h`, `26h`): its
+    /// ModR/M byte always names a register, whatever its mode bits. In
+    /// protected mode at any privilege but 0 a general protection fault,
+    /// error code nought (Intel's *80386 Programmer's Reference Manual*,
+    /// `MOV` to/from special registers; **recorded** by `pgcreg` in
+    /// standard mode, the program's handler for 0Dh called with code
+    /// nought), which the host takes ([`Exit::Fault`] 13); else the host's,
+    /// which keeps those registers ([`Exit::Unimplemented`]). Off the common
+    /// path.
+    #[cold]
+    #[inline(never)]
+    fn special_move(&mut self) -> Result<(), Exit> {
+        self.fetch8()?;
+
+        if self.protected && self.segments[CS].selector & 3 != 0 {
+            return self.fault(13);
+        }
+
+        Err(Exit::Unimplemented(0x0f))
     }
 
     /// The bit instructions, of a word or, under the operand-size prefix, a
@@ -4033,5 +4056,36 @@ mod tests {
         assert_eq!(cpu.run(1), (0, Exit::Fault(13)));
         assert_eq!(cpu.ip, 0);
         assert!(!cpu.fetched_past_limit);
+    }
+
+    #[test]
+    fn a_special_register_moved_at_privilege_3_is_a_general_protection_fault() {
+        // mov eax, cr0; mov cr3, eax; mov eax, dr7; mov eax, tr6; and
+        // under the operand-size prefix, mov eax, cr2 -- each at privilege
+        // 3, a general protection fault before it, EAX as it was.
+        for code in [
+            &[0x0f, 0x20, 0xc0][..],
+            &[0x0f, 0x22, 0xd8],
+            &[0x0f, 0x21, 0xf8],
+            &[0x0f, 0x24, 0xf0],
+            &[0x0f, 0x26, 0xf0],
+            &[0x66, 0x0f, 0x20, 0xd0],
+        ] {
+            let mut cpu = on_stack(code, false, 0xfffe);
+
+            cpu.set_reg32(AX, 0x5a5a_5a5a);
+            assert_eq!(cpu.run(1), (0, Exit::Fault(13)), "{code:02x?}");
+            assert_eq!((cpu.ip, cpu.reg32(AX)), (0, 0x5a5a_5a5a));
+            assert!(!cpu.fetched_past_limit);
+        }
+    }
+
+    #[test]
+    fn leaves_a_special_register_to_the_host_in_real_mode() {
+        // mov eax, cr0 in real mode, where it runs: the host keeps CR0.
+        let mut cpu = machine(&[0x0f, 0x20, 0xc0]);
+
+        assert_eq!(cpu.run(1), (0, Exit::Unimplemented(0x0f)));
+        assert_eq!(cpu.ip, 0);
     }
 }
