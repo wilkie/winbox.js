@@ -1229,7 +1229,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386", "mcibang", "pgfree",
+    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -2070,6 +2070,20 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "enhanced/pgfree:resize",
         "WIN386 grew the block in place, where WinBox moves one that needs more pages; and the page past a block is memory WinBox's layout leaves unused, present (kb/guides/paging.md)",
+    ),
+    // `pghost`: where Windows' own KERNEL and USER code faults on a
+    // program's pointer to a page not present.
+    (
+        "enhanced/pghost:kernel at",
+        "the place a program's handler is given is the call's stub in WinBox's module, eight bytes an ordinal, not the instruction of KERNEL's that faults; KERNEL's boxes name Windows' place (fault.rs, WINDOWS_PLACES; kb/guides/paging.md)",
+    ),
+    (
+        "enhanced/pghost:user at",
+        "the place a program's handler is given is the call's stub in WinBox's module, eight bytes an ordinal, not the instruction of USER's that faults; KERNEL's boxes name Windows' place (fault.rs, WINDOWS_PLACES; kb/guides/paging.md)",
+    ),
+    (
+        "standard/pghost:box",
+        "what a freed block's bytes hold in standard mode is what DOSX's arena left, which WinBox's memory does not (kb/guides/paging.md)",
     ),
 ];
 

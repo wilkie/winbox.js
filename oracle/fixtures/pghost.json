@@ -1,0 +1,149 @@
+{
+  "probe": "pghost",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "setup",
+      "args": "0501h 4 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "page 0",
+      "result": "no fault"
+    },
+    {
+      "function": "setup",
+      "args": "page 1",
+      "result": "no fault"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrlen",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcpy to",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcpy from",
+      "result": "no fault answer=02de"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcat",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcpyn",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "kernel",
+      "args": "hmemcpy to",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "kernel",
+      "args": "hmemcpy from",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "kernel",
+      "args": "_lread",
+      "result": "no fault answer=0010"
+    },
+    {
+      "function": "kernel",
+      "args": "_lwrite",
+      "result": "no fault answer=0010"
+    },
+    {
+      "function": "kernel",
+      "args": "GetModuleFileName",
+      "result": "no fault answer=0003"
+    },
+    {
+      "function": "kernel",
+      "args": "GetProfileString",
+      "result": "no fault answer=0003"
+    },
+    {
+      "function": "user",
+      "args": "wsprintf",
+      "result": "no fault answer=0003"
+    },
+    {
+      "function": "user",
+      "args": "lstrcmp",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "user",
+      "args": "AnsiUpper",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "user",
+      "args": "AnsiLower",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "user",
+      "args": "GetWindowText",
+      "result": "no fault answer=0005"
+    },
+    {
+      "function": "user",
+      "args": "GetClassName",
+      "result": "no fault answer=0006"
+    },
+    {
+      "function": "user",
+      "args": "SetWindowText",
+      "result": "no fault answer=0000"
+    },
+    {
+      "function": "box",
+      "args": "exec",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "posted",
+      "result": "lstrlen"
+    },
+    {
+      "function": "box",
+      "args": "window",
+      "result": "there"
+    },
+    {
+      "function": "box",
+      "args": "usage",
+      "result": "running"
+    },
+    {
+      "function": "box",
+      "args": "after",
+      "result": "calls=1 answer=0006"
+    }
+  ]
+}
