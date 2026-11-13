@@ -39,7 +39,7 @@ pub fn offset_by(far: u32, at: i32) -> u32 {
 }
 
 pub fn read8(system: &System, far: u32, at: i32) -> u8 {
-    system.cpu.bus.read8(system.linear(offset_by(far, at)))
+    system.read_far8(offset_by(far, at))
 }
 
 pub fn read16(system: &System, far: u32, at: i32) -> u16 {
@@ -55,9 +55,7 @@ pub(crate) fn read32(system: &System, far: u32, at: i32) -> u32 {
 }
 
 pub fn write8(system: &mut System, far: u32, at: i32, value: u8) {
-    let linear = system.linear(offset_by(far, at));
-
-    system.cpu.bus.write8(linear, value);
+    system.write_far(offset_by(far, at), &[value]);
 }
 
 pub(crate) fn write16(system: &mut System, far: u32, at: i32, value: u16) {

@@ -413,6 +413,11 @@ pub fn lread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         return Ok(Answer::Word(HFILE_ERROR));
     }
 
+    // KERNEL's check of the buffer's last byte (seg1 `086e`-`0883`).
+    if !system.check_last(buffer, u32::from(count)) {
+        return Ok(Answer::Word(0));
+    }
+
     let Some(file) = system.files.resolve(handle) else {
         return Ok(Answer::Word(HFILE_ERROR));
     };
@@ -424,7 +429,8 @@ pub fn lread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     crate::call_costs::file_read(system, bytes.len());
 
     // DOS's read with DS:DX the buffer: on from it past offset FFFFh, where
-    // its block goes on (`lwrhuge`).
+    // its block goes on (`lwrhuge`). DOS's copy, which WIN386 makes at
+    // ring 0, not KERNEL's code: not checked (`dos.rs`).
     system.cpu.bus.write(at, &bytes);
     Ok(Answer::Word(bytes.len() as u16))
 }
@@ -496,9 +502,9 @@ pub fn hmemcpy(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let to = args.dword(system);
     let from = args.dword(system);
     let count = args.dword(system);
-    let bytes = system.cpu.bus.read(system.linear(from), count as usize);
+    let bytes = system.read_linear(system.linear(from), count as usize);
     let at = system.linear(to);
 
-    system.cpu.bus.write(at, &bytes);
+    system.write_linear(at, &bytes);
     Ok(Answer::Nothing)
 }

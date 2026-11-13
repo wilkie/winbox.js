@@ -8211,6 +8211,60 @@
    "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)"
   }
  },
+ "enhanced/pghost": {
+  "probe": "pghost",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 45,
+  "functions": {
+   "box": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "kernel": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "kernel at": {
+    "total": 11,
+    "agreed": 0,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "user": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "user at": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 7,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "kernel at": "the place a program's handler is given is the call's stub in WinBox's module, eight bytes an ordinal, not the instruction of KERNEL's that faults; KERNEL's boxes name Windows' place (fault.rs, WINDOWS_PLACES; kb/guides/paging.md)",
+   "user at": "the place a program's handler is given is the call's stub in WinBox's module, eight bytes an ordinal, not the instruction of USER's that faults; KERNEL's boxes name Windows' place (fault.rs, WINDOWS_PLACES; kb/guides/paging.md)"
+  }
+ },
  "enhanced/pglock": {
   "probe": "pglock",
   "display": "vga",
@@ -25178,6 +25232,45 @@
   },
   "gaps": {
    "layout": "where things lie: WinBox's blocks are 64 KiB by descriptor index, not KERNEL's heap or the DPMI host's (kb/guides/paging.md)"
+  }
+ },
+ "pghost": {
+  "probe": "pghost",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 27,
+  "functions": {
+   "box": {
+    "total": 5,
+    "agreed": 4,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "kernel": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "user": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "box": "what a freed block's bytes hold in standard mode is what DOSX's arena left, which WinBox's memory does not (kb/guides/paging.md)"
   }
  },
  "pglock": {

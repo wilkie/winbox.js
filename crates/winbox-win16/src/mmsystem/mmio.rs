@@ -425,10 +425,10 @@ fn huge_add(far: u32, count: u32) -> u32 {
 /// Bytes copied from one huge pointer to another, as `hmemcpy` copies
 /// them (`17bf`).
 fn copy_huge(system: &mut System, to: u32, from: u32, count: u32) {
-    let bytes = system.cpu.bus.read(system.linear(from), count as usize);
+    let bytes = system.read_linear(system.linear(from), count as usize);
     let at = system.linear(to);
 
-    system.cpu.bus.write(at, &bytes);
+    system.write_linear(at, &bytes);
 }
 
 /// A KERNEL or KEYBOARD function called as MMSYSTEM calls it, through the

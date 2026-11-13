@@ -1,0 +1,240 @@
+{
+  "probe": "pghost",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "setup",
+      "args": "0501h 4 pages",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "setup",
+      "args": "page 0",
+      "result": "fault calls=1 vector=0e code=0004 at-fault=1"
+    },
+    {
+      "function": "setup",
+      "args": "page 1",
+      "result": "no fault"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrlen",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "lstrlen",
+      "result": "KERNEL!#90+000d"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcpy to",
+      "result": "fault calls=1 code=0006"
+    },
+    {
+      "function": "kernel at",
+      "args": "lstrcpy to",
+      "result": "KERNEL!#88+0006"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcpy from",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "lstrcpy from",
+      "result": "KERNEL!#88+0005"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcat",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "lstrcat",
+      "result": "KERNEL!#89+000a"
+    },
+    {
+      "function": "kernel",
+      "args": "lstrcpyn",
+      "result": "fault calls=1 code=0006"
+    },
+    {
+      "function": "kernel at",
+      "args": "lstrcpyn",
+      "result": "KERNEL!#353+0024"
+    },
+    {
+      "function": "kernel",
+      "args": "hmemcpy to",
+      "result": "fault calls=1 code=0006"
+    },
+    {
+      "function": "kernel at",
+      "args": "hmemcpy to",
+      "result": "KERNEL!#348+0058"
+    },
+    {
+      "function": "kernel",
+      "args": "hmemcpy from",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "hmemcpy from",
+      "result": "KERNEL!#348+0058"
+    },
+    {
+      "function": "kernel",
+      "args": "_lread",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "_lread",
+      "result": "KERNEL!#129+00ea"
+    },
+    {
+      "function": "kernel",
+      "args": "_lwrite",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "_lwrite",
+      "result": "KERNEL!#129+0100"
+    },
+    {
+      "function": "kernel",
+      "args": "GetModuleFileName",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "GetModuleFileName",
+      "result": "KERNEL!#166+00ac"
+    },
+    {
+      "function": "kernel",
+      "args": "GetProfileString",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "kernel at",
+      "args": "GetProfileString",
+      "result": "KERNEL!#129+011d"
+    },
+    {
+      "function": "user",
+      "args": "wsprintf",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "user at",
+      "args": "wsprintf",
+      "result": "USER!#420+004d"
+    },
+    {
+      "function": "user",
+      "args": "lstrcmp",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "user at",
+      "args": "lstrcmp",
+      "result": "other"
+    },
+    {
+      "function": "user",
+      "args": "AnsiUpper",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "user at",
+      "args": "AnsiUpper",
+      "result": "USER!#473+0055"
+    },
+    {
+      "function": "user",
+      "args": "AnsiLower",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "user at",
+      "args": "AnsiLower",
+      "result": "USER!#473+0055"
+    },
+    {
+      "function": "user",
+      "args": "GetWindowText",
+      "result": "fault calls=1 code=0006"
+    },
+    {
+      "function": "user at",
+      "args": "GetWindowText",
+      "result": "USER!#272+0049"
+    },
+    {
+      "function": "user",
+      "args": "GetClassName",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "user at",
+      "args": "GetClassName",
+      "result": "USER!#53+00c1"
+    },
+    {
+      "function": "user",
+      "args": "SetWindowText",
+      "result": "fault calls=1 code=0004"
+    },
+    {
+      "function": "user at",
+      "args": "SetWindowText",
+      "result": "USER!#293+0112"
+    },
+    {
+      "function": "box",
+      "args": "exec",
+      "result": "inst"
+    },
+    {
+      "function": "box",
+      "args": "posted",
+      "result": "lstrlen"
+    },
+    {
+      "function": "box",
+      "args": "window",
+      "result": "there"
+    },
+    {
+      "function": "box",
+      "args": "usage",
+      "result": "running"
+    },
+    {
+      "function": "box",
+      "args": "after",
+      "result": "calls=1 answer=0000"
+    }
+  ]
+}

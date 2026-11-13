@@ -43,10 +43,7 @@ pub fn memory_read(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
     let (base, count) = reach(system, handle, offset, count);
 
     for at in 0..count {
-        let byte = system
-            .cpu
-            .bus
-            .read8(base.wrapping_add(offset).wrapping_add(at));
+        let byte = system.read_linear(base.wrapping_add(offset).wrapping_add(at), 1)[0];
         let far = (buffer & 0xffff_0000) | u32::from((buffer as u16).wrapping_add(at as u16));
 
         system.write_far(far, &[byte]);
@@ -68,10 +65,7 @@ pub fn memory_write(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         let far = (buffer & 0xffff_0000) | u32::from((buffer as u16).wrapping_add(at as u16));
         let byte = system.read_far(far, 1)[0];
 
-        system
-            .cpu
-            .bus
-            .write8(base.wrapping_add(offset).wrapping_add(at), byte);
+        system.write_linear(base.wrapping_add(offset).wrapping_add(at), &[byte]);
     }
 
     Ok(Answer::Dword(count))

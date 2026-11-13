@@ -33,7 +33,7 @@ pub(crate) fn huge_read(system: &System, far: u32, count: usize) -> Vec<u8> {
         let run = ((0x10000 - within) as usize).min(count - bytes.len());
         let at = system.linear((selector << 16 | within) as u32);
 
-        bytes.extend(system.cpu.bus.read(at, run));
+        bytes.extend(system.read_linear(at, run));
     }
 
     bytes

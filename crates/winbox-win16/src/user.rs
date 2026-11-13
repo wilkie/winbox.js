@@ -523,6 +523,12 @@ pub(crate) fn lstrcmpi(system: &mut System, args: &mut Args) -> Result<Answer, S
 /// not counted.
 fn wsprintf(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let output = args.above(system, 0);
+
+    // USER's check of the output's first byte (seg16 `0596`-`05ab`).
+    if !system.check_last(output, 1) {
+        return Ok(Answer::Word(0));
+    }
+
     let format = system.read_string(args.above(system, 4));
     let values = args.address_above(system, 8);
     let text = format_values(system, &format, values);

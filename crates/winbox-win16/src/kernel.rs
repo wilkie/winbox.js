@@ -341,6 +341,11 @@ fn get_module_filename(system: &mut System, args: &mut Args) -> Result<Answer, S
         return Ok(Answer::Word(0));
     }
 
+    // KERNEL's check of the buffer, first byte and last (seg2 `0330`-`0359`).
+    if !system.check_first_last(buffer, u32::from(size as u16)) {
+        return Ok(Answer::Word(0));
+    }
+
     let room = if size > 0 { size as usize - 1 } else { 0 };
     let count = path.len().min(room);
     let mut bytes = path.as_bytes()[..count].to_vec();
@@ -426,6 +431,12 @@ fn lwrite(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
     if length > 0xfffe || system.files.resolve(usize::from(handle)).is_none() {
         return Ok(Answer::Word(HFILE_ERROR));
+    }
+
+    // KERNEL's check of the buffer's last byte (seg1 `0884`-`0898`); the
+    // bytes are then DOS's to take, at ring 0 in WIN386: not checked.
+    if !system.check_last(buffer, u32::from(length)) {
+        return Ok(Answer::Word(0));
     }
 
     // DOS's write with DS:DX the buffer (`KRNL386.EXE` seg1 `0c42`): the

@@ -533,6 +533,12 @@ pub fn get_profile_string(system: &mut System, args: &mut Args) -> Result<Answer
     let default = args.dword(system);
     let buffer = args.dword(system);
     let size = args.signed(system);
+
+    // KERNEL's check of the buffer, first byte and last (seg1 `08a1`-`08cf`).
+    if !system.check_first_last(buffer, u32::from(size as u16)) {
+        return Ok(Answer::Word(0));
+    }
+
     let (section, entry, default) = (
         lpcstr(system, section),
         lpcstr(system, entry),
