@@ -5,7 +5,7 @@
 //! `cargo run -p winbox-win16 --example trace -- PROGRAM.EXE [--drive DIR]
 //! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS] [--seconds SECONDS]
 //! [--display vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640]
-//! [--mode standard|enhanced]`
+//! [--mode standard|enhanced] [--clock survey|faithful]`
 //!
 //! `--drive` is the host directory that is drive C:, else one made for the
 //! run, and removed after it, with a copy of the program's folder where
@@ -31,6 +31,13 @@
 //! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
 //! FAT image. A program whose `--path` is on such a drive is read from it,
 //! and its file is not given: `trace --mount D:GAME.ISO --path D:\SETUP.EXE`.
+//!
+//! `--clock` names the clock the run keeps: the survey's 3,000
+//! instructions a millisecond, each call charged 15, by default;
+//! `faithful`, the recorder's DOSBox at a fixed 80,000 with each call
+//! charged the instructions recorded for it (`kb/topics/timing.md`), a
+//! report's marks then come to by their time alone. `--budget` and
+//! `--seconds` are as given whatever the clock.
 //!
 //! The run itself is the survey's (`winbox_win16::survey`), as a browser's
 //! page and the tests make it; here are only the host's files.
@@ -227,6 +234,12 @@ fn options() -> Options {
                     survey.display = display;
                 }
             }
+            "--clock" => {
+                survey.clock = arguments
+                    .next()
+                    .filter(|name| Survey::clock_named(name).is_some())
+                    .expect("--clock survey or faithful");
+            }
             _ => options.file = Some(PathBuf::from(argument)),
         }
     }
@@ -273,7 +286,9 @@ fn main() {
     // from another's.
     survey.counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
 
-    let mut system = survey.system().expect("a display mode winbox.js knows");
+    let mut system = survey
+        .system()
+        .expect("a display mode and a clock winbox.js knows");
 
     system.mode = mode;
     // Drive C:, the directory given, else one made for the run, with the

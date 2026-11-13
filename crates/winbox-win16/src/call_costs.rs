@@ -23,8 +23,11 @@
 //!   clock alone (`faithful`).
 //!
 //! A call recorded on neither: the middle of the 37 recorded alone, 154
-//! [[inferred]]. The Super VGA's drawing and WinG are not here: only the
-//! VGA's recordings are run on this clock.
+//! [[inferred]]. Calls that draw depend on the display driver: on a
+//! display of 256 colours the Super VGA's (`callcost` on `vga256`,
+//! `wingcost`, `wingxlat`, `twrcost`, `twrcall`), WinG's blits by their
+//! size and by whether their colours are the system palette's one for one;
+//! on any other the VGA's.
 
 use winbox_machine::FAITHFUL_INSTRUCTIONS_PER_MS;
 
@@ -78,8 +81,8 @@ const SYSTEM: &[(&str, &str, f64)] = &[
     ("KERNEL", "FreeResource", 106.0),
     // Half of LockResource and GlobalUnlock.
     ("KERNEL", "LockResource", 77.0),
-    // `adlibgap`.
-    ("MMSYSTEM", "timeGetTime", 212.0),
+    // `adlibgap`. `timeGetTime` is charged by the clock's rate
+    // (`time_get_time`).
     ("KERNEL", "_lclose", 486.0),
     ("KERNEL", "_lopen", 1113.0),
     ("KERNEL", "_llseek", 490.0),
@@ -93,16 +96,67 @@ const SYSTEM: &[(&str, &str, f64)] = &[
     ("MMSYSTEM", "midiOutReset", 15.0),
 ];
 
-/// Drawing on the VGA (`callcost`).
+/// Drawing on the VGA (`callcost`; `PatBlt` of 16 by 16, `PATCOPY`, with
+/// nothing over the window, `viscost`).
 const VGA: &[(&str, &str, f64)] = &[
     ("GDI", "SetPixel", 886.0),
     ("GDI", "BitBlt", 21700.0),
     ("GDI", "TextOut", 4447.0),
+    ("GDI", "PatBlt", 2142.0),
 ];
 
-/// `PeekMessage` finding nothing on the VGA, with `PM_NOYIELD` and
-/// without (`callcost`).
+/// Drawing on the Super VGA's 256-colour driver (`callcost` on `vga256`,
+/// `wingcost`, `twrcost`, `twrcall`), each the middle of three runs at a
+/// fixed 80,000 a millisecond. USER's palette calls are here, as they are
+/// timed only on this display.
+const SUPER_VGA: &[(&str, &str, f64)] = &[
+    ("GDI", "SetPixel", 569.0),
+    ("GDI", "BitBlt", 2317.0),
+    ("GDI", "TextOut", 4655.0),
+    // Two timed as one.
+    ("GDI", "SelectObject", 217.0),
+    // Half of MoveTo and LineTo.
+    ("GDI", "MoveTo", 297.0),
+    ("GDI", "LineTo", 297.0),
+    ("GDI", "Rectangle", 3570.0),
+    ("GDI", "GetNearestColor", 8595.0),
+    // Half of SaveDC and RestoreDC.
+    ("GDI", "SaveDC", 607.0),
+    ("GDI", "RestoreDC", 607.0),
+    ("GDI", "GetPaletteEntries", 1185.0),
+    ("GDI", "GetStockObject", 29.0),
+    ("GDI", "GetCurrentPosition", 32.0),
+    // Half of CreatePen or CreateSolidBrush and DeleteObject.
+    ("GDI", "CreatePen", 234.0),
+    ("GDI", "CreateSolidBrush", 234.0),
+    ("GDI", "DeleteObject", 234.0),
+    ("USER", "SelectPalette", 192.0),
+    ("USER", "RealizePalette", 75.0),
+    ("USER", "FillRect", 2372.0),
+    ("USER", "FrameRect", 7775.0),
+    ("USER", "DrawFocusRect", 6298.0),
+    ("WING", "WinGStretchBlt", 82047.0),
+];
+
+/// `PeekMessage` finding nothing, with `PM_NOYIELD` and without
+/// (`callcost`): on the VGA, and on the Super VGA.
 const PEEK: [f64; 2] = [122.0, 207.0];
+const PEEK_SUPER_VGA: [f64; 2] = [121.0, 206.0];
+
+/// `WinGBitBlt` [[inferred]] from five sizes each at a fixed 80,000 a
+/// millisecond: with its bitmap's colours the system palette's one for
+/// one (`wingcost`), so many instructions, so many more a row and a
+/// pixel -- 2,823, 31.7 and next to nothing, each row a string copy; not
+/// (`wingxlat`), each pixel translated, 11,002, 38.99 and 4.433.
+const WING_BLIT: [(f64, f64, f64); 2] = [(2823.0, 31.7, 0.002), (11002.0, 38.99, 4.433)];
+
+/// `WinGSetDIBColorTable`, so many and so many more an entry (`wingcost`,
+/// 256 entries and 16: 148 and 21).
+const WING_COLOR_TABLE: (f64, f64) = (148.0, 21.0);
+
+/// `AnimatePalette`, so many and so many more an entry (`twrcall`, 1, 16
+/// and 64 entries: 260 and 193).
+const ANIMATE_PALETTE: (f64, f64) = (260.0, 193.0);
 
 const PM_NOYIELD: u16 = 0x0002;
 
@@ -205,6 +259,63 @@ const WRITE: [f64; 2] = [653.0, 941.0];
 
 /// `_llseek` in standard mode and in 386 enhanced mode (`hdtime`).
 const LLSEEK: [f64; 2] = [573.0, 496.0];
+
+/// `timeGetTime`'s own instructions in standard mode, and in 386 enhanced
+/// mode beyond the call into the timer's virtual device. [[read out]]
+/// Standard mode: `MMSYSTEM.DLL` seg1 `029a`-`02b8` makes the call a jump
+/// to `TIMER.DRV`'s `DriverProc` with `TDD_GETSYSTEMTIME` (0808h), 17
+/// instructions; `DriverProc`, seg2 `0038`-`0061` and `0099`-`00ac`, finds
+/// the message in its table and calls, by `__WINFLAGS`, standard mode's
+/// function or enhanced mode's (the far pointers at seg4 `01f4` and
+/// `020c`), and returns at `00ae`-`00b1`, 30; standard mode's, seg3 `0216`,
+/// reads the timer's count (`0417`-`0436`) and adds it to the ticks counted
+/// (`01f8`-`0215`), again where a tick came between, and makes them
+/// milliseconds by a division of 64 bits by 1,193.18 (`024d`-`0262`,
+/// `0438`-`0586`, `0587`-`05b0`), 158 with its count as `TIMER.DRV`
+/// leaves it -- 205 in all, 4 more for each step of the division's
+/// correction. [[inferred]] Enhanced mode's, `call far [021c]` into the
+/// virtual timer device (seg2 `0116`-`0121`), from `hdtime` at 80,000 and
+/// 20,000 a millisecond: 198, and what its port accesses cost.
+const TIME_GET_TIME: [f64; 2] = [205.0, 198.0];
+
+/// The timer's ports read and written in one `timeGetTime`, in standard
+/// mode and in 386 enhanced mode. [[read out]] Standard mode's: `out 43h`
+/// to latch the count and two `in al,40h` (`TIMER.DRV` seg3 `0424`-`042c`;
+/// two more where seg4 `01dc` is 1 or more, which it is not here).
+/// [[inferred]] Enhanced mode's: what fits `hdtime` at both rates, with
+/// 198, within 1 -- three reads and two writes -- where two reads and one
+/// write fit no count of instructions at both.
+const TIME_GET_TIME_PORTS: [(f64, f64); 2] = [(2.0, 1.0), (3.0, 2.0)];
+
+/// [[read out]] What DOSBox 0.74-3 takes from the processor for each read
+/// and each write of a port, as cycles a millisecond divided by these
+/// (`src/hardware/iohandler.cpp`, `IO_USEC_read_delay` and
+/// `IO_USEC_write_delay`, 1,024 and 1,024 / 0.75): a microsecond's and
+/// three quarters', 78 and 58 at 80,000 a millisecond, 2 and 2 at 3,000.
+/// Not taken where fewer than three times as many are left of DOSBox's
+/// slice, which seldom is.
+const PORT_DELAY: (f64, f64) = (1024.0, 1365.0);
+
+/// `timeGetTime` on a clock at `rate` instructions a millisecond: its own
+/// instructions, and DOSBox's charge for the timer's ports it reads and
+/// writes, which grows with the rate -- 419 in standard mode at 80,000 a
+/// millisecond, and 211 at 3,000, where `adlibgap` timed 212 -- 548 in
+/// enhanced mode at 80,000.
+fn time_get_time(system: &System) -> f64 {
+    let mode = usize::from(enhanced(system));
+    let rate = system.clock.rate().unwrap_or(FAITHFUL_INSTRUCTIONS_PER_MS);
+    let (reads, writes) = TIME_GET_TIME_PORTS[mode];
+
+    TIME_GET_TIME[mode]
+        + reads * (rate / PORT_DELAY.0).floor()
+        + writes * (rate / PORT_DELAY.1).floor()
+}
+
+/// Whether the display is one of 256 colours, where the Super VGA's
+/// drawing is charged.
+fn super_vga(system: &System) -> bool {
+    system.display.bits_per_pixel == 8
+}
 
 fn enhanced(system: &System) -> bool {
     system.mode == crate::system::Mode::Enhanced
@@ -310,8 +421,36 @@ pub fn before(system: &System, module: &str, name: &str, stack: u32) -> f64 {
         ("KERNEL", "_llseek") if faithful(system) => LLSEEK[usize::from(enhanced(system))],
         ("USER", "PeekMessage") => {
             let flags = system.cpu.bus.read16(stack + 4);
+            let peek = if super_vga(system) {
+                PEEK_SUPER_VGA
+            } else {
+                PEEK
+            };
 
-            PEEK[usize::from(flags & PM_NOYIELD == 0)]
+            peek[usize::from(flags & PM_NOYIELD == 0)]
+        }
+        // Its arguments from the last: the source's y and x, its device
+        // context, then the height and the width.
+        ("WING", "WinGBitBlt") if super_vga(system) => {
+            let bus = &system.cpu.bus;
+            let source = bus.read16(stack + 8);
+            let height = f64::from((bus.read16(stack + 10) as i16).unsigned_abs());
+            let width = f64::from((bus.read16(stack + 12) as i16).unsigned_abs());
+            let identity = crate::wing::wing_identity(system, source);
+            let (base, row, pixel) = WING_BLIT[usize::from(!identity)];
+
+            base + row * height + pixel * width * height
+        }
+        // The colours' far pointer last, then how many.
+        ("WING", "WinGSetDIBColorTable") if super_vga(system) => {
+            let count = f64::from(system.cpu.bus.read16(stack + 8));
+
+            WING_COLOR_TABLE.0 + WING_COLOR_TABLE.1 * count
+        }
+        ("GDI", "AnimatePalette") if super_vga(system) => {
+            let count = f64::from(system.cpu.bus.read16(stack + 8));
+
+            ANIMATE_PALETTE.0 + ANIMATE_PALETTE.1 * count
         }
         ("KERNEL", "_lwrite") => {
             let count = system.cpu.bus.read16(stack + 4);
@@ -319,7 +458,8 @@ pub fn before(system: &System, module: &str, name: &str, stack: u32) -> f64 {
             LWRITE.0 + LWRITE.1 * f64::from(count)
         }
         ("USER", "_WSPRINTF") => wsprintf(system, stack),
-        _ => VGA
+        ("MMSYSTEM", "timeGetTime") => time_get_time(system),
+        _ => if super_vga(system) { SUPER_VGA } else { VGA }
             .iter()
             .chain(SYSTEM)
             .find(|&&(each, call, _)| each == module && call == name)
@@ -533,6 +673,33 @@ mod tests {
             2.0 * WRITE[1] + transfer(32768) + transfer(32766)
         ));
         assert!(charged(Mode::Standard, 3000.0, true, |s| file_write(s, 512)) == 0.0);
+    }
+
+    /// `timeGetTime` costs its own instructions and DOSBox's charge for the
+    /// timer's ports at the clock's rate: as `hdtime` timed it at 80,000 a
+    /// millisecond in both modes, less its loop's own 8, and as `adlibgap`
+    /// did at 3,000, within 1.
+    #[test]
+    fn time_get_time_costs_by_the_clocks_rate() {
+        let at = |mode, rate| {
+            let mut system = System::new();
+
+            system.mode = mode;
+            system.clock = Clock::virtual_at(rate);
+            system.clock.measured_calls = true;
+            before(&system, "MMSYSTEM", "timeGetTime", 0)
+        };
+
+        assert!(close(
+            at(Mode::Standard, FAITHFUL_INSTRUCTIONS_PER_MS),
+            419.0
+        ));
+        assert!(close(
+            at(Mode::Enhanced, FAITHFUL_INSTRUCTIONS_PER_MS),
+            548.0
+        ));
+        assert!(close(at(Mode::Standard, 3000.0), 211.0));
+        assert!(close(at(Mode::Standard, 20000.0), 257.0));
     }
 
     /// On the faithful clock a read or write is charged by its bytes, not

@@ -57,6 +57,11 @@ pub struct Survey {
     pub counts: bool,
     /// The screens kept: where the run left it, or at the report's marks.
     pub screens: bool,
+    /// The clock the run keeps, by its name (`Clock::named`), a virtual
+    /// one: `survey`, the survey's own; `faithful`, the recorder's DOSBox
+    /// at a fixed 80,000 instructions a millisecond with each call charged
+    /// as recorded.
+    pub clock: String,
 }
 
 impl Default for Survey {
@@ -73,6 +78,7 @@ impl Default for Survey {
             summary: false,
             counts: false,
             screens: false,
+            clock: "survey".to_string(),
         }
     }
 }
@@ -183,13 +189,20 @@ pub fn start(system: &mut System, executable: Executable, path: &str) -> Result<
 }
 
 impl Survey {
-    /// A system on the display asked for; none where winbox.js knows no
-    /// such display.
+    /// A system on the display asked for, on the clock asked for; none
+    /// where winbox.js knows no such display, or no such virtual clock.
     pub fn system(&self) -> Option<System> {
         let mut system = System::new();
 
         system.display = crate::display::mode(&self.display)?;
+        system.clock = Self::clock_named(&self.clock)?;
         Some(system)
+    }
+
+    /// A virtual clock by its name, as a survey keeps one: `survey` or
+    /// `faithful`. None for another, the host's own among them.
+    pub fn clock_named(name: &str) -> Option<winbox_machine::Clock> {
+        winbox_machine::Clock::named(name).filter(winbox_machine::Clock::is_virtual)
     }
 
     /// A started program's run made ready: its calls logged, the report's
@@ -201,6 +214,17 @@ impl Survey {
 
         if let Some(marks) = &self.marks {
             system.call_marks.marks = marks_of(marks);
+
+            // A report's places are its run's, on the survey's clock: the
+            // instructions and the calls made by then are that clock's. On
+            // another the same program comes to other places at the same
+            // time, so each is come to by its time alone.
+            if self.clock != "survey" {
+                for mark in &mut system.call_marks.marks {
+                    mark.instructions = 0;
+                    mark.calls = 0;
+                }
+            }
         }
 
         // Made up from two seconds in, or after the report's keys: what the

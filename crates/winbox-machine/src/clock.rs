@@ -55,6 +55,11 @@ pub struct Clock {
     rate: Option<f64>,
     /// Whether calls are charged the instructions recorded for them.
     pub measured_calls: bool,
+    /// A virtual clock the host's time paces, for a host a person uses:
+    /// while nothing runs, it waits until the host's time since the
+    /// machine started has reached the machine's next time, a frame at
+    /// most, rather than skipping to it (`Clock::paced`).
+    paced: bool,
     charged: f64,
     skipped: f64,
     pending: Vec<Pending>,
@@ -79,6 +84,7 @@ impl Clock {
         Self {
             rate: Some(rate),
             measured_calls: false,
+            paced: false,
             charged: 0.0,
             skipped: 0.0,
             pending: Vec::new(),
@@ -86,6 +92,58 @@ impl Clock {
             host,
             start: 0.0,
         }
+    }
+
+    /// The faithful clock: the recorder's DOSBox at a fixed 80,000
+    /// instructions a millisecond, each call charged the instructions
+    /// recorded for it there (`call_costs.rs` of the engine).
+    pub fn faithful() -> Self {
+        Self {
+            measured_calls: true,
+            ..Self::virtual_at(FAITHFUL_INSTRUCTIONS_PER_MS)
+        }
+    }
+
+    /// The clock a host names, the same names everywhere (`--clock`,
+    /// `WINBOX_CLOCK`): `survey`, the survey's 3,000 instructions a
+    /// millisecond with each call charged 15; `faithful`
+    /// (`Clock::faithful`); `host`, the host's own time. None for another.
+    pub fn named(name: &str) -> Option<Self> {
+        match name {
+            "survey" => Some(Self::virtual_at(INSTRUCTIONS_PER_MS)),
+            "faithful" => Some(Self::faithful()),
+            "host" => Some(Self::real()),
+            _ => None,
+        }
+    }
+
+    /// A virtual clock made one the host's time paces, from now: its time
+    /// is still the instructions run and charged, but while nothing runs
+    /// it is not let go past the host's time since now, so that a person
+    /// waits for a timer as long as the machine says it takes. Where the
+    /// processor runs slower than the clock's rate, the machine's time
+    /// falls behind the host's as it works, and goes on without waiting
+    /// while nothing runs until it has caught up. The host's own clock
+    /// is as it was.
+    #[must_use]
+    pub fn paced(mut self) -> Self {
+        if self.rate.is_some() {
+            self.paced = true;
+            self.start = self.host_ms();
+        }
+
+        self
+    }
+
+    /// Whether the clock is a virtual one the host's time paces.
+    pub fn is_paced(&self) -> bool {
+        self.paced
+    }
+
+    /// The host's time since the machine started, for a paced clock and
+    /// the host's own: the time a person has waited.
+    pub fn host_elapsed(&self) -> f64 {
+        self.host_ms() - self.start
     }
 
     /// The host's own time.
@@ -105,7 +163,7 @@ impl Clock {
     /// The host's time read from `host` from now on; the host's own clock
     /// goes on from the time it had.
     pub fn set_host(&mut self, host: HostTime) {
-        if self.rate.is_none() {
+        if self.rate.is_none() || self.paced {
             let elapsed = self.host_ms() - self.start;
 
             self.start = host() - elapsed;
@@ -300,6 +358,42 @@ mod tests {
         assert!(clock.advance(3000, 10.0).is_empty());
         assert_eq!(clock.now(3000), 510.0);
         assert_eq!(clock.clone().next_due(), f64::INFINITY);
+    }
+
+    /// Each name a host gives its clock: the survey's, the faithful one
+    /// with calls charged as recorded, and the host's own.
+    #[test]
+    fn a_clock_is_named() {
+        let survey = Clock::named("survey").expect("the survey's clock");
+        let faithful = Clock::named("faithful").expect("the faithful clock");
+
+        assert_eq!(survey.rate(), Some(INSTRUCTIONS_PER_MS));
+        assert!(!survey.measured_calls);
+        assert_eq!(faithful.rate(), Some(FAITHFUL_INSTRUCTIONS_PER_MS));
+        assert!(faithful.measured_calls);
+        assert!(!Clock::named("host").expect("the host's").is_virtual());
+        assert!(Clock::named("fast").is_none());
+    }
+
+    /// A paced clock keeps the machine's time, and reads the host's only
+    /// for what has been waited.
+    #[test]
+    fn a_paced_clock_keeps_the_machines_time() {
+        thread_local! {
+            static NOW: std::cell::Cell<f64> = const { std::cell::Cell::new(500.0) };
+        }
+
+        fn now() -> f64 {
+            NOW.with(std::cell::Cell::get)
+        }
+
+        let clock = Clock::virtual_with(FAITHFUL_INSTRUCTIONS_PER_MS, now).paced();
+
+        assert!(clock.is_paced());
+        NOW.with(|cell| cell.set(800.0));
+        assert_eq!(clock.now(80_000), 1.0);
+        assert_eq!(clock.host_elapsed(), 300.0);
+        assert!(!Clock::real().paced().is_paced());
     }
 
     /// The host's own clock reads the time it is given.

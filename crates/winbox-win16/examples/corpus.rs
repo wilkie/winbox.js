@@ -20,6 +20,14 @@
 //! reports: what differs is what the bundle's base changes
 //! (`kb/topics/asset-bundle.md`).
 //!
+//! `--clock faithful` runs each on the faithful clock (`trace --clock`,
+//! `kb/topics/timing.md`): the recorder's DOSBox at a fixed 80,000
+//! instructions a millisecond, each call charged as recorded, for as many
+//! seconds as its report and with no count of calls to stop at; held to
+//! the same reports, which are the survey's clock's, so that what differs
+//! is what the clock changes. The reports are not written on it. `--only
+//! ID` runs that program alone.
+//!
 //! `WINBOX_TRACE` names another command to run in the trace example's
 //! place, taking its arguments, its words split at spaces: `node
 //! scripts/web/trace.mjs` runs the engine built for WebAssembly. Where
@@ -230,6 +238,8 @@ struct Run {
     /// Started as an install is, Program Manager the shell, with the
     /// oracle's A: and Z: beside C: as the recorded run has them.
     install: bool,
+    /// The clock, by its name: `survey` unless `--clock` says.
+    clock: String,
 }
 
 /// The trace of a program, as the trace example prints it; what it printed
@@ -255,18 +265,24 @@ fn trace(run: &Run) -> String {
             // The survey's boxKeys: Enter at each of three boxes.
             "--boxes",
             "3",
-            // As far as the recorded run went: its calls, and the frame it
-            // was in at its time's end, as far as a frame can take it.
-            "--calls",
-            &run.calls.to_string(),
             "--seconds",
             &(run.seconds + 0.1).to_string(),
-            // Instructions enough for the seconds at the survey's rate.
+            // Instructions enough for the seconds at the clock's rate,
+            // twice over.
             "--budget",
-            &((run.seconds * 6_000_000.0) as u64).to_string(),
+            &((run.seconds * 2.0 * rate_of(&run.clock) * 1000.0) as u64).to_string(),
         ])
         .arg("--screen")
         .arg(&run.screen);
+
+    // As far as the recorded run went: its calls, and the frame it was in
+    // at its time's end, as far as a frame can take it. On another clock
+    // the program makes other calls in its time: its seconds alone.
+    if run.clock == "survey" {
+        command.arg("--calls").arg(run.calls.to_string());
+    } else {
+        command.arg("--clock").arg(&run.clock);
+    }
 
     // Its keys pressed and its screens kept where the recorded run's
     // were.
@@ -295,7 +311,7 @@ fn trace(run: &Run) -> String {
     let started = Instant::now();
 
     while child.try_wait().ok().flatten().is_none() {
-        if started.elapsed() > Duration::from_secs_f64(60.0 + run.seconds * 2.0) {
+        if started.elapsed() > Duration::from_secs_f64(60.0 + run.seconds * patience(&run.clock)) {
             let _ = child.kill();
             break;
         }
@@ -525,11 +541,31 @@ fn base_of(assets: bool, display: &str) -> (&'static str, String) {
 
 /// `--write DIR`: the folder each program's report is written into.
 fn write_to() -> Option<std::path::PathBuf> {
+    option("--write").map(std::path::PathBuf::from)
+}
+
+/// The value given after `name` on the command line, if it is given.
+fn option(name: &str) -> Option<String> {
     std::env::args()
         .collect::<Vec<_>>()
         .windows(2)
-        .find(|pair| pair[0] == "--write")
-        .map(|pair| std::path::PathBuf::from(&pair[1]))
+        .find(|pair| pair[0] == name)
+        .map(|pair| pair[1].clone())
+}
+
+/// The clock's rate, by its name, in instructions a millisecond: the
+/// survey's, or the faithful clock's.
+fn rate_of(clock: &str) -> f64 {
+    winbox_machine::Clock::named(clock)
+        .and_then(|clock| clock.rate())
+        .unwrap_or(winbox_machine::INSTRUCTIONS_PER_MS)
+}
+
+/// How many of the host's seconds a trace is given for each of the run's:
+/// on the survey's clock two; on a faster one as many more as it runs
+/// instructions, the processor here running some 40,000 a millisecond.
+fn patience(clock: &str) -> f64 {
+    (2.0 * rate_of(clock) / winbox_machine::INSTRUCTIONS_PER_MS).min(40.0)
 }
 
 /// How many calls the survey keeps from a run's start, and from its end,
@@ -805,6 +841,17 @@ fn main() {
     let screens = std::env::temp_dir().join(format!("winbox-corpus-{}", std::process::id()));
     let write = write_to();
     let mut written = Vec::new();
+    let clock = option("--clock").unwrap_or_else(|| "survey".to_string());
+    let only = option("--only");
+
+    assert!(
+        winbox_win16::survey::Survey::clock_named(&clock).is_some(),
+        "--clock survey or faithful"
+    );
+    assert!(
+        write.is_none() || clock == "survey",
+        "the reports are the survey's clock's: --write on it alone"
+    );
 
     std::fs::create_dir_all(&screens).expect("a folder for the screens");
 
@@ -825,6 +872,10 @@ fn main() {
             None => format!("corpus/programs/{}/{}", program.id, program.run),
         };
         let report = format!("corpus/reports/{}.calls.txt", program.id);
+
+        if only.as_ref().is_some_and(|only| *only != program.id) {
+            continue;
+        }
 
         if !Path::new(image.as_deref().unwrap_or(&exe)).exists() || !Path::new(&report).exists() {
             continue;
@@ -868,6 +919,7 @@ fn main() {
                 _ => Vec::new(),
             },
             install: program.install,
+            clock: clock.clone(),
         });
         let got: Vec<String> = out
             .lines()

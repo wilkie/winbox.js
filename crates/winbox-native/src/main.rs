@@ -76,6 +76,21 @@
 //! standard error; `--sound-dump` keeps what the speakers are handed, as a
 //! WAV file, and implies `--sound`.
 //!
+//! `--clock host|faithful|survey` is the clock the machine keeps
+//! (`kb/topics/timing.md`): the host's own time by default, a program
+//! running as fast as the host runs it; `faithful`, the recorder's DOSBox
+//! at a fixed 80,000 instructions a millisecond, each call charged the
+//! instructions Windows ran for it there, so that a game that paces itself
+//! by its work, as SimTower does, goes at Windows' pace in the machine's
+//! time; `survey`, the survey's 3,000 a millisecond. Either of the two is
+//! paced by the host's time (`Clock::paced`): while nothing runs, the
+//! machine waits the host's time for its next timer, so a person waits
+//! as long as the machine says; while it runs, its time is its work, and
+//! falls behind the host's where the processor here runs fewer
+//! instructions a millisecond than the clock -- some 30,000 to 60,000
+//! against 80,000 -- to catch up while nothing runs. The launcher passes
+//! its own `--clock` on to what it starts.
+//!
 //! `--mode standard|enhanced` is the mode Windows runs in, standard by
 //! default (`kb/guides/enhanced-mode.md`): what `GetWinFlags`, INT 2Fh
 //! 1600h and DPMI's version say, and how much memory there is. A program
@@ -171,6 +186,9 @@ struct Options {
     /// The mode Windows runs in, `--mode standard|enhanced`; a kept
     /// program's own where none is given, else standard.
     windows_mode: Option<winbox_win16::Mode>,
+    /// `--clock`: the clock the machine keeps, by its name
+    /// (`Clock::named`); the host's own where none is given.
+    clock: Option<String>,
     /// What an installer left kept without asking.
     keep: bool,
     shot: Option<PathBuf>,
@@ -203,13 +221,13 @@ struct Options {
     directory_anyway: bool,
 }
 
-const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--mode standard|enhanced] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
+const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--mode standard|enhanced] [--clock host|faithful|survey] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
 winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced] [and a run's switches]
 winbox-native --install NAME MEDIA|A: [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced] [--keep] [and a run's switches]
 winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced]
 winbox-native --list
 winbox-native --launch NAME ITEM [--group GROUP] [--directory-anyway] [and a run's switches]
-winbox-native --launcher [--seamless]
+winbox-native --launcher [--seamless] [--sound] [--clock host|faithful|survey]
 each with [--library DIR]: where programs are kept, else the host's own folder for WinBox's data";
 
 fn usage() -> ! {
@@ -236,6 +254,7 @@ fn options() -> Options {
         assets: None,
         display: None,
         windows_mode: None,
+        clock: None,
         keep: false,
         shot: None,
         shot_seconds: 5,
@@ -333,6 +352,15 @@ fn options() -> Options {
                     Some(winbox_win16::Mode::named(&name).unwrap_or_else(|| {
                         refuse(&format!("--mode {name}: standard or enhanced"))
                     }));
+            }
+            "--clock" => {
+                let name = arguments.next().unwrap_or_else(|| usage());
+
+                if Clock::named(&name).is_none() {
+                    refuse(&format!("--clock {name}: host, faithful or survey"));
+                }
+
+                options.clock = Some(name);
             }
             "--mount" => {
                 let spec = arguments.next().unwrap_or_else(|| usage());
@@ -1292,8 +1320,13 @@ fn main() {
         }
     }
     // The host's own time: a program runs as fast as the host runs it, and
-    // its timers come due as the host's clock passes them.
-    system.clock = Clock::real();
+    // its timers come due as the host's clock passes them. Or the clock
+    // `--clock` names, a virtual one paced by the host's time.
+    system.clock = options
+        .clock
+        .as_deref()
+        .and_then(Clock::named)
+        .map_or_else(Clock::real, Clock::paced);
 
     if let Some(start) = &start {
         // A group's item, given what Program Manager's File Open gives it,

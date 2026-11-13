@@ -163,6 +163,7 @@ fn an_item_is_started_as_a_process_of_its_own() {
         source: Some(Source::Assets(PathBuf::from("/assets.zip"))),
         seamless: true,
         sound: false,
+        clock: None,
     };
     let group = &model.groups[0];
 
@@ -191,6 +192,7 @@ fn an_item_is_started_as_a_process_of_its_own() {
             &Settings {
                 source: None,
                 seamless: false,
+                clock: Some("faithful".to_string()),
                 ..settings
             }
         ),
@@ -203,7 +205,9 @@ fn an_item_is_started_as_a_process_of_its_own() {
             "--library",
             "/library",
             "--mode",
-            "enhanced"
+            "enhanced",
+            "--clock",
+            "faithful"
         ]
     );
 }

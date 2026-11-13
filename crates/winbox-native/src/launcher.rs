@@ -320,7 +320,8 @@ impl Model {
 
 /// What starts an item, a process of its own: this program again, with
 /// `--launch`, the item's install, its name and its group's, the library,
-/// and how the launcher was asked to show programs; `--mode` where the
+/// and how the launcher was asked to show programs and keep their clocks;
+/// `--mode` where the
 /// program is kept for another than the standard one; and where its
 /// working directory is not there and OK was chosen, `--directory-anyway`.
 pub fn launch_arguments(
@@ -356,6 +357,10 @@ pub fn launch_arguments(
         arguments.push("--sound".to_string());
     }
 
+    if let Some(clock) = &settings.clock {
+        arguments.extend(["--clock".to_string(), clock.clone()]);
+    }
+
     if anyway {
         arguments.push("--directory-anyway".to_string());
     }
@@ -370,6 +375,8 @@ pub struct Settings {
     pub source: Option<Source>,
     pub seamless: bool,
     pub sound: bool,
+    /// The launcher's own `--clock`, where it was given one.
+    pub clock: Option<String>,
 }
 
 /// The display's colours an icon of `depth` bits is drawn in, and the
@@ -1065,6 +1072,7 @@ pub fn run(options: &crate::Options) {
             source: given,
             seamless: options.seamless,
             sound: options.sound,
+            clock: options.clock.clone(),
         },
         window: None,
         surface: None,

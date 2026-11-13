@@ -568,12 +568,19 @@ impl Engine {
                 return false;
             }
 
-            // The host's own clock: its time waited out.
-            (!system.clock.is_virtual()).then(|| {
-                let next = system.clock.next_due().min(now + FRAME);
+            let next = system.clock.next_due().min(now + FRAME);
 
-                (next - now).max(0.0)
-            })
+            if !system.clock.is_virtual() {
+                // The host's own clock: its time waited out.
+                Some((next - now).max(0.0))
+            } else if system.clock.is_paced() {
+                // A paced clock: the host's time waited for until it has
+                // come to the machine's next time; not at all where the
+                // machine's time is behind.
+                Some((next - system.clock.host_elapsed()).max(0.0))
+            } else {
+                None
+            }
         };
 
         if let Some(wait) = wait {
@@ -617,7 +624,15 @@ impl Engine {
         // seconds on, can -- is not skipped to: the run goes on a frame at a
         // time.
         let beyond = system.clock.is_virtual() && system.clock.next_due() > self.until.get();
+        let paced = system.clock.is_paced();
         let idle = match marked {
+            // A paced clock goes on to its next time, as far as its wait
+            // went (`pass_time_async`): never past a frame of it.
+            None if paced => {
+                let next = system.clock.next_due().min(now + FRAME);
+
+                Some(system.clock.advance(instructions, (next - now).max(0.0)))
+            }
             Some(time) if time > now => Some(system.clock.advance(instructions, time - now)),
             Some(_) => Some(system.clock.advance(instructions, FRAME)),
             None if beyond => Some(system.clock.advance(instructions, FRAME)),
@@ -1003,5 +1018,41 @@ mod tests {
         assert_eq!(wait.as_mut().poll(&mut context), Poll::Pending);
         HOST.with(|now| now.set(350.0));
         assert_eq!(wait.as_mut().poll(&mut context), Poll::Ready(()));
+    }
+
+    /// On a paced clock, time passing with nothing to run waits for the
+    /// host's time to come to the machine's next, a frame on; and where
+    /// the machine's time is behind the host's, goes on without waiting.
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn a_paced_clock_waits_for_the_hosts_time() {
+        let mut system = System::new();
+
+        HOST.with(|now| now.set(0.0));
+        system.clock =
+            winbox_machine::Clock::virtual_with(winbox_machine::FAITHFUL_INSTRUCTIONS_PER_MS, host)
+                .paced();
+
+        let engine = Engine::new(system);
+
+        engine.set_pace(Pace::Yielding);
+
+        let mut context = Context::from_waker(Waker::noop());
+        let mut passing = Box::pin(engine.pass_time_async());
+
+        assert_eq!(passing.as_mut().poll(&mut context), Poll::Pending);
+        HOST.with(|now| now.set(34.0));
+        assert_eq!(passing.as_mut().poll(&mut context), Poll::Ready(true));
+        drop(passing);
+        assert_eq!(engine.system().clock.now(0), 34.0);
+
+        // A second behind the host's: no wait.
+        HOST.with(|now| now.set(1034.0));
+
+        let mut passing = Box::pin(engine.pass_time_async());
+
+        assert_eq!(passing.as_mut().poll(&mut context), Poll::Ready(true));
+        drop(passing);
+        assert_eq!(engine.system().clock.now(0), 68.0);
     }
 }

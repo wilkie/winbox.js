@@ -87,7 +87,22 @@ fn system_for(name: &str) -> System {
 
     system.mode = mode_of(name).0;
     system.coprocessor = coprocessor_of(name);
+    system.clock = chosen_clock().unwrap_or(system.clock);
     system
+}
+
+/// The clock `WINBOX_CLOCK` names for every probe's run, where it names
+/// one (`Clock::named`): `survey`, `faithful` or `host`. `faithful` runs
+/// every probe at the recorder's fixed 80,000 a millisecond, each call
+/// charged as recorded, as `oracle/fixtures/timings/` were recorded
+/// (`kb/topics/timing.md`).
+pub fn chosen_clock() -> Option<winbox_machine::Clock> {
+    let name = std::env::var("WINBOX_CLOCK").ok()?;
+
+    Some(
+        winbox_machine::Clock::named(&name)
+            .unwrap_or_else(|| panic!("WINBOX_CLOCK={name}: survey, faithful or host")),
+    )
 }
 
 /// A probe's records as Windows wrote them: function, arguments, result.
@@ -611,7 +626,7 @@ impl Setup {
         // cycles a millisecond, the survey's clock's rate: its calls are
         // charged the instructions Windows ran for them (`call_costs.rs`),
         // as its recordings' times have them.
-        system.clock.measured_calls = sound;
+        system.clock.measured_calls |= sound;
         let display = match winbox_win16::display::mode(&display) {
             Some(mode) => {
                 system.display = mode;

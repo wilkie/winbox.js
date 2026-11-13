@@ -212,6 +212,30 @@ impl System {
 /// memory goes a byte at a time, so there they are set side by side eight
 /// at a time, some fivefold faster; a native host's own comparison is
 /// faster still. Either way the answer is the same.
+/// Whether a WinG blit from `hdc` takes WinG's fast path: the bitmap
+/// selected there has the system palette's colours one for one, slot for
+/// slot, so its bytes are copied as they are. Any other is translated a
+/// pixel at a time (`wingxlat`, against `wingcost`): what the faithful
+/// clock charges it by (`call_costs.rs`). A source that is not a WinG
+/// bitmap, or a display with no system palette, is taken as the fast path.
+pub(crate) fn wing_identity(system: &System, hdc: u16) -> bool {
+    let (Some(at), Some(slots)) = (system.wing_selected(hdc), &system.system_palette) else {
+        return true;
+    };
+    let Some(pixels) = system.wing_pixels(at) else {
+        return true;
+    };
+    let ours = pixels.device_palette.borrow();
+    let theirs = slots.colours.borrow();
+
+    (0..256).all(|index| {
+        matches!(
+            (ours.colours.get(index), theirs.colours.get(index)),
+            (Some(a), Some(b)) if a == b
+        )
+    })
+}
+
 fn same_bytes(a: &[u8], b: &[u8]) -> bool {
     #[cfg(target_arch = "wasm32")]
     {

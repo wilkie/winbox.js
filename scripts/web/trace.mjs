@@ -9,6 +9,7 @@
  *     [--windows DIR] [--drive DIR] [--oracle-drives] [--display MODE]
  *     [--budget N] [--seconds N] [--calls N] [--boxes N] [--screen FILE]
  *     [--marks REPORT.json] [--input SEED] [--summary]
+ *     [--clock survey|faithful]
  *
  * The drives are held in the module's memory, as a page holds them: C:
  * `--drive`'s folder, else one with a copy of the program's folder where
@@ -52,6 +53,7 @@ function options(argv) {
       summary: false,
       counts: false,
       screens: false,
+      clock: 'survey',
     },
   };
   const survey = asked.survey;
@@ -106,6 +108,9 @@ function options(argv) {
         break;
       case '--seconds':
         survey.seconds = number(next(), survey.seconds);
+        break;
+      case '--clock':
+        survey.clock = next() ?? survey.clock;
         break;
       case '--display': {
         const display = next();
