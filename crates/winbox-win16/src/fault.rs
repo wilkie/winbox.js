@@ -12,8 +12,10 @@
 //!   exit code `FFh`.
 //!
 //! Nothing else runs while either box is up. Not followed: Dr. Watson, a
-//! debugger's Cancel, a procedure TOOLHELP's `InterruptRegister` was given,
-//! and a fault in KERNEL's or USER's own code, which winbox.js has none of.
+//! debugger's Cancel, and a procedure TOOLHELP's `InterruptRegister` was
+//! given. A page fault WinBox's own KERNEL or USER code meets on a
+//! program's pointer is taken where Windows' own code would fault
+//! (`host_page_fault_due`, `WINDOWS_PLACES`, recorded by `pghost`).
 //!
 //! A general protection fault and a page fault reach here: a processor's
 //! other faults -- a stack fault, a segment not present -- are taken by no
