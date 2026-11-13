@@ -273,10 +273,13 @@ const LLSEEK: [f64; 2] = [573.0, 496.0];
 /// milliseconds by a division of 64 bits by 1,193.18 (`024d`-`0262`,
 /// `0438`-`0586`, `0587`-`05b0`), 158 with its count as `TIMER.DRV`
 /// leaves it -- 205 in all, 4 more for each step of the division's
-/// correction. [[inferred]] Enhanced mode's, `call far [021c]` into the
+/// correction. [[inferred]] Charged 206: the three recordings, less their
+/// ports, take 206 (`adlibgap` at 3,000 a millisecond), 206.4 (`hdtime` at
+/// 80,000) and 207.6 (at 20,000), a step of the correction in some calls
+/// and not others. Enhanced mode's, `call far [021c]` into the
 /// virtual timer device (seg2 `0116`-`0121`), from `hdtime` at 80,000 and
 /// 20,000 a millisecond: 198, and what its port accesses cost.
-const TIME_GET_TIME: [f64; 2] = [205.0, 198.0];
+const TIME_GET_TIME: [f64; 2] = [206.0, 198.0];
 
 /// The timer's ports read and written in one `timeGetTime`, in standard
 /// mode and in 386 enhanced mode. [[read out]] Standard mode's: `out 43h`
@@ -298,8 +301,8 @@ const PORT_DELAY: (f64, f64) = (1024.0, 1365.0);
 
 /// `timeGetTime` on a clock at `rate` instructions a millisecond: its own
 /// instructions, and DOSBox's charge for the timer's ports it reads and
-/// writes, which grows with the rate -- 419 in standard mode at 80,000 a
-/// millisecond, and 211 at 3,000, where `adlibgap` timed 212 -- 548 in
+/// writes, which grows with the rate -- 420 in standard mode at 80,000 a
+/// millisecond, and 212 at 3,000, as `adlibgap` timed it -- 548 in
 /// enhanced mode at 80,000.
 fn time_get_time(system: &System) -> f64 {
     let mode = usize::from(enhanced(system));
@@ -678,7 +681,7 @@ mod tests {
     /// `timeGetTime` costs its own instructions and DOSBox's charge for the
     /// timer's ports at the clock's rate: as `hdtime` timed it at 80,000 a
     /// millisecond in both modes, less its loop's own 8, and as `adlibgap`
-    /// did at 3,000, within 1.
+    /// did at 3,000.
     #[test]
     fn time_get_time_costs_by_the_clocks_rate() {
         let at = |mode, rate| {
@@ -692,14 +695,14 @@ mod tests {
 
         assert!(close(
             at(Mode::Standard, FAITHFUL_INSTRUCTIONS_PER_MS),
-            419.0
+            420.0
         ));
         assert!(close(
             at(Mode::Enhanced, FAITHFUL_INSTRUCTIONS_PER_MS),
             548.0
         ));
-        assert!(close(at(Mode::Standard, 3000.0), 211.0));
-        assert!(close(at(Mode::Standard, 20000.0), 257.0));
+        assert!(close(at(Mode::Standard, 3000.0), 212.0));
+        assert!(close(at(Mode::Standard, 20000.0), 258.0));
     }
 
     /// On the faithful clock a read or write is charged by its bytes, not
