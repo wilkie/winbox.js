@@ -26,20 +26,20 @@ pub fn task_environment(windows: &str) -> Vec<u8> {
 }
 
 /// The first megabyte's pages that keep no write a program makes, by
-/// number (C0h for C0000h), as DOSBox's machine keeps them
-/// (`kb/guides/paging.md`, "ROM"). DOSBox 0.74-3 makes C0000h-C7FFFh, the
-/// video BIOS, and F0000h-FFFFFh, the system BIOS, ROM
+/// number (C0h for `C0000h`), as DOSBox's machine keeps them
+/// (`kb/guides/paging.md`, "ROM"). DOSBox 0.74-3 makes `C0000h-C7FFFh`, the
+/// video BIOS, and `F0000h-FFFFFh`, the system BIOS, ROM
 /// (`src/hardware/memory.cpp` 576-583), whose handler drops a write
 /// (`ROMPageHandler`, 105-119). Its dynamic core, on a page where it has
 /// run code, puts in a handler of its own that writes the page as any
 /// other (`src/cpu/core_dynrec/cache.h` 143-147; the core for x86 has a
 /// check for ROM there, `core_dyn_x86/cache.h` 111, this one none). So
-/// **recorded** by `pgrom`, at FF0h of each page from C0000h: F1000h, its
-/// callbacks' page (`CB_SOFFSET`, `include/callback.h` 39), and FF000h, the
-/// timer's handler at F000h:FEA5h (`include/bios.h` 106), keep a write in
-/// both modes, and FE000h, the keyboard's handler at F000h:E987h (107), in
-/// standard mode alone; the rest of the ROM keeps none, and C8000h-EFFFFh
-/// keeps every one. `pgwrite` agrees: C0000h and F0000h dropped, FFFF0h
+/// **recorded** by `pgrom`, at `FF0h` of each page from `C0000h`: `F1000h`, its
+/// callbacks' page (`CB_SOFFSET`, `include/callback.h` 39), and `FF000h`, the
+/// timer's handler at `F000h:FEA5h` (`include/bios.h` 106), keep a write in
+/// both modes, and `FE000h`, the keyboard's handler at `F000h:E987h` (107), in
+/// standard mode alone; the rest of the ROM keeps none, and `C8000h-EFFFFh`
+/// keeps every one. `pgwrite` agrees: `C0000h` and `F0000h` dropped, `FFFF0h`
 /// kept.
 fn rom_pages(mode: crate::Mode) -> impl Iterator<Item = u32> {
     let keeps_none = move |page: &u32| match page {
