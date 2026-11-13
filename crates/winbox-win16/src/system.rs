@@ -990,43 +990,154 @@ impl System {
         self.base_of((far >> 16) as u16).wrapping_add(far & 0xffff)
     }
 
-    /// The byte a far pointer and `step` more point at, the offset within
-    /// its segment.
-    fn far_step(&self, far: u32, step: u32) -> u32 {
-        self.linear((far & 0xffff_0000) | (far.wrapping_add(step) & 0xffff))
-    }
-
     /// The byte at `at` through a program's pointer, as Windows' own code
     /// reads it: nought where its page is not present, the read a page
-    /// fault (`System::host_reaches`).
-    fn far_byte(&self, at: u32) -> u8 {
-        if self.host_reaches(at, false) {
+    /// fault (`System::host_reaches`). `checked` keeps the last page asked
+    /// of and its answer, so a page is asked of once a run of bytes.
+    pub(crate) fn far_byte(&self, at: u32, checked: &mut Option<(u32, bool)>) -> u8 {
+        if self.page_reached(at, false, checked) {
             self.cpu.bus.read8(at)
         } else {
             0
         }
     }
 
+    /// Whether the page holding `at` is reached, as `host_reaches` answers,
+    /// asked once for each page as a run of bytes goes on.
+    fn page_reached(&self, at: u32, write: bool, checked: &mut Option<(u32, bool)>) -> bool {
+        let page = at >> winbox_machine::PAGE_BITS;
+
+        match *checked {
+            Some((kept, reached)) if kept == page => reached,
+            _ => {
+                let reached = self.host_reaches(at, write);
+
+                *checked = Some((page, reached));
+                reached
+            }
+        }
+    }
+
     /// `length` bytes through a program's far pointer, as WinBox's own
     /// KERNEL and USER read one: each page reached, or a page fault where
-    /// one is not present (the owner's decision 4 of 2026-11-10).
+    /// one is not present (the owner's decision 4 of 2026-11-10). The
+    /// offset wraps within the segment.
     pub fn read_far(&self, far: u32, length: usize) -> Vec<u8> {
+        let base = self.base_of((far >> 16) as u16);
+        let mut checked = None;
+
         (0..length as u32)
-            .map(|step| self.far_byte(self.far_step(far, step)))
+            .map(|step| {
+                self.far_byte(
+                    base.wrapping_add(far.wrapping_add(step) & 0xffff),
+                    &mut checked,
+                )
+            })
             .collect()
     }
 
-    /// `bytes` written through a program's far pointer, as `read_far`
-    /// reads: a byte whose page is not present is not written, the write
-    /// a page fault.
-    pub fn write_far(&mut self, far: u32, bytes: &[u8]) {
-        for (step, byte) in bytes.iter().enumerate() {
-            let at = self.far_step(far, step as u32);
+    /// The byte a program's far pointer points at, as `read_far` reads
+    /// it.
+    pub fn read_far8(&self, far: u32) -> u8 {
+        self.far_byte(self.linear(far), &mut None)
+    }
 
-            if self.host_reaches(at, true) {
-                self.cpu.bus.write8(at, *byte);
+    /// KERNEL's and USER's check of a program's buffer of `length` bytes
+    /// before a call reaches it: its last byte read (`KRNL386.EXE` seg1
+    /// `086e`-`0898`; `USER.EXE` seg16 `0596`-`05ab` and the like in each
+    /// segment), as `read_far` reads one. Whether its page is reached: where
+    /// it is not, the read is a page fault, which KERNEL takes as a
+    /// parameter refused (`pghost`).
+    pub fn check_last(&self, far: u32, length: u32) -> bool {
+        let last = (far & 0xffff_0000) | (far.wrapping_add(length.max(1) - 1) & 0xffff);
+
+        length == 0 || self.host_reaches(self.linear(last), false)
+    }
+
+    /// The check of a buffer whose size is given: its first byte, then its
+    /// last (`KRNL386.EXE` seg1 `08a1`-`08cf`, seg2 `0330`-`0359`;
+    /// `USER.EXE` seg8 `105a`-`1089`).
+    pub fn check_first_last(&self, far: u32, length: u32) -> bool {
+        length == 0 || (self.host_reaches(self.linear(far), false) && self.check_last(far, length))
+    }
+
+    /// `bytes` written through a program's far pointer, as `read_far`
+    /// reads: the write a page fault at the first byte whose page is not
+    /// present, and nothing written from there, as Windows' own code stops
+    /// at the instruction that faults.
+    pub fn write_far(&mut self, far: u32, bytes: &[u8]) {
+        let base = self.base_of((far >> 16) as u16);
+        let mut checked = None;
+
+        for (step, byte) in bytes.iter().enumerate() {
+            let at = base.wrapping_add(far.wrapping_add(step as u32) & 0xffff);
+
+            if !self.page_reached(at, true, &mut checked) {
+                return;
             }
+
+            self.cpu.bus.write8(at, *byte);
         }
+    }
+
+    /// `length` bytes on from the linear address `at` of a program's
+    /// memory, as `read_far` reads a far pointer's: for a pointer a
+    /// program gave whose bytes go on past its segment's 64 KiB, a huge
+    /// pointer's or DOS's `lwrhuge`. A page is asked of once.
+    pub fn read_linear(&self, at: u32, length: usize) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(length);
+        let mut at = at;
+
+        while bytes.len() < length {
+            let run = ((winbox_machine::PAGE_SIZE - (at & (winbox_machine::PAGE_SIZE - 1)))
+                as usize)
+                .min(length - bytes.len());
+
+            if self.host_reaches(at, false) {
+                bytes.extend(self.cpu.bus.read(at, run));
+            } else {
+                bytes.resize(bytes.len() + run, 0);
+            }
+
+            at = at.wrapping_add(run as u32);
+        }
+
+        bytes
+    }
+
+    /// `bytes` written on from the linear address `at` of a program's
+    /// memory, as `write_far` writes: nothing from the first page not
+    /// present.
+    pub fn write_linear(&mut self, at: u32, bytes: &[u8]) {
+        let mut at = at;
+        let mut bytes = bytes;
+
+        while !bytes.is_empty() {
+            let run = ((winbox_machine::PAGE_SIZE - (at & (winbox_machine::PAGE_SIZE - 1)))
+                as usize)
+                .min(bytes.len());
+
+            if !self.host_reaches(at, true) {
+                return;
+            }
+
+            self.cpu.bus.write(at, &bytes[..run]);
+            bytes = &bytes[run..];
+            at = at.wrapping_add(run as u32);
+        }
+    }
+
+    /// A word of a program's memory at the linear address `at`, as
+    /// `read_linear` reads it.
+    pub fn read_linear16(&self, at: u32) -> u16 {
+        let bytes = self.read_linear(at, 2);
+
+        u16::from_le_bytes([bytes[0], bytes[1]])
+    }
+
+    /// A word written to a program's memory, as `write_linear` writes.
+    pub fn write_linear16(&mut self, at: u32, value: u16) {
+        self.write_linear(at, &value.to_le_bytes());
     }
 
     /// Text copied to a buffer of `size` bytes, as much as fits with its
@@ -1046,8 +1157,16 @@ impl System {
 
     /// The string a far pointer points at, to its nought.
     pub fn read_string(&self, far: u32) -> Vec<u8> {
+        let base = self.base_of((far >> 16) as u16);
+        let mut checked = None;
+
         (0..0x10000)
-            .map(|step| self.far_byte(self.far_step(far, step)))
+            .map(|step| {
+                self.far_byte(
+                    base.wrapping_add(far.wrapping_add(step) & 0xffff),
+                    &mut checked,
+                )
+            })
             .take_while(|&byte| byte != 0)
             .collect()
     }

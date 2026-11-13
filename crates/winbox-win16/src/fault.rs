@@ -146,29 +146,87 @@ impl System {
     /// call's place in WinBox's module (the owner's decision 4 of
     /// 2026-11-10).
     pub(crate) fn host_page_fault_due(&mut self) -> Option<Event> {
-        let (_, _, depth) = self.host_page_fault.get()?;
+        let (at, write, depth) = self.host_page_fault.get()?;
 
         if depth != self.depth {
             return None;
         }
 
+        // A program's own handler for exception 0Eh (0203h) is given it,
+        // as WIN386 gives it a fault in KERNEL's or USER's code
+        // ([[probe:pghost]]): the error code a read or a write at user
+        // privilege, CS:IP the call's place in WinBox's module.
+        if self.dpmi.handles_exception(PAGE_FAULT) {
+            self.host_page_fault.set(None);
+            self.cpu.cr2.set(at);
+            self.dpmi_exception(PAGE_FAULT, if write { 6 } else { 4 });
+            return None;
+        }
+
+        // With no handler of the program's, KERNEL's own handler asks
+        // `HasGPHandler` (seg1 `4c72`) whether the place is in its module's
+        // `__GP` table, and where it is, goes on at the handler it names
+        // (`5e46`-`5e66`): the call answers, and no box shows. Measured for
+        // lstrlen, which answers nought ([[probe:pghost]]'s `box`).
+        if self
+            .windows_place(write)
+            .is_some_and(|place| place.recovered)
+        {
+            self.host_page_fault.set(None);
+            self.cpu.regs[winbox_cpu::AX] = 0;
+            self.cpu.regs[winbox_cpu::DX] = 0;
+            return None;
+        }
+
         // Kept, marked taken, for `application_fault` to tell it from the
         // processor's.
-        self.host_page_fault.set(Some((0, false, usize::MAX)));
+        self.host_page_fault.set(Some((at, write, usize::MAX)));
         Some(Event::Fault(PAGE_FAULT))
     }
 
-    /// The module and place of a fault in WinBox's own code, a kept
-    /// module's stub where the call returns: the module's file, and the
-    /// stub's selector and offset, WinBox's own addresses (the owner's
-    /// decision 3 of 2026-11-10); where Windows' own code would fault in
-    /// its segments is not read out.
-    fn host_place(&self, cs: u16) -> (u16, String) {
+    /// The call whose stub CS:IP is at, as the call returns: its module's
+    /// name and its export's.
+    fn host_call(&self) -> Option<(&'static str, &'static str)> {
+        let kept = self.kept_at(winbox_machine::index_for(
+            self.cpu.segments[winbox_cpu::CS].selector,
+        ))?;
+        let module = self.module_of(kept);
+        let ordinal = (self.cpu.ip as u16 / crate::system::STEP).checked_sub(1)?;
+
+        Some((module.name, module.export(ordinal)?.name))
+    }
+
+    /// Where Windows' own code faults for the call returning, a read or a
+    /// write, where it is read out (`WINDOWS_PLACES`).
+    fn windows_place(&self, write: bool) -> Option<&'static WindowsPlace> {
+        let (module, name) = self.host_call()?;
+
+        WINDOWS_PLACES
+            .iter()
+            .filter(|place| place.module == module && place.name == name)
+            .find(|place| place.write.is_none_or(|kind| kind == write))
+    }
+
+    /// The module and place of a fault in WinBox's own code: where
+    /// Windows' own code faults for the call, its module's file, segment
+    /// and offset, where it is read out (`WINDOWS_PLACES`); else the kept
+    /// module's stub where the call returns, its file and the stub's
+    /// selector and offset, WinBox's own addresses (the owner's decision 3
+    /// of 2026-11-10).
+    fn host_place(&self, cs: u16, ip: u32, write: bool) -> (u16, String, u32) {
+        if let Some(place) = self.windows_place(write) {
+            return (
+                place.segment,
+                place.file.to_string(),
+                u32::from(place.offset),
+            );
+        }
+
         let index = winbox_machine::index_for(cs);
 
         match self.kept.iter().position(|kept| kept.stubs == Some(index)) {
-            Some(kept) => (cs, file_part(&self.kept_path(kept))),
-            None => (cs, "<unknown>".to_string()),
+            Some(kept) => (cs, file_part(&self.kept_path(kept)), ip),
+            None => (cs, "<unknown>".to_string(), ip),
         }
     }
 
@@ -216,7 +274,7 @@ impl Engine {
     /// past it (Ignore), else the task ended, `Stop::Ended`. A fault with no
     /// program's task running stops the run, as no handler takes it.
     pub async fn application_fault(&self, vector: u8) -> Result<(), Stop> {
-        let (name, offered, cs, ip, host, supervisor) = {
+        let (name, offered, cs, ip, host_write, supervisor) = {
             let mut system = self.system();
             let Some(name) = system.faulted_name() else {
                 return Err(Stop::Processor(winbox_cpu::Exit::Fault(vector)));
@@ -224,8 +282,15 @@ impl Engine {
             let cs = system.cpu.segments[winbox_cpu::CS].selector;
             // A fault WinBox's own code met (`host_page_fault_due`): no
             // instruction of Windows' to step over, so no first box.
-            let host = vector == PAGE_FAULT
-                && matches!(system.host_page_fault.take(), Some((_, _, usize::MAX)));
+            let host_write = if vector == PAGE_FAULT {
+                match system.host_page_fault.take() {
+                    Some((_, write, usize::MAX)) => Some(write),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+            let host = host_write.is_some();
             // A page fault in a Win386 supervisor's 32-bit code, a selector
             // of no module's: one box, no Ignore (`pgw386`).
             let supervisor = vector == PAGE_FAULT
@@ -237,7 +302,7 @@ impl Engine {
                 && !supervisor
                 && system.can_ignore();
 
-            (name, offered, cs, system.cpu.ip, host, supervisor)
+            (name, offered, cs, system.cpu.ip, host_write, supervisor)
         };
 
         if offered {
@@ -264,10 +329,13 @@ impl Engine {
         }
 
         let shown = self.system().error_mode & SEM_NOGPFAULTERRORBOX == 0;
-        let (number, file) = if host {
-            self.system().host_place(cs)
-        } else {
-            self.system().faulted_place(cs)
+        let (number, file, ip) = match host_write {
+            Some(write) => self.system().host_place(cs, ip, write),
+            None => {
+                let (number, file) = self.system().faulted_place(cs);
+
+                (number, file, ip)
+            }
         };
 
         self.system().application_faults.push(if supervisor {
@@ -369,3 +437,85 @@ mod tests {
         assert_eq!(fault_name(11), "an Application Fault");
     }
 }
+
+/// Where Windows' own KERNEL or USER code faults on a program's pointer to
+/// a page that is not present, for a call WinBox answers: the place a
+/// program's own handler for exception 0Eh is given, and the place KERNEL
+/// looks up in the module's `__GP` table. **Read out** of `KRNL386.EXE` and
+/// `USER.EXE` and **recorded** by `pghost` (each place the export nearest
+/// below it and the distance, the error code a read's or a write's).
+pub(crate) struct WindowsPlace {
+    module: &'static str,
+    name: &'static str,
+    /// A write's place, a read's, or either's: `None`.
+    write: Option<bool>,
+    file: &'static str,
+    segment: u16,
+    offset: u16,
+    /// Whether the place lies in a range of the module's `__GP` table
+    /// (`KRNL386.EXE` seg1 `a820`, `USER.EXE` seg1 `b664`), so that KERNEL
+    /// goes on at the handler it names and the call answers.
+    recovered: bool,
+}
+
+const fn place(
+    module: &'static str,
+    name: &'static str,
+    write: Option<bool>,
+    segment: u16,
+    offset: u16,
+    recovered: bool,
+) -> WindowsPlace {
+    WindowsPlace {
+        module,
+        name,
+        write,
+        file: if module.len() == 6 {
+            "KRNL386.EXE"
+        } else {
+            "USER.EXE"
+        },
+        segment,
+        offset,
+        recovered,
+    }
+}
+
+/// Each place, read out: the instruction that reaches the program's byte,
+/// and the `__GP` range that holds it.
+pub(crate) const WINDOWS_PLACES: &[WindowsPlace] = &[
+    // `repne scasb` (seg1 `8303`), in `82f9`-`830b`, its handler `830f`
+    // answering nought.
+    place("KERNEL", "lstrlen", None, 1, 0x8303, true),
+    // `lodsb` and `stosb` (`8374`, `8375`), in `8364`-`83c4`, `8316`;
+    // lstrcat's first `repne scasb`, of the string it ends (`8389`).
+    place("KERNEL", "lstrcpy", Some(false), 1, 0x8374, true),
+    place("KERNEL", "lstrcpy", Some(true), 1, 0x8375, true),
+    place("KERNEL", "lstrcat", None, 1, 0x8389, true),
+    // `rep movsw` (`8343`), in `8326`-`834a`, `8356` answering nought.
+    place("KERNEL", "LSTRCPYN", None, 1, 0x8343, true),
+    // The copy (`4db4`), in `4d77`-`4ddb`, `4ddd`.
+    place("KERNEL", "HMEMCPY", None, 1, 0x4db4, true),
+    // KERNEL's checks of a buffer before the call: its last byte, `or
+    // byte es:[bx],0` (`087f`) for a buffer written, `mov bl,es:[bx]`
+    // (`0895`) for one read, in `0874`-`0883` and `088a`-`0898`, their
+    // handler `0899` refusing the parameter (7007h, `K327`).
+    place("KERNEL", "_lread", None, 1, 0x087f, true),
+    place("KERNEL", "_lwrite", None, 1, 0x0895, true),
+    // The check of a buffer whose size is a word on the stack: its first
+    // byte (`08b2`, seg2 `033b`), in `08a7`-`08d0` and seg2 `0330`-`0359`.
+    place("KERNEL", "GetProfileString", None, 1, 0x08b2, true),
+    place("KERNEL", "GetModuleFilename", None, 2, 0x033b, true),
+    // USER's checks alike: wsprintf's buffer of one byte (seg16 `05a7`,
+    // `059c`-`05ab`), AnsiUpper's and AnsiLower's string (seg11 `0440`,
+    // `0435`-`0443`), GetClassName's buffer (seg8 `106b`, `1060`-`1089`),
+    // SetWindowText's string (seg1 `af47`, `af3d`-`af49`).
+    place("USER", "_WSPRINTF", None, 16, 0x05a7, true),
+    place("USER", "AnsiUpper", None, 11, 0x0440, true),
+    place("USER", "AnsiLower", None, 11, 0x0440, true),
+    place("USER", "GetClassName", None, 8, 0x106b, true),
+    place("USER", "SetWindowText", None, 1, 0xaf47, true),
+    // GetWindowText's nought written to the buffer first (seg1 `1979`,
+    // `mov byte es:[bx],0`), in no range of USER's table: KERNEL's boxes.
+    place("USER", "GetWindowText", None, 1, 0x1979, false),
+];

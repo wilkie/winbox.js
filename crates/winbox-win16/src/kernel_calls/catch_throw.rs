@@ -5,29 +5,28 @@
 //! from the catch buffer and returns from the `Catch` that filled it, so
 //! the `RETF` it reaches is `Catch`'s; its own two arguments are six bytes.
 //!
-//! The buffer is nine words, the
-//! return address, the stack pointer less the eight bytes of the return
-//! address and the argument, BP, SI, DI, DS, a nought and SS -- but each
-//! written a byte on from the last rather than a word, so each but the last
-//! keeps only its low byte, under the next, and the ten bytes are read back
-//! as they were written. No probe has recorded what KERNEL's own buffer
-//! holds.
+//! The buffer is nine words (`KRNL386.EXE` seg3 `08ee`-`0925`, **read
+//! out**): the return address, IP then CS; the stack pointer less the eight
+//! bytes of the return address and the argument; BP, SI, DI and DS; a word
+//! left as it was; and SS. `Catch` writes SS first, then DS, DI, SI, BP,
+//! the return address and the stack pointer. `Throw` (seg3 `0928`-`0962`)
+//! reads them back from the same places. No probe has recorded what
+//! KERNEL's own buffer holds.
 
 use winbox_cpu::{BP, DI, DS, SI, SP, SS};
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;
 
-/// Where each of the buffer's words is written and read, a byte apart.
-const IP: u32 = 0;
-const CS: u32 = 1;
-const STACK: u32 = 2;
-const FRAME: u32 = 3;
-const SOURCE: u32 = 4;
-const DESTINATION: u32 = 5;
-const DATA: u32 = 6;
-const NOUGHT: u32 = 7;
-const STACK_SEGMENT: u32 = 8;
+/// Where each of the buffer's words is written and read (seg3 `0900`-`091b`).
+const IP: u32 = 0x00;
+const CS: u32 = 0x02;
+const STACK: u32 = 0x04;
+const FRAME: u32 = 0x06;
+const SOURCE: u32 = 0x08;
+const DESTINATION: u32 = 0x0a;
+const DATA: u32 = 0x0c;
+const STACK_SEGMENT: u32 = 0x10;
 
 /// The place kept in the buffer, and nought answered: not come back to by
 /// `Throw`.
@@ -38,20 +37,22 @@ pub(super) fn catch(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let caller_ip = system.cpu.bus.read16(stack + u32::from(sp));
     let caller_cs = system.cpu.bus.read16(stack + u32::from(sp.wrapping_add(2)));
     let address = system.linear(buffer);
+    // In the order KERNEL writes them.
     let words = [
+        (STACK_SEGMENT, system.cpu.segments[SS].selector),
+        (DATA, system.cpu.segments[DS].selector),
+        (DESTINATION, system.cpu.regs[DI]),
+        (SOURCE, system.cpu.regs[SI]),
+        (FRAME, system.cpu.regs[BP]),
         (IP, caller_ip),
         (CS, caller_cs),
         (STACK, sp.wrapping_sub(8)),
-        (FRAME, system.cpu.regs[BP]),
-        (SOURCE, system.cpu.regs[SI]),
-        (DESTINATION, system.cpu.regs[DI]),
-        (DATA, system.cpu.segments[DS].selector),
-        (NOUGHT, 0),
-        (STACK_SEGMENT, system.cpu.segments[SS].selector),
     ];
 
+    // The buffer is the program's: written as KERNEL's own code writes
+    // it, a page not present a page fault (`System::write_linear`).
     for (at, word) in words {
-        system.cpu.bus.write16(address + at, word);
+        system.write_linear16(address + at, word);
     }
 
     Ok(Answer::Word(0))
@@ -66,7 +67,7 @@ pub(super) fn throw(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let buffer = args.dword(system);
     let ret = args.word(system);
     let address = system.linear(buffer);
-    let read = |system: &System, at: u32| system.cpu.bus.read16(address + at);
+    let read = |system: &System, at: u32| system.read_linear16(address + at);
     let caller_ip = read(system, IP);
     let caller_cs = read(system, CS);
 

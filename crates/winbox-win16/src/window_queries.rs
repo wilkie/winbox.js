@@ -447,6 +447,12 @@ pub fn get_class_name(system: &mut System, args: &mut Args) -> Result<Answer, St
     let hwnd = args.word(system);
     let far = args.dword(system);
     let size = args.signed(system);
+
+    // USER's check of the buffer, first byte and last (seg8 `105a`-`1089`).
+    if !system.check_first_last(far, u32::from(size as u16)) {
+        return Ok(Answer::Word(0));
+    }
+
     let name = match system.named(hwnd) {
         Named::Window(index) => shown_class(&system.window(index).class),
         _ => String::new(),

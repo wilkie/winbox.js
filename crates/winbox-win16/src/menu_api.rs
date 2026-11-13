@@ -125,9 +125,10 @@ impl System {
     /// than `ARGUMENT_STRING_MOST` of them.
     pub(crate) fn argument_string(&self, far: u32) -> Vec<u8> {
         let start = self.linear(far);
+        let mut checked = None;
 
         (0..ARGUMENT_STRING_MOST)
-            .map(|step| self.cpu.bus.read8(start.wrapping_add(step)))
+            .map(|step| self.far_byte(start.wrapping_add(step), &mut checked))
             .take_while(|&byte| byte != 0)
             .collect()
     }
