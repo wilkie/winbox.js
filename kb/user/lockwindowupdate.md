@@ -6,7 +6,7 @@ ordinal: 294
 summary: Keeps one window and those in it from drawing on the screen until it is unlocked, then has what was drawn over made due through the desktop.
 versions:
   '3.1': partial
-probes: [lockupd, vislock]
+probes: [lockupd, vislock, vislk2]
 source: crates/winbox-win16/src/user_calls/lock_update.rs
 topics: [painting, visible-regions]
 ---
@@ -39,7 +39,7 @@ topics: [painting, visible-regions]
 - So is what is made due in a window there (seg1 `3f41`-`3f7c`), what a scroll moves over (seg13 `151f`-`159d`), and the places a window leaves and goes to (seg7 `09c2`-`09d5`, `05f0`-`0606`).
 - **As it locks** (`2028`-`2063`), the parent and each window from the locked one back, with the windows in them, that is due within its rectangle and shows there has that part made due no more (`206b`: `RDW_VALIDATE | RDW_NOCHILDREN`) and counted as drawn.
 - **Unlocking** (`22ee`-`2384`): the bounds taken back; the rectangle less what is still as it was made due through the desktop, `RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN` -- in the windows that show there, erased. Where the lock let go of its rectangle, or had none, everything is made due.
-- [[read out]] Locking or unlocking while another task holds the lock answers nought (`2282`-`2294`). Not followed: WinBox does not ask whose task locked it.
+- [[read out]] Locking or unlocking while another task holds the lock answers nought (`2282`-`2294`), before anything else is asked. [[measured]] [[probe:vislk2]]: a second program's `LockWindowUpdate` of nought, of its own window and of the first's all answer nought while the first holds the lock, and the first's answer nought while the second holds it; either takes it once it is let go. WinBox keeps the task that took the lock.
 - [[read out]] `BeginPaint`'s rectangle is its context's clip box (seg1 `78cd`): empty for the locked window.
 
 ## Nuances

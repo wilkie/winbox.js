@@ -6,7 +6,7 @@ ordinal: 61
 summary: Moves what a window's client area shows by an amount, through what shows of it, leaves what the move uncovers as it was, and marks it to be painted; ScrollWindowEx and ScrollDC do the same with more said and less done.
 versions:
   '3.1': exact
-probes: [scrolls, visscrl]
+probes: [scrolls, visscrl, visnext]
 source: crates/winbox-win16/src/user_calls/scroll_window.rs
 topics: [painting, scroll-bars, visible-regions]
 ---
@@ -59,7 +59,7 @@ How a region is made due through a window and its children (seg1 `3ed7`, `4034`,
 ## Nuances
 
 - [[read out]] The children moved are sent `WM_MOVE` only where they meet the scroll rectangle moved by the parent's client area's corner, not the window's: a child window's scroll rectangle is tested in the wrong place. [[measured]] With a pop-up at (300, 100) and a scroll rectangle of its client area, the child moved is sent no `WM_MOVE`.
-- [[read out]] For a window with a context of its own, `ScrollWindow` takes the amount and the rectangles in that context's logical terms (`1447`-`148e`). Not recorded.
+- [[read out]] For a window with a context of its own, `ScrollWindow` takes the amount and the rectangles in that context's logical terms (`1447`-`148e`), and has the body take them so (its last argument, `14fe`-`150e`). Where the window was made for Windows 3.10, its update region is given to the body, not made due again moved (`1491`-`14e0`). [[measured]] [[probe:visnext]], `scroll`: a window whose own context maps a unit to two pixels from (10, 10) is scrolled by (5, 5) ten pixels each way, and [[fn:USER.GetUpdateRect]] answers what is due in those logical terms -- for a window of a `CS_OWNDC` class, where it is due part of itself or was made for 3.10 (seg1 `4714`-`4753`).
 - Whether the update is erased: `ScrollWindow` erases, `ScrollWindowEx` with `SW_ERASE`, as read out.
 
 ## Implementation

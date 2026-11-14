@@ -288,6 +288,23 @@ mod tests {
         assert!(Rc::ptr_eq(&bitmap.device_palette, &palette_for_depth(4)));
     }
 
+    /// A memory context's bitmap moved by `SetDCOrg`: its (0, 0) where the
+    /// origin is, reaching the bitmap's own pixels and no more (`visnext`).
+    #[test]
+    fn moved_pixels_start_at_the_origin() {
+        let bitmap = DeviceBitmap::new(3, 2, 4, None, None);
+        let moved = bitmap.moved((1, 1));
+
+        moved.put(0, 0, 7);
+        moved.put(-1, -1, 5);
+        moved.put(2, 0, 9);
+        assert_eq!(bitmap.index_at(1, 1), Some(7));
+        assert_eq!(bitmap.index_at(0, 0), Some(5));
+        assert_eq!(moved.index_at(1, 0), Some(0));
+        assert_eq!(moved.index_at(2, 0), None);
+        assert_eq!(*bitmap.indices.borrow(), vec![5, 0, 0, 0, 7, 0]);
+    }
+
     #[test]
     fn a_view_draws_on_its_parent_and_marks_it() {
         let screen = DeviceBitmap::new(8, 8, 4, None, None);

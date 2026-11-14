@@ -670,6 +670,32 @@ mod tests {
         assert_eq!(lock(&mut system, 0), Answer::Word(0));
     }
 
+    /// Held by another task, the lock is neither taken again nor let go
+    /// (seg13 `2282`-`2294`; `vislk2`).
+    #[test]
+    fn another_tasks_lock_answers_nought_both_ways() {
+        let mut system = System::new();
+        let hwnd = with_window(&mut system);
+
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
+
+        if let Some(lock) = system.user_calls.locked.as_mut() {
+            lock.task = Some(0x1234);
+        }
+
+        assert_eq!(lock(&mut system, 0), Answer::Word(0));
+        assert_eq!(lock(&mut system, hwnd), Answer::Word(0));
+        assert!(system.user_calls.locked.is_some());
+
+        let mine = system.current_task();
+
+        if let Some(lock) = system.user_calls.locked.as_mut() {
+            lock.task = mine;
+        }
+
+        assert_eq!(lock(&mut system, 0), Answer::Word(1));
+    }
+
     #[test]
     fn subtract_rect_cuts_only_across() {
         assert_eq!(subtract_rect([0, 0, 10, 10], [0, 0, 4, 10]), [4, 0, 10, 10]);

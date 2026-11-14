@@ -5,8 +5,8 @@ name: Death
 ordinal: 121
 summary: Calls the display driver's Disable through a device context's driver and answers what it does; WinBox's display is not turned off.
 versions:
-  '3.1': unrecorded
-probes: []
+  '3.1': partial
+probes: [visprn]
 source: crates/winbox-win16/src/gdi/visible_region.rs
 topics: [visible-regions]
 ---
@@ -33,4 +33,4 @@ The 8514/a's **depends on state**: called again with no `Enable` between, the ho
 
 ## Implementation
 
-(`crates/winbox-win16/src/gdi/visible_region.rs` with `Display::disable_answer`): the display's driver's answer from the table above, nothing turned off; the 8514/a's second call answers as its first. Nought for no context and for a printer's, whose driver's `Disable` is not followed.
+(`crates/winbox-win16/src/gdi/visible_region.rs` with `Display::disable_answer`): the display's driver's answer from the table above, nothing turned off; the 8514/a's second call answers as its first. On a context of a printer driver's from the drive, that driver's `Disable` is run with the context's `PDEVICE` and its answer given: [[read out]] the PostScript driver's frees what its device holds and answers 1 (`PSCRIPT.DRV` seg12 `0000`-`0044`), [[measured]] as `Death` answers on its context ([[probe:visprn]]). Nought for no context and for WinBox's own printer, which has no driver of Windows'. On a metafile's context GDI would call through a driver table the context does not have: not recorded.

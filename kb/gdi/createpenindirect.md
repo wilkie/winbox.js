@@ -5,8 +5,8 @@ name: CreatePenIndirect
 ordinal: 62
 summary: Makes a pen from a LOGPEN; with CreatePen, what each pen style draws.
 versions:
-  '3.1': exact
-probes: [penind]
+  '3.1': partial
+probes: [penind, visline]
 source: crates/winbox-win16/src/gdi/objects.rs
 topics: [line-drawing, gdi-objects]
 ---
@@ -20,12 +20,12 @@ topics: [line-drawing, gdi-objects]
 - [[measured]] `PS_NULL` and style 7 draw nothing. `PS_INSIDEFRAME` a pixel wide draws as `PS_SOLID`. Wider, round a shape with a rectangle, it keeps inside the rectangle and is patterned in a colour the display lacks ([[probe:inframe]], [[topic:ellipses]]).
 - [[measured]] The dashed styles, a pixel wide, draw in stretches, each a bit of an eight-bit pattern from the lowest bit up:
 
-  | Style            | Pattern | Along a line that runs across             |
-  | ---------------- | ------- | ----------------------------------------- |
-  | `PS_DASH`        | `E7h`   | 12 on, 8 off, 12 on                       |
-  | `PS_DOT`         | `55h`   | 4 on, 4 off                               |
-  | `PS_DASHDOT`     | `27h`   | 12 on, 8 off, 4 on, 8 off                 |
-  | `PS_DASHDOTDOT`  | `57h`   | 12 on, 4 off, 4 on, 4 off, 4 on, 4 off    |
+  | Style           | Pattern | Along a line that runs across          |
+  | --------------- | ------- | -------------------------------------- |
+  | `PS_DASH`       | `E7h`   | 12 on, 8 off, 12 on                    |
+  | `PS_DOT`        | `55h`   | 4 on, 4 off                            |
+  | `PS_DASHDOT`    | `27h`   | 12 on, 8 off, 4 on, 8 off              |
+  | `PS_DASHDOTDOT` | `57h`   | 12 on, 4 off, 4 on, 4 off, 4 on, 4 off |
 
 - [[measured]] A stretch is four pixels of a line that runs more across than down. On a line that runs down, or at 45 degrees, it is three pixels. Such a line's first pixel is drawn before the first stretch, so its first dash is a pixel longer. The pattern starts again at each line's start, wherever the line starts.
 - [[measured]] The gaps are the background colour in `OPAQUE` mode, and are left alone in `TRANSPARENT` mode.
@@ -36,4 +36,5 @@ winbox.js agrees with every record, the wide ones among them. A pen wider than a
 ## Nuances
 
 - Not recorded: lines of other slopes; whether the pattern carries on from one `LineTo` to the next; styled outlines of `Rectangle`, `Ellipse` and `Polygon`; styles in other drawing modes than `R2_COPYPEN`.
+- [[measured]] On the screen the dots are the display driver's: a `PS_DOT` line across a window is three on and three off with a pixel taken now and then on the VGA, four on and three off on the Hercules, and starts again at each rectangle of the region it is drawn through ([[probe:visline]], `dotted`). WinBox draws a bitmap's four on and four off there: a known gap.
 - Not recorded: displays other than the VGA. The stretches of three and four pixels are the VGA's.

@@ -6,7 +6,7 @@ ordinal: 117
 summary: Sets where a device context's (0, 0) is on the screen, moving its clip region with it but not its visible region; answers the old origin.
 versions:
   '3.1': partial
-probes: [visfam]
+probes: [visfam, visnext]
 source: crates/winbox-win16/src/gdi/visible_region.rs
 topics: [visible-regions]
 ---
@@ -23,4 +23,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): the origin kept, the clip region -- kept in the context's own terms -- left as it is, which is Windows' moving it in the screen's; [[fn:GDI.GetDCOrg]], [[fn:GDI.GetClipBox]] and [[fn:GDI.GetClipRgn]] answer from it. [[fn:GDI.SaveDC]] and [[fn:GDI.GetDCState]] save it. A window's context is a view of the whole screen from its origin, so drawing moves with it, left of and above the window too ([[probe:visfam]]'s `origin` and `cliprgn`, [[probe:visdraw]]'s `origin`: `PatBlt`, `TextOut`, `LineTo` and `BitBlt`); a brush is aligned from it. [[fn:USER.GetDC]] still sets the origin back (phase 4 of [[topic:visible-regions]]), so `origin`'s `got again` differs. A memory context's drawing does not move with its origin: its pixels are its bitmap's, from nought. Not recorded.
+In WinBox, (`crates/winbox-win16/src/gdi/visible_region.rs`): the origin kept, the clip region -- kept in the context's own terms -- left as it is, which is Windows' moving it in the screen's; [[fn:GDI.GetDCOrg]], [[fn:GDI.GetClipBox]] and [[fn:GDI.GetClipRgn]] answer from it. [[fn:GDI.SaveDC]] and [[fn:GDI.GetDCState]] save it. A window's context is a view of the whole screen from its origin, so drawing moves with it, left of and above the window too ([[probe:visfam]]'s `origin` and `cliprgn`, [[probe:visdraw]]'s `origin`: `PatBlt`, `TextOut`, `LineTo` and `BitBlt`); a brush is aligned from it. [[fn:USER.GetDC]] still sets the origin back (phase 4 of [[topic:visible-regions]]), so `origin`'s `got again` differs. A memory context's drawing moves with its origin too, its bitmap's pixels reached from it: [[measured]] after `SetDCOrg` of (8, 4), `PatBlt` at (0, 0) lands at (8, 4) of the bitmap and `GetPixel` reads through it, the visible region staying the bitmap's ([[probe:visnext]], `memory`).
