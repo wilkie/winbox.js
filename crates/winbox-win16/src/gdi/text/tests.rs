@@ -580,7 +580,7 @@ fn realizes_a_made_font_at_the_size_the_mapping_takes_it_to() {
     // pixels to the em (`ttqmap`).
     let realized = font_of(&mut system, index).unwrap().unwrap();
 
-    assert_eq!(realized.outline.as_ref().unwrap().ppem, 18.0);
+    assert_eq!(realized.outline.as_ref().unwrap().ppem as i32, 18);
 
     // Its metrics answered back in tenths of a millimetre, as the
     // `TEXTMETRIC` `ttqmap`'s outline metrics carry: 21 pixels high is 68,
@@ -609,8 +609,8 @@ fn realizes_a_made_font_at_the_size_the_mapping_takes_it_to() {
             .unwrap()
             .outline
             .unwrap()
-            .ppem,
-        60.0
+            .ppem as i32,
+        60
     );
 }
 

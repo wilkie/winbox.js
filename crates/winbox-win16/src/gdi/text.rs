@@ -690,7 +690,7 @@ fn get_char_width_call(system: &mut System, args: &mut Args) -> Result<Answer, S
             }
             _ => width,
         })
-        .flat_map(|width| width.to_le_bytes())
+        .flat_map(u16::to_le_bytes)
         .collect();
 
     if far >> 16 == 0 {
