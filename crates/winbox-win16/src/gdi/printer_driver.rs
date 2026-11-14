@@ -1127,7 +1127,7 @@ pub type FontKey = (u32, usize, i16, i16);
 /// (`LPtoDP`, seg1 `52f5`); the width their distance across; the height
 /// their distance down, negative for a negative height, and 1 where it
 /// comes to nought from a height that was not.
-fn mapped_size(system: &System, dc: usize, logfont: &LogFont) -> (i16, i16) {
+pub(crate) fn mapped_size(system: &System, dc: usize, logfont: &LogFont) -> (i16, i16) {
     let mapping = super::mapping::mapping_of(system, dc);
     let (wox, woy) = (mapping.wox as i32, mapping.woy as i32);
     let (height, width) = (i32::from(logfont.height), i32::from(logfont.width));

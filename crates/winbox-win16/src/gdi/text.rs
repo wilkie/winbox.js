@@ -33,12 +33,12 @@ use winbox_raster::truetype::Fault;
 use winbox_raster::{LogicalFont, Measure};
 
 use crate::call::{Answer, Args, Implementation, Stop};
-use crate::fonts::{TextMetric, text_metrics};
+use crate::fonts::{Device, LogFont, Request, TextMetric, text_metrics};
 use crate::handles::Object;
 use crate::system::System;
 
 use super::dc::dc_of;
-use super::mapping::{mapping_of, scale};
+use super::mapping::{MM_TEXT, mapping_of, scale};
 use super::objects::{Font, GdiObject, SYSTEM_FONT, stock_font_handle};
 use super::pack;
 use super::text_out::outline::turned_length;
@@ -103,13 +103,99 @@ pub(crate) fn gdi_draws(font: &LogicalFont) -> bool {
     font.outline.is_some() || font.is_vector()
 }
 
-/// The font selected into a device context, by the context's index.
+/// The font selected into a device context, by the context's index, as
+/// GDI realizes it for the context (`GDI.EXE` seg3 `0a68`): a made font's
+/// height and width are first taken to the device's units through the
+/// context's mapping (`0b35`-`0b9c`, `mapped_size`), and the `LOGFONT` so
+/// changed is what the font mapper is given (`0d52`). A stock font keeps
+/// its own. **Recorded** by `ttqmap`: Arial asked for 60 high in
+/// `MM_LOMETRIC` on the VGA is the 18 pixels' font, its widths, pairs and
+/// metrics answered back in tenths of a millimetre.
 pub fn font_of(system: &mut System, index: usize) -> Result<Option<LogicalFont>, Stop> {
     let Some(object) = system.gdi.dcs[index].state.font else {
         return Ok(None);
     };
 
+    if let GdiObject::Font(Font::Made { logfont, .. }) = &system.gdi.objects[object] {
+        let (height, width) = super::printer_driver::mapped_size(system, index, logfont);
+
+        if (height, width) != (logfont.height, logfont.width) {
+            let mut mapped = logfont.clone();
+
+            (mapped.height, mapped.width) = (height, width);
+            return Ok(realised_mapped(system, object, mapped));
+        }
+    }
+
     realised(system, object)
+}
+
+/// A made font realized again at the size a mapping took it to, kept by
+/// its object and that `LOGFONT` until the object is deleted, as GDI keeps
+/// a realization for each size in its table (seg3 `0df6`-`0e35`). A strike
+/// is cached as one realized as the font was made is (`create_font_indirect`,
+/// seg3 `0dd0`), so its file is held while it is.
+fn realised_mapped(system: &mut System, object: usize, logfont: LogFont) -> Option<LogicalFont> {
+    if let Some((_, _, font)) = system
+        .gdi
+        .mapped_fonts
+        .iter()
+        .find(|(owner, held, _)| *owner == object && *held == logfont)
+    {
+        return Some(font.clone());
+    }
+
+    let request = Request::new(&logfont, &Device::of(&system.display));
+    let cached = system.fonts().cached(&logfont);
+    let fresh = cached.is_none();
+    let font = cached.or_else(|| system.fonts().create(&request))?;
+
+    if fresh && let Some(fonts) = system.fonts.as_mut() {
+        fonts.cache(object, logfont.clone(), &font);
+    }
+
+    system
+        .gdi
+        .mapped_fonts
+        .push((object, logfont, font.clone()));
+    Some(font)
+}
+
+/// A device context's text metrics in its logical units, as
+/// `GetTextMetrics` answers them (`GDI.EXE` seg3 `035a`-`0384`): in any
+/// mode but `MM_TEXT`, the height, ascent, descent and the two leadings
+/// turned down (seg1 `3b6e`), the average and greatest widths and the
+/// overhang across (`3b3a`).
+pub(crate) fn logical_metrics(system: &System, index: usize, metrics: TextMetric) -> TextMetric {
+    let m = mapping_of(system, index);
+
+    if m.mode == MM_TEXT {
+        return metrics;
+    }
+
+    let down = |value: i32| queries::logical_size(&m, i64::from(value), true) as i32;
+    let across = |value: i32| queries::logical_size(&m, i64::from(value), false) as i32;
+
+    TextMetric {
+        height: down(metrics.height),
+        ascent: down(metrics.ascent),
+        descent: down(metrics.descent),
+        internal_leading: down(metrics.internal_leading),
+        external_leading: down(metrics.external_leading),
+        ave_char_width: across(metrics.ave_char_width),
+        max_char_width: across(metrics.max_char_width),
+        overhang: across(metrics.overhang),
+        ..metrics
+    }
+}
+
+/// The text metrics of the font selected into a device context, by the
+/// context's index, in its logical units.
+pub(crate) fn selected_metrics(
+    system: &mut System,
+    index: usize,
+) -> Result<Option<TextMetric>, Stop> {
+    Ok(font_of(system, index)?.map(|font| logical_metrics(system, index, text_metrics(&font))))
 }
 
 /// The text metrics of a device context's font: `None` for a handle that
@@ -125,9 +211,7 @@ pub fn get_text_metrics(system: &mut System, hdc: u16) -> Result<Option<Option<T
         return Ok(Some(None));
     };
 
-    Ok(Some(
-        font_of(system, index)?.map(|font| text_metrics(&font)),
-    ))
+    Ok(Some(selected_metrics(system, index)?))
 }
 
 /// `GetTextMetrics`: the `TEXTMETRIC` of the font selected, written where
@@ -595,8 +679,17 @@ fn get_char_width_call(system: &mut System, args: &mut Args) -> Result<Answer, S
     let Some(widths) = get_char_widths(system, hdc, first, last)? else {
         return Ok(Answer::Word(0));
     };
+    // In any mode but `MM_TEXT`, each width turned into logical units
+    // across (`GDI.EXE` seg3 `2191`-`21aa`, seg1 `3b3a`).
+    let m = dc_of(system, hdc).map(|index| mapping_of(system, index));
     let bytes: Vec<u8> = widths
         .iter()
+        .map(|&width| match &m {
+            Some(m) if m.mode != MM_TEXT => {
+                queries::logical_size(m, i64::from(width), false) as u16
+            }
+            _ => width,
+        })
         .flat_map(|width| width.to_le_bytes())
         .collect();
 
@@ -657,7 +750,13 @@ pub(crate) fn tab_average(
         });
 
     if !is_system {
-        return Ok(Some(i64::from(text_metrics(&font).ave_char_width)));
+        let metrics = text_metrics(&font);
+        let metrics = match index {
+            Some(index) => logical_metrics(system, index, metrics),
+            None => metrics,
+        };
+
+        return Ok(Some(i64::from(metrics.ave_char_width)));
     }
 
     let letters = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -724,11 +823,11 @@ pub fn get_tabbed_text_extent(
         }
     }
 
-    let font = match index {
-        Some(index) => font_of(system, index)?,
+    let metrics = match index {
+        Some(index) => selected_metrics(system, index)?,
         None => None,
     };
-    let height = font.map_or(0, |font| i64::from(text_metrics(&font).height));
+    let height = metrics.map_or(0, |metrics| i64::from(metrics.height));
 
     Ok(pack(at, height))
 }

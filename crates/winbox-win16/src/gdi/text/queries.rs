@@ -85,7 +85,7 @@ fn outline_of(system: &mut System, hdc: u16) -> Result<Option<(usize, LogicalFon
 /// A size in the device's pixels as a size in the device context's units,
 /// across (seg1 `3b3a`) or down (`3b6e`): the distance between nought and
 /// the size, each turned into logical units, and the size's own sign.
-fn logical_size(m: &Mapping, value: i64, down: bool) -> i64 {
+pub(crate) fn logical_size(m: &Mapping, value: i64, down: bool) -> i64 {
     let size = if down {
         (m.logical_y(value.abs()) - m.logical_y(0)).abs()
     } else {
@@ -279,7 +279,9 @@ pub(crate) fn get_outline_text_metrics_call(
         return Ok(Answer::Word(size as u16));
     }
 
-    let tm = text_metrics(&font);
+    // The `TEXTMETRIC` is `GetTextMetrics`'s, in logical units (seg7
+    // `1722`, `1861`-`187d`).
+    let tm = super::logical_metrics(system, index, text_metrics(&font));
     let mut bytes = Vec::with_capacity(size + 1);
     let ppem = outline.ppem as i64;
     let units = i64::from(metrics.em_square);

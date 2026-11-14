@@ -1507,23 +1507,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "userproc:classproc",
         "WinBox registers USER's own classes #32768 to #32772 only on the raster desktop, with procedures of its own that no address of USER's names, and gives the desktop's none",
     ),
-    // `ttqmap`'s fonts asked for under `MM_LOMETRIC`: Windows realises a
-    // font's height in the device context's units; both engines take it as
-    // pixels, so the widths, the pairs' amounts and the outline metrics are
-    // a larger font's (`kb/topics/truetype-queries.md`). `GetFontData`
-    // agrees.
-    (
-        "ttqmap:kern",
-        "a font's height under a mapping mode is taken as pixels",
-    ),
-    (
-        "ttqmap:abc",
-        "a font's height under a mapping mode is taken as pixels",
-    ),
-    (
-        "ttqmap:otm",
-        "a font's height under a mapping mode is taken as pixels",
-    ),
     // EMSCopy's entry, seg1 `a940`, is past the limit KERNEL leaves its first
     // code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`); DOSBox runs
     // what lies past it, MMSYSTEM's first code segment (`emspast`), and WinBox

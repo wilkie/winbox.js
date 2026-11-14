@@ -602,6 +602,11 @@ pub fn delete_object(system: &mut System, handle: u16) -> bool {
         fonts.release(object);
     }
 
+    system
+        .gdi
+        .mapped_fonts
+        .retain(|(owner, _, _)| *owner != object);
+
     // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`),
     // and any word of the object `GDIInit2` set.
     system.forget_bitmap(object);

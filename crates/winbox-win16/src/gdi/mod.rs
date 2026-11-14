@@ -99,6 +99,10 @@ pub struct Gdi {
     /// GDI's `[063Eh]`, the `GDIINFO` of the context it last drew or
     /// measured text for, kept as its `dpText` (`note_text_device`).
     pub text_caps: Option<u16>,
+    /// Each made font realized again at the size a context's mapping took
+    /// it to: its object, the `LOGFONT` with that size, and the font
+    /// (`text::font_of`).
+    pub mapped_fonts: Vec<(usize, crate::fonts::LogFont, winbox_raster::LogicalFont)>,
 }
 
 /// What the display driver says of itself, beside the screen's size and
