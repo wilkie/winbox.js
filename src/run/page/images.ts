@@ -22,8 +22,11 @@ import {
 import {
   type KeptProgram,
   type Medium,
+  type Overlay,
   recallImage,
+  recallOverlay,
   rememberImage,
+  rememberOverlay,
   rememberProgram,
 } from '../store.js';
 import {
@@ -362,6 +365,125 @@ export function mediaNow(machine: Machine, except?: string): Medium[] {
     );
 }
 
+/** The size of a disk's sector, the unit an overlay is kept in. */
+const SECTOR = 512;
+
+/** The sectors in which an image as written differs from the file's own bytes. */
+export function overlayOf(original: Uint8Array, written: Uint8Array): Overlay {
+  const sectors: number[] = [];
+  const parts: Uint8Array[] = [];
+  const count = Math.ceil(Math.max(original.length, written.length) / SECTOR);
+
+  for (let sector = 0; sector < count; sector++) {
+    const now = written.subarray(sector * SECTOR, (sector + 1) * SECTOR);
+    const was = original.subarray(sector * SECTOR, (sector + 1) * SECTOR);
+
+    if (now.length !== was.length || now.some((byte, at) => byte !== was[at])) {
+      sectors.push(sector);
+      parts.push(now);
+    }
+  }
+
+  const bytes = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
+  let at = 0;
+
+  for (const part of parts) {
+    bytes.set(part, at);
+    at += part.length;
+  }
+
+  return { sectors, bytes };
+}
+
+/** A file's bytes with an overlay put over them: a copy, the file's own left as they are. */
+export function withOverlay(original: Uint8Array, overlay: Overlay): Uint8Array {
+  const bytes = new Uint8Array(original);
+  let at = 0;
+
+  for (const sector of overlay.sectors) {
+    const length = Math.min(SECTOR, overlay.bytes.length - at, bytes.length - sector * SECTOR);
+
+    if (length > 0) {
+      bytes.set(overlay.bytes.subarray(at, at + length), sector * SECTOR);
+    }
+
+    at += SECTOR;
+  }
+
+  return bytes;
+}
+
+/** What was last kept of each overlay, by its store's key, so that the same is not kept again. */
+const keptOverlays = new Map<string, string>();
+
+const overlaySignature = (overlay: Overlay) =>
+  `${overlay.sectors.join(',')}:${overlay.bytes.length}:${overlay.bytes.reduce(
+    (hash, byte) => (hash * 31 + byte) | 0,
+    0
+  )}`;
+
+/**
+ * What a kept program's programs wrote to its floppies and hard disk
+ * images kept in this browser beside its images, as its overlays (the
+ * owner's decision of 2026-11-14): kept as C:'s changes are (`keep`), and
+ * put back as the program is opened on a later visit (`mountMedia`). The
+ * files dropped are never written.
+ */
+export async function keepOverlays(machine: Machine) {
+  const program = programOf(machine);
+  const made = machine.made;
+
+  if (!program || machine.installing || !made) {
+    return;
+  }
+
+  for (const set of machine.drives.filter((one) => one.kind !== 'iso')) {
+    for (const [at, disk] of set.disks.entries()) {
+      const changed = made.diskChanged(set.letter, at);
+
+      if (!changed && !disk.written) {
+        continue;
+      }
+
+      const now = (changed ? made.diskImage(set.letter, at) : null) ?? disk.bytes;
+      const overlay = overlayOf(disk.original ?? disk.bytes, now);
+      const key = `${program.name}\n${keyOf(disk)}`;
+      const signature = overlaySignature(overlay);
+
+      if (keptOverlays.get(key) === signature) {
+        continue;
+      }
+
+      try {
+        await rememberOverlay(program.name, keyOf(disk), overlay);
+        keptOverlays.set(key, signature);
+      } catch (error: any) {
+        status(
+          `What was written to ${disk.name} could not be kept: ${error?.message ?? error}`,
+          'error',
+          machine
+        );
+      }
+    }
+  }
+}
+
+/** A kept program's disk with what its programs wrote to it on an earlier visit put back over it. */
+async function withKeptOverlay(program: string, medium: Medium, disk: Disk): Promise<Disk> {
+  if (medium.kind === 'iso' || disk.written) {
+    return disk;
+  }
+
+  const overlay = await recallOverlay(program, medium.key);
+
+  if (!overlay) {
+    return disk;
+  }
+
+  keptOverlays.set(`${program}\n${medium.key}`, overlaySignature(overlay));
+  return { ...disk, original: disk.bytes, bytes: withOverlay(disk.bytes, overlay), written: true };
+}
+
 /** A cue sheet's file as a kept program remembers it. */
 const trackOf = (disk: Disk) => ({ name: disk.name, size: disk.size, key: keyOf(disk) });
 
@@ -476,6 +598,7 @@ export async function mountMedia(machine: Machine, program: KeptProgram) {
     return kept?.handle ? fromHandle(kept.handle, medium) : null;
   };
 
+
   for (const medium of media) {
     const needed: Needed = {
       ...medium,
@@ -550,6 +673,11 @@ export async function mountNeeded() {
     }
 
     state.needed = state.needed.filter((one) => !wanted.includes(one));
+
+    /* What programs wrote to each on an earlier visit put back over it. */
+    for (const one of wanted) {
+      one.disk = await withKeptOverlay(program, one, one.disk!);
+    }
 
     /* Whatever is at its letter now makes way for it. */
     for (const set of machine.drives.filter((one) => one.letter === letter)) {

@@ -949,6 +949,24 @@ pub fn same_name(listed: &str, name: &str) -> bool {
 }
 
 impl Volume for FatVolume {
+    fn written(&self) -> Vec<(u64, Vec<u8>)> {
+        FatVolume::written(self)
+    }
+
+    fn put_written(&mut self, written: &[(u64, Vec<u8>)]) -> bool {
+        let mut drive = self.drive.borrow_mut();
+
+        for (number, bytes) in written {
+            let Ok(sector) = <[u8; 512]>::try_from(bytes.as_slice()) else {
+                return false;
+            };
+
+            drive.disk.put(*number, &sector);
+        }
+
+        true
+    }
+
     fn removable(&self) -> bool {
         self.floppy
     }

@@ -23,6 +23,7 @@ const BLOBS = 'blobs';
 const LAYERS = 'layers';
 const PROGRAMS = 'programs';
 const IMAGES = 'images';
+const OVERLAYS = 'overlays';
 const KEY = 'windows';
 const BUNDLE = 'bundle';
 
@@ -176,15 +177,15 @@ let opened: Promise<IDBDatabase | null> | null = null;
 function open(): Promise<IDBDatabase | null> {
   opened ??= new Promise((resolve) => {
     try {
-      /* Version 4 added the programs, their layers and the blobs, and 5
-       * the images programs are run with; the stores before them are kept
-       * as they are. */
-      const request = indexedDB.open(DATABASE, 5);
+      /* Version 4 added the programs, their layers and the blobs, 5 the
+       * images programs are run with, and 6 what programs wrote to them;
+       * the stores before them are kept as they are. */
+      const request = indexedDB.open(DATABASE, 6);
 
       request.onupgradeneeded = () => {
         const database = request.result;
 
-        for (const name of [ARCHIVES, ASSETS, CHANGES, BLOBS, LAYERS, PROGRAMS, IMAGES]) {
+        for (const name of [ARCHIVES, ASSETS, CHANGES, BLOBS, LAYERS, PROGRAMS, IMAGES, OVERLAYS]) {
           if (!database.objectStoreNames.contains(name)) {
             database.createObjectStore(name);
           }
@@ -479,8 +480,8 @@ export async function forgetProgram(name: string) {
 
 /** Every program forgotten, with its layers and blobs. */
 export const forgetAllPrograms = () =>
-  across([BLOBS, LAYERS, PROGRAMS, IMAGES], 'readwrite', async (stores) => {
-    for (const name of [BLOBS, LAYERS, PROGRAMS, IMAGES]) {
+  across([BLOBS, LAYERS, PROGRAMS, IMAGES, OVERLAYS], 'readwrite', async (stores) => {
+    for (const name of [BLOBS, LAYERS, PROGRAMS, IMAGES, OVERLAYS]) {
       stores[name].clear();
     }
   }).catch(() => undefined);
@@ -491,8 +492,20 @@ export const forgetAllPrograms = () =>
  * program, or keeping another in its name, leaves.
  */
 export function collect() {
-  return across([BLOBS, LAYERS, PROGRAMS, IMAGES], 'readwrite', async (stores) => {
+  return across([BLOBS, LAYERS, PROGRAMS, IMAGES, OVERLAYS], 'readwrite', async (stores) => {
     const programs = await answer<KeptProgram[]>(stores[PROGRAMS].getAll());
+    const written = new Set(
+      programs.flatMap((program) =>
+        (program.media ?? []).map((one) => overlayKey(program.name, one.key))
+      )
+    );
+
+    for (const key of await answer<IDBValidKey[]>(stores[OVERLAYS].getAllKeys())) {
+      if (!written.has(String(key))) {
+        stores[OVERLAYS].delete(key);
+      }
+    }
+
     const used = new Set(programs.flatMap((program) => program.layers));
     const media = new Set(
       programs
@@ -565,6 +578,36 @@ export const imageCounts = () =>
 
     return { images: images.length, copies: images.filter((image) => image.bytes).length };
   });
+
+/**
+ * What programs wrote to a kept program's disk image, its overlay: the
+ * sectors written, by their number in the image, each 512 bytes, one after
+ * another in `bytes` (the owner's decision of 2026-11-14, floppy writes
+ * kept across visits). The image itself is never written.
+ */
+export interface Overlay {
+  sectors: number[];
+  bytes: Uint8Array;
+}
+
+/** The key a program's overlay of an image is kept by: the program's name and the image's key. */
+export const overlayKey = (program: string, image: string) => `${program}\n${image}`;
+
+/** A program's overlay of an image, by the image's key; null where nothing was written. */
+export const recallOverlay = (program: string, image: string) =>
+  run<Overlay>(OVERLAYS, 'readonly', (store) => store.get(overlayKey(program, image)));
+
+/** A program's overlay of an image kept; rejects where it could not be. */
+export const rememberOverlay = (program: string, image: string, overlay: Overlay) => {
+  persist();
+  return run(OVERLAYS, 'readwrite', (store) => store.put(overlay, overlayKey(program, image)), true);
+};
+
+/** How many overlays are kept: what the page's tests look at. */
+export const overlayCount = () =>
+  across([OVERLAYS], 'readonly', async (stores) =>
+    (await answer<IDBValidKey[]>(stores[OVERLAYS].getAllKeys())).length
+  );
 
 /** What programs wrote kept under a key, whatever it was told against. */
 export const recallChangesAt = (key: string) =>

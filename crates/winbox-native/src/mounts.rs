@@ -650,6 +650,95 @@ impl Mounts {
 }
 
 impl Mounts {
+    /// The images as a kept program remembers them, as `media` has them,
+    /// each with what programs have written to it (`Medium::written`): the
+    /// disk in its drive's from `Files`, the others' from their volumes.
+    pub fn media_written(&self, files: &Files) -> Vec<crate::programs::Medium> {
+        let written: Vec<Vec<(u64, Vec<u8>)>> = self
+            .sets
+            .iter()
+            .flat_map(|set| {
+                set.disks.iter().enumerate().map(move |(at, disk)| {
+                    if !set.ejected && set.current == at {
+                        files.written(set.letter)
+                    } else {
+                        disk.volume
+                            .as_ref()
+                            .map(|volume| volume.written())
+                            .unwrap_or_default()
+                    }
+                })
+            })
+            .collect();
+
+        self.media()
+            .into_iter()
+            .zip(written)
+            .map(|(mut medium, written)| {
+                medium.written = written
+                    .iter()
+                    .map(|(sector, bytes)| crate::programs::WrittenSector::of(*sector, bytes))
+                    .collect();
+                medium
+            })
+            .collect()
+    }
+
+    /// What a kept program's images had written to them put back over
+    /// them, each medium matched to its disk by its letter, its order in
+    /// the set, its path and its size; what is said of those that could not
+    /// be. Before the disks are put in their drives.
+    pub fn put_written(&mut self, media: &[crate::programs::Medium]) -> Vec<String> {
+        let mut said = Vec::new();
+        let mut at_in_set: std::collections::HashMap<String, usize> =
+            std::collections::HashMap::new();
+
+        for medium in media {
+            let at = at_in_set
+                .entry(medium.letter.to_ascii_uppercase())
+                .or_default();
+            let index = *at;
+
+            *at += 1;
+
+            if medium.written.is_empty() {
+                continue;
+            }
+
+            let letter = medium.letter.chars().next().map(|c| c.to_ascii_uppercase());
+            let Some(disk) = self
+                .sets
+                .iter_mut()
+                .find(|set| Some(set.letter) == letter)
+                .and_then(|set| set.disks.get_mut(index))
+            else {
+                continue;
+            };
+            let same = std::fs::canonicalize(&disk.path)
+                .is_ok_and(|full| full.to_string_lossy() == medium.path)
+                && std::fs::metadata(&disk.path).is_ok_and(|meta| meta.len() == medium.size);
+            let sectors: Option<Vec<(u64, Vec<u8>)>> = medium
+                .written
+                .iter()
+                .map(crate::programs::WrittenSector::sector)
+                .collect();
+
+            let put = match (same, sectors, disk.volume.as_mut()) {
+                (true, Some(sectors), Some(volume)) => volume.put_written(&sectors),
+                _ => false,
+            };
+
+            if !put {
+                said.push(format!(
+                    "{}: {}: what was written to it before is not put back: the image is not the one written to",
+                    medium.letter, medium.name
+                ));
+            }
+        }
+
+        said
+    }
+
     /// The images as a kept program remembers them: each set's in order,
     /// its letter pinned, each file by its full path.
     pub fn media(&self) -> Vec<crate::programs::Medium> {
@@ -668,6 +757,7 @@ impl Mounts {
                             .map_or_else(String::new, |name| name.to_string_lossy().to_string()),
                         size: std::fs::metadata(&disk.path).map_or(0, |metadata| metadata.len()),
                         path: full.to_string_lossy().to_string(),
+                        written: Vec::new(),
                     }
                 })
             })

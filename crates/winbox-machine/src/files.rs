@@ -224,6 +224,20 @@ pub trait Volume: Debug {
         false
     }
 
+    /// The sectors programs have written to a disk image, by their number
+    /// in it, each as last written: its overlay, to be kept from one run or
+    /// visit to the next; none for another drive.
+    fn written(&self) -> Vec<(u64, Vec<u8>)> {
+        Vec::new()
+    }
+
+    /// Sectors kept from an earlier run or visit put back over a disk
+    /// image, as though written again; whether they were. Nothing for
+    /// another drive.
+    fn put_written(&mut self, _written: &[(u64, Vec<u8>)]) -> bool {
+        false
+    }
+
     /// A disc's search begun as DOSBox's `isoDrive::FindFirst` begins it,
     /// the pattern as `GetSearchParams` gives it (`IsoVolume`); none for a
     /// drive whose search begins from a folder's first slot
@@ -489,6 +503,11 @@ pub struct Files {
     /// (**recorded** by `dirorder`). A host's folder keeps the host's
     /// clock's, not DOS's.
     folders: HashMap<String, i64>,
+    /// Each drive's root's stamp as the drive was mounted: what its root's
+    /// `..` carries (the owner's decision of 2026-11-14). Under DOSBox it
+    /// is the stamp of the host's folder above, which a program's changes
+    /// on the drive never move (**recorded** by `rootstmp`).
+    made: HashMap<char, [u16; 6]>,
     /// DOS's clock, seconds since 1970, as the system last set it: what a
     /// file written is stamped with. None leaves each drive its own.
     pub now: Option<i64>,
@@ -512,6 +531,7 @@ impl Files {
             drive: 'C',
             open: HashMap::new(),
             folders: HashMap::new(),
+            made: HashMap::new(),
             now: None,
             activity: Cell::new(0),
         }
@@ -535,6 +555,10 @@ impl Files {
     /// volume, or a folder.
     pub fn mount_boxed(&mut self, letter: char, drive: Box<dyn Volume>) {
         let letter = letter.to_ascii_uppercase();
+
+        if let Some(root) = drive.entry(&[]) {
+            self.made.insert(letter, root.modified);
+        }
 
         self.drives.insert(letter, drive);
         self.pwd
@@ -671,7 +695,10 @@ impl Files {
         let own = self.stamped(letter, &names, drive.entry(&names)?);
         let above = match names.split_last() {
             Some((_, above)) => self.stamped(letter, above, drive.entry(above)?),
-            None => own.clone(),
+            None => Entry {
+                modified: self.made.get(&letter).copied().unwrap_or(own.modified),
+                ..own.clone()
+            },
         };
 
         for (name, entry) in [(".", own), ("..", above)] {
@@ -1109,6 +1136,15 @@ impl Files {
     /// natively); none for a drive that is no image.
     pub fn image(&self, letter: char) -> Option<Vec<u8>> {
         self.drives.get(&letter.to_ascii_uppercase())?.image()
+    }
+
+    /// The sectors programs have written to a drive's disk
+    /// (`Volume::written`).
+    pub fn written(&self, letter: char) -> Vec<(u64, Vec<u8>)> {
+        self.drives
+            .get(&letter.to_ascii_uppercase())
+            .map(|drive| drive.written())
+            .unwrap_or_default()
     }
 
     /// A drive's disk changed for another, as DOSBox's drive manager swaps

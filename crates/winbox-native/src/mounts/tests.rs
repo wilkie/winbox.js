@@ -436,3 +436,79 @@ fn a_cue_sheet_or_a_raw_image_is_a_disc() {
     assert_eq!(media[0].name, "game.cue");
     assert!(media[0].path.ends_with("game.cue"));
 }
+
+/// What a program wrote to a kept program's floppies is kept in its record
+/// beside its images (`Medium::written`), the disk out of its drive's as
+/// well as the one in it, and put back as the images are mounted on the
+/// next run; the images themselves never written (the owner's decision of
+/// 2026-11-14). An image changed since is not written over, and is said.
+#[test]
+fn what_was_written_to_a_floppy_is_kept_for_the_next_run() {
+    let scratch = Scratch::new("kept");
+    let first = scratch.image("imgflop.img", "DISK1.IMG");
+    let second = scratch.image("imgwrite.img", "DISK2.IMG");
+    let originals = [
+        std::fs::read(&first).unwrap(),
+        std::fs::read(&second).unwrap(),
+    ];
+    let mut mounts = Mounts::open(&[request(Some('A'), &[&first, &second])]).unwrap();
+    let mut files = Files::new();
+
+    mounts.mount(&mut files);
+    write(&mut files, r"A:\FIRST.TXT", b"on the first");
+    mounts.command(&mut files, "a next");
+    write(&mut files, r"A:\SECOND.TXT", b"on the second");
+
+    let media = mounts.media_written(&files);
+
+    assert!(media.iter().all(|medium| !medium.written.is_empty()));
+
+    // Through the record's text and back, as the library keeps it.
+    let text = serde_json::to_string(&media).unwrap();
+    let media: Vec<crate::programs::Medium> = serde_json::from_str(&text).unwrap();
+
+    // The next run: the images as they were, what was written put back.
+    assert_eq!(std::fs::read(&first).unwrap(), originals[0]);
+    assert_eq!(std::fs::read(&second).unwrap(), originals[1]);
+
+    let mut again = Mounts::open(&requests_of(&media)).unwrap();
+
+    assert!(again.put_written(&media).is_empty());
+
+    let mut files = Files::new();
+
+    again.mount(&mut files);
+    assert_eq!(
+        files.read_from(r"A:\", "FIRST.TXT").map(|(_, bytes)| bytes),
+        Some(b"on the first".to_vec())
+    );
+    again.command(&mut files, "a next");
+    assert_eq!(
+        files
+            .read_from(r"A:\", "SECOND.TXT")
+            .map(|(_, bytes)| bytes),
+        Some(b"on the second".to_vec())
+    );
+    assert_eq!(again.media_written(&files), media);
+
+    // An image changed since is not written over.
+    std::fs::write(&first, &originals[1][..1024]).ok();
+    let mut changed = Mounts::open(&[request(Some('A'), &[&second])]).unwrap();
+    let mut moved = media.clone();
+
+    moved.remove(0);
+    moved[0].size += 1;
+    assert_eq!(changed.put_written(&moved).len(), 1);
+}
+
+/// A floppy drive with no image mounted is A: all the same, empty (the
+/// owner's decision of 2026-11-14).
+#[test]
+fn a_is_an_empty_floppy_drive_where_nothing_is_mounted() {
+    let mut files = Files::new();
+
+    Mounts::default().mount(&mut files);
+    assert!(files.mounted('A'));
+    assert!(files.removable('A'));
+    assert!(!files.has_disk('A'));
+}

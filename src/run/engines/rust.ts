@@ -609,6 +609,7 @@ export class RustEngine implements Engine {
       for (const set of this.#setup?.drives ?? []) {
         set.disks.forEach((disk, at) => {
           if (this.diskChanged(set.letter, at)) {
+            disk.original ??= disk.bytes;
             disk.bytes = this.diskImage(set.letter, at)!;
             disk.written = true;
           }

@@ -1252,6 +1252,7 @@ fn main() {
         Mode::LayerFrom { .. } | Mode::List | Mode::Launcher => unreachable!("made above"),
     };
     let mut mounts = mount_images(&options, kept.as_mut(), installing.as_mut());
+    let store = library_store(&options);
 
     system.files.mount('C', c);
     mounts.mount(&mut system.files);
@@ -1445,6 +1446,7 @@ fn main() {
 
     system.host = None;
     tell_written(&mounts.borrow(), &system.files, write_back.as_deref());
+    keep_written(&store, kept.as_mut(), &mounts.borrow(), &system.files);
     drop(system);
 
     if let Some(made) = made {
@@ -1469,7 +1471,7 @@ fn mount_images(
         (Some(program), false) => mounts::requests_of(&program.media),
         _ => options.mounts.clone(),
     };
-    let mounts = match mounts::Mounts::open(&requests) {
+    let mut mounts = match mounts::Mounts::open(&requests) {
         Ok(mounts) => mounts,
         Err(error) if !given => {
             eprintln!("the images it was run with: {error}: run without them");
@@ -1477,6 +1479,14 @@ fn mount_images(
         }
         Err(error) => refuse(&error),
     };
+
+    // What was written to them on earlier runs put back (the owner's
+    // decision of 2026-11-14).
+    if !given && let Some(program) = &kept {
+        for said in mounts.put_written(&program.media) {
+            eprintln!("{said}");
+        }
+    }
 
     if given && let Some(program) = kept {
         program.media = mounts.media();
@@ -1491,6 +1501,33 @@ fn mount_images(
     }
 
     mounts
+}
+
+/// As the run ends, what programs wrote to a kept program's images kept in
+/// its record beside them (`Medium::written`), so the next run sees it
+/// (the owner's decision of 2026-11-14); the images themselves never
+/// written. Nothing for a run of no kept program, or one whose images did
+/// not change.
+fn keep_written(
+    store: &programs::Store,
+    kept: Option<&mut programs::Program>,
+    mounts: &mounts::Mounts,
+    files: &winbox_machine::Files,
+) {
+    let Some(program) = kept else {
+        return;
+    };
+    let media = mounts.media_written(files);
+
+    if media.is_empty() || media == program.media {
+        return;
+    }
+
+    program.media = media;
+
+    if let Err(error) = store.put_program(program) {
+        eprintln!("what was written to its images not kept: {error}");
+    }
 }
 
 /// As the run ends, each image written to saved into `--write-back`'s

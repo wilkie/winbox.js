@@ -32,6 +32,7 @@ import {
   state,
   status,
 } from './state.js';
+import { keepOverlays } from './images.js';
 import { displayKept, offeredDisplays, shownAfterClosing } from './view.js';
 
 /* ---- the trace ---- */
@@ -285,6 +286,8 @@ export function keep(machine: Machine) {
 export const keepEvery = () => Promise.all(machines.map((machine) => keep(machine)));
 
 async function keepNow(machine: Machine) {
+  await keepOverlays(machine);
+
   const current = machine.made;
   const at = machine.generation;
 
