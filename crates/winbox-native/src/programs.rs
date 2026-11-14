@@ -115,7 +115,12 @@ impl WrittenSector {
     pub fn of(sector: u64, bytes: &[u8]) -> Self {
         Self {
             sector,
-            bytes: bytes.iter().map(|byte| format!("{byte:02x}")).collect(),
+            bytes: bytes.iter().fold(String::new(), |mut text, byte| {
+                use std::fmt::Write as _;
+
+                let _ = write!(text, "{byte:02x}");
+                text
+            }),
         }
     }
 
@@ -124,7 +129,7 @@ impl WrittenSector {
     pub fn sector(&self) -> Option<(u64, Vec<u8>)> {
         let text = self.bytes.as_bytes();
 
-        if text.len() % 2 != 0 {
+        if !text.len().is_multiple_of(2) {
             return None;
         }
 
