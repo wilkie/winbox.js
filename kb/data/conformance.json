@@ -29784,6 +29784,36 @@
   },
   "gaps": {}
  },
+ "rootstmp": {
+  "probe": "rootstmp",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "deleted": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "made": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "start": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "rotangle": {
   "probe": "rotangle",
   "display": "vga",
