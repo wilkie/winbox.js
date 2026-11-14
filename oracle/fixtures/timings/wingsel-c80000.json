@@ -1,0 +1,270 @@
+{
+  "probe": "wingsel",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79241,273,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "79783,275,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/pen and back,1",
+      "result": "5444,373200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/pen and back,2",
+      "result": "5431,374100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/pen and back,3",
+      "result": "5433,374000,2032"
+    },
+    {
+      "function": "where",
+      "args": "halftone,black",
+      "result": "0"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, black,1",
+      "result": "2083,975900,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, black,2",
+      "result": "2081,976000,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, black,3",
+      "result": "2082,975900,2032"
+    },
+    {
+      "function": "where",
+      "args": "halftone,white",
+      "result": "255"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, white,1",
+      "result": "108085,18800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, white,2",
+      "result": "108138,18800,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, white,3",
+      "result": "108085,18800,2032"
+    },
+    {
+      "function": "where",
+      "args": "halftone,a colour in no entry",
+      "result": "256"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, a colour in no entry,1",
+      "result": "107513,18900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, a colour in no entry,2",
+      "result": "107513,18900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/halftone table, a colour in no entry,3",
+      "result": "107513,18900,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, halftone table, white and black,1",
+      "result": "233678,8700,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, halftone table, white and black,2",
+      "result": "236279,8600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, halftone table, white and black,3",
+      "result": "236279,8600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, halftone table, colours in no entry,1",
+      "result": "441739,4600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, halftone table, colours in no entry,2",
+      "result": "451777,4500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, halftone table, colours in no entry,3",
+      "result": "441739,4600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/the first bitmap back, halftone table, colours in no entry,1",
+      "result": "233563,8700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/the first bitmap back, halftone table, colours in no entry,2",
+      "result": "230909,8800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/the first bitmap back, halftone table, colours in no entry,3",
+      "result": "231022,8800,2033"
+    },
+    {
+      "function": "where",
+      "args": "reversed,black",
+      "result": "255"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, black,1",
+      "result": "109837,18500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, black,2",
+      "result": "108663,18700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, black,3",
+      "result": "108663,18700,2032"
+    },
+    {
+      "function": "where",
+      "args": "reversed,white",
+      "result": "0"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, white,1",
+      "result": "2086,973700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, white,2",
+      "result": "2082,976000,2033"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, white,3",
+      "result": "2082,975900,2032"
+    },
+    {
+      "function": "where",
+      "args": "reversed,a colour in no entry",
+      "result": "256"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, a colour in no entry,1",
+      "result": "108085,18800,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, a colour in no entry,2",
+      "result": "108663,18700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "GetNearestColor/reversed table, a colour in no entry,3",
+      "result": "108716,18700,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, reversed table, white and black,1",
+      "result": "236279,8600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, reversed table, white and black,2",
+      "result": "236279,8600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, reversed table, white and black,3",
+      "result": "236279,8600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, reversed table, colours in no entry,1",
+      "result": "451555,4500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, reversed table, colours in no entry,2",
+      "result": "451777,4500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/bitmaps, reversed table, colours in no entry,3",
+      "result": "451555,4500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/the first bitmap back, reversed table, colours in no entry,1",
+      "result": "233563,8700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/the first bitmap back, reversed table, colours in no entry,2",
+      "result": "233563,8700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "SelectObject/the first bitmap back, reversed table, colours in no entry,3",
+      "result": "236395,8600,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "79822,275,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    }
+  ]
+}

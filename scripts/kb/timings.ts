@@ -97,6 +97,8 @@ const MADE: Record<string, string> = {
   'twrcall:DrawFocusRect': '10 by 10 in a window',
   'viscost:BitBlt': '16 by 16 within a window, `SRCCOPY`',
   'viscost:PatBlt': '16 by 16 within a window, `PATCOPY`',
+  'wingsel:SelectObject': 'into the WinG device context, two calls timed as one',
+  'wingsel:GetNearestColor': 'of the WinG device context',
 };
 
 /**

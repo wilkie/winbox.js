@@ -34,6 +34,7 @@ const TIMED: &[(&str, &str, f64)] = &[
     ("wingcost-c80000", "wingcost-vga256", f64::INFINITY),
     ("wingxlat-c80000", "wingxlat-vga256", f64::INFINITY),
     ("viscost-c80000", "viscost", f64::INFINITY),
+    ("wingsel-c80000", "wingsel-vga256", 0.05),
 ];
 
 /// The rate the recordings were made at, instructions a millisecond.
@@ -164,4 +165,5 @@ timed! {
     wingcost => 8,
     wingxlat => 9,
     viscost => 10,
+    wingsel => 11,
 }
