@@ -6903,7 +6903,8 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   the context: a box, a 16.16 corner and advance, and a bitmap a doubleword
   a row. Turned by the context's angle, the advance is carried along the
   baseline. **Recorded** to the bit for Arial and Wingdings upright, slanted
-  and turned, but one: slanted Wingdings' E9h is a column wider on the left.
+  and turned, slanted Wingdings' E9h among them since its composite was
+  assembled as the scaler assembles it (below).
   **Read out** where the advance comes from: only a matrix with nothing off
   its diagonal and the same positive entry on it asks `hdmx` and `LTSH`
   (seg36 `081b`, `0957`, `103b`); every other takes the difference of the
@@ -6921,17 +6922,49 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   answer is `hdmx`'s 23 -- and 16.45 each way at 45 degrees, unhinted at a
   stretch of 28, slanted or not. So the 24 turned is the hinted phantom, and
   the 16 slanted at 45 degrees the unhinted one at the smaller stretch; of
-  the three records `prtteng` had left, only E9h's box stays.
+  the three records `prtteng` had left, only E9h's box stayed, and it is
+  closed below.
   **Recorded** by `prttslt`, slanted Wingdings and Symbol at ems from 40 to
   72: the slant leans by the matrix's `m10` over `m11`, `(57h * em) >> 8`
   over the em, which parts from the display's own synthesis, `floor(em / 3)`,
   first at 53 (18 to 17); drawn so, Wingdings' `A`, `a` and `l` come right to
-  the bit from 53 up. Left: Symbol's corner carries a fraction across -- `S`
-  and `W` exactly `7/256` of the em, 1.09375 at 40 -- where WinBox's is a
-  whole pixel, its bitmaps agreeing; Wingdings' E9h has its arrowhead's tip
-  rescued a column past WinBox's box on the left at 40 (the pixel at the
-  bottom of the tip, column 0), or a row past it at the top elsewhere; and
-  one pixel of a few others.
+  the bit from 53 up. What it left, three things, each now **read out**:
+  - **Symbol's corner** carries a fraction across -- `S` and `W` exactly
+    `7/256` of the em, 1.09375 at 40. The record's corner is the scaler's
+    output at 3Ah (seg36 `0d42`), the bitmap's edge less the origin phantom
+    (`2140`-`219f`), and the edges are `sc_FindExtrema`'s whole pixels
+    (seg42 `0f2a`: `(xMin + 31) >> 6`, `(xMax + 32) >> 6`). Unhinted, as
+    the slant leaves every installed face, the phantom sits where scaling
+    put it, at `xMin` less the side bearing: Symbol's `S` and `W` have 56
+    units of 2048 between them, its `a` 84, and the corners are those
+    fractions exactly at every size from 40 to 72. Wingdings' `xMin` is its
+    bearing, so its corners are whole. WinBox carried the outline across
+    that difference in whole pixels and now gives the fraction back.
+  - **Wingdings' E9h is a composite**: glyph 205, turned a right angle by a
+    2x2 and placed at (173, 1653) with `ROUND_XY_TO_GRID`. The scaler
+    assembles the components at the size, the offset rounded to a pixel,
+    and only then puts the matrix to the whole (`6ebb`) -- so the offset is
+    rounded upright, 3.38 and 32.29 to 3 and 32 at 40, where WinBox had
+    sheared the design outline whole and the arrowhead fell a third of a
+    pixel apart from where Windows has it. Assembled at the size first, E9h
+    comes right at 40 and 48.
+  - **The 48-pixel cap does not hold slanted.** 8e's cap -- no rescue of a
+    run covering no sample column above 48 pixels per em, on a square pixel
+    -- was holding back the tip of E9h's arrowhead at 52 and up, and one
+    pixel of `a` at four sizes. Windows rescues them. The image the scan
+    converter is told of is flagged stretched (1000h) for every matrix that
+    is not a plain scale (seg36 `41d1`-`422b`), rotated (400h) as well where
+    it is off its diagonal; `prep`'s `SCANCTRL` reads those bits (`2374`,
+    the whole of `fsg_DoScanControl`), and Wingdings' `prep` answers a
+    rotated `GETINFO` with `SCANCTRL` 1FFh. A stretch was already known to
+    lift the cap (8g); the slant is the same flag, and lifting it there
+    closes every glyph of `prttslt` but one. Where the cap itself is made
+    is still not read: the flag is the likeliest cause, not a read-out one,
+    and lifting it for turned display text too moves no recording.
+    Left: Wingdings' `A` at 52, a rescue a column right of Windows' in one
+    row and one Windows makes that WinBox does not in another -- the choice
+    inside the dropout rule, unread. `prttslt` 2,385 of 2,388, `prtteng` 159
+    of 159, `prttrot`'s glyphs every one.
 - **Widths** (`EngineGetCharWidth`, seg3 `2662`): the advances at the
   context upright, the first character 8, a character outside the font its
   default character's -- kept, as in a font file, from the first, so the

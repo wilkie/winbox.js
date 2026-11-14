@@ -2,7 +2,7 @@
 kind: topic
 name: Scan conversion
 summary: How Windows 3.1's TrueType scan converter turns a fitted outline into pixels — a centre-sampled fill from an integer edge walk over a polyline, then dropout control with stub exclusion and a box clamp.
-probes: [glyphs, bands, dropsize, dropdown, scanleak]
+probes: [glyphs, bands, dropsize, dropdown, scanleak, prttslt]
 ---
 
 The scan converter gets the fitted outline in sixty-fourths of a pixel. It flattens the curves into chords, walks every edge into lists of crossings, fills between them, and then rescues strokes too thin to cover a pixel centre. Most of what follows was measured first and later found in `GDI.EXE` segment 42. Earlier guesses that the binary contradicted have been dropped. See [[topic:truetype-scaling]] for what reaches the scan converter.
@@ -38,7 +38,7 @@ The scan converter gets the fitted outline in sixty-fourths of a pixel. It flatt
 ## Measured, not yet found in the binary
 
 - [[measured]] If a glyph's box would collapse in `x`, the stub check is skipped and each column is drawn as one run spanning the box. This took `cour-stubs` and `cour-gaps` to 258 of 258, and neither rule has been found in segments 42 or 43.
-- [[measured]] A run that covers no sample column is rescued only below 48 pixels per em ([[probe:dropsize]]), unless the box has collapsed in `x`. The limit applies only on square pixels. On an EGA nothing stops. Why a stretch removes it is not known.
+- [[measured]] A run that covers no sample column is rescued only below 48 pixels per em ([[probe:dropsize]]), unless the box has collapsed in `x`. The limit applies only on square pixels. On an EGA nothing stops, and nothing stops for a glyph GDI's printer engine slants: [[probe:prttslt]] rescues at 52 to 72. Both are matrices that are not a plain scale, for which the scaler flags the image stretched (`GDI.EXE` seg36 `41d1`-`422b`, bit 1000h, which `SCANCTRL`'s stretched bits ask at `2374`); where the cap itself is made is not known, so the flag is the likeliest cause rather than a read-out one ([[fn:GDI.EngineGetGlyphBmp]]).
 - [[measured]] On an EGA, the first size a face is realized at is not rescued like later ones, and the result is then kept for that size. [[probe:dropdown]] and [[probe:scanleak]] show this, and the implementation does not model it.
 
 ## Tried and dropped
