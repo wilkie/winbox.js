@@ -1793,8 +1793,9 @@ impl TrueTypeFont {
     /// sixty-fourths, put through their own transform, and placed at their
     /// offset scaled -- rounded to a whole pixel, a half going up, where the
     /// component asks (`ROUND_XY_TO_GRID`). The scaler places them before
-    /// GDI's matrix turns or slants the whole (`GDI.EXE` seg36 `6ebb`): so a
-    /// slanted composite's offset is rounded upright. **Recorded** by
+    /// GDI's matrix slants the whole, as it applies the matrix after scaling
+    /// (`GDI.EXE` seg36 `6ebb`): so a slanted composite's offset is rounded
+    /// upright. **Recorded** by
     /// `prttslt`: Wingdings' E9h, glyph 205 turned a right angle.
     pub fn outline_on_grid(&self, glyph: u32, k: f64) -> Result<Vec<Contour>, Fault> {
         self.outline_on_grid_at(glyph, k, 0)

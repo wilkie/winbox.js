@@ -6943,7 +6943,9 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   - **Wingdings' E9h is a composite**: glyph 205, turned a right angle by a
     2x2 and placed at (173, 1653) with `ROUND_XY_TO_GRID`. The scaler
     assembles the components at the size, the offset rounded to a pixel,
-    and only then puts the matrix to the whole (`6ebb`) -- so the offset is
+    and only then puts the matrix to the whole -- **measured**, and what
+    `6ebb` applying the matrix after scaling would make; the assembly
+    itself is not located in the scaler -- so the offset is
     rounded upright, 3.38 and 32.29 to 3 and 32 at 40, where WinBox had
     sheared the design outline whole and the arrowhead fell a third of a
     pixel apart from where Windows has it. Assembled at the size first, E9h
