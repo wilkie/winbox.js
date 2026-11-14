@@ -39,6 +39,12 @@ pub const WIN386_TABLE_LIMIT: u16 = 0x186f;
 pub const HOST_SEGMENT: u16 = 0x0a09;
 const HOST_LINEAR: u32 = FIRST_MEGABYTE + (HOST_SEGMENT as u32) * 16;
 
+/// The segment DOSX gives DOS in DS and ES for the buffers it copies
+/// (`[cs:2]` of its protected-mode code), and WIN386's, as `diskmed` found
+/// them where a DOS function left DS as it was.
+const DOSX_DOS_SEGMENT: u16 = 0x05de;
+const WIN386_DOS_SEGMENT: u16 = 0x9eb0;
+
 /// The global table's descriptors of the host's code, its stack, and the
 /// real-mode segments of a call into real mode.
 const HOST_CODE_INDEX: u16 = 0x1c;
@@ -698,6 +704,20 @@ impl System {
 
     /// 0002h (as `#segment`).
     fn dpmi_segment(&mut self, paragraph: u16) -> Option<Event> {
+        match self.dpmi_segment_selector(paragraph) {
+            Some(selector) => {
+                self.cpu.regs[AX] = selector;
+                self.dpmi_ok()
+            }
+            None => self.dpmi_refuse(None),
+        }
+    }
+
+    /// The selector 0002h gives for a paragraph of the first megabyte:
+    /// the host's own for it, if it has one (`DOSX.EXE` 20D6h), else one
+    /// made so (219Dh), data of 64 KiB not yet accessed (`F2h`); none where
+    /// no descriptor is left.
+    fn dpmi_segment_selector(&mut self, paragraph: u16) -> Option<u16> {
         let base = FIRST_MEGABYTE.wrapping_add(u32::from(paragraph) * 16);
         let mut candidates: Vec<usize> = FIRST_MEGABYTE_SELECTORS
             .iter()
@@ -716,14 +736,11 @@ impl System {
                 && bytes[1] == 0xff
                 && (bytes[5] ^ 0xf2) & 0xfe == 0
             {
-                self.cpu.regs[AX] = ((index as u16) << 3) | 7;
-                return self.dpmi_ok();
+                return Some(((index as u16) << 3) | 7);
             }
         }
 
-        let Some(index) = self.descriptors.take(1) else {
-            return self.dpmi_refuse(None);
-        };
+        let index = self.descriptors.take(1)?;
         let [b0, b1, b2, b3] = base.to_le_bytes();
 
         self.dpmi_given(index);
@@ -732,8 +749,51 @@ impl System {
             ((index as u16) << 3) | 7,
             [0xff, 0xff, b0, b1, b2, 0xf2, 0, b3],
         );
-        self.cpu.regs[AX] = ((index as u16) << 3) | 7;
-        self.dpmi_ok()
+        Some(((index as u16) << 3) | 7)
+    }
+
+    /// DS as a DOS function that gives back a segment in it leaves it --
+    /// `paragraph` where DOS set it, none where DOS left it -- handed on as
+    /// the extender hands it on. DOSX calls DOS with DS its own segment
+    /// (`[cs:2]`, 349h-350h), and a function whose table entry's way back
+    /// is 0032h, as 1Bh's and 1Ch's are (at D0h of its protected-mode
+    /// segment), has the segment DS holds after made a selector by
+    /// 0002h's routine (681h-6B3h, 1F7Fh), whatever DOS answered (BA9h).
+    /// **Recorded** by `diskmed`: the selector 0002h gives, again on the
+    /// next call; where no drive is, one for DOSX's own segment, 5DEh, or
+    /// WIN386's, 9EB0h, in enhanced mode. A real-mode call through 0300h is
+    /// given the segment itself.
+    pub(crate) fn dos_segment_back(&mut self, paragraph: Option<u16>) {
+        if self.at_real_call() {
+            let Some(paragraph) = paragraph else {
+                return;
+            };
+            let index = SCRATCH_INDICES[1];
+
+            self.dpmi_global(
+                index,
+                FIRST_MEGABYTE.wrapping_add(u32::from(paragraph) * 16),
+                0xffff,
+                0xf3,
+            );
+
+            if let Some(call) = self.dpmi.calls.last_mut() {
+                call.segments[1] = paragraph;
+            }
+
+            self.dpmi_load(DS, (index << 3) | 3);
+            return;
+        }
+
+        let paragraph = paragraph.unwrap_or(if self.dpmi_enhanced() {
+            WIN386_DOS_SEGMENT
+        } else {
+            DOSX_DOS_SEGMENT
+        });
+
+        if let Some(selector) = self.dpmi_segment_selector(paragraph) {
+            self.dpmi_load(DS, selector);
+        }
     }
 
     fn dpmi_get_base(&mut self, selector: u16) -> Option<Event> {

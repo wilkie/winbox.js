@@ -565,6 +565,18 @@ impl Files {
         self.drives.get(&letter)?.allocation()
     }
 
+    /// The media byte DOS's table holds for a drive (`Volume::media_byte`):
+    /// DOSBox writes a drive's as `MOUNT` or `IMGMOUNT` makes it
+    /// (`dos_programs.cpp` 398, 1267), so a drive that is not there, or a
+    /// floppy drive with nothing mounted, has the nought the table began
+    /// with (`dos_tables.cpp` 80).
+    pub fn media_byte(&self, letter: char) -> u8 {
+        match self.drives.get(&letter) {
+            Some(drive) if self.has_disk(letter) => drive.media_byte(),
+            _ => 0,
+        }
+    }
+
     /// Whether a drive is removable.
     pub fn removable(&self, letter: char) -> bool {
         self.drives

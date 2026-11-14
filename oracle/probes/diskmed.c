@@ -13,7 +13,8 @@
  *   26 (Z:) and 27 (no drive), and 1Bh (`default`), AX, BX, CX and DX
  *   after, in hexadecimal (AX 1CAAh or 1BAAh, BX 0B0Bh and CX 0C0Ch before
  *   it, DL the drive).
- * * `segment`: DS after it -- its base, its limit, its access byte (`LAR`),
+ * * `segment`: DS after it -- its base, counted from `__0000H`'s (the
+ *   first megabyte's own selector, KERNEL's ordinal 183), its limit, its access byte (`LAR`),
  *   its table and privilege bits, whether DPMI's 0002h of its base's
  *   paragraph gives the same selector, and whether the call made again
  *   gives it again.
@@ -28,6 +29,8 @@
 
 DWORD FAR PASCAL GetSelectorBase(UINT);
 DWORD FAR PASCAL GetSelectorLimit(UINT);
+
+static DWORD firstMegabyte;
 
 static UINT outAx, outBx, outCx, outDx, outDs;
 
@@ -103,7 +106,7 @@ static void record(LPSTR args, UINT function, UINT drive)
     probe("call", args, probeResult);
 
     selector = outDs;
-    base = GetSelectorBase(selector);
+    base = GetSelectorBase(selector) - firstMegabyte;
     allocation(function, drive);
     again = outDs == selector;
     wsprintf(probeResult, "base=%08lx limit=%08lx access=%02x bits=%x dpmi=%s again=%s", base,
@@ -130,6 +133,8 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     char *out;
 
     probeOpen(OUTPUT);
+    firstMegabyte = GetSelectorBase(
+        (UINT)(DWORD)GetProcAddress(GetModuleHandle("KERNEL"), MAKEINTRESOURCE(183)));
 
     for (i = 0; i < sizeof drives / sizeof drives[0]; i++) {
         wsprintf(probeArgs, "%u", drives[i]);

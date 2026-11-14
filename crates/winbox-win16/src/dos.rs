@@ -31,6 +31,15 @@ const SETTABLE: u8 = 0x27;
 /// Where the interrupt descriptor table is kept: see `task.rs`.
 const IDT: u32 = 0xffd << 16;
 
+/// Where DOS keeps each drive's media byte, a word to a drive from A:, as
+/// 1Bh and 1Ch point at it: DOSBox's table, `dos.tables.mediaid`, the
+/// second paragraph of its DOS's own memory, which starts at C800h
+/// (`DOS_PRIVATE_SEGMENT`, `include/dos_inc.h` 93; `DOS_GetMemory`,
+/// `dos_tables.cpp` 45-52 and 77). **Recorded** by `diskmed`: the
+/// selector's base C8010h, BX 4 for C:.
+const MEDIA_TABLE_SEGMENT: u16 = 0xc801;
+const MEDIA_TABLE: u32 = winbox_machine::FIRST_MEGABYTE + (MEDIA_TABLE_SEGMENT as u32) * 16;
+
 /// A file's position moved as DOSBox moves it (`localFile::Seek`): from
 /// its start, where it is, or its end (`basis` 0, 1, 2); a position before
 /// the start fails on the host, and DOSBox puts the file at its end
@@ -322,6 +331,14 @@ impl System {
 
                 None
             }
+            // A drive's geometry, 1Bh the current drive's: as 36h's, without
+            // the free clusters, and DS:BX the drive's media byte.
+            0x1b | 0x1c => {
+                let drive = if ax >> 8 == 0x1b { 0 } else { self.low(DX) };
+
+                self.allocation_information(drive);
+                None
+            }
             0x25 => {
                 let at = IDT + 4 * u32::from(self.low(AX));
                 let (segment, offset) = (self.cpu.segments[DS].selector, self.cpu.regs[DX]);
@@ -483,6 +500,42 @@ impl System {
                 .unwrap_or((segment_selector(task.program_segment), 0x80)),
             None => self.transfer_area,
         }
+    }
+
+    /// 1Bh's and 1Ch's answer, as DOSBox's `DOS_GetAllocationInfo` gives
+    /// it (`dos_files.cpp` 1182-1190; `dos.cpp` 312-317): for a drive that
+    /// is there, AL its sectors to a cluster, CX its bytes to a sector, DX
+    /// its clusters (`Allocation`), and DS:BX its word in the table of media
+    /// bytes, A:'s first (`MEDIA_TABLE`); else AL FFh, and every other
+    /// register as it was. Under Windows the extender makes the segment a
+    /// selector, and, where no drive is, the segment it called DOS with
+    /// (`System::dos_segment_back`). **Recorded** by `diskfree` and
+    /// `diskmed`.
+    fn allocation_information(&mut self, drive: u8) {
+        let found = self
+            .drive_letter(drive)
+            .and_then(|letter| Some((letter, self.files.allocation(letter)?)));
+
+        let Some((letter, allocation)) = found else {
+            self.set_low(AX, 0xff);
+            self.dos_segment_back(None);
+            return;
+        };
+
+        // The table as DOSBox's drives wrote it, each as it was mounted.
+        for (at, each) in ('A'..='Z').enumerate() {
+            let byte = self.files.media_byte(each);
+
+            self.cpu
+                .bus
+                .write16(MEDIA_TABLE + 2 * at as u32, u16::from(byte));
+        }
+
+        self.set_low(AX, allocation.sectors_per_cluster as u8);
+        self.cpu.regs[CX] = allocation.bytes_per_sector;
+        self.cpu.regs[DX] = allocation.clusters;
+        self.cpu.regs[BX] = 2 * u16::from(letter as u8 - b'A');
+        self.dos_segment_back(Some(MEDIA_TABLE_SEGMENT));
     }
 
     /// A drive by its number, nought the current one.
@@ -1686,7 +1739,7 @@ impl Searches {
 
 #[cfg(test)]
 mod tests {
-    use winbox_cpu::{AX, BX, CX, DX};
+    use winbox_cpu::{AX, BX, CX, DS, DX};
     use winbox_machine::days_from_civil;
 
     use crate::system::System;
@@ -1735,6 +1788,91 @@ mod tests {
             assert_eq!(system.cpu.regs[CX], 0x0c0c);
             assert_eq!(system.cpu.regs[DX], 0x0186);
             assert!(system.unanswered_dos.is_empty());
+        }
+    }
+
+    /// The base of the segment DS holds, from the local table's descriptor,
+    /// counted from the first megabyte.
+    fn ds_base(system: &System) -> u32 {
+        let selector = system.cpu.segments[DS].selector;
+        let bytes = system
+            .cpu
+            .bus
+            .read(system.cpu.ldt_base + u32::from(selector >> 3) * 8, 8);
+
+        assert_eq!(selector & 7, 7);
+        assert_eq!((bytes[0], bytes[1], bytes[5]), (0xff, 0xff, 0xf2));
+        u32::from_le_bytes([bytes[2], bytes[3], bytes[4], bytes[7]])
+            .wrapping_sub(winbox_machine::FIRST_MEGABYTE)
+    }
+
+    /// INT 21h functions 1Bh and 1Ch give a drive's geometry -- AL its
+    /// sectors to a cluster, CX its bytes to a sector, DX its clusters --
+    /// and DS:BX its word in DOSBox's table of media bytes at C801h, BX
+    /// twice the drive's place from A:, DS a selector of 0002h's for it,
+    /// the same each time (`diskfree`, `diskmed`). The table holds each
+    /// drive's byte, nought for one with no disk.
+    #[test]
+    fn gives_a_drives_geometry_and_points_at_its_media_byte() {
+        let mut system = System::new();
+
+        system
+            .files
+            .mount('A', winbox_machine::MemoryDrive::removable());
+        system.files.mount('C', winbox_machine::MemoryDrive::new());
+        system.files.drive = 'C';
+
+        let mut selector = None;
+
+        for (ax, dx) in [(0x1caa, 0x0003), (0x1caa, 0x0000), (0x1baa, 0x0101)] {
+            system.cpu.regs[AX] = ax;
+            system.cpu.regs[BX] = 0x0b0b;
+            system.cpu.regs[CX] = 0x0c0c;
+            system.cpu.regs[DX] = dx;
+            system.dos_call().unwrap();
+
+            assert_eq!(system.cpu.regs[AX], ax & 0xff00 | 0x7f);
+            assert_eq!(system.cpu.regs[BX], 4);
+            assert_eq!(system.cpu.regs[CX], 0x0200);
+            assert_eq!(system.cpu.regs[DX], 0x3fff);
+            assert_eq!(ds_base(&system), 0xc8010);
+            assert_eq!(
+                *selector.get_or_insert(system.cpu.segments[DS].selector),
+                system.cpu.segments[DS].selector
+            );
+
+            let table = winbox_machine::FIRST_MEGABYTE + 0xc8010;
+
+            assert_eq!(system.cpu.bus.read16(table), 0);
+            assert_eq!(system.cpu.bus.read16(table + 4), 0xf8);
+        }
+
+        assert!(system.unanswered_dos.is_empty());
+    }
+
+    /// Of a drive that is not there -- an empty floppy drive, a letter
+    /// with none, a number past Z: -- 1Ch answers AL FFh alone, every
+    /// other register as it was but DS, which comes back a selector for
+    /// the segment DOSX called DOS with, 5DEh (`diskmed`).
+    #[test]
+    fn answers_ffh_for_a_drive_that_is_not_there() {
+        for drive in [1, 2, 27] {
+            let mut system = System::new();
+
+            system
+                .files
+                .mount('A', winbox_machine::MemoryDrive::removable());
+            system.cpu.regs[AX] = 0x1caa;
+            system.cpu.regs[BX] = 0x0b0b;
+            system.cpu.regs[CX] = 0x0c0c;
+            system.cpu.regs[DX] = drive;
+            system.dos_call().unwrap();
+
+            assert_eq!(system.cpu.regs[AX], 0x1cff);
+            assert_eq!(system.cpu.regs[BX], 0x0b0b);
+            assert_eq!(system.cpu.regs[CX], 0x0c0c);
+            assert_eq!(system.cpu.regs[DX], drive);
+            assert_eq!(ds_base(&system), 0x5de0);
         }
     }
 }
