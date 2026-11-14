@@ -327,6 +327,22 @@ impl System {
     #[allow(clippy::too_many_lines)]
     fn dos_function(&mut self) -> Result<(), Stop> {
         let ax = self.cpu.regs[AX];
+
+        // A path on a drive with no disk in it -- an empty floppy drive,
+        // A: as DOSBox has it with nothing mounted -- is refused by
+        // `DOS_MakeName` before any function sees it, path not found
+        // (`dos_files.cpp` 75-78). **Recorded** by `emptya`, in both modes.
+        if let Some(path) = self.path_given(ax) {
+            let drive = resolve_file(&self.files, &path).0;
+
+            if self.files.mounted(drive) && !self.files.has_disk(drive) {
+                self.cpu.flags |= CARRY;
+                self.cpu.regs[AX] = ERROR_PATH_NOT_FOUND;
+                self.dos_error = ERROR_PATH_NOT_FOUND;
+                return Ok(());
+            }
+        }
+
         let flagged = match ax >> 8 {
             // The drive selected: AL the drives there may be.
             0x0e => {
@@ -517,6 +533,16 @@ impl System {
         }
 
         Ok(())
+    }
+
+    /// The path a function that takes one is given: DS:DX, or DS:SI for
+    /// 6Ch; none for another function.
+    fn path_given(&self, ax: u16) -> Option<String> {
+        match ax >> 8 {
+            0x39..=0x3d | 0x41 | 0x43 | 0x4e | 0x56 | 0x5a | 0x5b => Some(self.string_at(DS, DX)),
+            0x6c => Some(self.string_at(DS, SI)),
+            _ => None,
+        }
     }
 
     /// The disk transfer area: the task's, its prefix's tail to begin with.

@@ -22,7 +22,9 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
-use winbox_machine::{FatVolume, Files, IsoError, IsoVolume, Sectors, Volume, is_floppy};
+use winbox_machine::{
+    EmptyDrive, FatVolume, Files, IsoError, IsoVolume, Sectors, Volume, is_floppy,
+};
 
 /// What an image is: DOSBox's `imgmount -t` kinds, as a probe's `.mounts`
 /// names them.
@@ -390,12 +392,19 @@ impl Mounts {
         self.sets.is_empty()
     }
 
-    /// Each set's first disk put in its drive.
+    /// Each set's first disk put in its drive; and A:, where no set is,
+    /// an empty floppy drive, as DOSBox's BIOS and a PC always have one (the
+    /// owner's decision of 2026-11-14): removable, with no disk until an
+    /// image is mounted.
     pub fn mount(&mut self, files: &mut Files) {
         for set in &mut self.sets {
             if let Some(volume) = set.disks[set.current].volume.take() {
                 files.mount_boxed(set.letter, volume);
             }
+        }
+
+        if !files.mounted('A') {
+            files.mount('A', EmptyDrive::default());
         }
     }
 

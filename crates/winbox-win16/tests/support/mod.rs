@@ -8,7 +8,7 @@ pub mod layered;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use winbox_machine::{FatVolume, HostDrive, HostLayer, IsoVolume, MemoryDrive, Volume};
+use winbox_machine::{EmptyDrive, FatVolume, HostDrive, HostLayer, IsoVolume, MemoryDrive, Volume};
 use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
@@ -808,11 +808,7 @@ pub fn run_setup<T>(
 
     let c = HostDrive::layered(drive.join("C"), setup.beneath.lowers());
 
-    std::fs::create_dir_all(drive.join("A")).unwrap();
-    setup
-        .system
-        .files
-        .mount('A', HostDrive::removable(drive.join("A")));
+    setup.system.files.mount('A', EmptyDrive::default());
     setup.system.files.mount('C', c);
 
     for path in &setup.without {
@@ -1049,7 +1045,7 @@ pub fn run_in_memory(
         assert!(c.add_file(path, bytes.clone(), now));
     }
 
-    setup.system.files.mount('A', MemoryDrive::removable());
+    setup.system.files.mount('A', EmptyDrive::default());
     setup.system.files.mount('C', c);
     setup.system.files.mount('Z', MemoryDrive::virtual_drive());
     mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
@@ -1082,7 +1078,7 @@ pub fn run_drive(
 ) -> (Stop, Vec<[String; 3]>, System) {
     let mut system = setup.system;
 
-    system.files.mount('A', MemoryDrive::removable());
+    system.files.mount('A', EmptyDrive::default());
     system.files.mount('C', c);
     system.files.mount('Z', MemoryDrive::virtual_drive());
 
