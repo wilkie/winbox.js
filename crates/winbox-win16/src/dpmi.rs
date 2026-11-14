@@ -758,7 +758,7 @@ impl System {
     /// (`[cs:2]`, 349h-350h), and a function whose table entry's way back
     /// is 0032h, as 1Bh's and 1Ch's are (at D0h of its protected-mode
     /// segment), has the segment DS holds after made a selector by
-    /// 0002h's routine (681h-6B3h, 1F7Fh), whatever DOS answered (BA9h).
+    /// 0002h's routine (681h-6B3h, 1F7Fh), whatever DOS answered (`BA9h`).
     /// **Recorded** by `diskmed`: the selector 0002h gives, again on the
     /// next call; where no drive is, one for DOSX's own segment, 5DEh, or
     /// WIN386's, 9EB0h, in enhanced mode. A real-mode call through 0300h is

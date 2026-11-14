@@ -506,7 +506,7 @@ impl System {
     /// it (`dos_files.cpp` 1182-1190; `dos.cpp` 312-317): for a drive that
     /// is there, AL its sectors to a cluster, CX its bytes to a sector, DX
     /// its clusters (`Allocation`), and DS:BX its word in the table of media
-    /// bytes, A:'s first (`MEDIA_TABLE`); else AL FFh, and every other
+    /// bytes, A:'s first (`MEDIA_TABLE`); else AL `FFh`, and every other
     /// register as it was. Under Windows the extender makes the segment a
     /// selector, and, where no drive is, the segment it called DOS with
     /// (`System::dos_segment_back`). **Recorded** by `diskfree` and
@@ -1851,7 +1851,7 @@ mod tests {
     }
 
     /// Of a drive that is not there -- an empty floppy drive, a letter
-    /// with none, a number past Z: -- 1Ch answers AL FFh alone, every
+    /// with none, a number past Z: -- 1Ch answers AL `FFh` alone, every
     /// other register as it was but DS, which comes back a selector for
     /// the segment DOSX called DOS with, 5DEh (`diskmed`).
     #[test]
