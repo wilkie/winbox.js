@@ -34,4 +34,4 @@ A pair whose first glyph no code reaches would give GDI an empty string, and its
 
 ## Implementation
 
-As read out ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s amounts are a larger font's.
+As read out ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font is realised at the size the mapping takes its height to ([[topic:font-mapper]]), and the amounts are scaled by the extents as read out: [[probe:ttqmap]] agrees, Arial asked for −60 in `MM_LOMETRIC` being the font of 18 pixels and its pairs' −1 coming back −3.

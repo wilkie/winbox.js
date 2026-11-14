@@ -2,7 +2,7 @@
 kind: topic
 name: Mapping modes
 summary: How a Windows 3.1 device context turns a program's logical coordinates into pixels — the eight modes, their origins and extents on four displays, how a coordinate is rounded, and what drawing does through a moved origin and a scale.
-probes: [mapmode, exfuncs]
+probes: [mapmode, exfuncs, fontmap, ttqmap]
 ---
 
 A program gives GDI coordinates in its own units, **logical**, and the device context turns them into pixels, **device**. On each axis, device = (logical − window origin) × viewport extent ÷ window extent + viewport origin. The mapping mode ([[fn:GDI.SetMapMode]]) picks the extents. The origins are the program's to move ([[fn:GDI.SetWindowOrg]], [[fn:GDI.SetViewportOrg]]), and in two of the modes so are the extents ([[fn:GDI.SetWindowExt]], [[fn:GDI.SetViewportExt]]). Paintbrush moves its window origin to scroll its picture.
@@ -37,9 +37,13 @@ winbox.js agrees with all of them on all four displays.
 - [[measured]] A [[fn:GDI.BitBlt]] maps both of its rectangles, each through its own device context, so a source whose window origin is moved is read from the moved place. Where the two rectangles come out different sizes, it stretches as [[fn:GDI.StretchBlt]] does: four logical pixels at a viewport of 3 by 2 fill 12 by 8.
 - [[measured]] Lines, rectangles and moved origins draw the same pixels as the same shapes given in device terms. That includes, on the Hercules, three lines whose every other step is a tie. Those do not show whether GDI or the driver drew them, because the Hercules driver's own rule turns the tie the same way at that slope.
 
+## Fonts
+
+- [[measured]] A font made with a height and width in logical units is realised at the size the mapping takes them to, and every metric GDI answers comes back in logical units ([[probe:fontmap]], [[probe:ttqmap]]): Arial asked for −60 in `MM_LOMETRIC` on the VGA is the font of 18 pixels, and [[fn:GDI.GetTextMetrics]] answers its 21 rows as 68. How the size is mapped is [[topic:font-mapper]]'s; what each call turns back is on its page.
+
 ## Not yet followed
 
-- Sizes: a font's height, a pen's width and `ExtTextOut`'s spacing are taken as device units. [[probe:ttqmap]] shows a font's height under `MM_LOMETRIC` realised in logical units by Windows, and what that does to the widths and metrics GDI answers ([[topic:truetype-queries]]).
+- Sizes: a pen's width and `ExtTextOut`'s spacing are taken as device units.
 - Clip regions are kept in device terms, and `GetClipBox` answers in logical terms. Neither is recorded through a mapping.
 - Regions, `Polygon`, `Polyline` and the other calls that take lists of points.
 

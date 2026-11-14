@@ -1,0 +1,674 @@
+{
+  "probe": "fontmap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "face",
+      "args": "Arial/-60",
+      "result": "Arial,39",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/-60",
+      "result": "68,55,13,10,3,26,62,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/-60",
+      "result": "1 36,39,42,42",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/-60",
+      "result": "133,68",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/-60",
+      "result": "5,8,16,21",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "Arial/60",
+      "result": "Arial,39",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/60",
+      "result": "59,49,10,7,3,23,55,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/60",
+      "result": "1 36,36,39,39",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/60",
+      "result": "114,59",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/60",
+      "result": "5,7,14,19",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "Arial/-100",
+      "result": "Arial,39",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/-100",
+      "result": "114,91,23,13,3,46,104,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/-100",
+      "result": "1 68,68,72,72",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/-100",
+      "result": "221,114",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/-100",
+      "result": "7,10,23,32",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "Arial/-60/30",
+      "result": "Arial,39",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/-60/30",
+      "result": "68,55,13,10,3,29,68,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/-60/30",
+      "result": "1 42,42,46,46",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/-60/30",
+      "result": "140,68",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/-60/30",
+      "result": "5,8,16,21",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "MS Sans Serif/-42",
+      "result": "MS Sans Serif,33",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "MS Sans Serif/-42",
+      "result": "52,42,10,10,0,23,46,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "MS Sans Serif/-42",
+      "result": "1 29,29,29,33",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif/-42",
+      "result": "104,52",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "MS Sans Serif/-42",
+      "result": "5,7,13,17",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "MS Sans Serif/42",
+      "result": "MS Sans Serif,33",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "MS Sans Serif/42",
+      "result": "42,36,7,7,0,16,36,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "MS Sans Serif/42",
+      "result": "1 23,23,23,26",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif/42",
+      "result": "78,42",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "MS Sans Serif/42",
+      "result": "5,6,11,15",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "MS Sans Serif/64",
+      "result": "MS Sans Serif,33",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "metrics",
+      "args": "MS Sans Serif/64",
+      "result": "65,52,13,13,0,26,52,0",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "widths",
+      "args": "MS Sans Serif/64",
+      "result": "1 36,36,36,39",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif/64",
+      "result": "117,65",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "drawn",
+      "args": "MS Sans Serif/64",
+      "result": "6,8,14,20",
+      "section": "MM_LOMETRIC, 480 rows to 1560 units, 640 columns to 2080"
+    },
+    {
+      "function": "face",
+      "args": "Arial/-25 3:2",
+      "result": "Arial,39",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/-25 3:2",
+      "result": "29,23,6,3,2,12,27,0",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/-25 3:2",
+      "result": "1 17,17,18,18",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/-25 3:2",
+      "result": "53,29",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/-25 3:2",
+      "result": "5,7,14,19",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "face",
+      "args": "Arial/25 3:2",
+      "result": "Arial,39",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/25 3:2",
+      "result": "26,21,5,3,0,11,24,0",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/25 3:2",
+      "result": "1 14,15,17,17",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/25 3:2",
+      "result": "48,26",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/25 3:2",
+      "result": "5,7,13,18",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "face",
+      "args": "Arial/-25 3:2 up",
+      "result": "Arial,39",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/-25 3:2 up",
+      "result": "29,23,6,3,2,12,27,0",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/-25 3:2 up",
+      "result": "1 17,17,18,18",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/-25 3:2 up",
+      "result": "53,29",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/-25 3:2 up",
+      "result": "5,7,14,19",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "face",
+      "args": "Arial/-26/9 3:2",
+      "result": "Arial,39",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial/-26/9 3:2",
+      "result": "29,23,6,3,2,9,20,0",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "widths",
+      "args": "Arial/-26/9 3:2",
+      "result": "1 11,12,14,14",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "extent",
+      "args": "Arial/-26/9 3:2",
+      "result": "44,29",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "drawn",
+      "args": "Arial/-26/9 3:2",
+      "result": "5,7,12,19",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "face",
+      "args": "MS Sans Serif/20 3:2",
+      "result": "MS Sans Serif,33",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "metrics",
+      "args": "MS Sans Serif/20 3:2",
+      "result": "20,17,3,3,0,8,17,0",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "widths",
+      "args": "MS Sans Serif/20 3:2",
+      "result": "1 11,11,11,12",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "extent",
+      "args": "MS Sans Serif/20 3:2",
+      "result": "36,20",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "drawn",
+      "args": "MS Sans Serif/20 3:2",
+      "result": "5,6,11,15",
+      "section": "MM_ANISOTROPIC, three units to two pixels"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/-5",
+      "result": "Arial,39",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/-5",
+      "result": "7,7,0,0,0,3,7,0",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/-5",
+      "result": "1 3,3,3,3",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/-5",
+      "result": "10,7",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/-5",
+      "result": "4,5,5,6",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/5",
+      "result": "Arial,39",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/5",
+      "result": "7,7,0,0,0,3,7,0",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/5",
+      "result": "1 3,3,3,3",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/5",
+      "result": "10,7",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/5",
+      "result": "4,5,5,6",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/-1",
+      "result": "Arial,39",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/-1",
+      "result": "7,7,0,0,0,3,7,0",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/-1",
+      "result": "1 3,3,3,3",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/-1",
+      "result": "10,7",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/-1",
+      "result": "4,5,5,6",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/1",
+      "result": "Arial,39",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/1",
+      "result": "7,7,0,0,0,3,7,0",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/1",
+      "result": "1 3,3,3,3",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/1",
+      "result": "10,7",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/1",
+      "result": "4,5,5,6",
+      "section": "heights that come to two pixels or fewer, in MM_LOMETRIC"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/-3 text",
+      "result": "Small Fonts,33",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/-3 text",
+      "result": "3,2,1,0,0,1,2,0",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/-3 text",
+      "result": "1 2,2,2,2",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/-3 text",
+      "result": "6,3",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/-3 text",
+      "result": "5,4,6,6",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/-2 text",
+      "result": "Arial,39",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/-2 text",
+      "result": "2,2,0,0,0,1,2,0",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/-2 text",
+      "result": "1 1,1,1,1",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/-2 text",
+      "result": "3,2",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/-2 text",
+      "result": "4,5,5,6",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/-1 text",
+      "result": "Arial,39",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/-1 text",
+      "result": "2,2,0,0,0,1,2,0",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/-1 text",
+      "result": "1 1,1,1,1",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/-1 text",
+      "result": "3,2",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/-1 text",
+      "result": "4,5,5,6",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/1 text",
+      "result": "Arial,39",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/1 text",
+      "result": "2,2,0,0,0,1,2,0",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/1 text",
+      "result": "1 1,1,1,1",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/1 text",
+      "result": "3,2",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/1 text",
+      "result": "4,5,5,6",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-face",
+      "args": "Arial/2 text",
+      "result": "Arial,39",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-metrics",
+      "args": "Arial/2 text",
+      "result": "2,2,0,0,0,1,2,0",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-widths",
+      "args": "Arial/2 text",
+      "result": "1 1,1,1,1",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-extent",
+      "args": "Arial/2 text",
+      "result": "3,2",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "small-drawn",
+      "args": "Arial/2 text",
+      "result": "4,5,5,6",
+      "section": "MM_TEXT, the pixel sizes the small heights come to"
+    },
+    {
+      "function": "face",
+      "args": "System",
+      "result": "System,33",
+      "section": "the System font, a stock font, in MM_LOMETRIC"
+    },
+    {
+      "function": "metrics",
+      "args": "System",
+      "result": "52,42,10,10,0,23,46,0",
+      "section": "the System font, a stock font, in MM_LOMETRIC"
+    },
+    {
+      "function": "widths",
+      "args": "System",
+      "result": "1 26,33,29,33",
+      "section": "the System font, a stock font, in MM_LOMETRIC"
+    },
+    {
+      "function": "extent",
+      "args": "System",
+      "result": "111,52",
+      "section": "the System font, a stock font, in MM_LOMETRIC"
+    },
+    {
+      "function": "drawn",
+      "args": "System",
+      "result": "5,7,13,17",
+      "section": "the System font, a stock font, in MM_LOMETRIC"
+    }
+  ]
+}

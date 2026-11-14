@@ -29,4 +29,4 @@ topics: [truetype-queries]
 
 ## Implementation
 
-As read out, the box and advance being `GetGlyphOutline`'s ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s widths are a larger font's.
+As read out, the box and advance being `GetGlyphOutline`'s ([[topic:truetype-queries]]). [[probe:ttquery]] agrees in both. Under a mapping mode the font is realised at the size the mapping takes its height to ([[topic:font-mapper]]), and each width is turned across as read out: [[probe:ttqmap]] agrees, Arial asked for −60 in `MM_LOMETRIC` being the font of 18 pixels, its default character's 2, 10 and 2 coming back 7, 33 and 7.

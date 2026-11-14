@@ -2,7 +2,7 @@
 kind: topic
 name: The font mapper
 summary: How Windows 3.1's GDI turns a LOGFONT into one installed face at one size — the rewrites, the lookups that answer before any scoring, the scored competition, and how a bitmap strike is stretched.
-probes: [font, styles, widths, rotsize, tiepick, tiewide]
+probes: [font, styles, widths, rotsize, tiepick, tiewide, fontmap]
 ---
 
 A program describes the font it wants, and GDI answers with the nearest thing installed. That answer comes from four stages, run in order: `CreateFontIndirect` rewrites the request, a set of lookups answers many requests outright, a scored competition decides the rest, and the winning strike is stretched to size. Every stage below has been read out of `GDI.EXE` segment 3 and holds against every recorded request: the `font` sweep is 5,057 of 5,057 on both the VGA and the EGA, and the face chosen agrees on all 996 requests of each.
@@ -25,6 +25,7 @@ A program describes the font it wants, and GDI answers with the nearest thing in
 - [[read out]] **An exact strike** (`0ef6`). A raster entry whose name, `dfPixHeight`, `dfAvgWidth`, `dfWeight`, `dfCharSet` and both resolutions all equal the request is taken without any scoring. The request must also ask for no italic, underline or strikeout and no escapement or orientation. This arm runs only while TrueType is enabled.
 - [[read out]] **The TrueType directory** (`1145`). An outline entry is taken when its name matches and its character set, italic flag and weight all equal the request's. An `lfWeight` of nought counts as 400, and `DEFAULT_CHARSET` matches any set. Symbol has no bold file and no italic file, so bold or italic Symbol is never found here and goes to the competition.
 - [[read out]] **The floor below twelve pixels** (`13f3`, `cmp ax,0xb`). The request must name an ANSI, variable-pitch TrueType face, must be upright, and must ask for a height of eleven pixels or fewer (or a negative height of ten or fewer). Such a request first tries the small lookup at `126a`. The request must also be in the ANSI or default set. That lookup wants an exact cell in `MS Serif` and then in `Small Fonts`, or only in `Small Fonts` when the request's family is `FF_SWISS`. It checks the name, the cell and the device's resolutions, and nothing else.
+- [[read out]] A negative height there asks for the characters: the lookup (`151e`) takes a strike whose rows less its internal leading are the height (`1532`-`1540`). [[measured]] [[probe:fontmap]]: Arial at −3 is Small Fonts' three rows; at −1 and −2 no strike answers, and the competition gives Arial.
 - [[measured]] For that reason Arial at 3, 5, 6 and 8 pixels answers with Small Fonts, at 10 and 11 with MS Serif, and at 1, 2, 7 and 9 with Arial itself. At nine, Arial comes back with a cell of seven. Courier New is fixed pitch and Symbol is in the symbol set, so neither ever falls back. See [[fonts:3]].
 - [[read out]] **Defaults** (`12c8`). When no name matched and the height is twelve or more, the pitch and family choose one TrueType atom, which is looked up at the weight and slant requested. A name that is not installed anywhere, such as `Nonesuch`, gets Times New Roman this way.
 - [[measured]] A request that names no face is always answered by the competition. On a VGA, `FIXED_PITCH` gets Courier, `FF_ROMAN` gets MS Serif, and `FF_SWISS` or no family gets MS Sans Serif.
@@ -77,5 +78,13 @@ A program describes the font it wants, and GDI answers with the nearest thing in
 ## An outline's size
 
 [[measured]] At a cell of 255 or more, a request that several sizes grid-fit to the same cell gets the largest of them whose unhinted extent, rounded once, still fits the cell. Below that it gets the first. This holds for all 587 recorded ties. The largest size a table lists is never the answer, and whether that rule belongs to the row or to the size is not yet explained. See [[fonts:8r]] and [[topic:truetype-scaling]].
+
+- [[read out]] A negative height below the smallest size the face's `VDMX` table holds is the design extent scaled, two pixels at least, as a cell's search below the table takes it. [[measured]] [[probe:fontmap]]: Arial at −1 and −2 pixels is Arial 2 rows high, 2 up and nought down, as at 1 and 2. WinBox had found no size for it and fallen back to Small Fonts.
+
+## Under a mapping mode
+
+- [[read out]] GDI realises a made font for a device context at its height and width taken to the device (`GDI.EXE` seg3 `0b35`-`0b9c`), and the `LOGFONT` so changed is what the lookups and the competition are given (`0d52`). Both are mapped as points from the window origin with `LPtoDP` (seg1 `52f5`): the width is the distance across, the height the distance down, given the height's own sign. A height that comes to nought from one that was not is 1, positive. A stock font, 8000h in its type word, keeps its own size (`0b35`).
+- [[measured]] [[probe:fontmap]], through a memory context on the VGA: in `MM_LOMETRIC` (480 rows to 1560 units) Arial at −60 is the font of 18 pixels, −100 of 31, and 60 of a cell of 18; a width of 30 is 9 pixels. −5 is −2 and 5 is 2, and 1 and −1 come to nought and so to 1: each of the four is Arial's font of two pixels. MS Sans Serif at −42 and 42 is its strikes of 13 characters and of a 13-row cell. At three units to two pixels Arial at −25 is −17, whichever way y runs. The System font is its own 16 rows. Each is drawn at the size it was realised at.
+- [[measured]] [[probe:fontmap]] and [[probe:ttqmap]]: the calls that answer sizes turn them back to logical units — [[fn:GDI.GetTextMetrics]], [[fn:GDI.GetCharWidth]], [[fn:GDI.GetTextExtent]], [[fn:GDI.GetCharABCWidths]], [[fn:GDI.GetKerningPairs]] and [[fn:GDI.GetOutlineTextMetrics]]. WinBox agrees in all of both probes' records.
 
 The full derivation, with every refused reading and its count, is in [[fonts:3]].

@@ -34,4 +34,4 @@ topics: [truetype-queries]
 
 ## Implementation
 
-As read out ([[topic:truetype-queries]]); the filler byte is written nought. [[probe:ttquery]] shows the filler as `??` and agrees in both. Under a mapping mode the font's own height is taken as pixels, so [[probe:ttqmap]]'s metrics are a larger font's.
+As read out ([[topic:truetype-queries]]); the filler byte is written nought. [[probe:ttquery]] shows the filler as `??` and agrees in both. Under a mapping mode the font is realised at the size the mapping takes its height to ([[topic:font-mapper]]); the `TEXTMETRIC` is [[fn:GDI.GetTextMetrics]]' answer in logical units and the sizes are turned as read out. [[probe:ttqmap]] agrees in all its records.

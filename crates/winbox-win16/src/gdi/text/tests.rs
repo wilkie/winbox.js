@@ -563,3 +563,137 @@ fn enumerates_the_fonts_as_windows_does() {
     assert!(checked > 60, "{checked}");
     assert!(chosen(&mut system, screen, Some("Nowhere"), false).is_empty());
 }
+
+#[test]
+fn realizes_a_made_font_at_the_size_the_mapping_takes_it_to() {
+    let Some(mut system) = installed() else {
+        return;
+    };
+    let screen = create_dc(&mut system, b"DISPLAY").unwrap();
+    let index = dc_of(&system, screen).unwrap();
+    let font = made(&mut system, "Arial", -60);
+
+    select_object(&mut system, screen, font);
+    set_map_mode(&mut system, screen, 2);
+
+    // 60 tenths of a millimetre down, of 1560 on the VGA's 480 rows: 18
+    // pixels to the em (`ttqmap`).
+    let realized = font_of(&mut system, index).unwrap().unwrap();
+
+    assert_eq!(realized.outline.as_ref().unwrap().ppem, 18.0);
+
+    // Its metrics answered back in tenths of a millimetre, as the
+    // `TEXTMETRIC` `ttqmap`'s outline metrics carry: 21 pixels high is 68,
+    // 8 across 26.
+    let tm = metrics(&mut system, screen);
+
+    assert_eq!(
+        (
+            tm.height,
+            tm.ascent,
+            tm.descent,
+            tm.internal_leading,
+            tm.external_leading,
+            tm.ave_char_width,
+            tm.max_char_width,
+            tm.weight
+        ),
+        (68, 55, 13, 10, 3, 26, 62, 400)
+    );
+
+    // In `MM_TEXT` again, the font is the 60 pixels' it was made.
+    set_map_mode(&mut system, screen, 1);
+    assert_eq!(
+        font_of(&mut system, index)
+            .unwrap()
+            .unwrap()
+            .outline
+            .unwrap()
+            .ppem,
+        60.0
+    );
+}
+
+#[test]
+fn a_strike_under_a_mapping_is_the_devices_size_answered_back() {
+    use crate::gdi::mapping::{Which, extent};
+
+    let Some(mut system) = installed() else {
+        return;
+    };
+    let hdc = create_compatible_dc(&mut system, 0);
+    let index = dc_of(&system, hdc).unwrap();
+    let font = made(&mut system, "MS Serif", 26);
+
+    select_object(&mut system, hdc, font);
+    set_map_mode(&mut system, hdc, 8);
+    extent(&mut system, hdc, Which::Window, 2, 2);
+    extent(&mut system, hdc, Which::Viewport, 1, 1);
+
+    // Two units to the pixel: the 13 rows' strike, its height told as 26
+    // (`fontdef`, "scaled").
+    assert_eq!(
+        text_metrics(&font_of(&mut system, index).unwrap().unwrap()).height,
+        13
+    );
+    assert_eq!(metrics(&mut system, hdc).height, 26);
+}
+
+#[test]
+fn a_height_mapped_to_nought_is_one_and_keeps_no_sign() {
+    use crate::gdi::mapping::{Which, extent};
+    use crate::gdi::printer_driver::mapped_size;
+
+    let mut system = System::new();
+    let hdc = create_compatible_dc(&mut system, 0);
+    let index = dc_of(&system, hdc).unwrap();
+    let logfont = |height: i16, width: i16| LogFont {
+        height,
+        width,
+        ..LogFont::default()
+    };
+
+    set_map_mode(&mut system, hdc, 8);
+    extent(&mut system, hdc, Which::Window, 10, 10);
+    extent(&mut system, hdc, Which::Viewport, 1, -1);
+
+    // GDI's seg3 `0b89`-`0b9a`: a height that maps to nought from one
+    // that was not is 1, positive whichever its sign; nought stays
+    // nought; any other keeps the sign it was given, whichever way y runs.
+    assert_eq!(mapped_size(&system, index, &logfont(-2, 0)), (1, 0));
+    assert_eq!(mapped_size(&system, index, &logfont(2, 0)), (1, 0));
+    assert_eq!(mapped_size(&system, index, &logfont(0, 0)), (0, 0));
+    assert_eq!(mapped_size(&system, index, &logfont(-60, 0)), (-6, 0));
+    assert_eq!(mapped_size(&system, index, &logfont(60, 40)), (6, 4));
+}
+
+#[test]
+fn a_small_negative_height_is_the_small_faces_characters_or_arials_least() {
+    let Some(mut system) = installed() else {
+        return;
+    };
+    let hdc = create_compatible_dc(&mut system, 0);
+    let far = buffer(&mut system, 32);
+    let face = |system: &mut System, height: i16| {
+        let font = made(system, "Arial", height);
+
+        select_object(system, hdc, font);
+        get_text_face(system, hdc, 32, far).unwrap();
+
+        let tm = metrics(system, hdc);
+
+        (
+            latin(&system.read_string(far)),
+            tm.height,
+            tm.ascent,
+            tm.descent,
+        )
+    };
+
+    // `fontmap`: three characters are Small Fonts' three rows (seg3
+    // `1532`-`1540`); two and one, which no strike has, Arial at its least
+    // two pixels, below the smallest size its `VDMX` holds.
+    assert_eq!(face(&mut system, -3), ("Small Fonts".into(), 3, 2, 1));
+    assert_eq!(face(&mut system, -2), ("Arial".into(), 2, 2, 0));
+    assert_eq!(face(&mut system, -1), ("Arial".into(), 2, 2, 0));
+}

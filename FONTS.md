@@ -6874,10 +6874,30 @@ both engines. The knowledge base's `truetype-queries` topic has the whole of it.
   needs a value under 1024 and Courier New at 13 one of 1024 or more. Taking the
   pixel size as the em, both are 1024 and 512 exactly.
 
-Not followed: a font's height under a mapping mode, which Windows realises in
-the device context's units and both engines take as pixels; `ttqmap` records
-the four calls under `MM_LOMETRIC`, and its widths, pairs and metrics are a
-larger font's.
+**Under a mapping mode** (**read out** of `GDI.EXE`, **recorded** by `ttqmap`
+and `fontmap`): GDI realizes a made font for a device context at its height
+and width taken to the device (seg3 `0b35`-`0b9c`). Both are mapped as points
+from the window origin with `LPtoDP` (seg1 `52f5`), the width the distance
+across and the height the distance down, given the height's own sign; a
+height that comes to nought from one that was not is 1, positive. A stock
+font keeps its own size. The `LOGFONT` so changed is what the mapper is given
+(`0d52`), so Arial asked for -60 in `MM_LOMETRIC` on the VGA is the font of
+18 pixels, -5 that of -2, and 1 and -1 that of 1. The answers go back to
+logical units in any mode but `MM_TEXT`: `GetTextMetrics`' five heights down
+and its widths and overhang across (seg3 `035a`-`0384`), each through the
+distance of nought and the size mapped back (seg1 `3b6e`, `3b3a`);
+`GetCharWidth`'s widths across (seg3 `2191`); `GetOutlineTextMetrics` carries
+`GetTextMetrics`' answer (seg7 `1722`). `ttqmap` agrees in all 45 records and
+`fontmap` in all 110, eleven fonts in `MM_LOMETRIC`, five at three units to
+two pixels, y either way, five in `MM_TEXT` and the System font.
+
+A negative height under the smallest size `VDMX` tabulates is the design
+extent scaled, at two pixels at least, as a cell's search below the table:
+**recorded** by `fontmap`, Arial at -1 and -2 pixels is Arial 2 high, 2 up and
+nought down, where WinBox had fallen back to Small Fonts. Before that, the
+small faces' lookup (seg3 `126a`, `151e`) takes a negative height of ten or
+fewer as the characters, a strike whose rows less its internal leading are the
+height (`1532`-`1540`): Arial at -3 is Small Fonts' three rows.
 
 ## 5b. The engine a printer's driver puts to work
 

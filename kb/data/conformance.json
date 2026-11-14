@@ -10292,6 +10292,85 @@
   },
   "gaps": {}
  },
+ "fontmap": {
+  "probe": "fontmap",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 110,
+  "functions": {
+   "drawn": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "extent": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "face": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "metrics": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "small-drawn": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "small-extent": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "small-face": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "small-metrics": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "small-widths": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "widths": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "fontreq": {
   "probe": "fontreq",
   "display": "vga",
@@ -33288,8 +33367,8 @@
   "functions": {
    "abc": {
     "total": 5,
-    "agreed": 1,
-    "disagreed": 4,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -33302,24 +33381,20 @@
    },
    "kern": {
     "total": 8,
-    "agreed": 2,
-    "disagreed": 6,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "otm": {
     "total": 8,
-    "agreed": 2,
-    "disagreed": 6,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "kern": "a font's height under a mapping mode is taken as pixels",
-   "abc": "a font's height under a mapping mode is taken as pixels",
-   "otm": "a font's height under a mapping mode is taken as pixels"
-  }
+  "gaps": {}
  },
  "ttquery": {
   "probe": "ttquery",

@@ -937,6 +937,30 @@ impl TrueTypeFont {
         }
     }
 
+    /// A size asked for as an em, below the smallest `VDMX` tabulates: the
+    /// design extent scaled, as a cell's search takes it below the table
+    /// (`size_for_height`), at no less than `MIN_PPEM`. **Recorded** by
+    /// `fontmap`: Arial at −1 and −2 is Arial's two pixels, 2 high, 2 up
+    /// and nought down. `None` for a face with no table, or a size it has.
+    pub fn untabulated_size(&self, ppem: f64) -> Option<Sized> {
+        let smallest = self.smallest_tabulated();
+
+        if !smallest.is_finite() || ppem >= smallest {
+            return None;
+        }
+
+        let ppem = ppem.max(MIN_PPEM);
+        let (ascent, descent) = self.scaled_extent(ppem);
+
+        Some(Sized {
+            ppem,
+            ascent,
+            descent,
+            cell: ascent + descent,
+            computed: false,
+        })
+    }
+
     /// The smallest size the face is drawn at, for a cell nothing fits in.
     pub fn smallest_size(&self) -> Sized {
         let (ascent, descent) = self.scaled_extent(MIN_PPEM);

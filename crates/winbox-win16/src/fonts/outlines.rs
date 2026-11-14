@@ -24,6 +24,10 @@ pub const BOLD_FILE: i32 = 600;
 /// lookup in exactly two faces. See `SMALL_FACES` and `FONTS.md` section 3.
 const OUTLINE_FLOOR: i32 = 12;
 
+/// The most characters' rows, asked for as a negative height, that the small
+/// faces are looked in for (`GDI.EXE` seg3 `1280`, `cmp ax,0xfff6`).
+const SMALL_CHARACTERS: i32 = 10;
+
 /// The two faces a small request may be answered from, and nothing else.
 ///
 /// **Read out of `GDI.EXE`.** Below twelve pixels the realiser does not score
@@ -199,7 +203,17 @@ impl FontManager {
         width: i32,
         order: &[&str],
     ) -> Option<StrikesAt> {
-        if height <= 0 || (!own_name && height >= OUTLINE_FLOOR) {
+        // The small faces take a negative height of ten or fewer as the
+        // characters: a strike whose rows less its internal leading are
+        // that (`GDI.EXE` seg3 `127b`-`1283`, `1532`-`1540`). **Recorded** by
+        // `fontmap`: Arial at -3 pixels is Small Fonts' three rows, and at
+        // -2 and -1, which no strike answers, Arial.
+        let small = only.is_none() && !own_name;
+
+        if height == 0
+            || (height < 0 && !(small && height >= -SMALL_CHARACTERS))
+            || (!own_name && height >= OUTLINE_FLOOR)
+        {
             return None;
         }
 
@@ -221,7 +235,13 @@ impl FontManager {
                 .filter(|entry| {
                     let header = &entry.header;
 
-                    i32::from(header.pix_height) == height
+                    let rows = if height < 0 {
+                        i32::from(header.internal_leading) - height
+                    } else {
+                        height
+                    };
+
+                    i32::from(header.pix_height) == rows
                         && (header.pitch_and_family & 1 != 0) != fixed_pitch
                         && (charset == OEM_CHARSET || i32::from(header.char_set) != OEM_CHARSET)
                         && (width == 0 || i32::from(header.avg_width) == width)
@@ -350,7 +370,11 @@ impl FontManager {
             } else {
                 muldiv(DEFAULT_POINTS, log_y, 72.0)
             };
-            let Extent { ascent, descent } = extent(size)?;
+            let Some(Extent { ascent, descent }) = extent(size) else {
+                let below = font.untabulated_size(size)?;
+
+                return Some(realised(below.ppem, below.ascent, below.descent));
+            };
 
             return Some(realised(size, ascent, descent));
         }

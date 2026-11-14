@@ -21,7 +21,7 @@ Four calls ask about the TrueType font selected into a device context rather tha
 - [[read out]] **The ANSI set.** GDI keeps each ANSI character's UTF-16 code in its data segment (seg48 `067e`): the character's own, but for the C1 block's punctuation, 2219h for B7h, and nought for 1Fh. It looks characters' codes up there, and looks codes up the other way with seg1 `56a3`, the first character whose code it is, 1Fh for none.
 - [[read out]] **The realised font's characters** are 1Eh to FFh, default 1Fh, break 20h (seg3 `21fb`); so [[fn:GDI.GetTextMetrics]] answers 30, 255, 31 and 32 for a TrueType face ([[measured]] [[probe:ttquery]]). Its first character's ABC widths are never asked of the engine: the realisation writes them, 0, 0 and 8 pixels (seg3 `3146`).
 - [[read out]] **Scaling.** Outline metrics are scaled with the half added before a signed division, which truncates; kerning amounts by `MulDiv` a half away from nought.
-- [[read out]] **Mapping modes.** Each turns its pixels into the device context's units: ABC widths across, the outline metrics mostly down, kerning amounts by the extents across.
+- [[read out]] **Mapping modes.** The font is realised at the size the mapping takes its height and width to ([[topic:font-mapper]]). Each call turns its pixels into the device context's units: ABC widths across, the outline metrics mostly down and their `TEXTMETRIC` as [[fn:GDI.GetTextMetrics]] answers it, kerning amounts by the extents across. [[probe:ttqmap]] agrees in all 45 records.
 
 ## In winbox.js
 
@@ -29,6 +29,5 @@ The engine's part is `crates/winbox-raster/src/truetype_queries.rs`, reading the
 
 ## Not yet done
 
-- **Fonts under a mapping mode.** Windows realises a font's height in the device context's units; WinBox takes it as pixels ([[topic:mapping-modes]]). [[probe:ttqmap]]'s `GetFontData` agrees; its widths, kerning amounts and outline metrics are those of a font three times the size, and are listed among the known gaps.
 - The engine's own failure for a character, which GDI answers with the default character's widths, has not been seen: every character of the installed faces has a glyph, the missing glyph standing for those without.
 - A Macintosh-only `cmap` or name table, which the engine turns into codes through its table of the Macintosh character set (seg39 `0000`); no installed face has one.
