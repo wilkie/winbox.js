@@ -5279,22 +5279,22 @@
   "functions": {
    "allocation": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 5,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 3,
+    "agreed": 2,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
    "segment": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 3,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5308,9 +5308,49 @@
   },
   "gaps": {
    "space": "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
-   "allocation": "DOS function 1Ch is not answered",
-   "segment": "DOS function 1Ch is not answered",
-   "media": "DOS function 1Ch is not answered"
+   "allocation": "there is no Z: here, DOSBox's own drive, 512,127,16513",
+   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
+  }
+ },
+ "diskmed": {
+  "probe": "diskmed",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 17,
+  "functions": {
+   "call": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "media": {
+    "total": 4,
+    "agreed": 3,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "table": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "call": "there is no Z: here, DOSBox's own drive, 512,127,16513",
+   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought",
+   "table": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
   }
  },
  "diskmeta": {
@@ -7434,6 +7474,47 @@
    }
   },
   "gaps": {}
+ },
+ "enhanced/diskmed": {
+  "probe": "diskmed",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 17,
+  "functions": {
+   "call": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "media": {
+    "total": 4,
+    "agreed": 3,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "table": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "call": "there is no Z: here, DOSBox's own drive, 512,127,16513",
+   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought",
+   "table": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
+  }
  },
  "enhanced/diskser": {
   "probe": "diskser",

@@ -1244,7 +1244,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom",
+    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1336,19 +1336,36 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     // DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
     // whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
-    // is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C:, a
-    // FAT16 volume, answers the folder's figures too; it has no Z:. A:, B:
-    // and the numbers past Z: agree. And
-    // function 1Ch, which winbox.js does not answer: under DOSBox it gives a
-    // drive's geometry without the room, and DS:BX a selector of DOSX's own
-    // over the media byte, F8h for C: (`diskfree`).
+    // is its own, "512,127,16513,0" (`drive_virtual.cpp`), whose byte in
+    // DOS's table of media bytes no `MOUNT` writes, so nought. winbox.js's
+    // C:, a FAT16 volume, answers the folder's figures too; its Z: is an
+    // empty folder, which answers a folder's figures and F8h. A:, B:, C:
+    // and the numbers past Z: agree, for 36h, 1Bh and 1Ch, and where
+    // 1Ch's DS:BX points (`diskfree`, `diskmed`).
     (
         "diskfree:space",
         "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
     ),
-    ("diskfree:allocation", "DOS function 1Ch is not answered"),
-    ("diskfree:segment", "DOS function 1Ch is not answered"),
-    ("diskfree:media", "DOS function 1Ch is not answered"),
+    (
+        "diskfree:allocation",
+        "there is no Z: here, DOSBox's own drive, 512,127,16513",
+    ),
+    (
+        "diskfree:media",
+        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
+    ),
+    (
+        "diskmed:call",
+        "there is no Z: here, DOSBox's own drive, 512,127,16513",
+    ),
+    (
+        "diskmed:media",
+        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
+    ),
+    (
+        "diskmed:table",
+        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
+    ),
     // GlobalReAlloc growing a block past one allocated after it moves it in
     // Windows, its selector the same; winbox.js gives each selector a 64 KiB
     // place of its own and grows a block where it is. And FS, which no 16-bit

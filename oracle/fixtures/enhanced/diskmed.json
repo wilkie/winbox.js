@@ -1,0 +1,100 @@
+{
+  "probe": "diskmed",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "0",
+      "result": "1c7f 0004 0200 3fff"
+    },
+    {
+      "function": "segment",
+      "args": "0",
+      "result": "base=000c8010 limit=0000ffff access=f2 bits=7 dpmi=same again=same"
+    },
+    {
+      "function": "media",
+      "args": "0",
+      "result": "f8 00"
+    },
+    {
+      "function": "call",
+      "args": "1",
+      "result": "1cff 0b0b 0c0c 0001"
+    },
+    {
+      "function": "segment",
+      "args": "1",
+      "result": "base=0009eb00 limit=0000ffff access=f2 bits=7 dpmi=same again=same"
+    },
+    {
+      "function": "call",
+      "args": "3",
+      "result": "1c7f 0004 0200 3fff"
+    },
+    {
+      "function": "segment",
+      "args": "3",
+      "result": "base=000c8010 limit=0000ffff access=f2 bits=7 dpmi=same again=same"
+    },
+    {
+      "function": "media",
+      "args": "3",
+      "result": "f8 00"
+    },
+    {
+      "function": "call",
+      "args": "26",
+      "result": "1c7f 0032 0200 4081"
+    },
+    {
+      "function": "segment",
+      "args": "26",
+      "result": "base=000c8010 limit=0000ffff access=f2 bits=7 dpmi=same again=same"
+    },
+    {
+      "function": "media",
+      "args": "26",
+      "result": "00 00"
+    },
+    {
+      "function": "call",
+      "args": "27",
+      "result": "1cff 0b0b 0c0c 001b"
+    },
+    {
+      "function": "segment",
+      "args": "27",
+      "result": "base=0009eb00 limit=0000ffff access=f2 bits=7 dpmi=same again=same"
+    },
+    {
+      "function": "call",
+      "args": "default",
+      "result": "1b7f 0004 0200 3fff"
+    },
+    {
+      "function": "segment",
+      "args": "default",
+      "result": "base=000c8010 limit=0000ffff access=f2 bits=7 dpmi=same again=same"
+    },
+    {
+      "function": "media",
+      "args": "default",
+      "result": "f8 00"
+    },
+    {
+      "function": "table",
+      "args": "",
+      "result": "0000 0000 00f8 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000"
+    }
+  ]
+}
