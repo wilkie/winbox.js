@@ -1586,16 +1586,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "prtt:line",
         "the downloaded face's name is a global atom, and its key a selector",
     ),
-    // `kb/gdi/enginegetglyphbmp.md`: slanted Wingdings' E9h, a column wider
-    // on the left in Windows, one of the 52 (and of `prttrot`'s glyphs).
-    (
-        "prtteng:EngineGetGlyphBmp",
-        "the box of a glyph GDI's engine slants, at one size",
-    ),
-    (
-        "prttrot:EngineGetGlyphBmp",
-        "the box of a glyph GDI's engine slants, at one size",
-    ),
     // `rledib` stretches a compressed DIB through a bitmap GDI makes of the
     // DIB's size (`GDI.EXE` seg11 `12ca`-`12f9`), whose pixels the stream
     // leaves are as that bitmap's memory was before -- what GDI's heap held
@@ -1631,17 +1621,17 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "prttrot:element",
         "the scaler's glyph element, which WinBox has not",
     ),
-    // `kb/gdi/enginegetglyphbmp.md`: of the glyphs GDI's engine slants,
-    // Symbol's corner comes with a fraction across and Wingdings' E9h has its
-    // arrowhead's tip rescued a column or a row past WinBox's box; a few
-    // others differ by a pixel.
+    // `kb/gdi/enginegetglyphbmp.md`: of the glyphs GDI's engine slants, one
+    // differs: Wingdings' `A` at an em of 52, a dropout rescued a pixel to
+    // the right in one row and one Windows makes that WinBox does not in
+    // another. Its record carries the bitmap's sum.
     (
         "prttslt:EngineGetGlyphBmp",
-        "the corner and box of a glyph GDI's engine slants",
+        "two dropout rescues of one glyph GDI's engine slants",
     ),
     (
         "prttslt:row",
-        "a pixel or a column of a glyph GDI's engine slants",
+        "two dropout rescues of one glyph GDI's engine slants",
     ),
     // `enhmode` calls DPMI's functions with harmless arguments, in both modes,
     // and WinBox answers each as DOSX or WIN386 does (`kb/topics/

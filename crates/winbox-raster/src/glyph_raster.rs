@@ -121,6 +121,10 @@ pub struct FillOptions {
     /// The vertical and horizontal sizes, which the dropout cap asks.
     pub ppem: f64,
     pub across: f64,
+    /// Whether the scaler's matrix is more than a plain scale -- slanted,
+    /// turned or stretched -- which flags the glyph's image as rotated and
+    /// stretched (`GDI.EXE` seg36 `41d1`-`422b`).
+    pub transformed: bool,
 }
 
 impl Default for FillOptions {
@@ -136,6 +140,7 @@ impl Default for FillOptions {
             lean: 0.0,
             ppem: 0.0,
             across: 0.0,
+            transformed: false,
         }
     }
 }
@@ -179,6 +184,7 @@ pub fn fill_walked(contours: &[Contour], options: FillOptions) -> Filled {
         lean,
         ppem,
         across,
+        transformed,
     } = options;
 
     let size = (width.max(0) * height.max(0)) as usize;
@@ -432,9 +438,11 @@ pub fn fill_walked(contours: &[Contour], options: FillOptions) -> Filled {
         };
 
         // Above forty-eight pixels per em a run like this is not rescued --
-        // on a square pixel. **Recorded**, `dropsize` on a VGA and an EGA.
+        // on a square pixel, through a matrix that is a plain scale.
+        // **Recorded**, `dropsize` on a VGA and an EGA, and `prttslt`: GDI's
+        // engine's slant rescues at 52 and up.
         #[allow(clippy::float_cmp)]
-        if !narrow && ppem >= 48.0 && across == ppem {
+        if !narrow && !transformed && ppem >= 48.0 && across == ppem {
             continue;
         }
 

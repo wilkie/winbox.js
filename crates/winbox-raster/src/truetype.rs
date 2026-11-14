@@ -1811,6 +1811,83 @@ impl TrueTypeFont {
         })
     }
 
+    /// A glyph's outline with no program run, as the scaler assembles it at
+    /// `grid` sixty-fourths of a pixel a unit, in font units again: a simple
+    /// glyph as `outline_of` has it; a composite's components each scaled to
+    /// sixty-fourths, put through their own transform, and placed at their
+    /// offset scaled -- rounded to a whole pixel, a half going up, where the
+    /// component asks (`ROUND_XY_TO_GRID`). The scaler places them before
+    /// GDI's matrix slants the whole, as it applies the matrix after scaling
+    /// (`GDI.EXE` seg36 `6ebb`): so a slanted composite's offset is rounded
+    /// upright. **Recorded** by
+    /// `prttslt`: Wingdings' E9h, glyph 205 turned a right angle.
+    pub fn outline_on_grid(&self, glyph: u32, grid: f64) -> Result<Vec<Contour>, Fault> {
+        self.outline_on_grid_at(glyph, grid, 0)
+    }
+
+    fn outline_on_grid_at(&self, glyph: u32, grid: f64, depth: u32) -> Result<Vec<Contour>, Fault> {
+        let Some(range) = self.data.glyph_range(glyph)? else {
+            return Ok(Vec::new());
+        };
+
+        if depth > 5 || self.data.i16_at(range.offset)? >= 0 {
+            return self.outline_of(glyph, depth);
+        }
+
+        let mut shapes = Vec::new();
+        let mut cursor = range.offset + 10;
+
+        loop {
+            if cursor + 4 > range.offset + range.length {
+                break;
+            }
+
+            let flags = self.data.u16_at(cursor)?;
+            let index = u32::from(self.data.u16_at(cursor + 2)?);
+            let (dx, dy, at) = self.component_offset(flags, cursor + 4)?;
+            let [a, b, c, d] = self.component_transform(flags, at)?;
+
+            cursor = at + Self::transform_size(flags);
+
+            if flags & 0x0002 != 0 {
+                let placed = |offset: f64| {
+                    let scaled = js::round(offset * grid);
+
+                    if flags & 0x0004 != 0 {
+                        ((scaled + 32.0) / 64.0).floor() * 64.0
+                    } else {
+                        scaled
+                    }
+                };
+                let (offset_x, offset_y) = (placed(dx), placed(dy));
+
+                for contour in self.outline_on_grid_at(index, grid, depth + 1)? {
+                    shapes.push(
+                        contour
+                            .into_iter()
+                            .map(|point| {
+                                let across = js::round(point.x * grid);
+                                let up = js::round(point.y * grid);
+
+                                Point {
+                                    x: (a * across + c * up + offset_x) / grid,
+                                    y: (b * across + d * up + offset_y) / grid,
+                                    on: point.on,
+                                }
+                            })
+                            .collect(),
+                    );
+                }
+            }
+
+            if flags & 0x0020 == 0 {
+                break;
+            }
+        }
+
+        Ok(shapes)
+    }
+
     /// Assembles a glyph that is made of other glyphs, in font units.
     fn composite_outline(&self, at: i64, range: Table, depth: u32) -> Result<Vec<Contour>, Fault> {
         let mut shapes = Vec::new();

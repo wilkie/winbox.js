@@ -284,6 +284,18 @@ pub(crate) fn context_glyph(
 /// `prep` leaves the program to run, turned by the entries over the
 /// stretch, differenced and each half rounded.
 fn engine_advance(context: &EngineContext, code: u32) -> Option<(i64, i64)> {
+    engine_phantoms(context, code).map(|phantoms| phantoms.advance)
+}
+
+/// The glyph's two phantom points as the scaler leaves them for a matrix
+/// that is not a plain upright scale: the advance between them, in whole
+/// pixels, and the origin phantom, turned, in sixty-fourths.
+struct Phantoms {
+    advance: (i64, i64),
+    origin: (i64, i64),
+}
+
+fn engine_phantoms(context: &EngineContext, code: u32) -> Option<Phantoms> {
     let [m00, m01, m10, m11] = context.matrix;
     let outline = context.font.as_ref()?.outline.as_ref()?;
 
@@ -328,10 +340,38 @@ fn engine_advance(context: &EngineContext, code: u32) -> Option<(i64, i64)> {
     let up = fix_div(i64::from(m01), i64::from(stretch_x));
     let whole = |value: i64| (value * 1024 + 0x8000).div_euclid(0x10000);
 
-    Some((
-        whole(fix_mul(advance, across) - fix_mul(origin, across)),
-        whole(fix_mul(advance, up) - fix_mul(origin, up)),
-    ))
+    Some(Phantoms {
+        advance: (
+            whole(fix_mul(advance, across) - fix_mul(origin, across)),
+            whole(fix_mul(advance, up) - fix_mul(origin, up)),
+        ),
+        origin: (fix_mul(origin, across), fix_mul(origin, up)),
+    })
+}
+
+/// The record's corner across, in 16.16, for a glyph GDI's engine slants:
+/// the bitmap's left edge less the origin phantom (`GDI.EXE` seg36
+/// `2140`-`2169`, into the output's 3Ah that seg36 `0d42` copies), the
+/// phantom where scaling put it, unhinted. So a face whose glyph's `xMin`
+/// is not its left side bearing has a corner with a fraction: Symbol's `S`
+/// at 40 is 1.09375, its 56 units' difference. WinBox's glyph carried its
+/// outline across that difference in whole pixels (`carried`), which the
+/// corner gives back. **Recorded** by `prttslt`.
+fn slanted_corner(context: &EngineContext, code: u8, corner: i64) -> Option<u32> {
+    let outline = context.font.as_ref()?.outline.as_ref()?;
+
+    if outline.lean.is_none() || context.turn != 0.0 {
+        return None;
+    }
+
+    let phantoms = engine_phantoms(context, u32::from(code))?;
+    let font = &outline.font;
+    let glyph = font.glyph_for(u32::from(code));
+    let bearing = font.bearing_shift(glyph).ok()?;
+    let shift = ((bearing * outline.ppem * 64.0) / font.units_per_em() - 0.5).ceil();
+    let carried = winbox_raster::js::round(shift / 64.0) as i64;
+
+    Some((((corner - carried) << 16) - (phantoms.origin.0 << 10)) as i32 as u32)
 }
 
 /// Design units into sixty-fourths at a stretch, as `3f55` reduces the
@@ -423,12 +463,15 @@ fn engine_get_glyph_bmp_call(system: &mut System, args: &mut Args) -> Result<Ans
     if metrics >> 16 != 0 {
         let fixed = |value: i64| (value as i32 as u32) << 16;
 
+        let corner = slanted_corner(context, character as u8, glyph.origin_x)
+            .unwrap_or_else(|| fixed(glyph.origin_x));
+
         put_metrics(
             system,
             [
                 glyph.width as u32,
                 glyph.height as u32,
-                fixed(glyph.origin_x),
+                corner,
                 fixed(glyph.origin_y),
                 fixed(glyph.advance_x),
                 fixed(glyph.advance_y),
