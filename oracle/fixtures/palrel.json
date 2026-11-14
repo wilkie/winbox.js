@@ -1,0 +1,74 @@
+{
+  "probe": "palrel",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "start",
+      "args": "system palette 10-17",
+      "result": "5f3f3f 7f3f3f 9f3f3f bf3f3f df3f3f ff3f3f 3f5f3f 5f5f3f"
+    },
+    {
+      "function": "first",
+      "args": "SelectPalette answers the stock palette",
+      "result": "yes"
+    },
+    {
+      "function": "first",
+      "args": "RealizePalette",
+      "result": "8"
+    },
+    {
+      "function": "first",
+      "args": "RealizePalette again",
+      "result": "0"
+    },
+    {
+      "function": "first",
+      "args": "system palette 10-17",
+      "result": "11c937 2eb242 4b9b4d 688458 856d63 a2566e bf3f79 dc2884"
+    },
+    {
+      "function": "again",
+      "args": "SelectPalette answers the stock palette",
+      "result": "yes"
+    },
+    {
+      "function": "again",
+      "args": "RealizePalette",
+      "result": "0"
+    },
+    {
+      "function": "again",
+      "args": "RealizePalette of the stock palette",
+      "result": "0"
+    },
+    {
+      "function": "again",
+      "args": "RealizePalette after the stock one",
+      "result": "0"
+    },
+    {
+      "function": "again",
+      "args": "system palette 10-17",
+      "result": "11c937 2eb242 4b9b4d 688458 856d63 a2566e bf3f79 dc2884"
+    },
+    {
+      "function": "background",
+      "args": "RealizePalette",
+      "result": "0"
+    },
+    {
+      "function": "background",
+      "args": "system palette 10-17",
+      "result": "11c937 2eb242 4b9b4d 688458 856d63 a2566e bf3f79 dc2884"
+    }
+  ]
+}

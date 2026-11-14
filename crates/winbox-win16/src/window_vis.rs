@@ -84,7 +84,9 @@ impl System {
         {
             let shown = self.shown(parent);
 
-            if shown.style & WS_CLIPCHILDREN == 0
+            // The parent's `WS_CLIPCHILDREN` not asked of a window made
+            // for 3.10 (seg1 `851a`; `visr31`).
+            if (window.for_31 || shown.style & WS_CLIPCHILDREN == 0)
                 && flags & (DCX_CLIPCHILDREN | DCX_CLIPSIBLINGS) == 0
                 && shown.visible == window.visible
             {

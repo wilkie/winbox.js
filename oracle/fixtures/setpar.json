@@ -1,0 +1,59 @@
+{
+  "probe": "setpar",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "shown",
+      "args": "answer is P1",
+      "result": "yes"
+    },
+    {
+      "function": "shown",
+      "args": "sent",
+      "result": "C:show 0 0|C:changing 97 0,0 0x0|P1:erase|C:changed 1897 10,10 60x40|C:changing 5 10,10 0x0|C:childactivate|C:changed 80d 10,10 60x40|C:move 10,10|C:show 1 0|C:changing 57 0,0 0x0|P2:erase|C:changed 1857 10,10 60x40"
+    },
+    {
+      "function": "shown",
+      "args": "after",
+      "result": "visible 1 style visible 1 at 10,10"
+    },
+    {
+      "function": "hidden",
+      "args": "sent",
+      "result": "H:changing 5 80,10 0x0|H:childactivate|H:changed 80d 80,10 60x40|H:move 80,10"
+    },
+    {
+      "function": "hidden",
+      "args": "after",
+      "result": "visible 0 style visible 0 at 80,10"
+    },
+    {
+      "function": "hredraw",
+      "args": "sent",
+      "result": "D:show 0 0|D:changing 97 0,0 0x0|P1:erase|D:changed 1897 150,10 60x40|D:changing 5 150,10 0x0|D:childactivate|D:changed 80d 150,10 60x40|D:move 150,10|D:show 1 0|D:changing 57 0,0 0x0|P2:erase|D:changed 1857 150,10 60x40"
+    },
+    {
+      "function": "hredraw",
+      "args": "after",
+      "result": "visible 1 style visible 1 at 150,10"
+    },
+    {
+      "function": "same parent",
+      "args": "sent",
+      "result": "C:show 0 0|C:changing 97 0,0 0x0|P2:erase|C:changed 1897 10,10 60x40|C:changing 5 10,10 0x0|C:childactivate|C:show 1 0|C:changing 57 0,0 0x0|P2:erase|C:changed 1857 10,10 60x40"
+    },
+    {
+      "function": "same parent",
+      "args": "after",
+      "result": "visible 1 style visible 1 at 10,10"
+    }
+  ]
+}

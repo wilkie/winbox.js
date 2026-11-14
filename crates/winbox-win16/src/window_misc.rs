@@ -233,11 +233,11 @@ pub fn validate_rect(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 impl System {
     /// A window made the child of another, or of none: it and its children
     /// taken out and put above its new parent -- at the front of its kind
-    /// for none -- keeping its place in its parent's client area. It is
-    /// linked first among its new parent's children (`USER.EXE` seg14
-    /// `04ab`-`04b2`, after nought), as `GetWindow` with `GW_CHILD` then
-    /// finds it (`ddemgmt`).
-    pub fn reparent(&mut self, index: usize, parent: Option<usize>) -> Result<(), Stop> {
+    /// for none. It is linked first among its new parent's children
+    /// (`USER.EXE` seg14 `04ab`-`04b2`, after nought), as `GetWindow` with
+    /// `GW_CHILD` then finds it (`ddemgmt`). Its place in its old parent's
+    /// client area, where `SetParent` puts it in the new one (`043f`-`0456`).
+    pub fn reparent(&mut self, index: usize, parent: Option<usize>) -> (i32, i32) {
         let origin_of = |system: &Self, of: Option<usize>| {
             of.and_then(|of| system.windows[of].as_ref())
                 .map_or((0, 0), |of| {
@@ -274,40 +274,55 @@ impl System {
         };
 
         self.z_order.splice(at..at, family);
-
-        let now = origin_of(self, parent);
-
-        // Put back at its place in the new parent's client area by
-        // `SetWindowPos` with `SWP_NOSIZE | SWP_NOZORDER` (seg14
-        // `04b7`-`04c6`). Windows hides it first and shows it again after
-        // (`0437`, `04d1`): not followed.
-        self.place_window(
-            index,
-            now.0 + x,
-            now.1 + y,
-            place.2,
-            place.3,
-            crate::moved::SWP_NOSIZE | crate::moved::SWP_NOZORDER,
-        )
+        (x, y)
     }
 }
 
-/// A window made the child of another, its parent before answered.
-pub fn set_parent(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let child = args.word(system);
-    let parent = args.word(system);
-    let Some(index) = system.window_named(child) else {
-        return Ok(Answer::Word(0));
-    };
-    let old = system.windows[index]
-        .as_ref()
-        .and_then(|window| window.parent)
-        .and_then(|parent| system.windows[parent].as_ref())
-        .map_or(0, |window| window.hwnd);
-    let parent = system.window_named(parent);
+/// A window made the child of another, its parent before answered (seg14
+/// `041a`-`04e0`): hidden first with `ShowWindow(SW_HIDE)` (`0437`), linked
+/// to its new parent, put back at its place in the new parent's client area
+/// by `SetWindowPos` with `SWP_NOSIZE | SWP_NOZORDER` (`04b7`-`04c6`), and
+/// where it was visible shown again with `ShowWindow(SW_SHOWNORMAL)`
+/// (`04cb`-`04d4`). **Recorded** by `setpar`.
+pub fn set_parent(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (child, index, old, parent) = {
+            let system = engine.system();
+            let child = args.word(&system);
+            let parent = args.word(&system);
+            let Some(index) = system.window_named(child) else {
+                return Ok(Answer::Word(0));
+            };
+            let old = system.windows[index]
+                .as_ref()
+                .and_then(|window| window.parent)
+                .and_then(|parent| system.windows[parent].as_ref())
+                .map_or(0, |window| window.hwnd);
 
-    system.reparent(index, parent)?;
-    Ok(Answer::Word(old))
+            (child, index, old, system.window_named(parent))
+        };
+        let was = engine.show_raster(child, index, 0, true, false).await?;
+        let (x, y) = engine.system().reparent(index, parent);
+
+        engine
+            .position_raster(
+                child,
+                index,
+                0,
+                x as i16,
+                y as i16,
+                0,
+                0,
+                crate::moved::SWP_NOSIZE | crate::moved::SWP_NOZORDER,
+            )
+            .await?;
+
+        if was && engine.system().window_named(child) == Some(index) {
+            engine.show_raster(child, index, 1, true, false).await?;
+        }
+
+        Ok(Answer::Word(old))
+    })
 }
 
 /// A window's caption drawn active or not, its activation unchanged: turned

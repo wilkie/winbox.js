@@ -197,6 +197,30 @@ pub fn device_info(system: &System, dc: usize) -> Option<&[u8]> {
     device_of(system, dc).map(|pdevice| pdevice.info.as_slice())
 }
 
+/// One of a driver's context's driver's entry points called, its `PDEVICE`
+/// first and `rest` after: what it answers, none where the context is no
+/// driver's or the driver has no such entry point.
+pub async fn call_device(
+    engine: &Engine,
+    dc: usize,
+    ordinal: u16,
+    rest: &[GuestArg],
+) -> Result<Option<u32>, Stop> {
+    let (procedure, lp_pdevice) = device_proc(&engine.system(), dc, ordinal);
+
+    if procedure == 0 {
+        return Ok(None);
+    }
+
+    let mut args = vec![GuestArg::Long(lp_pdevice)];
+
+    args.extend_from_slice(rest);
+
+    let (answer, _) = call_driver(engine, procedure, &args).await?;
+
+    Ok(Some(answer))
+}
+
 /// A driver's context's driver's entry point by its ordinal, nought where
 /// it has none, and its `PDEVICE`.
 pub fn device_proc(system: &System, dc: usize, ordinal: u16) -> (u32, u32) {

@@ -145,6 +145,7 @@ impl System {
                     rect: Some(rect),
                     still: None,
                     gone: false,
+                    task: None,
                 },
                 bits,
                 in_driver,

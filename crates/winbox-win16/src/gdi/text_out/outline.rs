@@ -277,6 +277,12 @@ pub(crate) struct Pen<'a> {
     pub text_align: u16,
     pub char_extra: f64,
     pub driver_always: bool,
+    /// The pixels a glyph is scan-converted within: from `left, top`,
+    /// `width` by `height` -- what the target reaches of its region's box,
+    /// left of and above nought too for a window's context whose region
+    /// reaches out of its window (`visnext`'s `glyph`).
+    pub left: i64,
+    pub top: i64,
     pub width: i64,
     pub height: i64,
 }
@@ -736,12 +742,12 @@ impl Pen<'_> {
                             base_x + away(along * path_cosine)
                         } else {
                             pen + carried
-                        },
+                        } - self.left as f64,
                         origin_y: if turning {
                             base_y - away(self.to_down(along) * path_sine)
                         } else {
                             baseline
-                        },
+                        } - self.top as f64,
                         width: self.width,
                         height: self.height,
                         // What the font's own `SCANCTRL` asked for at the size;
@@ -761,7 +767,10 @@ impl Pen<'_> {
                         transformed: italic && outline.lean.is_some(),
                     },
                 );
-                let (box_left, box_right) = (filled.left, filled.right);
+                let (box_left, box_right) = (
+                    filled.left + self.left as f64,
+                    filled.right + self.left as f64,
+                );
 
                 glyph_box = Some((box_left, box_right));
 
@@ -772,17 +781,19 @@ impl Pen<'_> {
 
                 // The cell clips an upright glyph and cannot clip a turned one.
                 let (from, to) = if turning {
-                    (0, self.height)
+                    (self.top, self.top + self.height)
                 } else {
                     (
-                        (cell_top.max(0.0)) as i64,
-                        (self.height as f64).min(cell_bottom) as i64,
+                        (cell_top.max(self.top as f64)) as i64,
+                        ((self.top + self.height) as f64).min(cell_bottom) as i64,
                     )
                 };
 
                 for row in from..to {
-                    for column in 0..self.width {
-                        if filled.pixels[(row * self.width + column) as usize] == 0 {
+                    for column in self.left..self.left + self.width {
+                        let at = (row - self.top) * self.width + (column - self.left);
+
+                        if filled.pixels[at as usize] == 0 {
                             continue;
                         }
 
@@ -843,6 +854,26 @@ impl Writer {
     /// The outline face being drawn with, and the text state, as a pen.
     pub(super) fn pen(&self) -> Option<Pen<'_>> {
         let outline = self.font.outline.as_ref()?;
+        // The target's own rectangle, and as much more of what it reaches
+        // as its region's box takes in.
+        let context = &self.target.context;
+        let reach = context.reach;
+        let (mut left, mut top, mut right, mut bottom) =
+            (0, 0, self.target.width(), self.target.height());
+
+        if let Some(found) = context.dc_box {
+            left = left.min(found.left).max(reach.left);
+            top = top.min(found.top).max(reach.top);
+            right = right.max(found.right).min(reach.right);
+            bottom = bottom.max(found.bottom).min(reach.bottom);
+        }
+
+        let area = winbox_raster::indexed_context::Rect {
+            left,
+            top,
+            right,
+            bottom,
+        };
 
         Some(Pen {
             font: &self.font,
@@ -851,8 +882,10 @@ impl Writer {
             text_align: self.text_align,
             char_extra: self.char_extra as f64,
             driver_always: self.bold_always,
-            width: i64::from(self.target.width()),
-            height: i64::from(self.target.height()),
+            left: i64::from(area.left),
+            top: i64::from(area.top),
+            width: i64::from(area.right - area.left).max(0),
+            height: i64::from(area.bottom - area.top).max(0),
         })
     }
 
@@ -1226,6 +1259,8 @@ pub(crate) fn glyph_of(
         text_align: 0,
         char_extra: 0.0,
         driver_always: false,
+        left: 0,
+        top: 0,
         width: size,
         height: size,
     };

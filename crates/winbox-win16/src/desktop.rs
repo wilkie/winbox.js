@@ -1242,6 +1242,7 @@ impl System {
             shown.quiet_dirty = None;
             shown.paint_clip = dirty;
             shown.walked = None;
+            shown.paint_taken = true;
         }
 
         // Nor where USER's invalidation walk made it due, which made them

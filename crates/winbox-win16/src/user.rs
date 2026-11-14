@@ -137,7 +137,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SystemParametersInfo" => {
             Implementation::Async(crate::system_parameters::system_parameters_info)
         }
-        "SetParent" => Implementation::Sync(crate::window_misc::set_parent),
+        "SetParent" => Implementation::Async(crate::window_misc::set_parent),
         "FlashWindow" => Implementation::Async(crate::window_misc::flash_window),
         "BeginDeferWindowPos" => Implementation::Sync(crate::position::begin_defer_window_pos),
         "DeferWindowPos" => Implementation::Sync(crate::position::defer_window_pos),

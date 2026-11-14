@@ -61,6 +61,9 @@ pub struct Lock {
     pub still: Option<ClipRegion>,
     /// All of it drawn over: the lock let go of its rectangle (`081c`).
     pub gone: bool,
+    /// The task that took it: USER keeps its queue (the word at 13Ah,
+    /// seg13 `22d0`-`22d5`), and another task's call answers nought.
+    pub task: Option<u16>,
 }
 
 /// One of USER's records of a rectangle kept as it was, the list at its
@@ -513,6 +516,14 @@ impl System {
 pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
 
+    // Held by another task: nought, to locking and to unlocking alike,
+    // before anything else is asked (seg13 `2282`-`2294`; `vislk2`).
+    if let Some(lock) = &system.user_calls.locked
+        && lock.task != system.current_task()
+    {
+        return Ok(Answer::Word(0));
+    }
+
     if hwnd != 0 {
         let Some(window) = system.window_named(hwnd) else {
             return Ok(Answer::Word(0));
@@ -550,6 +561,7 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
             rect,
             still: None,
             gone: false,
+            task: system.current_task(),
         });
 
         // What was due there, from the window back (`2028`-`2063`).

@@ -1,0 +1,274 @@
+{
+  "probe": "visnext",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "nothing",
+      "args": "after UpdateWindow",
+      "result": "rcPaint 0,0,0,0 fErase 0"
+    },
+    {
+      "function": "nothing",
+      "args": "after UpdateWindow",
+      "result": "org 100,100 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "nothing",
+      "args": "drawn",
+      "result": "-"
+    },
+    {
+      "function": "nothing",
+      "args": "after ValidateRect",
+      "result": "rcPaint 0,0,0,0 fErase 0"
+    },
+    {
+      "function": "nothing",
+      "args": "after ValidateRect",
+      "result": "org 100,100 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "nothing",
+      "args": "drawn",
+      "result": "-"
+    },
+    {
+      "function": "nothing",
+      "args": "internal paint",
+      "result": "rcPaint 0,0,0,0 fErase 0"
+    },
+    {
+      "function": "nothing",
+      "args": "internal paint",
+      "result": "org 100,100 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "nothing",
+      "args": "drawn",
+      "result": "-"
+    },
+    {
+      "function": "nothing",
+      "args": "a part due",
+      "result": "rcPaint 20,10,60,30 fErase 0"
+    },
+    {
+      "function": "nothing",
+      "args": "a part due",
+      "result": "org 100,100 clip 2 20,10,60,30 vis 2 120,110,160,130 110-130:120-160;"
+    },
+    {
+      "function": "nothing",
+      "args": "drawn",
+      "result": "110-130:120-160;"
+    },
+    {
+      "function": "nothing",
+      "args": "all due",
+      "result": "rcPaint 0,0,200,100 fErase 0"
+    },
+    {
+      "function": "nothing",
+      "args": "all due",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "nothing",
+      "args": "drawn",
+      "result": "100-200:100-300;"
+    },
+    {
+      "function": "nothing",
+      "args": "all due, erased",
+      "result": "rcPaint 0,0,200,100 fErase 0"
+    },
+    {
+      "function": "nothing",
+      "args": "all due, erased",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "nothing",
+      "args": "drawn",
+      "result": "100-200:100-300;"
+    },
+    {
+      "function": "flags",
+      "args": "C PARENTCLIP",
+      "result": "org 341,140 clip 2 -20,-20,278,59 vis 2 321,120,619,199 120-199:321-619;"
+    },
+    {
+      "function": "flags",
+      "args": "C PARENTCLIP 80000h",
+      "result": "org 341,140 clip 2 0,0,60,40 vis 2 341,140,401,180 140-180:341-401;"
+    },
+    {
+      "function": "flags",
+      "args": "P CLIPCHILDREN 80000h",
+      "result": "org 321,120 clip 2 0,0,298,79 vis 2 321,120,619,199 120-199:321-619;"
+    },
+    {
+      "function": "flags",
+      "args": "P USESTYLE 80000h",
+      "result": "org 321,120 clip 2 0,0,298,79 vis 2 321,120,619,199 120-199:321-619;"
+    },
+    {
+      "function": "flags",
+      "args": "C CACHE 4",
+      "result": "org 341,140 clip 2 0,0,60,40 vis 2 341,140,401,180 140-180:341-401;"
+    },
+    {
+      "function": "flags",
+      "args": "C CACHE 100h",
+      "result": "org 341,140 clip 2 0,0,60,40 vis 2 341,140,401,180 140-180:341-401;"
+    },
+    {
+      "function": "flags",
+      "args": "C CACHE 200000h",
+      "result": "org 341,140 clip 2 0,0,60,40 vis 2 341,140,401,180 140-180:341-401;"
+    },
+    {
+      "function": "focus",
+      "args": "clip 0,0,30,100",
+      "result": "33 110,110,130,140"
+    },
+    {
+      "function": "focus",
+      "args": "no clip",
+      "result": "76 110,110,160,140"
+    },
+    {
+      "function": "memory",
+      "args": "before",
+      "result": "org 0,0 clip 2 0,0,32,16 vis 2 0,0,32,16 0-16:0-32;"
+    },
+    {
+      "function": "memory",
+      "args": "SetDCOrg 8,4",
+      "result": "0,0"
+    },
+    {
+      "function": "memory",
+      "args": "after",
+      "result": "org 8,4 clip 2 -8,-4,24,12 vis 2 0,0,32,16 0-16:0-32;"
+    },
+    {
+      "function": "memory",
+      "args": "GetPixel 0,0",
+      "result": "0"
+    },
+    {
+      "function": "memory",
+      "args": "GetPixel -8,-4",
+      "result": "16777215"
+    },
+    {
+      "function": "memory",
+      "args": "bits",
+      "result": "ffffffff/ffffffff/ffffffff/ffffffff/ff00ffff/ff00ffff/ff00ffff/ff00ffff/ffffffff/ffffffff/ffffffff/ffffffff/ffffffff/ffffffff/ffffffff/ffffffff"
+    },
+    {
+      "function": "scroll",
+      "args": "5,5 drawn",
+      "result": "300-320:150-170;"
+    },
+    {
+      "function": "scroll",
+      "args": "5,5 GetUpdateRect",
+      "result": "-5,-5,95,45"
+    },
+    {
+      "function": "scroll",
+      "args": "-5,0 in 0,0,40,30 drawn",
+      "result": "300-320:140-160;"
+    },
+    {
+      "function": "scroll",
+      "args": "-5,0 GetUpdateRect",
+      "result": "35,0,40,30"
+    },
+    {
+      "function": "given",
+      "args": "same context",
+      "result": "yes"
+    },
+    {
+      "function": "given",
+      "args": "InquireVisRgn same as before",
+      "result": "yes"
+    },
+    {
+      "function": "given",
+      "args": "SaveVisRgn",
+      "result": "handle"
+    },
+    {
+      "function": "given",
+      "args": "SaveVisRgn is the region before",
+      "result": "no"
+    },
+    {
+      "function": "given",
+      "args": "RestoreVisRgn",
+      "result": "2"
+    },
+    {
+      "function": "given",
+      "args": "restored",
+      "result": "org 100,100 clip 2 20,20,80,60 vis 2 120,120,180,160 120-160:120-180;"
+    },
+    {
+      "function": "given",
+      "args": "after ReleaseDC, InquireVisRgn same as before",
+      "result": "no"
+    },
+    {
+      "function": "given",
+      "args": "after ReleaseDC, InquireVisRgn is what SaveVisRgn answered",
+      "result": "yes"
+    },
+    {
+      "function": "given",
+      "args": "after ReleaseDC",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "source",
+      "args": "BitBlt from -16,0",
+      "result": "0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff"
+    },
+    {
+      "function": "source",
+      "args": "StretchBlt from -16,0",
+      "result": "0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff/0000ffff"
+    },
+    {
+      "function": "source",
+      "args": "StretchBlt from -16,0 doubled",
+      "result": "00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000/00000000"
+    },
+    {
+      "function": "glyph",
+      "args": "left of the window",
+      "result": "231 80,117,100,146"
+    },
+    {
+      "function": "glyph",
+      "args": "within it",
+      "result": "228 100,117,119,146"
+    },
+    {
+      "function": "meta",
+      "args": "FastWindowFrame",
+      "result": "0"
+    }
+  ]
+}

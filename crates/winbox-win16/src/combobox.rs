@@ -1004,7 +1004,7 @@ impl Engine {
                     (state.sel, data)
                 };
                 let far = system.owner_block() + 32;
-                let hdc = system.item_dc(index);
+                let hdc = system.item_dc(index, false);
                 let (id, hwnd) = {
                     let window = system.control_window(index);
 

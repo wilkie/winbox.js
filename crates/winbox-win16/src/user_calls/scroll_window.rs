@@ -507,9 +507,10 @@ async fn scroll_window_body(
             (ddx, ddy) = (x1 - x0, y1 - y0);
         }
 
-        // What the window was due: `ScrollWindow` makes its box due again
-        // where it moving to and gives the body none; `ScrollWindowEx` gives
-        // it.
+        // What the window was due: `ScrollWindow` of a window made before
+        // 3.10 makes its box due again where it moving to and gives the
+        // body none; for one made for 3.10, and `ScrollWindowEx`, the body
+        // is given it (seg13 `1491`-`14e0`).
         let mut update = Update::None;
 
         if system.shown(index).needs_paint {
@@ -520,7 +521,7 @@ async fn scroll_window_body(
             };
         }
 
-        if flags & SW_SCROLLWINDOW != 0 {
+        if flags & SW_SCROLLWINDOW != 0 && !system.shown(index).for_31 {
             if let Update::Region(due) = &update {
                 let moved = shift(box_of(due), ddx, ddy);
                 let client = system.client_rect(index);
@@ -548,7 +549,9 @@ async fn scroll_window_body(
             clip,
             &update,
             told,
-            flags & SW_INVALIDATE == 0,
+            // What is given is in the logical terms of the window's own
+            // context, where it is drawn through one (`14fe`-`150e`).
+            own.is_some(),
         );
 
         told.write(&mut system);

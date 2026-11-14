@@ -80,6 +80,10 @@ pub struct Window {
     pub proc: Option<crate::classes::WndProc>,
     /// The instance its procedure is called with: its `CREATESTRUCT`'s.
     pub instance: u16,
+    /// USER's bit 2 of the byte at 26h (the value 4): its program was made
+    /// for Windows 3.10 or later, as `CreateWindow` found it (`USER.EXE`
+    /// seg8 `0425`-`0432`). `DCX_PARENTCLIP` asks it (seg1 `851a`).
+    pub for_31: bool,
     /// The task it was made by.
     pub task: u16,
     /// Its device context, one for all the handles `GetDC` gives for it,
@@ -112,6 +116,11 @@ pub struct Window {
     /// Its `WM_PAINT` sent by `UpdateWindow`, `BeginPaint` not yet called
     /// (`447f`, `764c`).
     pub paint_sent: bool,
+    /// What it is due moved to `paint_clip` and `paint_shape` as its
+    /// `WM_PAINT` was taken (`Desktop::about_to_paint`), `BeginPaint` not
+    /// yet called. Without it, `BeginPaint` takes the update region as it
+    /// is, nothing where there is none (`visnext`).
+    pub paint_taken: bool,
     pub needs_nc_paint: bool,
     pub needs_frame: bool,
     /// Its frame changed (`SWP_FRAMECHANGED`): `WM_NCPAINT` is given a

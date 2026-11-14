@@ -197,8 +197,11 @@ impl System {
 
     /// A device context on a control, for its owner to draw an item with:
     /// with the control's font in it, or the System font, as `GetDC` gives
-    /// it. Made the first time, a handle of its own, and kept.
-    pub(crate) fn item_dc(&mut self, index: usize) -> u16 {
+    /// it. Made the first time, a handle of its own, and kept. With
+    /// `clipped`, a clip region of the control's client area, as a list box
+    /// and an owner-drawn button select one (`USER.EXE` seg35 `04dc`-`0508`,
+    /// seg25 `0ff4`-`1026`); a combo box's field has none (`visitem`).
+    pub(crate) fn item_dc(&mut self, index: usize, clipped: bool) -> u16 {
         let dc = self.window_dc(index);
 
         // A common context's attributes, as one USER lends has them
@@ -219,25 +222,27 @@ impl System {
             self.gdi.dcs[dc].state.font = font;
         }
 
-        // Its region USER's rule's, as `GetDC` gives it, within its client
-        // area: a window's context draws through its region alone, and a
-        // list box's class has `CS_PARENTDC`, whose region is its
-        // parent's. Windows keeps an item's drawing inside the list's
-        // client area -- `listbox`'s owner-drawn list leaves its border as
-        // it was -- by a way of its own not read out.
+        // Its region USER's rule's, as `GetDC` gives it: the classes have
+        // `CS_PARENTDC`, whose region is the parent's. A list box keeps an
+        // item's drawing inside its client area by a clip region of it --
+        // of nothing where the list is hidden -- and a button by the same
+        // (seg35 `04dc`-`0508`, seg25 `0ff4`-`1026`; `visitem`).
         if let Some(shown) = self.windows[index].as_ref() {
-            let client = winbox_raster::ClipRegion::rect(
-                shown.left + shown.client.left,
-                shown.top + shown.client.top,
-                shown.left + shown.client.right,
-                shown.top + shown.client.bottom,
-            );
-
+            let visible = shown.visible;
+            let clip = if visible {
+                winbox_raster::ClipRegion::rect(0, 0, shown.client_width(), shown.client_height())
+            } else {
+                winbox_raster::ClipRegion::EMPTY
+            };
             let (flags, of) = self.region_flags(index, crate::window_vis::DCX_USESTYLE);
-            let region = self.window_region(index, of, flags).intersect(&client);
+            let region = self.window_region(index, of, flags);
 
             crate::gdi::visible_region::select_vis(self, dc, region);
             self.gdi.dcs[dc].state.origin = None;
+
+            if clipped {
+                self.gdi.dcs[dc].state.clip = Some(clip);
+            }
         }
 
         let kept = self.control_at(index).item_dc;

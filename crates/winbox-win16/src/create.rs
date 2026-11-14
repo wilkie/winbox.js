@@ -599,11 +599,13 @@ impl Engine {
             } else {
                 system.program_instance()
             };
+            let for_31 = system.expected_windows_version(instance).unwrap_or(0x30a) >= 0x30a;
             let shown = system.windows[index].as_mut().expect("the window made");
 
             shown.hwnd = hwnd;
             shown.task = task;
             shown.instance = instance;
+            shown.for_31 = for_31;
             shown.extra = vec![0; usize::try_from(class.wnd_extra).unwrap_or(0)];
 
             // A window of a `CS_OWNDC` class has a device context entry of

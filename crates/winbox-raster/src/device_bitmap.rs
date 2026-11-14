@@ -179,6 +179,25 @@ impl DeviceBitmap {
         view
     }
 
+    /// The same pixels with their (0, 0) at `origin` in them: a memory
+    /// device context's bitmap after `SetDCOrg`, which moves its drawing
+    /// as it moves a window's (`visnext`'s `memory`). The pixels reached
+    /// are the bitmap's own, wherever they now are.
+    pub fn moved(&self, origin: (i32, i32)) -> Self {
+        let (x, y) = origin;
+        let mut moved = self.clone();
+        let reach = self.context.reach;
+
+        moved.context.base += y as isize * self.context.stride + x as isize;
+        moved.context.reach = crate::indexed_context::Rect {
+            left: reach.left - x,
+            top: reach.top - y,
+            right: reach.right - x,
+            bottom: reach.bottom - y,
+        };
+        moved
+    }
+
     /// Whether this bitmap's pixels are another's.
     pub fn is_view(&self) -> bool {
         self.context.is_owned()

@@ -35,6 +35,7 @@ const WM_WINDOWPOSCHANGED: u16 = 0x0047;
 
 const WS_POPUP: u32 = 0x8000_0000;
 const WS_CHILD: u32 = 0x4000_0000;
+const WM_CHILDACTIVATE: u16 = 0x0022;
 const WS_MINIMIZE: u32 = 0x2000_0000;
 const WS_CAPTION: u32 = 0x00c0_0000;
 const WS_SYSMENU: u32 = 0x0008_0000;
@@ -790,6 +791,13 @@ impl Engine {
     #[allow(clippy::too_many_lines)]
     pub(crate) async fn position_changed(&self, changes: Vec<Move>) -> Result<(), Stop> {
         let mut placed = Vec::with_capacity(changes.len());
+        // The first window of the list without `SWP_NOACTIVATE`, which is
+        // made active once the list is done (`USER.EXE` seg7 `0cda`-`0ce6`,
+        // `0260`-`026f`).
+        let activated = changes
+            .iter()
+            .find(|change| change.flags & SWP_NOACTIVATE == 0)
+            .map(|change| (change.hwnd, change.index));
         // Where each of the families brought up lay, to tell those that
         // moved.
         let before: std::collections::HashMap<usize, Vec<usize>> = {
@@ -1161,6 +1169,18 @@ impl Engine {
 
         if parent_of_first.is_none_or(|parent| self.system().showing(parent)) {
             self.sync_paint_from(parent_of_first, crate::paint::DSP_ENUMCLIPPEDCHILDREN)
+                .await?;
+        }
+
+        // That window, where it is a child, sent `WM_CHILDACTIVATE` before
+        // the windows are told they moved (seg7 `0382`-`03a6`; `setpar`:
+        // `SetParent`'s move of a child, hidden or not).
+        if let Some((hwnd, index)) = activated
+            && self.system().windows[index]
+                .as_ref()
+                .is_some_and(|window| window.hwnd == hwnd && window.style & WS_CHILD != 0)
+        {
+            self.send_message(hwnd, WM_CHILDACTIVATE, 0, &mut Param::Value(0))
                 .await?;
         }
 

@@ -37,7 +37,7 @@ fn printers(probe: &str, beneath: &Beneath) -> Vec<(String, Vec<u8>)> {
 
     if [
         "prdlg", "chfontpr", "prdlgx", "pric", "prdoc", "prspool", "prabort", "prdraw", "prlpt",
-        "prnote", "prtabs", "prmeta", "prband", "prblt", "prtt",
+        "prnote", "prtabs", "prmeta", "prband", "prblt", "prtt", "visprn",
     ]
     .contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)
@@ -2089,6 +2089,33 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "standard/pghost:box",
         "what a freed block's bytes hold in standard mode is what DOSX's arena left, which WinBox's memory does not (kb/guides/paging.md)",
+    ),
+    // `visitem`: a list box scrolled across, which WinBox's list box does
+    // not do (`LB_SETHORIZONTALEXTENT`, `WM_HSCROLL`; Windows sets the item
+    // context's window origin to how far it is scrolled, seg35 `050d`).
+    (
+        "visitem:scrolled",
+        "a list box scrolled across: LB_SETHORIZONTALEXTENT and WM_HSCROLL not built (kb/topics/visible-regions.md)",
+    ),
+    // `visline`: a `PS_DOT` pen's line on the screen, whose dots the display
+    // drivers lay out by their own styling (VGA three on and three off with
+    // a carry, the Hercules four and three), restarted at each rectangle of
+    // the region; WinBox draws the bitmap's four on and four off.
+    (
+        "visline-vga:dotted",
+        "a styled pen's dots on the screen: the display driver's styling not followed (kb/topics/visible-regions.md)",
+    ),
+    (
+        "visline-vga:dotted, one rectangle",
+        "a styled pen's dots on the screen: the display driver's styling not followed (kb/topics/visible-regions.md)",
+    ),
+    (
+        "visline-hercules:dotted",
+        "a styled pen's dots on the screen: the display driver's styling not followed (kb/topics/visible-regions.md)",
+    ),
+    (
+        "visline-hercules:dotted, one rectangle",
+        "a styled pen's dots on the screen: the display driver's styling not followed (kb/topics/visible-regions.md)",
     ),
 ];
 

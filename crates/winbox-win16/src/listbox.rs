@@ -553,7 +553,7 @@ impl Engine {
         let (far, id) = {
             let mut system = self.system();
             let far = system.owner_block() + 32;
-            let hdc = system.item_dc(index);
+            let hdc = system.item_dc(index, true);
             let shape = system.list_shape(index);
             let (id, hwnd, style) = {
                 let window = system.control_window(index);

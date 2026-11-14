@@ -14,7 +14,8 @@
 
 use winbox_raster::ClipRegion;
 
-use crate::call::{Answer, Args, Implementation, Stop};
+use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::engine::{Engine, GuestArg};
 use crate::handles::{Kind, Object};
 use crate::system::System;
 
@@ -26,6 +27,12 @@ use super::pack;
 use super::regions::{clip_of, region_shape, vis_of};
 
 pub fn implementation(name: &str) -> Option<Implementation> {
+    match name {
+        "Death" => return Some(Implementation::Async(death_call)),
+        "Resurrection" => return Some(Implementation::Async(resurrection_call)),
+        _ => {}
+    }
+
     Some(Implementation::Sync(match name {
         "SelectVisRgn" => select_vis_rgn_call,
         "IntersectVisRect" => intersect_vis_rect_call,
@@ -38,8 +45,6 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetDCState" => get_dc_state_call,
         "SetDCState" => set_dc_state_call,
         "FastWindowFrame" => fast_window_frame_call,
-        "Death" => death_call,
-        "Resurrection" => resurrection_call,
         _ => return None,
     }))
 }
@@ -132,9 +137,27 @@ fn save_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Word(save_vis_rgn(system, dc)))
 }
 
-/// `SaveVisRgn`'s body: the copy that was on top before.
+/// `SaveVisRgn`'s body: the copy that was on top before. One USER saved
+/// for a region given to `GetDCEx` is given its handle now, the first time
+/// a program can see it (`visnext`'s `given`): Windows' has had one all
+/// along, and it becomes the visible region again as the context is given
+/// back.
 pub(crate) fn save_vis_rgn(system: &mut System, dc: usize) -> u16 {
     let vis = vis_of(system, dc);
+
+    if let Some(top) = system.gdi.dcs[dc].vis_saved.last().copied()
+        && top.0 == 0
+    {
+        let handle = system
+            .handles
+            .allocate(Kind::Gdi, Object::Gdi(top.1))
+            .unwrap_or(0);
+
+        if let Some(last) = system.gdi.dcs[dc].vis_saved.last_mut() {
+            last.0 = handle;
+        }
+    }
+
     let before = system.gdi.dcs[dc]
         .vis_saved
         .last()
@@ -323,40 +346,78 @@ fn fast_window_frame_call(system: &mut System, args: &mut Args) -> Result<Answer
     Ok(Answer::Word(0xffff))
 }
 
-/// Whether a context's driver is the display's, whose `Disable` and
-/// `Enable` `Death` and `Resurrection` answer: not a printer's, whose
-/// driver's are not followed.
-fn display_driver(system: &System, hdc: u16) -> bool {
-    dc_of(system, hdc).is_some_and(|dc| {
-        !system.printing.printers.contains_key(&dc)
-            && super::printer_driver::device_info(system, dc).is_none()
+/// Whose `Disable` and `Enable` a context's `Death` and `Resurrection`
+/// call: the display's, a printer driver's from the drive -- its entry
+/// points 4 and 5 and its `PDEVICE` -- or WinBox's own printer's, which
+/// has none and answers nought.
+enum DeathOf {
+    Display,
+    Driver(usize),
+    Own,
+}
+
+fn death_of(system: &System, hdc: u16) -> DeathOf {
+    match dc_of(system, hdc) {
+        Some(dc) if super::printer_driver::device_info(system, dc).is_some() => DeathOf::Driver(dc),
+        Some(dc) if system.printing.printers.contains_key(&dc) => DeathOf::Own,
+        _ => DeathOf::Display,
+    }
+}
+
+/// `Death` (seg1 `2067`): the context's driver's `Disable`, given its
+/// `PDEVICE`, and what it answers -- the display's without turning
+/// WinBox's display off; a printer driver's from the drive run (`visprn`:
+/// the PostScript driver's answers 1, `PSCRIPT.DRV` seg12 `0000`-`0044`).
+fn death_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let hdc = args.word(&engine.system());
+        let of = death_of(&engine.system(), hdc);
+
+        Ok(Answer::Word(match of {
+            DeathOf::Display => engine.system().display.disable_answer(),
+            DeathOf::Driver(dc) => super::printer_driver::call_device(engine, dc, 4, &[])
+                .await?
+                .unwrap_or(0) as u16,
+            DeathOf::Own => 0,
+        }))
     })
 }
 
-/// `Death` (seg1 `2067`): what the display driver's `Disable` answers,
-/// without turning WinBox's display off.
-fn death_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
+/// `Resurrection` (seg1 `208e`): the context's driver's `Enable`, given
+/// its `PDEVICE`, a style of nought and the three far pointers the six
+/// words make, the first word high (`20a1`-`20be`); what it answers.
+fn resurrection_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hdc, words) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+            let words: Vec<u16> = (0..6).map(|_| args.word(&system)).collect();
 
-    Ok(Answer::Word(if display_driver(system, hdc) {
-        system.display.disable_answer()
-    } else {
-        0
-    }))
-}
+            (hdc, words)
+        };
+        let of = death_of(&engine.system(), hdc);
 
-/// `Resurrection` (seg1 `208e`): what the display driver's `Enable`
-/// answers, the six words given passed on.
-fn resurrection_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
+        Ok(Answer::Word(match of {
+            DeathOf::Display => engine.system().display.enable_answer(),
+            DeathOf::Driver(dc) => {
+                let far =
+                    |high: u16, low: u16| GuestArg::Long(u32::from(high) << 16 | u32::from(low));
 
-    for _ in 0..6 {
-        args.word(system);
-    }
-
-    Ok(Answer::Word(if display_driver(system, hdc) {
-        system.display.enable_answer()
-    } else {
-        0
-    }))
+                super::printer_driver::call_device(
+                    engine,
+                    dc,
+                    5,
+                    &[
+                        GuestArg::Word(0),
+                        far(words[0], words[1]),
+                        far(words[2], words[3]),
+                        far(words[4], words[5]),
+                    ],
+                )
+                .await?
+                .unwrap_or(0) as u16
+            }
+            DeathOf::Own => 0,
+        }))
+    })
 }

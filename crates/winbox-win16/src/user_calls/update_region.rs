@@ -170,7 +170,36 @@ fn update_rect_answer(system: &mut System, hwnd: u16, far: u32) -> Result<Answer
         system.shown_mut(index).other_task = false;
     }
 
-    let rect = system.update_rect(hwnd);
+    let mut rect = system.update_rect(hwnd);
+
+    // A window of a `CS_OWNDC` class (20h) has it in its own context's logical
+    // terms, through `DPtoLP` -- for a program made before 3.10 only where
+    // it is due part of itself (`USER.EXE` seg1 `4714`-`4753`; `visnext`'s
+    // `scroll`).
+    if let (Some([left, top, right, bottom]), Some(index)) = (rect, system.window_named(hwnd)) {
+        let own = system
+            .class_of(hwnd)
+            .is_some_and(|class| system.classes[class].style & 0x0020 != 0);
+        let window = system.shown(index);
+        let whole = window.dirty.is_none() && window.paint_clip.is_none();
+
+        if own
+            && (window.for_31 || !whole)
+            && let Some(dc) = window.dc
+        {
+            let mapping = crate::gdi::mapping::mapping_of(system, dc);
+            let point = |x: i32, y: i32| {
+                (
+                    mapping.logical_x(i64::from(x)) as i32,
+                    mapping.logical_y(i64::from(y)) as i32,
+                )
+            };
+            let (l, t) = point(left, top);
+            let (r, b) = point(right, bottom);
+
+            rect = Some([l, t, r, b]);
+        }
+    }
 
     if far != 0 {
         write_rect(system, far, rect.unwrap_or([0; 4]));

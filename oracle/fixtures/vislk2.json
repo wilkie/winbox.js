@@ -1,0 +1,99 @@
+{
+  "probe": "vislk2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "started",
+      "args": "B",
+      "result": "yes"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate A",
+      "result": "1"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate nought",
+      "result": "0"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate B",
+      "result": "0"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate A",
+      "result": "0"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate A again",
+      "result": "0"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate nought",
+      "result": "1"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate nought again",
+      "result": "0"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate B",
+      "result": "1"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate A",
+      "result": "0"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate B",
+      "result": "0"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate nought",
+      "result": "0"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate nought",
+      "result": "1"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate nought, none held",
+      "result": "0"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate A",
+      "result": "1"
+    },
+    {
+      "function": "A",
+      "args": "LockWindowUpdate nought",
+      "result": "0"
+    },
+    {
+      "function": "B",
+      "args": "LockWindowUpdate nought",
+      "result": "1"
+    }
+  ]
+}

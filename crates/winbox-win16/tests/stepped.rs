@@ -490,6 +490,11 @@ const STEPPED: &[&str] = &[
     "enhanced/pgcreg",
     "pgrom",
     "enhanced/pgrom",
+    "visnext",
+    "vislk2",
+    "visr31",
+    "setpar",
+    "visprn",
 ];
 
 /// The probes whose runs bring up USER's boxes, answered by the hand

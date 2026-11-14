@@ -1,0 +1,49 @@
+{
+  "probe": "visitem",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "shown",
+      "args": "type 2 item 0 action 1",
+      "result": "org 54,73 clip 2 0,0,120,84 vis 2 44,63,436,336 63-336:44-436; cliprgn 2 54,73,174,157 73-157:54-174; worg 0,0 rc 0,0,120,16"
+    },
+    {
+      "function": "shown",
+      "args": "type 2 item 1 action 1",
+      "result": "org 54,73 clip 2 0,0,120,84 vis 2 44,63,436,336 63-336:44-436; cliprgn 2 54,73,174,157 73-157:54-174; worg 0,0 rc 0,16,120,32"
+    },
+    {
+      "function": "shown",
+      "args": "type 4 item 0 action 1",
+      "result": "org 194,73 clip 2 0,0,80,30 vis 2 44,63,436,336 63-336:44-436; cliprgn 2 194,73,274,103 73-103:194-274; worg 0,0 rc 0,0,80,30"
+    },
+    {
+      "function": "shown",
+      "args": "type 3 item 0 action 1",
+      "result": "org 294,73 clip 2 -250,-10,142,263 vis 2 44,63,436,336 63-336:44-436; cliprgn none worg 0,0 rc 3,3,101,19"
+    },
+    {
+      "function": "selected",
+      "args": "type 2 item 1 action 2",
+      "result": "org 54,73 clip 2 0,0,120,84 vis 2 44,63,436,336 63-336:44-436; cliprgn 2 54,73,174,157 73-157:54-174; worg 0,0 rc 0,16,120,32"
+    },
+    {
+      "function": "scrolled",
+      "args": "type 2 item 0 action 1",
+      "result": "org 54,73 clip 2 120,0,204,84 vis 2 90,73,174,157 73-157:90-174; cliprgn 2 54,73,174,157 73-157:54-174; worg 84,0 rc 0,0,204,16"
+    },
+    {
+      "function": "scrolled",
+      "args": "type 2 item 1 action 1",
+      "result": "org 54,73 clip 2 120,0,204,84 vis 2 90,73,174,157 73-157:90-174; cliprgn 2 54,73,174,157 73-157:54-174; worg 84,0 rc 0,16,204,32"
+    }
+  ]
+}

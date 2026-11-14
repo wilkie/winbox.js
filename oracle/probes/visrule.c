@@ -36,7 +36,9 @@
 #include "probe.h"
 #include "visprobe.h"
 
+#ifndef OUTPUT
 #define OUTPUT "C:\\ORACLE\\VISRULE.OUT"
+#endif
 
 #define DCX_WINDOW 0x00000001L
 #define DCX_CACHE 0x00000002L

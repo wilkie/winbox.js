@@ -1074,7 +1074,7 @@ impl Engine {
                 window.client_height(),
             );
             let far = system.owner_block() + 32;
-            let hdc = system.item_dc(index);
+            let hdc = system.item_dc(index, true);
 
             system.write_words(
                 far,

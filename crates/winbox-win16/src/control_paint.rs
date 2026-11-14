@@ -1005,8 +1005,9 @@ fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> 
 /// A focus rectangle drawn, or taken away again: each pixel of its edge
 /// flipped, the one in two in the text colour, the others in the
 /// background colour, as an exclusive or -- the corners twice, so left
-/// as they were. In the context's own coordinates, not mapped, and through
-/// no clip region.
+/// as they were. In the context's own coordinates, not mapped; through the
+/// clip region within the visible region, as Windows draws it through GDI
+/// (`visnext`'s `focus`).
 pub fn draw_focus_rect(
     system: &mut System,
     args: &mut crate::call::Args,
@@ -1016,7 +1017,7 @@ pub fn draw_focus_rect(
     let Some(dc) = crate::gdi::dc::dc_of(system, hdc).filter(|_| far != 0) else {
         return Ok(crate::call::Answer::Nothing);
     };
-    let Some(bitmap) = crate::gdi::regions::visible_target(system, dc) else {
+    let Some(bitmap) = crate::gdi::draw::canvas(system, dc) else {
         return Ok(crate::call::Answer::Nothing);
     };
     let bytes = system.read_far(far, 8);

@@ -125,6 +125,9 @@ export const PER_DISPLAY = new Set([
    * routine of its own. */
   'rledib',
   'gdidmrle',
+  /* Lines through a visible region of more than one rectangle, which GDI
+   * clips for a driver that clips and the Hercules' does not. */
+  'visline',
 ]);
 
 /**

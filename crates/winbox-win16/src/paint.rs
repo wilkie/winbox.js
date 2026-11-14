@@ -629,17 +629,37 @@ impl Engine {
             // `DCX_USESTYLE` and `DCX_INTERSECTRGN` of the update region
             // (`USER.EXE` seg1 `7640`-`7671`; `visrgn`): its visible region
             // USER's rule's within what is to be painted, where that is
-            // known; the whole client area where it is not.
+            // known; the whole client area where it is all due. Where its
+            // `WM_PAINT` was not taken, the update region as it is now --
+            // none, and the region is empty (`86e7`-`873f`: `SetRectRgn`
+            // of nothing), nothing drawn (`visnext`, `nothing`).
             let window = system.painted(index);
-            let due = match (window.paint_clip, &window.paint_shape) {
-                (Some([left, top, right, bottom]), Some(shape)) => {
-                    Some(ClipRegion::rect(left, top, right, bottom).intersect(shape))
+            let due = if window.paint_taken {
+                match (window.paint_clip, &window.paint_shape) {
+                    (Some([left, top, right, bottom]), Some(shape)) => {
+                        Some(ClipRegion::rect(left, top, right, bottom).intersect(shape))
+                    }
+                    (Some([left, top, right, bottom]), None) => {
+                        Some(ClipRegion::rect(left, top, right, bottom))
+                    }
+                    (None, shape) => shape.clone(),
                 }
-                (Some([left, top, right, bottom]), None) => {
-                    Some(ClipRegion::rect(left, top, right, bottom))
-                }
-                (None, shape) => shape.clone(),
+            } else if window.needs_paint && window.dirty.is_none() {
+                None
+            } else {
+                Some(system.update_region(index))
             };
+
+            {
+                let window = system.painted_mut(index);
+
+                if !window.paint_taken {
+                    window.dirty = None;
+                    window.dirty_shape = None;
+                }
+
+                window.paint_taken = false;
+            }
             let flags = 0x0003_0000
                 | if due.is_some() {
                     crate::window_vis::DCX_INTERSECTRGN

@@ -149,10 +149,16 @@ impl System {
             DcBitmap::Screen => Some(self.screen_bitmap()),
             DcBitmap::Window(index) => self.dc_view(dc, index, false),
             DcBitmap::Whole(index) => self.dc_view(dc, index, true),
-            DcBitmap::Bitmap(object) => match &self.gdi.objects[object] {
-                GdiObject::Bitmap(bitmap) => Some(bitmap.pixels.clone()),
-                _ => None,
-            },
+            // Moved where `SetDCOrg` put its corner (`visnext`).
+            DcBitmap::Bitmap(object) => {
+                match (&self.gdi.objects[object], self.gdi.dcs[dc].state.origin) {
+                    (GdiObject::Bitmap(bitmap), Some(origin)) if origin != (0, 0) => {
+                        Some(bitmap.pixels.moved(origin))
+                    }
+                    (GdiObject::Bitmap(bitmap), _) => Some(bitmap.pixels.clone()),
+                    _ => None,
+                }
+            }
         }
     }
 }

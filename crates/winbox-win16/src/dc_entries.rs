@@ -415,8 +415,15 @@ impl System {
             let parent = self.parent_hwnd(hwnd);
             let parent_style = self.user_style(parent);
 
+            // Not asked of a window made for 3.10, USER's bit 2 of the
+            // byte at 26h (`851a`; `visr31`).
+            let for_31 = self
+                .window_named(hwnd)
+                .and_then(|index| self.windows[index].as_ref())
+                .is_some_and(|window| window.for_31);
+
             if parent != 0
-                && parent_style & WS_CLIPCHILDREN == 0
+                && (for_31 || parent_style & WS_CLIPCHILDREN == 0)
                 && low & (DCX_CLIPCHILDREN | DCX_CLIPSIBLINGS) == 0
                 && (parent_style ^ style) & WS_VISIBLE == 0
             {
