@@ -6,7 +6,7 @@ ordinal: 294
 summary: Keeps one window and those in it from drawing on the screen until it is unlocked, then has what was drawn over made due through the desktop.
 versions:
   '3.1': partial
-probes: [lockupd, vislock, vislk2]
+probes: [lockupd, vislock, vislk2, edsun]
 source: crates/winbox-win16/src/user_calls/lock_update.rs
 topics: [painting, visible-regions]
 ---
@@ -45,7 +45,7 @@ topics: [painting, visible-regions]
 ## Nuances
 
 - [[read out]] A window locked off the screen keeps no rectangle; unlocking it makes every window due. Not recorded.
-- [[read out]] With `Edsun=` in `WIN.INI`'s `[Windows]` (`USER.EXE` seg3 `2236`-`2245`), the rectangle is two pixels wider each side (`1ee9`-`1ef7`). Not followed.
+- [[read out]] With `Edsun=` in `WIN.INI`'s `[Windows]` (`USER.EXE` seg3 `2236`-`2245`), the rectangle is two pixels wider on the left and on the right (`1ee9`-`1ef7`), as a `CS_SAVEBITS` window's is. [[measured]] [[probe:edsun]]: with `Edsun=1`, a pixel drawn a pixel left of the locked window is made due as the lock is let go, and one drawn a pixel left of a window that saved bits throws its bits away; without it, neither.
 
 ## Implementation
 

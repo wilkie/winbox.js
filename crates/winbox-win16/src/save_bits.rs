@@ -112,6 +112,7 @@ impl System {
             i32::from(self.display.height),
         );
         let place = self.window_rect(index);
+        let place = self.kept_rect(place);
         let rect: Rect = [
             place[0].max(0),
             place[1].max(0),

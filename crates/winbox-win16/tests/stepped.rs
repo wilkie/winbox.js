@@ -495,6 +495,7 @@ const STEPPED: &[&str] = &[
     "visr31",
     "setpar",
     "visprn",
+    "edsun",
 ];
 
 /// The probes whose runs bring up USER's boxes, answered by the hand

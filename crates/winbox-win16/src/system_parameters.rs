@@ -126,6 +126,10 @@ pub struct Parameters {
     pub icon_title_font: [u8; 50],
     /// Whether Alt+Tab switches at once (`[1AEh]`).
     pub fast_task_switch: u16,
+    /// `[Windows]` `Edsun=`, read as USER starts (`[0EEh]`, seg3
+    /// `2236`-`2245`): set, the rectangles USER keeps as they were are two
+    /// pixels wider each side across (seg13 `1ee9`-`1ef7`; `edsun`).
+    pub edsun: u16,
     /// The wallpaper, as `SPI_SETDESKWALLPAPER` last loaded one: none for
     /// "(None)" (`desktop_paint.rs` paints it).
     pub wallpaper: Option<Wallpaper>,
@@ -149,6 +153,17 @@ pub struct Wallpaper {
 }
 
 impl System {
+    /// A rectangle of the screen USER is to keep as it was, as seg13
+    /// `1ee9`-`1ef7` makes it: two pixels wider on the left and the right
+    /// where `Edsun=` is set.
+    pub(crate) fn kept_rect(&mut self, rect: [i32; 4]) -> [i32; 4] {
+        if self.parameters().edsun != 0 {
+            [rect[0] - 2, rect[1], rect[2] + 2, rect[3]]
+        } else {
+            rect
+        }
+    }
+
     /// The settings, read from `WIN.INI` the first time, as USER reads
     /// them as it starts; and the double-click time and the mouse's
     /// buttons with them, where nothing set them yet.
@@ -252,6 +267,7 @@ impl System {
             ],
             icon_title_font: icon_title_font_of_profile(self),
             fast_task_switch: setting(self, b"CoolSwitch", 1),
+            edsun: setting(self, b"Edsun", 0),
             wallpaper: None,
             pattern: None,
         }

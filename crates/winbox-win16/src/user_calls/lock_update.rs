@@ -552,7 +552,8 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
             i32::from(system.display.width),
             i32::from(system.display.height),
         ];
-        let rect = cut(system.window_rect(window), screen);
+        let place = system.window_rect(window);
+        let rect = cut(system.kept_rect(place), screen);
         let rect = (!is_empty(rect)).then_some(rect);
 
         system.user_calls.locked = Some(Lock {
