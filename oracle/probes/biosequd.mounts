@@ -1,0 +1,3 @@
+# Floppy images as A: and D:, B: with nothing: see biosequ.c.
+a: imgflop.img floppy
+d: imgwrite.img floppy

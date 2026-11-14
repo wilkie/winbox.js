@@ -809,7 +809,6 @@ pub fn run_setup<T>(
     let c = HostDrive::layered(drive.join("C"), setup.beneath.lowers());
 
     std::fs::create_dir_all(drive.join("A")).unwrap();
-    std::fs::create_dir_all(drive.join("Z")).unwrap();
     setup
         .system
         .files
@@ -822,10 +821,7 @@ pub fn run_setup<T>(
 
         setup.system.files.unlink('C', &parts, &name);
     }
-    setup
-        .system
-        .files
-        .mount('Z', HostDrive::new(drive.join("Z")));
+    setup.system.files.mount('Z', MemoryDrive::virtual_drive());
     mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
 
     let upper = setup.upper.clone();
@@ -1055,7 +1051,7 @@ pub fn run_in_memory(
 
     setup.system.files.mount('A', MemoryDrive::removable());
     setup.system.files.mount('C', c);
-    setup.system.files.mount('Z', MemoryDrive::new());
+    setup.system.files.mount('Z', MemoryDrive::virtual_drive());
     mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
 
     let upper = setup.upper.clone();
@@ -1088,7 +1084,7 @@ pub fn run_drive(
 
     system.files.mount('A', MemoryDrive::removable());
     system.files.mount('C', c);
-    system.files.mount('Z', MemoryDrive::new());
+    system.files.mount('Z', MemoryDrive::virtual_drive());
 
     let setup = Setup { system, ..setup };
     let engine = winbox_win16::Engine::new(setup.start(prepare));
@@ -1244,7 +1240,8 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed",
+    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
+    "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1333,38 +1330,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "solodata:flags",
         "the module's database holds its file's header, not the bits KERNEL sets in its flags",
-    ),
-    // DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
-    // whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
-    // is its own, "512,127,16513,0" (`drive_virtual.cpp`), whose byte in
-    // DOS's table of media bytes no `MOUNT` writes, so nought. winbox.js's
-    // C:, a FAT16 volume, answers the folder's figures too; its Z: is an
-    // empty folder, which answers a folder's figures and F8h. A:, B:, C:
-    // and the numbers past Z: agree, for 36h, 1Bh and 1Ch, and where
-    // 1Ch's DS:BX points (`diskfree`, `diskmed`).
-    (
-        "diskfree:space",
-        "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
-    ),
-    (
-        "diskfree:allocation",
-        "there is no Z: here, DOSBox's own drive, 512,127,16513",
-    ),
-    (
-        "diskfree:media",
-        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-    ),
-    (
-        "diskmed:call",
-        "there is no Z: here, DOSBox's own drive, 512,127,16513",
-    ),
-    (
-        "diskmed:media",
-        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-    ),
-    (
-        "diskmed:table",
-        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
     ),
     // GlobalReAlloc growing a block past one allocated after it moves it in
     // Windows, its selector the same; winbox.js gives each selector a 64 KiB

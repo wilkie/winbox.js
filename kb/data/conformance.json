@@ -5279,15 +5279,15 @@
   "functions": {
    "allocation": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 3,
-    "agreed": 2,
-    "disagreed": 1,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5300,17 +5300,13 @@
    },
    "space": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "space": "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
-   "allocation": "there is no Z: here, DOSBox's own drive, 512,127,16513",
-   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
-  }
+  "gaps": {}
  },
  "diskmed": {
   "probe": "diskmed",
@@ -5320,15 +5316,15 @@
   "functions": {
    "call": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5341,17 +5337,13 @@
    },
    "table": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "call": "there is no Z: here, DOSBox's own drive, 512,127,16513",
-   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-   "table": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
-  }
+  "gaps": {}
  },
  "diskmeta": {
   "probe": "diskmeta",
@@ -7483,15 +7475,15 @@
   "functions": {
    "call": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7504,17 +7496,13 @@
    },
    "table": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "call": "there is no Z: here, DOSBox's own drive, 512,127,16513",
-   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-   "table": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
-  }
+  "gaps": {}
  },
  "enhanced/diskser": {
   "probe": "diskser",

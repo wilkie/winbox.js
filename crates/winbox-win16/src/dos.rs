@@ -25,9 +25,6 @@ const ERROR_NOT_SAME_DEVICE: u16 = 0x11;
 const ERROR_NO_MORE_FILES: u16 = 0x12;
 const ERROR_FILE_EXISTS: u16 = 0x50;
 
-/// The attributes a program may set: read-only, hidden, system, archive.
-const SETTABLE: u8 = 0x27;
-
 /// Where the interrupt descriptor table is kept: see `task.rs`.
 const IDT: u32 = 0xffd << 16;
 
@@ -39,6 +36,32 @@ const IDT: u32 = 0xffd << 16;
 /// selector's base C8010h, BX 4 for C:.
 const MEDIA_TABLE_SEGMENT: u16 = 0xc801;
 const MEDIA_TABLE: u32 = winbox_machine::FIRST_MEGABYTE + (MEDIA_TABLE_SEGMENT as u32) * 16;
+
+/// Where DOS keeps the drives' parameter blocks, as 1Fh and 32h point at
+/// them: DOSBox's fake table, `dos.tables.dpb`, two paragraphs of its DOS's
+/// own memory, each of the 26 bytes its own place, the drive's number
+/// (`dos_tables.cpp` 153-155), after the media table's 4 paragraphs, the
+/// two transfer areas' 4 each, the lead-byte table's 12, the file name
+/// characters' 2, the collating sequence's 25 and the FCB table's 4 (77-79,
+/// 110-148). **Recorded** by `drvdpb`: the selector's base C8380h, BX the
+/// drive from nought for A:.
+const PARAMETER_BLOCKS_SEGMENT: u16 = MEDIA_TABLE_SEGMENT + 4 + 4 + 4 + 12 + 2 + 25 + 4;
+const PARAMETER_BLOCKS: u32 =
+    winbox_machine::FIRST_MEGABYTE + (PARAMETER_BLOCKS_SEGMENT as u32) * 16;
+
+/// The fake disk buffer's head DOSBox makes after the parameter blocks, six
+/// paragraphs (`dos_tables.cpp` 157-164): its forward and backward
+/// pointers `FFFFh`, its drive `FFh`, not in use; its count of FATs 1; its
+/// pointer to a parameter block `FFFFFFFFh`; the rest nought. A program
+/// copying a parameter block from near Z:'s reads into it, as `drvdpb`
+/// records.
+const DISK_BUFFER: u32 = PARAMETER_BLOCKS + 2 * 16;
+const DISK_BUFFER_FORWARD: u32 = 0x00;
+const DISK_BUFFER_BACKWARD: u32 = 0x02;
+const DISK_BUFFER_DRIVE: u32 = 0x04;
+const DISK_BUFFER_FATS: u32 = 0x0a;
+const DISK_BUFFER_PARAMETERS: u32 = 0x0d;
+const DISK_BUFFER_SIZE: u32 = 6 * 16;
 
 /// A file's position moved as DOSBox moves it (`localFile::Seek`): from
 /// its start, where it is, or its end (`basis` 0, 1, 2); a position before
@@ -305,11 +328,11 @@ impl System {
     fn dos_function(&mut self) -> Result<(), Stop> {
         let ax = self.cpu.regs[AX];
         let flagged = match ax >> 8 {
+            // The drive selected: AL the drives there may be.
             0x0e => {
-                // The drive selected, if it is there: AL the drives there may be.
                 let drive = self.low(DX);
 
-                if drive < 26 && self.files.mounted(char::from(b'A' + drive)) {
+                if self.selects(drive) {
                     self.files.drive = char::from(b'A' + drive);
                 }
 
@@ -337,6 +360,11 @@ impl System {
                 let drive = if ax >> 8 == 0x1b { 0 } else { self.low(DX) };
 
                 self.allocation_information(drive);
+                None
+            }
+            // A drive's parameter block, 1Fh the current drive's.
+            0x1f | 0x32 => {
+                self.parameter_block(ax >> 8 == 0x1f);
                 None
             }
             0x25 => {
@@ -469,9 +497,7 @@ impl System {
                     self.set_low(DX, 3);
                     None
                 }
-                0x4400 => Some(self.device_information()),
-                0x4401 => Some(self.set_device_information()),
-                0x4408 | 0x4409 | 0x440d | 0x440e => Some(self.drive_ioctl(ax)),
+                0x4400..=0x44ff => Some(self.ioctl(ax)),
                 _ => {
                     self.unanswered_dos.push(ax);
                     None
@@ -485,6 +511,7 @@ impl System {
                 Err(error) => {
                     self.cpu.flags |= CARRY;
                     self.cpu.regs[AX] = error;
+                    self.dos_error = error;
                 }
             }
         }
@@ -516,26 +543,127 @@ impl System {
             .drive_letter(drive)
             .and_then(|letter| Some((letter, self.files.allocation(letter)?)));
 
+        self.write_media_table();
+
         let Some((letter, allocation)) = found else {
             self.set_low(AX, 0xff);
             self.dos_segment_back(None);
             return;
         };
 
-        // The table as DOSBox's drives wrote it, each as it was mounted.
-        for (at, each) in ('A'..='Z').enumerate() {
-            let byte = self.files.media_byte(each);
-
-            self.cpu
-                .bus
-                .write16(MEDIA_TABLE + 2 * at as u32, u16::from(byte));
-        }
-
         self.set_low(AX, allocation.sectors_per_cluster as u8);
         self.cpu.regs[CX] = allocation.bytes_per_sector;
         self.cpu.regs[DX] = allocation.clusters;
         self.cpu.regs[BX] = 2 * u16::from(letter as u8 - b'A');
         self.dos_segment_back(Some(MEDIA_TABLE_SEGMENT));
+    }
+
+    /// DOS's table of media bytes as DOSBox's drives write it: each drive's
+    /// word as its disk comes -- `MOUNT` and `IMGMOUNT` write it as they
+    /// mount (`dos_programs.cpp` 207-219, 398, 1092-1104, 1267) -- and not
+    /// at each call. Written here as each call that points at it is made,
+    /// for the drives whose byte is not the one written last; so what a
+    /// program writes there stays until its drive's disk changes.
+    /// **Recorded** by `drvdpb`: 55h written over C:'s byte stays through
+    /// 1Ch of another drive, 1Ch of C: and 36h.
+    fn write_media_table(&mut self) {
+        for (at, each) in ('A'..='Z').enumerate() {
+            let byte = self.files.media_byte(each);
+
+            if self.media_written[at] != Some(byte) {
+                self.media_written[at] = Some(byte);
+                self.cpu
+                    .bus
+                    .write16(MEDIA_TABLE + 2 * at as u32, u16::from(byte));
+            }
+        }
+    }
+
+    /// 1Fh's and 32h's answer, as DOSBox's gives it (`dos.cpp` 427-442):
+    /// for a drive that is there -- DL's, nought the current one, or the
+    /// current one for 1Fh -- AL nought, DS:BX the drive's byte in DOSBox's
+    /// fake table of parameter blocks (`PARAMETER_BLOCKS`), the drive's own
+    /// number; else AL `FFh`. DOSX makes 32h's segment a selector, as 1Ch's
+    /// (its table's way back 0032h, at 198h of its protected-mode segment),
+    /// but gives 1Fh nothing back (14Ch, nought), so a program in standard
+    /// mode keeps its own DS; WIN386 makes both selectors. KERNEL passes 1Fh
+    /// on (`KRNL386.EXE` seg1 `1a5a`'s entry `1bc5`) and takes 32h to
+    /// `15f4`, which passes it on but for a drive its own table at `286h` of
+    /// its data marks, none here. **Recorded** by `drvdpb` in both modes.
+    /// DOSBox looks past its 26 drives for DL past 1Ah, unrecorded; here
+    /// that is no drive.
+    fn parameter_block(&mut self, current: bool) {
+        let drive = if current { 0 } else { self.low(DX) };
+        let letter = self
+            .drive_letter(drive)
+            .filter(|&letter| self.files.has_disk(letter));
+
+        let Some(letter) = letter else {
+            self.set_low(AX, 0xff);
+            self.dos_segment_back(None);
+            return;
+        };
+
+        for number in 0..26u8 {
+            self.cpu
+                .bus
+                .write8(PARAMETER_BLOCKS + u32::from(number), number);
+        }
+
+        for at in 26..DISK_BUFFER - PARAMETER_BLOCKS {
+            self.cpu.bus.write8(PARAMETER_BLOCKS + at, 0);
+        }
+
+        for at in 0..DISK_BUFFER_SIZE {
+            self.cpu.bus.write8(DISK_BUFFER + at, 0);
+        }
+
+        self.cpu
+            .bus
+            .write16(DISK_BUFFER + DISK_BUFFER_FORWARD, 0xffff);
+        self.cpu
+            .bus
+            .write16(DISK_BUFFER + DISK_BUFFER_BACKWARD, 0xffff);
+        self.cpu.bus.write8(DISK_BUFFER + DISK_BUFFER_DRIVE, 0xff);
+        self.cpu.bus.write8(DISK_BUFFER + DISK_BUFFER_FATS, 1);
+        self.cpu
+            .bus
+            .write32(DISK_BUFFER + DISK_BUFFER_PARAMETERS, 0xffff_ffff);
+
+        self.set_low(AX, 0);
+        self.cpu.regs[BX] = u16::from(letter as u8 - b'A');
+
+        if !current || self.at_real_call() || self.dpmi_enhanced() {
+            self.dos_segment_back(Some(PARAMETER_BLOCKS_SEGMENT));
+        }
+    }
+
+    /// Whether 0Eh makes a drive, from nought for A:, the current one.
+    /// DOSBox's `DOS_SetDefaultDrive` takes A: and B: whether or not
+    /// anything is mounted, and another drive where one is (`dos_files.cpp`
+    /// 54-57). KERNEL's 0Eh, in front of it, sends a drive its table at
+    /// `286h` of its data marks to DOS as F0h, no drive (`KRNL386.EXE` seg1
+    /// `148a`-`14c9`, `16d8`): the table is made as Windows starts, a byte
+    /// for each drive, the drive `InquireSystem` names as the one this is
+    /// another name for where it calls this one no drive or one it cannot
+    /// tell (seg1 `9bab`-`9bcc`: AX below 2, DL kept) -- B: where there is
+    /// one floppy drive or none (`drive_inquiry`). A real-mode call through
+    /// DPMI's 0300h reaches DOS without KERNEL. **Recorded** by `biosequ`,
+    /// `biosequa`, `biosequ2` and `biosequd`: A: is made current with
+    /// nothing in it, B: only with two floppy images mounted, though not
+    /// itself mounted.
+    fn selects(&self, drive: u8) -> bool {
+        if drive >= 26 {
+            return false;
+        }
+
+        let marked = !self.at_real_call() && {
+            let (kind, alias) = crate::modules_kernel::drive_inquiry(self, i32::from(drive));
+
+            kind < 2 && alias != 0
+        };
+
+        !marked && (drive < 2 || self.files.mounted(char::from(b'A' + drive)))
     }
 
     /// A drive by its number, nought the current one.
@@ -620,6 +748,66 @@ impl System {
         }
 
         Ok(())
+    }
+
+    /// IOCTL, AL the function, as DOSBox's `DOS_IOCTL` answers it
+    /// (`dos_ioctl.cpp` 30-218). AL below 4, 6, 7, 0Ah, 0Ch and 10h take a
+    /// handle in BX, error 6 for one not open; the rest below 12h but 0Bh a
+    /// drive in BL, error 0Fh for one not there (`drive_ioctl`); 12h and
+    /// above error 1. Of the handle's: 00h and 01h a device's information;
+    /// 02h and 03h, the control channel, error 1, as no device of DOSBox's
+    /// a Windows program has open has one; 06h AL nought for a device ready
+    /// for input, as CON is (its information's bit 6), and for a file AL
+    /// `FFh` before its end, nought at it; 07h AL `FFh`; the rest error 1.
+    /// 0Bh, the sharing retry count, refuses DX nought and sets nothing.
+    /// **Recorded** by `ioctlall` in both modes, every register but AX as
+    /// it was; and by `drvioctl`.
+    fn ioctl(&mut self, ax: u16) -> Result<(), u16> {
+        let function = ax as u8;
+
+        match function {
+            0x00..=0x03 | 0x06 | 0x07 | 0x0a | 0x0c | 0x10 => {
+                let handle = usize::from(self.cpu.regs[BX]);
+                let file = self.files.resolve(handle).is_some();
+
+                if !file && handle > 4 {
+                    return Err(ERROR_INVALID_HANDLE);
+                }
+
+                match function {
+                    0x00 => self.device_information(),
+                    0x01 => self.set_device_information(),
+                    0x06 => {
+                        let ready = match self.files.resolve(handle) {
+                            Some(file) => {
+                                let at = file.seek(SeekFrom::Current(0)).unwrap_or(0);
+
+                                at < file.size()
+                            }
+                            None => false,
+                        };
+
+                        self.set_low(AX, if ready { 0xff } else { 0 });
+                        Ok(())
+                    }
+                    0x07 => {
+                        self.set_low(AX, 0xff);
+                        Ok(())
+                    }
+                    _ => Err(ERROR_INVALID_FUNCTION),
+                }
+            }
+            0x0b if self.cpu.regs[DX] == 0 => Err(ERROR_INVALID_FUNCTION),
+            0x0b => Ok(()),
+            0x08 | 0x09 | 0x0d | 0x0e => self.drive_ioctl(ax),
+            0x04 | 0x05 | 0x0f | 0x11 => {
+                self.drive_letter(self.low(BX))
+                    .filter(|&letter| self.files.has_disk(letter))
+                    .ok_or(ERROR_INVALID_DRIVE)?;
+                Err(ERROR_INVALID_FUNCTION)
+            }
+            _ => Err(ERROR_INVALID_FUNCTION),
+        }
     }
 
     fn device_information(&mut self) -> Result<(), u16> {
@@ -1257,7 +1445,7 @@ impl System {
 
     fn file_attributes(&mut self) -> Result<(), u16> {
         let path = self.string_at(DS, DX);
-        let (drive, parts, name) = resolve_file(&self.files, &path);
+        let drive = resolve_file(&self.files, &path).0;
 
         // A disk image's found as DOSBox's `GetFileAttr` finds them, and
         // set as its `DOS_SetFileAttr` sets them: not at all, the file
@@ -1269,10 +1457,30 @@ impl System {
                 return Err(ERROR_ACCESS_DENIED);
             }
 
-            let attributes = self.attributes_of(&path)?;
+            // The path made whole as `DOS_MakeName` makes it, so `A:\SUB\..`
+            // is the root. A FAT image's root is never found: its
+            // `GetFileAttr` looks for the root's entry by a name
+            // `getEntryName` never sets for it (`drive_fat.cpp` 397-416,
+            // 969-996). Not found, 4300h is file not found
+            // (`DOS_GetFileAttr`), and 4301h answers the error the image's
+            // search set as it ran out, no more files (`FindNextInternal`,
+            // 922, 935). Found, 4300h answers the attributes in AX as in CX,
+            // and 4301h AX 0202h (`dos.cpp` 629-651). **Recorded** by
+            // `imgroot`; a disc's root answers 31h.
+            self.refused_name(&path)?;
+
+            let (_, mut whole) = resolve_directory(&self.files, &path);
+            let name = whole.pop().unwrap_or_default();
+            let attributes = self.files.image_attributes(drive, &whole, &name);
 
             if self.low(AX) == 0 {
-                self.cpu.regs[CX] = u16::from(attributes);
+                let attributes = u16::from(attributes.ok_or(ERROR_FILE_NOT_FOUND)?);
+
+                self.cpu.regs[CX] = attributes;
+                self.cpu.regs[AX] = attributes;
+            } else {
+                attributes.ok_or(ERROR_NO_MORE_FILES)?;
+                self.cpu.regs[AX] = 0x0202;
             }
 
             return Ok(());
@@ -1282,65 +1490,43 @@ impl System {
         // answers: the path made whole by `DOS_MakeName` -- `.` and `..`
         // taken, a trailing backslash dropped, nothing left the root
         // (`dos_files.cpp` 107-184) -- then the host's `stat` of it: 20h,
-        // 10h added for a folder (`localDrive::GetFileAttr`,
-        // `drive_local.cpp` 287-302). Not there, its folder or not, error 2
-        // (`DOS_GetFileAttr`, 632-641). **Recorded** by `rootattr`. No name
-        // at all, file not found (60-65); no drive, path not found (75-78).
-        if self.low(AX) == 0 {
-            if path.is_empty() || path.starts_with(' ') {
-                return Err(ERROR_FILE_NOT_FOUND);
-            }
-
-            if !self.files.is_directory(drive, &[]) {
-                return Err(ERROR_PATH_NOT_FOUND);
-            }
-
-            let (_, mut whole) = resolve_directory(&self.files, &path);
-            let folder = match whole.pop() {
-                None => true,
-                Some(last) => {
-                    self.files
-                        .lookup(drive, &whole, &last)
-                        .ok_or(ERROR_FILE_NOT_FOUND)?
-                        .attributes
-                        & 0x10
-                        != 0
-                }
-            };
-
-            self.cpu.regs[CX] = if folder { 0x30 } else { 0x20 };
-            return Ok(());
+        // 10h added for a folder, in CX and AX (`localDrive::GetFileAttr`,
+        // `drive_local.cpp` 287-302; `dos.cpp` 629-641). Not there, its
+        // folder or not, error 2 (`DOS_GetFileAttr`, 632-641). **Recorded**
+        // by `rootattr` and `hostattr`. No name at all, file not found
+        // (60-65); no drive, path not found (75-78).
+        //
+        // 4301h sets nothing (`DOS_SetFileAttr`, 643-656): the file only
+        // looked for, AX 0202h where it is there; where it is not, no error
+        // is set, and the error DOS held before is answered (`dos.cpp`
+        // 642-651). **Recorded** by `hostattr`.
+        if path.is_empty() || path.starts_with(' ') {
+            return Err(ERROR_FILE_NOT_FOUND);
         }
 
-        if !self.files.is_directory(drive, &parts) {
+        if !self.files.is_directory(drive, &[]) {
             return Err(ERROR_PATH_NOT_FOUND);
         }
 
-        let entry = self
-            .files
-            .lookup(drive, &parts, &name)
-            .ok_or(ERROR_FILE_NOT_FOUND)?;
+        let (_, mut whole) = resolve_directory(&self.files, &path);
+        let found = match whole.pop() {
+            None => Some(true),
+            Some(last) => self
+                .files
+                .lookup(drive, &whole, &last)
+                .map(|entry| entry.attributes & 0x10 != 0),
+        };
 
         if self.low(AX) == 0 {
-            self.cpu.regs[CX] = u16::from(entry.attributes);
+            let folder = found.ok_or(ERROR_FILE_NOT_FOUND)?;
+
+            self.cpu.regs[CX] = if folder { 0x30 } else { 0x20 };
+            self.cpu.regs[AX] = self.cpu.regs[CX];
             return Ok(());
         }
 
-        let attributes = self.cpu.regs[CX];
-
-        if attributes & !u16::from(SETTABLE) != 0 {
-            return Err(ERROR_ACCESS_DENIED);
-        }
-
-        if !self.files.set_attributes(
-            drive,
-            &parts,
-            &name,
-            (entry.attributes & 0x10) | attributes as u8,
-        ) {
-            return Err(ERROR_ACCESS_DENIED);
-        }
-
+        found.ok_or(self.dos_error)?;
+        self.cpu.regs[AX] = 0x0202;
         Ok(())
     }
 
@@ -1874,5 +2060,197 @@ mod tests {
             assert_eq!(system.cpu.regs[DX], drive);
             assert_eq!(ds_base(&system), 0x5de0);
         }
+    }
+
+    /// INT 21h function 32h answers AL nought, BX the drive from nought for
+    /// A: and DS a selector for DOSBox's table of drive numbers at C838h,
+    /// each byte its own place, the disk buffer's head after it; AL `FFh`
+    /// for a drive with no disk. 1Fh, the current drive's, leaves the
+    /// program's DS in standard mode, as DOSX gives it nothing back
+    /// (`drvdpb`).
+    #[test]
+    fn points_at_dosboxs_table_of_drive_numbers() {
+        let mut system = System::new();
+
+        system
+            .files
+            .mount('A', winbox_machine::MemoryDrive::removable());
+        system.files.mount('C', winbox_machine::MemoryDrive::new());
+        system.files.drive = 'C';
+
+        system.cpu.regs[AX] = 0x32aa;
+        system.cpu.regs[BX] = 0x0b0b;
+        system.cpu.regs[DX] = 3;
+        system.dos_call().unwrap();
+
+        assert_eq!(system.cpu.regs[AX], 0x3200);
+        assert_eq!(system.cpu.regs[BX], 2);
+        assert_eq!(ds_base(&system), 0xc8380);
+
+        let table = winbox_machine::FIRST_MEGABYTE + 0xc8380;
+
+        assert_eq!(system.cpu.bus.read(table, 4), [0, 1, 2, 3]);
+        assert_eq!(
+            system.cpu.bus.read(table + 0x19, 8),
+            [0x19, 0, 0, 0, 0, 0, 0, 0xff]
+        );
+        assert_eq!(system.cpu.bus.read(table + 0x2a, 1), [1]);
+
+        system.cpu.regs[AX] = 0x32aa;
+        system.cpu.regs[BX] = 0x0b0b;
+        system.cpu.regs[DX] = 1;
+        system.dos_call().unwrap();
+
+        assert_eq!(system.cpu.regs[AX], 0x32ff);
+        assert_eq!(system.cpu.regs[BX], 0x0b0b);
+        assert_eq!(ds_base(&system), 0x5de0);
+
+        let own = system.cpu.segments[DS].selector;
+
+        system.cpu.regs[AX] = 0x1faa;
+        system.dos_call().unwrap();
+
+        assert_eq!(system.cpu.regs[AX], 0x1f00);
+        assert_eq!(system.cpu.regs[BX], 2);
+        assert_eq!(system.cpu.segments[DS].selector, own);
+        assert!(system.unanswered_dos.is_empty());
+    }
+
+    /// What a program writes over a drive's byte in DOS's table of media
+    /// bytes stays through the next 1Ch: DOSBox writes a drive's byte as it
+    /// mounts the drive (`drvdpb`). A disk that comes writes its own.
+    #[test]
+    fn keeps_a_programs_write_to_the_media_table() {
+        let mut system = System::new();
+        let table = winbox_machine::FIRST_MEGABYTE + 0xc8010;
+
+        system.files.mount('C', winbox_machine::MemoryDrive::new());
+        system.files.drive = 'C';
+        system.cpu.regs[AX] = 0x1c00;
+        system.cpu.regs[DX] = 3;
+        system.dos_call().unwrap();
+        assert_eq!(system.cpu.bus.read16(table + 4), 0xf8);
+
+        system.cpu.bus.write16(table + 4, 0x55);
+        system.cpu.regs[AX] = 0x1c00;
+        system.cpu.regs[DX] = 3;
+        system.dos_call().unwrap();
+        assert_eq!(system.cpu.bus.read16(table + 4), 0x55);
+
+        let mut floppy = winbox_machine::MemoryDrive::removable();
+
+        assert!(floppy.add_file("A.TXT", vec![1], 0));
+        system.files.mount('C', floppy);
+        system.cpu.regs[AX] = 0x1c00;
+        system.cpu.regs[DX] = 3;
+        system.dos_call().unwrap();
+        assert_eq!(system.cpu.bus.read16(table + 4), 0xf0);
+    }
+
+    /// The 44h functions `drvioctl` does not ask answer as DOSBox's
+    /// `DOS_IOCTL` does (`ioctlall`): a handle not open error 6, a drive not
+    /// there error 0Fh, 0Bh refusing DX nought, the rest error 1; 06h and
+    /// 07h AL nought or `FFh`. Every register but AX as it was.
+    #[test]
+    fn answers_the_rest_of_ioctl_as_dosbox() {
+        let mut system = System::new();
+
+        system.files.mount('C', winbox_machine::MemoryDrive::new());
+        system.files.drive = 'C';
+
+        for (ax, bx, dx, carry, after) in [
+            (0x4402, 99, 0x0218, true, 0x0006),
+            (0x4402, 1, 0x0218, true, 0x0001),
+            (0x4406, 1, 0x0218, false, 0x4400),
+            (0x4407, 1, 0x0218, false, 0x44ff),
+            (0x4410, 1, 0x0218, true, 0x0001),
+            (0x4404, 3, 0x0218, true, 0x0001),
+            (0x4411, 5, 0x0218, true, 0x000f),
+            (0x440b, 5, 0x0218, false, 0x440b),
+            (0x440b, 3, 0, true, 0x0001),
+            (0x4412, 3, 0x0218, true, 0x0001),
+        ] {
+            system.cpu.regs[AX] = ax;
+            system.cpu.regs[BX] = bx;
+            system.cpu.regs[CX] = 4;
+            system.cpu.regs[DX] = dx;
+            system.dos_call().unwrap();
+
+            assert_eq!(system.cpu.flags & super::CARRY != 0, carry, "{ax:04x}");
+            assert_eq!(system.cpu.regs[AX], after, "{ax:04x}");
+            assert_eq!(system.cpu.regs[BX], bx);
+            assert_eq!(system.cpu.regs[CX], 4);
+            assert_eq!(system.cpu.regs[DX], dx);
+        }
+
+        assert!(system.unanswered_dos.is_empty());
+    }
+
+    /// 0Eh makes A: current with nothing mounted, as DOSBox does, but not
+    /// B: with one floppy drive or none: KERNEL sends a drive its table
+    /// marks to DOS as none (`biosequ`, `biosequa`). With two floppy images
+    /// mounted B: is made current, though not itself mounted (`biosequd`).
+    #[test]
+    fn selects_a_and_b_as_kernel_and_dosbox_do() {
+        let select = |system: &mut System, drive: u16| {
+            system.cpu.regs[AX] = 0x0e00;
+            system.cpu.regs[DX] = drive;
+            system.dos_call().unwrap();
+            assert_eq!(system.cpu.regs[AX], 0x0e1a);
+            system.files.drive
+        };
+        let mut system = System::new();
+
+        system.files.mount('C', winbox_machine::MemoryDrive::new());
+        system.files.drive = 'C';
+        assert_eq!(select(&mut system, 0), 'A');
+        assert_eq!(select(&mut system, 2), 'C');
+        assert_eq!(select(&mut system, 1), 'C');
+        assert_eq!(select(&mut system, 4), 'C');
+
+        for letter in ['A', 'D'] {
+            let mut floppy = winbox_machine::MemoryDrive::removable();
+
+            assert!(floppy.add_file("A.TXT", vec![1], 0));
+            system.files.mount(letter, floppy);
+        }
+
+        assert_eq!(system.equipment(), 0xd467);
+        assert_eq!(select(&mut system, 1), 'B');
+    }
+
+    /// 4301h on a folder's drive sets nothing: AX 0202h where the file is
+    /// there, and a search and 4300h give 20h as before; of a name not
+    /// there, the error DOS answered last (`hostattr`).
+    #[test]
+    fn sets_no_attributes_on_a_folders_drive() {
+        let mut system = System::new();
+        let mut c = winbox_machine::MemoryDrive::new();
+
+        assert!(c.add_file("F.TXT", vec![1], 0));
+        system.files.mount('C', c);
+        system.files.drive = 'C';
+
+        let index = system
+            .global
+            .allocate(&mut system.cpu.bus, &mut system.descriptors, 64, 0)
+            .unwrap();
+        let selector = winbox_machine::segment_selector(index);
+        let name = |system: &mut System, ax: u16, path: &str, cx: u16| {
+            system.write_far(u32::from(selector) << 16, format!("{path}\0").as_bytes());
+            system.cpu.load_segment(DS, selector).unwrap();
+            system.cpu.regs[AX] = ax;
+            system.cpu.regs[CX] = cx;
+            system.cpu.regs[DX] = 0;
+            system.dos_call().unwrap();
+            (system.cpu.flags & super::CARRY != 0, system.cpu.regs[AX])
+        };
+
+        assert_eq!(name(&mut system, 0x4301, "C:\\F.TXT", 7), (false, 0x0202));
+        assert_eq!(name(&mut system, 0x4300, "C:\\F.TXT", 0), (false, 0x20));
+        assert_eq!(system.cpu.regs[CX], 0x20);
+        assert_eq!(name(&mut system, 0x3d00, "C:\\NONE.TXT", 0), (true, 2));
+        assert_eq!(name(&mut system, 0x3b00, "C:\\NOSUCH", 0), (true, 3));
+        assert_eq!(name(&mut system, 0x4301, "C:\\NONE.TXT", 0), (true, 3));
     }
 }

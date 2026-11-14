@@ -1,0 +1,254 @@
+{
+  "probe": "ioctlall",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "handle",
+      "args": "4402 file",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4402 std",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4402 bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4403 file",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4403 std",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4403 bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4406 file",
+      "result": "carry=0 ax=44ff dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4406 std",
+      "result": "carry=0 ax=4400 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4406 bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4407 file",
+      "result": "carry=0 ax=44ff dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4407 std",
+      "result": "carry=0 ax=44ff dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4407 bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "440a file",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "440a std",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "440a bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "440c file",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "440c std",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "440c bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4410 file",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4410 std",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4410 bad",
+      "result": "carry=1 ax=0006 dx=0214"
+    },
+    {
+      "function": "handle",
+      "args": "4406 end",
+      "result": "carry=0 ax=4400 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4404 0",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4404 3",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4404 5",
+      "result": "carry=1 ax=000f dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4405 0",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4405 3",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4405 5",
+      "result": "carry=1 ax=000f dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "440b 0",
+      "result": "carry=0 ax=440b dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "440b 3",
+      "result": "carry=0 ax=440b dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "440b 5",
+      "result": "carry=0 ax=440b dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4411 0",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4411 3",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "4411 5",
+      "result": "carry=1 ax=000f dx=0214"
+    },
+    {
+      "function": "drive",
+      "args": "440b dx0",
+      "result": "carry=1 ax=0001 dx=0000"
+    },
+    {
+      "function": "function",
+      "args": "4412",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "function",
+      "args": "4413",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "function",
+      "args": "44ff",
+      "result": "carry=1 ax=0001 dx=0214"
+    },
+    {
+      "function": "generic",
+      "args": "47",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "67",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "68",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "6a",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "6b",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "42",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "62",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "4a",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "00",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    },
+    {
+      "function": "generic",
+      "args": "61",
+      "result": "carry=1 ax=0001 buffer=untouched"
+    }
+  ]
+}

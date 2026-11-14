@@ -30,7 +30,7 @@ impl System {
         if Fm::decodes(port, true) {
             Some(self.fm_read(port))
         } else if port == CMOS_DATA {
-            self.cmos.read()
+            self.cmos.read(self.equipment())
         } else {
             None
         }

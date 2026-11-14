@@ -79,7 +79,7 @@ fn made(run: &serde_json::Value) -> Option<(System, String, Vec<u8>)> {
 
         setup.system.files.mount('A', MemoryDrive::removable());
         setup.system.files.mount('C', c);
-        setup.system.files.mount('Z', MemoryDrive::new());
+        setup.system.files.mount('Z', MemoryDrive::virtual_drive());
 
         let path = format!("C:\\{}.EXE", setup.upper);
 

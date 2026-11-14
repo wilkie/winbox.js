@@ -12,7 +12,7 @@ use std::collections::BTreeMap;
 use std::io::{ErrorKind, SeekFrom};
 use std::rc::Rc;
 
-use super::{Body, Entry, Files, Volume, stamp};
+use super::{Allocation, Body, Entry, Files, Volume, stamp};
 
 /// The host's time as seconds since 1970, which a file written is stamped
 /// with.
@@ -210,6 +210,8 @@ pub struct MemoryDrive {
     root: Folder,
     /// Whether the drive is removable, as a floppy is.
     pub removable: bool,
+    /// Whether the drive stands for DOSBox's own Z: (`virtual_drive`).
+    virtual_drive: bool,
     /// Where the time a file is written is read from.
     now: WallTime,
 }
@@ -226,7 +228,20 @@ impl MemoryDrive {
         Self {
             root: Folder::default(),
             removable: false,
+            virtual_drive: false,
             now: host_seconds,
+        }
+    }
+
+    /// An empty drive standing for DOSBox's own Z:, as the oracle's
+    /// machine has it: its room DOSBox's `Allocation::VIRTUAL`, and its
+    /// byte in DOS's table of media bytes nought, as no `MOUNT` writes it
+    /// (`dos_programs.cpp` 207-219). The files DOSBox keeps on it are not
+    /// here. **Recorded** by `diskfree` and `diskmed`.
+    pub fn virtual_drive() -> Self {
+        Self {
+            virtual_drive: true,
+            ..Self::new()
         }
     }
 
@@ -396,6 +411,28 @@ impl MemoryDrive {
 impl Volume for MemoryDrive {
     fn removable(&self) -> bool {
         self.removable
+    }
+
+    fn allocation(&self) -> Option<Allocation> {
+        if self.virtual_drive {
+            Some(Allocation::VIRTUAL)
+        } else if !self.removable {
+            Some(Allocation::FIXED)
+        } else if self.root.children.is_empty() {
+            None
+        } else {
+            Some(Allocation::FLOPPY)
+        }
+    }
+
+    fn media_byte(&self) -> u8 {
+        if self.virtual_drive {
+            0
+        } else if self.removable {
+            0xf0
+        } else {
+            0xf8
+        }
     }
 
     fn memory(&self) -> Option<&MemoryDrive> {

@@ -1,0 +1,74 @@
+{
+  "probe": "biosequd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "int11",
+      "args": "",
+      "result": "d467"
+    },
+    {
+      "function": "cmos",
+      "args": "14",
+      "result": "67"
+    },
+    {
+      "function": "type",
+      "args": "0",
+      "result": "2"
+    },
+    {
+      "function": "type",
+      "args": "1",
+      "result": "2"
+    },
+    {
+      "function": "type",
+      "args": "2",
+      "result": "3"
+    },
+    {
+      "function": "type",
+      "args": "3",
+      "result": "3"
+    },
+    {
+      "function": "type",
+      "args": "4",
+      "result": "0"
+    },
+    {
+      "function": "select",
+      "args": "0",
+      "result": "count=26 current=0"
+    },
+    {
+      "function": "select",
+      "args": "1",
+      "result": "count=26 current=1"
+    },
+    {
+      "function": "select",
+      "args": "2",
+      "result": "count=26 current=2"
+    },
+    {
+      "function": "select",
+      "args": "3",
+      "result": "count=26 current=3"
+    },
+    {
+      "function": "select",
+      "args": "4",
+      "result": "count=26 current=2"
+    }
+  ]
+}

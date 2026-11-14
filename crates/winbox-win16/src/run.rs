@@ -216,6 +216,7 @@ impl System {
                             self.absolute_disk();
                             self.instructions += 1;
                         }
+                        0x11 => self.equipment_interrupt(),
                         0x12 => self.memory_size_interrupt(),
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
@@ -255,6 +256,21 @@ impl System {
 }
 
 impl System {
+    /// The BIOS's equipment word, as DOSBox's BIOS keeps it: its own
+    /// fixed bits and the floppy images mounted (`cmos::equipment`).
+    pub(crate) fn equipment(&self) -> u16 {
+        crate::cmos::equipment(self.files.floppy_disks())
+    }
+
+    /// The BIOS's equipment word, `INT 11h`, as DOSBox's `INT11_Handler`
+    /// answers it (`ints/bios.cpp` 364-367), **recorded** by `biosequ` and
+    /// its kin through Windows, in both modes alike.
+    fn equipment_interrupt(&mut self) {
+        self.cpu.regs[winbox_cpu::AX] = self.equipment();
+        self.cpu.ip += 2;
+        self.instructions += 1;
+    }
+
     /// The BIOS's conventional memory, in KB, `INT 12h`: 640, as DOSBox's
     /// `INT12_Handler` answers the word it set (`ints/bios.cpp` 413-414,
     /// 873), **recorded** by `biosmem` through Windows.
