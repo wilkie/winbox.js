@@ -627,39 +627,8 @@ impl Engine {
 
             // One of USER's entries (`dc_entries`): `GetDCEx` with
             // `DCX_USESTYLE` and `DCX_INTERSECTRGN` of the update region
-            // (`USER.EXE` seg1 `7640`-`7671`; `visrgn`): its visible region
-            // USER's rule's within what is to be painted, where that is
-            // known; the whole client area where it is all due. Where its
-            // `WM_PAINT` was not taken, the update region as it is now --
-            // none, and the region is empty (`86e7`-`873f`: `SetRectRgn`
-            // of nothing), nothing drawn (`visnext`, `nothing`).
-            let window = system.painted(index);
-            let due = if window.paint_taken {
-                match (window.paint_clip, &window.paint_shape) {
-                    (Some([left, top, right, bottom]), Some(shape)) => {
-                        Some(ClipRegion::rect(left, top, right, bottom).intersect(shape))
-                    }
-                    (Some([left, top, right, bottom]), None) => {
-                        Some(ClipRegion::rect(left, top, right, bottom))
-                    }
-                    (None, shape) => shape.clone(),
-                }
-            } else if window.needs_paint && window.dirty.is_none() {
-                None
-            } else {
-                Some(system.update_region(index))
-            };
-
-            {
-                let window = system.painted_mut(index);
-
-                if !window.paint_taken {
-                    window.dirty = None;
-                    window.dirty_shape = None;
-                }
-
-                window.paint_taken = false;
-            }
+            // (`USER.EXE` seg1 `7640`-`7671`; `visrgn`).
+            let due = system.paint_due(index);
             let flags = 0x0003_0000
                 | if due.is_some() {
                     crate::window_vis::DCX_INTERSECTRGN
@@ -803,6 +772,40 @@ pub fn begin_paint(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 impl System {
+    /// What `BeginPaint` intersects a window's visible region with, taken
+    /// off the window: what is to be painted, where that is known; none for
+    /// the whole client area where it is all due. Where its `WM_PAINT` was
+    /// not taken, the update region as it is now -- empty where there is
+    /// none, which leaves the context nothing (`86e7`-`873f`: `SetRectRgn`
+    /// of nothing; `visnext`, `nothing`).
+    fn paint_due(&mut self, index: usize) -> Option<ClipRegion> {
+        let window = self.painted(index);
+        let due = if window.paint_taken {
+            match (window.paint_clip, &window.paint_shape) {
+                (Some([left, top, right, bottom]), Some(shape)) => {
+                    Some(ClipRegion::rect(left, top, right, bottom).intersect(shape))
+                }
+                (Some([left, top, right, bottom]), None) => {
+                    Some(ClipRegion::rect(left, top, right, bottom))
+                }
+                (None, shape) => shape.clone(),
+            }
+        } else if window.needs_paint && window.dirty.is_none() {
+            None
+        } else {
+            Some(self.update_region(index))
+        };
+        let window = self.painted_mut(index);
+
+        if !window.paint_taken {
+            window.dirty = None;
+            window.dirty_shape = None;
+        }
+
+        window.paint_taken = false;
+        due
+    }
+
     /// `EndPaint` of a window by its index, given the context `BeginPaint`
     /// gave: the paint's clip goes, and its context.
     pub(crate) fn end_paint(&mut self, hwnd: u16, index: usize, hdc: u16) {

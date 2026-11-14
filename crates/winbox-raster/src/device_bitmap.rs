@@ -183,6 +183,7 @@ impl DeviceBitmap {
     /// device context's bitmap after `SetDCOrg`, which moves its drawing
     /// as it moves a window's (`visnext`'s `memory`). The pixels reached
     /// are the bitmap's own, wherever they now are.
+    #[must_use]
     pub fn moved(&self, origin: (i32, i32)) -> Self {
         let (x, y) = origin;
         let mut moved = self.clone();
