@@ -116,7 +116,33 @@ const CODE_PAGES = {
 
 /** Bytes in a Windows code page (1252 where the page is not one a decoder knows). */
 export function decode(bytes, codePage = 1252) {
-  return new TextDecoder(CODE_PAGES[codePage] ?? 'windows-1252').decode(bytes);
+  const page = CODE_PAGES[codePage] ?? 'windows-1252';
+
+  /*
+   * Text in Windows-1252 never holds the five bytes that page leaves
+   * undefined (81h, 8Dh, 8Fh, 90h, 9Dh); text that does was written in a
+   * DOS editor, in DOS's page (81h is "ü" there).
+   */
+  /*
+   * Nor, between two letters, one of the punctuation marks it puts at
+   * 80h-9Fh ("Cin‚tic" is DOS's "Cinétic").
+   */
+  const letter = (byte) => /[A-Za-z]/.test(String.fromCharCode(byte));
+  const punctuation = (byte) =>
+    byte >= 0x80 &&
+    byte <= 0x9f &&
+    ![0x83, 0x8a, 0x8c, 0x8e, 0x9a, 0x9c, 0x9e, 0x9f].includes(byte);
+  const dos = [...bytes].some(
+    (byte, at) =>
+      [0x81, 0x8d, 0x8f, 0x90, 0x9d].includes(byte) ||
+      (punctuation(byte) && letter(bytes[at - 1] ?? 0) && letter(bytes[at + 1] ?? 0))
+  );
+
+  if (page === 'windows-1252' && dos) {
+    return decode437(bytes);
+  }
+
+  return new TextDecoder(page).decode(bytes);
 }
 
 /** DOS's code page 437, its upper half: `FILE_ID.DIZ` is a DOS file. */
@@ -323,7 +349,7 @@ export function splitLine(line) {
   const out = {};
   const notice = NOTICE.exec(title);
 
-  if (notice && notice.index > 0) {
+  if (notice) {
     out.copyright = clean(title.slice(notice.index).replace(/^[\s,;-]+/, ''));
     title = title.slice(0, notice.index);
   }
@@ -374,9 +400,10 @@ export function dizOf(bytes) {
   }
 
   /* "Title - what it is": the title alone. */
-  const [first] = line.split(/\s+(?:-{1,2}|–)\s+/);
+  /* "Title - what it is", "Title: what it is", "Title, what it is": the title alone. */
+  const [first] = line.split(/\s+(?:-{1,2}|–)\s+|:\s+|,\s+|\.\s+/);
 
-  return splitLine(first);
+  return splitLine(first.replace(/\s*[([][^)\]]*$/, ''));
 }
 
 /** An `.INF` file's sections, by name in lower case, each its lines. */
@@ -427,7 +454,7 @@ export function setupInfOf(text, program) {
   }
 
   const want = program.split(/[\\/]/).pop().toUpperCase();
-  let first = null;
+  let firstGroup = null;
 
   for (const line of groups) {
     const [key] = line.split('=').map((part) => part.trim());
@@ -435,10 +462,10 @@ export function setupInfOf(text, program) {
     const title = fields[fields.length > 1 && !line.includes('=') ? 1 : 0] || key;
     const items = sections[key.toLowerCase()] ?? sections[title.toLowerCase()] ?? [];
 
+    firstGroup ??= title;
+
     for (const item of items) {
       const [name, command] = fieldsOf(item);
-
-      first ??= name;
 
       if (
         command &&
@@ -450,13 +477,17 @@ export function setupInfOf(text, program) {
         return { title: name, group: title };
       }
     }
-
-    if (title) {
-      return { title: first ?? title, group: title };
-    }
   }
 
-  return null;
+  /*
+   * No item starts the program: the group's name, where the program is
+   * the setup that makes it. Another program's folder may hold an `.INF`
+   * that is not its own (a copy of Windows' own SETUP.INF, whose group is
+   * Main).
+   */
+  return firstGroup && /^(?:_?setup|install|inst|instal)\w*\.exe$/i.test(want)
+    ? { title: firstGroup, group: firstGroup }
+    : null;
 }
 
 /* --- Choosing ----------------------------------------------------------- */
@@ -489,8 +520,52 @@ const GENERIC = new Set(
     'main window',
     'dialog',
     'test',
+    'undetermined',
+    'warning',
+    'error',
+    'welcome',
+    'registration',
+    'registration information',
+    'standard',
+    'standard mode',
+    'enhanced mode',
   ].map((word) => word.toLowerCase())
 );
+
+/**
+ * Text that is not a program's name: a shareware notice's or a setup's
+ * caption, a compiler sample's description, or the Klik & Play runtime's
+ * own description, which every game it made carries.
+ */
+const NOT_A_NAME = [
+  /\b(?:un)?regist(?:er|ered|ration)\b/i,
+  /\bshareware (?:notice|information|version|registration)\b/i,
+  /^please\b/i,
+  /\b(?:setup|installation|initiali[sz]ation)$/i,
+  /\b(?:sample|my first)\b.*\b(?:application|program)\b/i,
+  /\bmicrosoft windows\b.*\b(?:application|program|game)$/i,
+  /^klik & play\b/i,
+  /* A program's state in its caption: a time ("Next Break: 01:59"), keys ("HELP = H"). */
+  /\d:\d\d/,
+  /\s=\s/,
+  /*
+   * Visual C++'s AppWizard's defaults, the project's name in capitals:
+   * "HANOI MFC Application", "GOMOKU Application".
+   */
+  /^[A-Z0-9_]+ (?:MFC )?Application$/,
+];
+
+/**
+ * A sentence, not a name: most of its longer words begin in lower case
+ * ("Concentration game with flags of the world"). Titles are capitalised,
+ * or written all in capitals.
+ */
+function sentence(text) {
+  const words = text.split(/\s+/).filter((word) => /^\p{L}{4,}/u.test(word));
+  const lower = words.filter((word) => /^\p{Ll}/u.test(word));
+
+  return words.length >= 3 && lower.length * 2 > words.length;
+}
 
 /**
  * Why a candidate is not a title, or null if it is one: empty, a file name
@@ -498,17 +573,30 @@ const GENERIC = new Set(
  * or item's own name), "Microsoft Windows" or another generic word, or no
  * letters at all.
  */
-export function rejected(text, names = []) {
+export function rejected(text, names = [], source = 'archiveOrg') {
   if (!text || text.length < 2) {
     return 'empty';
   }
 
-  if (!/\p{L}{2}/u.test(text)) {
+  if ((text.match(/\p{L}/gu) ?? []).length < 2) {
     return 'no letters';
   }
 
   if (GENERIC.has(text.toLowerCase())) {
     return 'generic';
+  }
+
+  if (NOT_A_NAME.some((pattern) => pattern.test(text))) {
+    return 'not a name';
+  }
+
+  if (/^[A-Za-z]:\\|\\/.test(text)) {
+    return 'a path';
+  }
+
+  /* archive.org's titles are names, if poor ones; the programs' text may be a description. */
+  if (source !== 'archiveOrg' && sentence(text)) {
+    return 'a sentence';
   }
 
   if (/^[^\s.]+\.[A-Za-z0-9]{1,3}$/.test(text)) {
@@ -525,7 +613,14 @@ export function rejected(text, names = []) {
 
   const lower = text.toLowerCase().replace(/\.[a-z0-9]{1,3}$/, '');
 
-  if (names.some((name) => name && name.toLowerCase() === lower)) {
+  /*
+   * The program's own name, as a file or module name is written: all in
+   * capitals or all in small letters. Written in mixed case ("DDEWatch"),
+   * it is the author's spelling of the name, and taken.
+   */
+  const fileCase = text === text.toUpperCase() || text === text.toLowerCase();
+
+  if (fileCase && names.some((name) => name && name.toLowerCase() === lower)) {
     return "the program's own name";
   }
 
@@ -545,7 +640,7 @@ export function chooseTitle(candidates, names, correction) {
   for (const source of SOURCES) {
     const text = source === 'archiveOrg' ? stripPrefix(candidates[source]) : candidates[source];
 
-    if (text && !rejected(text, names)) {
+    if (text && !rejected(text, names, source)) {
       return { title: text, titleSource: source };
     }
   }
@@ -667,9 +762,12 @@ export function readFolder(folder, run) {
       }
 
       if (names.description) {
-        const split = splitLine(names.description.split(/\s+(?:-{1,2}|–)\s+/)[0]);
+        const split = splitLine(names.description.split(/\s+(?:-{1,2}|–)\s+|:\s+|,\s*/)[0]);
 
-        found.candidates.description = split.title || names.description;
+        if (split.title) {
+          found.candidates.description = split.title;
+        }
+
         found.extra.description = split;
       }
     }
@@ -773,7 +871,55 @@ function runFor(exe, folder) {
 
 /** The caption a run gives: the first window at the top shown, not a message box, with a caption. */
 export function captionOf(windows) {
-  return windows.find((window) => window.visible && !window.box && window.title)?.title ?? null;
+  const titled = windows.filter((window) => !window.box && window.title);
+  const dialog = (window) => window.class === '#32770';
+
+  /*
+   * A window of the program's own class before a dialog: a shareware
+   * notice is often a dialog shown, modal, before the main window is.
+   */
+  return (
+    (
+      titled.find((window) => window.visible && !dialog(window)) ??
+      titled.find((window) => !dialog(window)) ??
+      titled.find((window) => window.visible)
+    )?.title ?? null
+  );
+}
+
+/**
+ * A caption made a title: "About " taken off the front, what follows a
+ * dash ("Notepad - [Untitled]") and a closing bracket's or parenthesis's
+ * part ("(Unregistered)") off the end, then its version split off.
+ */
+export function captionTitle(caption) {
+  const [first] = caption.replace(/^about\s+/i, '').split(/\s+(?:-{1,2}|–|:)\s+/);
+
+  const split = splitLine(first);
+
+  /* And a game's number ("Solit #233"), which is the game's state. */
+  split.title = split.title.replace(/\s*[([][^)\]]*[)\]]$/, '').replace(/\s*#\s*\d+$/, '');
+  return split;
+}
+
+/** A run's windows kept in what was found, and its caption among the candidates. */
+function applyRun(found, run) {
+  found.run = run;
+
+  const caption = captionOf(run.windows);
+
+  delete found.candidates.caption;
+  delete found.extra.caption;
+
+  if (caption) {
+    const split = captionTitle(caption);
+
+    if (split.title) {
+      found.candidates.caption = split.title;
+    }
+
+    found.extra.caption = split;
+  }
 }
 
 /* --- Fetching -------------------------------------------------------------- */
@@ -890,7 +1036,7 @@ async function main() {
   if (args.includes('--filenames')) {
     chosen = catalog.filter((entry) => titledByFileName(entry) || ids.includes(entry.id));
   } else if (fetchedOnly) {
-    chosen = catalog.filter((entry) => folderOf(entry) && !foundOf(entry.id)?.run);
+    chosen = catalog.filter((entry) => folderOf(entry));
   } else {
     chosen = catalog.filter((entry) => ids.includes(entry.id));
   }
@@ -935,17 +1081,7 @@ async function main() {
     if (!fetchedOnly && found.header === 'NE') {
       const exe = join(folder, found.program);
       const run = runFor(exe, folder).then((result) => {
-        found.run = { mode: result.mode, stopped: result.stopped, windows: result.windows };
-
-        const caption = captionOf(result.windows);
-
-        if (caption) {
-          const split = splitLine(caption);
-
-          found.candidates.caption = split.title || caption;
-          found.extra.caption = split;
-        }
-
+        applyRun(found, { mode: result.mode, stopped: result.stopped, windows: result.windows });
         save();
         running.delete(run);
       });
@@ -956,6 +1092,13 @@ async function main() {
         await Promise.race(running);
       }
     } else {
+      /* Read again without a run: the last run's windows kept. */
+      const last = foundOf(entry.id)?.run;
+
+      if (last) {
+        applyRun(found, last);
+      }
+
       save();
     }
 
