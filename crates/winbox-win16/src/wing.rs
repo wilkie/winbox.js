@@ -236,6 +236,102 @@ pub(crate) fn wing_identity(system: &System, hdc: u16) -> bool {
     })
 }
 
+/// What WinG's device matching colours in a WinG device context goes
+/// through, for the faithful clock (`call_costs.rs`): how many entries of
+/// a bitmap's colour table its search looks at for each colour.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) enum WinGMatch {
+    /// `GetNearestColor` in a context whose bitmap is a WinG bitmap: the
+    /// entries looked at for the colour.
+    Nearest(f64),
+    /// `SelectObject` of a WinG bitmap into a WinG context: the entries
+    /// looked at for the context's background colour and its text colour
+    /// together.
+    Bitmap(f64),
+    /// `SelectObject` into a WinG context of a bitmap not WinG's -- its
+    /// first, of 1 by 1, back -- where no search is long.
+    OtherBitmap,
+}
+
+/// How many entries of a colour table `WINGDE.DLL`'s search looks at for a
+/// colour (seg2 `029d`-`0352`): each entry in turn from the first, its
+/// distance from the colour worked out, until one is the colour itself, at
+/// which it stops; else every entry. A colour of a palette's (a high byte
+/// of 1) is not followed: taken as in no entry, the whole table looked at.
+fn wing_entries_looked_at(table: &DevicePalette, colorref: u32) -> f64 {
+    let count = table.used.unwrap_or(256).min(table.colours.len()).max(1);
+    let colour = [
+        colorref as u8,
+        (colorref >> 8) as u8,
+        (colorref >> 16) as u8,
+    ];
+    let by_colour = matches!(colorref >> 24, 0 | 2);
+    let looked = table.colours[..count]
+        .iter()
+        .position(|&entry| by_colour && entry == colour)
+        .map_or(count, |at| at + 1);
+
+    f64::from(u32::try_from(looked).unwrap_or(u32::MAX))
+}
+
+/// The colours a call into a WinG device context matches by WinG's search,
+/// and how many entries that looks at; none for any other call, context or
+/// object. `GetNearestColor` matches its colour against the selected
+/// bitmap's table; `SelectObject` of a WinG bitmap sets the context's
+/// background and text colours again, as GDI does on selecting any bitmap
+/// (`GDI.EXE` seg1 `1d5e`-`1d80`: `1476` and `14dc`, each a colour the
+/// device's `ColorInfo` matches), against the bitmap selected
+/// [[inferred]]: `wingsel`'s two bitmaps had the one table.
+pub(crate) fn wing_match(system: &System, call: &str, hdc: u16, of: u32) -> Option<WinGMatch> {
+    let dc = dc_of(system, hdc)?;
+
+    if !system.gdi.dcs[dc].wing {
+        return None;
+    }
+
+    let entries = |at: usize, colours: &[u32]| {
+        let pixels = system.wing_pixels(at)?;
+        let table = pixels.device_palette.borrow();
+
+        Some(
+            colours
+                .iter()
+                .map(|&colour| wing_entries_looked_at(&table, colour))
+                .sum::<f64>(),
+        )
+    };
+
+    match call {
+        "GetNearestColor" => Some(WinGMatch::Nearest(entries(
+            system.wing_selected(hdc)?,
+            &[of],
+        )?)),
+        "SelectObject" => {
+            let (object, item) = system.gdi_object_of(of as u16)?;
+
+            if !matches!(item, GdiObject::Bitmap(_)) {
+                return None;
+            }
+
+            let Some(at) = system
+                .wing_bitmaps
+                .iter()
+                .position(|wing| wing.object == object)
+            else {
+                return Some(WinGMatch::OtherBitmap);
+            };
+            let state = &system.gdi.dcs[dc].state;
+            let colours = [
+                state.back_color.unwrap_or(0x00ff_ffff),
+                state.text_color.unwrap_or(0),
+            ];
+
+            Some(WinGMatch::Bitmap(entries(at, &colours)?))
+        }
+        _ => None,
+    }
+}
+
 fn same_bytes(a: &[u8], b: &[u8]) -> bool {
     #[cfg(target_arch = "wasm32")]
     {

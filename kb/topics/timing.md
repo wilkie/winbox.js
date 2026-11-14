@@ -18,6 +18,8 @@ probes:
     cdread,
     hdtime,
     pgbig,
+    wingsel,
+    towrtick,
   ]
 ---
 
@@ -111,7 +113,29 @@ What a call does with messages takes the same time whatever the display. What it
 | 320 by 240      | 10,588                                   | 360,353                  |
 | 640 by 480      | 18,660                                   | 1,387,898                |
 
-[[inferred]] One for one, a blit is about 2,823 instructions and 31.7 a row, nothing to speak of a pixel: each row is a string copy, which DOSBox counts as one instruction however long. Not, it is about 11,002, 39.0 a row and 4.43 a pixel. A blit of the whole screen is 75 times as long, 17 ms at 80,000 a millisecond.
+[[inferred]] One for one, a blit is about 2,823 instructions and 31.7 a row, nothing to speak of a pixel: each row is a string copy, which DOSBox counts as one instruction however long ([[read out]] below, "How DOSBox counts"). Not, it is about 11,002, 39.0 a row and 4.43 a pixel. A blit of the whole screen is 75 times as long, 17 ms at 80,000 a millisecond.
+
+### Colours matched in a WinG device context
+
+[[read out]] WinG's device, `WINGDE.DLL`, matches a colour to a bitmap's colour table by a search (seg2 `029d`-`0352`): each entry in turn from the first, its distance from the colour worked out, 32 instructions an entry (36 where it is the nearest so far, seg2 `02c0`-`031a`), until an entry is the colour itself, where it stops; else every entry. `GetNearestColor` is one such search (`DIB_COLORINFO`, seg2 `000c`). So is each colour GDI sets again when a bitmap is selected into a context: GDI's `SelectObject` of a bitmap sets the context's background and text colours again (`GDI.EXE` seg1 `1d5e`-`1d80`, by `1476` and `14dc`, each a colour the device's `ColorInfo` matches).
+
+[[measured]] [[probe:wingsel]], at a fixed 80,000 a millisecond, as instructions, each the middle of three runs:
+
+| Call in the WinG device context                                       | Halftone table | The table backwards |
+| --------------------------------------------------------------------- | -------------- | ------------------- |
+| `GetNearestColor` of black                                            | 167            | 8,693               |
+| `GetNearestColor` of white                                            | 8,647          | 167                 |
+| `GetNearestColor` of RGB(1,2,3), in no entry                          | 8,601          | 8,693               |
+| A bitmap selected and another, a white background and black text      | 18,902         | 18,902              |
+| A bitmap selected and another, two colours in no entry                | 35,339         | 36,124              |
+| The context's first bitmap selected and a bitmap, colours in no entry | 18,482         | 18,685              |
+| A pen selected and the one before back                                | 435            | --                  |
+
+Black is the halftone table's first entry and white its last. [[inferred]] A search is about 33.25 instructions an entry looked at; `GetNearestColor` 134 more, and selecting a WinG bitmap 899 more than its two searches, each figure within 1.5%; selecting the context's first bitmap, WinG's of 1 by 1, some 721, no search being long. The faithful clock charges so (`call_costs.rs`, `wing::wing_match`): each search by where the colour is in the table of the bitmap selected, which it reads -- the background colour and the text colour for a WinG bitmap selected, the colour asked for `GetNearestColor` -- less the 11 instructions of the probe's own loop in `GetNearestColor`'s. Where the bitmap's table, not the one before, is the one searched is [[inferred]]: the probe's two bitmaps had the one table. Before, `GetNearestColor` there was `wingcost`'s 8,595 whatever the colour, and selecting a bitmap the 217 of a pen.
+
+### How DOSBox counts
+
+[[read out]] The recorder's DOSBox (0.74-3, `core=auto`, built with the recompiling core `C_DYNREC`, `config.h`) runs Windows' protected mode on that core (`src/cpu/cpu.cpp` `1578`-`1582`). It counts a cycle for each instruction it translates (`core_dynrec/decoder.h`, `decode.cycles++`), and takes none more for `REP MOVS`, `STOS` or `LODS` however long, but where the run's slice ends first (`core_dynrec/operators.h`, `dynrec_movsb_word` and the rest: the count cut to the cycles left). `REP SCAS` and `CMPS` it does not translate: the plain core runs them (`core_dynrec.cpp`, `BR_Opcode`), a cycle an element (`core_normal/string.h`, `R_SCASB`). WinBox's processor counts each repeated string instruction as one, the compares too. SimTower's own code has 14 repeated compares and scans, all in its C library (seg1); how often its steps make them is not measured.
 
 ## At a fixed rate
 
@@ -167,7 +191,7 @@ A call costs the Rust engine some 0.1 ms more, the TypeScript engine some 0.6 ms
 
 winbox.js keeps two clocks. The survey's runs 3,000 instructions a millisecond and charges every call 15 instructions: it runs much faster than a faithful one, and the same every time. Most calls are charged less than they are -- a rectangle call about half, `PeekMessage` finding nothing a fourteenth -- and drawing far less: a twelve-hundredth of a WinG blit of the whole screen with its colours one for one, a ninety-thousandth of one without. Its `GetTickCount` steps by the tick, as Windows' does.
 
-The faithful clock runs 80,000 instructions a millisecond, the fixed rate the calls were recorded at, and charges each call the instructions recorded for it, the same at any rate: a call recorded only in a pair, half the pair, and one not recorded, 154, the middle of those recorded alone [[inferred]]. Calls that draw are charged by the display's driver: the Super VGA's on a display of 256 colours, the VGA's on any other. `WinGBitBlt` is charged by its size, and by whether its bitmap's colours are the system palette's one for one; `WinGSetDIBColorTable` and `AnimatePalette` by their entries; `timeGetTime` by the clock's rate (below). The rate is a choice, made to be one DOSBox can be held to: as fast as the host allows, DOSBox runs no one rate.
+The faithful clock runs 80,000 instructions a millisecond, the fixed rate the calls were recorded at, and charges each call the instructions recorded for it, the same at any rate: a call recorded only in a pair, half the pair, and one not recorded, 154, the middle of those recorded alone [[inferred]]. Calls that draw are charged by the display's driver: the Super VGA's on a display of 256 colours, the VGA's on any other. `WinGBitBlt` is charged by its size, and by whether its bitmap's colours are the system palette's one for one; `WinGSetDIBColorTable` and `AnimatePalette` by their entries; `GetNearestColor` and `SelectObject` of a bitmap in a WinG device context by WinG's search of the colour table (above); `timeGetTime` by the clock's rate (below). The rate is a choice, made to be one DOSBox can be held to: as fast as the host allows, DOSBox runs no one rate.
 
 ### Choosing the clock
 
@@ -254,6 +278,7 @@ The faithful clock charges `timeGetTime` so, by the clock's rate (`call_costs::t
 - [[probe:wingcost]] and [[probe:wingxlat]]: each blit within 1% from 64 by 64 up, and within 4% at 16 by 16; `WinGStretchBlt`, `Rectangle`, `GetNearestColor` and `WinGSetDIBColorTable` of 256 within 0.7%. Before, on the Rust engine, WinG and the Super VGA's drawing were charged 154 each, as a call not recorded.
 - [[probe:callcost]] on both displays, [[probe:twrcost]], [[probe:twrcall]]: calls of a thousand instructions and more within 2%; smaller ones 5 to 70% over, the more the smaller -- `GetTickCount` 17 for 11, `GetActiveWindow` 14.5 for 8.4 -- each charged the recorded figure, which has the batch's own loop in it, and WinBox's processor running that loop again: some 6 to 16 instructions a call. `SendMessage` (397 for 206) and `DispatchMessage` (585 for 385) charge the window procedure's `DefWindowProc` again, a call of its own on WinBox; `SetWindowPos` 18% over, `LockResource` and `GlobalUnlock` 14% under.
 - [[probe:viscost]]: `BitBlt` within 1.4% with nothing over the drawing; over half of it 9% over, WinBox charging the whole. `PatBlt` was charged 154; it is now charged `viscost`'s 2,142 on the VGA.
+- [[probe:wingsel]] (2026-11-13): each `GetNearestColor` and each selection of a bitmap within 2.3%, held within 5%; the pen and back 3% over, its 217 a call with the batch's loop in it.
 
 ## The Ad Lib driver's writes
 
@@ -278,6 +303,29 @@ The Rust engine charges these, and callcost's, as recorded when a probe recorded
 [[inferred]] On winbox.js's faithful clock at the same rates, SimTower is a quarter ahead at each: a weekday in the second quarter at 20,000, the fourth quarter at 80,000. Charging calls a flat amount, it was a year and more ahead; what brought it back was its blits, which it never makes with its colours one for one as winbox.js realizes its palettes, and which had been charged as WinG's fast copy. What the last quarter is, these recordings do not say. All but some 2,000 of the 548,000 calls SimTower makes in the survey are timed, alone or in a pair; but its blits into a window that its own floating palette covers part of, and what Windows does with the messages it is sent, are timed nowhere.
 
 [[measured]] The Rust engine, 2026-11-13, SimTower as the corpus surveys it -- its question answered at 10 seconds, New Tower chosen at 40 and the screen kept at 80, 40 seconds into the tower -- by `trace --clock faithful` with the survey's report as its marks: at 10 seconds its question, at 40 its menu, at 80 the first weekday of the first quarter of its second year, "Santa Claus is coming to your tower!". On the survey's clock, the same places: the second weekday of the first quarter of its first year, night. So two quarters ahead of DOSBox at 80,000 a millisecond (a weekend in the third), where the TypeScript engine was one. Its calls in the tower's tenth second take three quarters of the clock's time: `WinGBitBlt` 46% of what is charged, all translated, `GetNearestColor` 25%, `WinGSetDIBColorTable` 8%, `Rectangle` 5%. It calls `GetTickCount`, not `timeGetTime`: the same day before `timeGetTime` was charged by the rate and after. Before WinG and the Super VGA's drawing were charged here, each such call was 154. The run took ten minutes of the host's for its 80 seconds.
+
+### What moves SimTower's calendar
+
+[[read out]] SimTower's main loop takes its messages with `PeekMessage` and, when there are none, makes a step of its game (`SIMTOWER.EXE` seg76 `00ac`-`0173`, `018e`-`02e9`). Where a tower is open and not paused (the words at 7842h, 1, and 2aah, nought: seg76 `024c`-`025a`), the step first asks its clock to tick (seg65 `0196`) and then runs its simulation and draws (seg19 `03ab`), more of each where the clock ticked. The clock is the tick of the day, a word at 0b3e2h, 0 to 2,599 (seg65 `01c5`-`01e4`); at tick 2,300 the day, a double word at 0b3e4h, is counted on (seg65 `04ab`-`04c3`). Three days are a quarter, the first two weekdays and the third the weekend, and twelve a year (seg36 `0510`-`06a9`, the date drawn). A new tower starts at tick 2,533 of day nought (seg65 `0008`-`0021`).
+
+The clock waits for time only where the word at 0de38h is nought: then a tick comes no sooner than six sixteenths of a second -- 96 ms -- of `GetTickCount` after the last (seg65 `01a5`-`01c1`, seg66 `05e6`-`0602`, `GetTickCount` shifted down four). SimTower sets that word to 1 as it starts (seg38 `0551`) and an item of its Options menu turns it back and forth (seg44 `0793`-`07b6`). As it starts, then, every step ticks, and the calendar goes as fast as the steps: a tick a step, its pace the instructions a step takes, its own and Windows'. `GetTickCount` and its resolution have no part in it.
+
+[[measured]] [[probe:towrtick]] starts SimTower as the corpus's launcher does and reads the tick and the day out of its data segment four times a second; under DOSBox at a fixed 80,000 a millisecond, recorded four times with New Tower chosen. And WinBox's faithful clock, the same corpus run, the counters read at each step:
+
+| Into the tower | DOSBox, ticks | DOSBox, the date                                  | WinBox before, ticks | WinBox before, the date | WinBox now, ticks | WinBox now, the date   |
+| -------------- | ------------- | ------------------------------------------------- | -------------------- | ----------------------- | ----------------- | ---------------------- |
+| 20 s           | 10,189-10,251 | 2nd WD / 2Q / 1st year                            | 15,892               | 1st WD / 3Q / 1st year  | 11,544            | 2nd WD / 2Q / 1st year |
+| 40 s           | 20,366-20,513 | 2nd WD / 3Q / 1st year, the weekend within 0.25 s | 31,911               | 1st WD / 1Q / 2nd year  | 23,114            | WE / 3Q / 1st year     |
+| 60 s           | 30,667-30,790 | WE / 4Q / 1st year                                | --                   | --                      | 34,688            | 2nd WD / 1Q / 2nd year |
+| 80 s           | 40,904        | 1st WD / 2Q / 2nd year                            | --                   | --                      | 46,281            | WE / 2Q / 2nd year     |
+
+DOSBox makes some 511 steps a second, each some 156,500 instructions; the four recordings agree within 0.7%. WinBox made 799, each some 100,100 -- 23,800 SimTower's own and 76,400 charged for calls -- and now makes some 578, each some 138,000.
+
+[[measured]] Where DOSBox spends a step: a build of DOSBox 0.74-3 of the recorder's own (not the oracle's: the scratch build writes CS, IP and the stack each millisecond, its ticks within 0.2% of the stock DOSBox's), with `towrtick`'s map of the code segments by module, sixty seconds of the tower. SimTower's own code 13% of the samples, some 20,500 instructions a step, as WinBox runs; WinG's device, `WINGDE.DLL`, 43%, nine in ten of them in its colour search (seg2 `02c0`-`031a`); the display driver 17%, its translating copy of a blit's pixels (seg9 `1496`-`14a2`); GDI 13%, KERNEL 4%, WinG 4%, USER 2%. By SimTower's call each sample is under: `SelectObject` 30%, some 46,000 instructions a step -- each of its four bitmap selections into its WinG context some 9,250 -- and `GetNearestColor` 12%, some 18,000. WinBox had charged the bitmap selections 217 each, a pen's.
+
+So the first quantity that differs is a call's charge: SimTower's step selects a WinG bitmap into its WinG context and the one before back, twice, and GDI then has WinG's device match the context's background and text colours, two searches of the bitmap's colour table each. WinBox now charges that as `wingsel` times it (above, "Colours matched in a WinG device context"): 9,411 for each of the four, and `GetNearestColor` by where its colour is in the table. Neither the processor's count of instructions nor `GetTickCount` differs.
+
+[[measured]] What is still not charged, some 18,500 instructions a step, 13% more steps than DOSBox: its selections of the pen and the brush it makes anew each step into the WinG context, some 1,300 and 4,700 instructions a step under DOSBox, where WinBox charges 217 each, WinG's device realizing each new one; and some 8,500 instructions a step of WinG's colour search under no call the stack tells.
 
 ## Several machines on one page
 
@@ -310,7 +358,8 @@ The block is more than is free, so WIN386 pages to its swap file as the passes g
 
 ## Not yet done
 
-- SimTower on the Rust engine's faithful clock: two quarters ahead of DOSBox, one more than the TypeScript engine was, with the same charges; what the Rust engine charges less, or runs less of SimTower's own, is not found.
+- SimTower on the faithful clock: 13% more steps than DOSBox, some 18,500 instructions a step not charged ("What moves SimTower's calendar"): a new pen's and brush's selection into a WinG device context, WinG's device realizing each, charged 217 where DOSBox takes some 1,300 and 4,700 a step; and some 8,500 a step of WinG's colour search under no call the sampled stack tells. Why the Rust engine was a quarter further ahead than the TypeScript engine was is not looked into: the TypeScript engine is retired.
+- WinG's search for a colour of a palette's (a `COLORREF` high byte of 1) is not followed: charged as in no entry. `SetTextColor` and `SetBkColor` in a WinG device context, a search each, are charged as recorded elsewhere; whether a bitmap's selection searches its own table or the one before is not told apart ([[probe:wingsel]]'s bitmaps had the one table).
 - Why 386 enhanced mode reads a file of DOSBox's hard disk without DOSBox's charge for its bytes, when it writes one with it, and reads a disc with it ("Reading and writing the hard disk").
 - `_hread`'s second piece, cut sooner than a read alone: the faithful clock charges `_hread` of 48 KiB 22% more than recorded.
 - `timeGetTime` in 386 enhanced mode: the virtual timer device's code, Win386's, is not read out; its 198 instructions and five port accesses are a fit to two rates.

@@ -32,6 +32,7 @@
 use winbox_machine::FAITHFUL_INSTRUCTIONS_PER_MS;
 
 use crate::system::System;
+use crate::wing::WinGMatch;
 
 /// A call recorded on neither display: the middle of the 37 recorded
 /// alone [[inferred]].
@@ -149,6 +150,37 @@ const PEEK_SUPER_VGA: [f64; 2] = [121.0, 206.0];
 /// pixel -- 2,823, 31.7 and next to nothing, each row a string copy; not
 /// (`wingxlat`), each pixel translated, 11,002, 38.99 and 4.433.
 const WING_BLIT: [(f64, f64, f64); 2] = [(2823.0, 31.7, 0.002), (11002.0, 38.99, 4.433)];
+
+/// WinG's device's search of a colour table for a colour, so many
+/// instructions more for each entry it looks at (`WINGDE.DLL` seg2
+/// `02c0`-`031a`, 32 instructions an entry, 36 where it is the nearest so
+/// far): `wingsel`'s `GetNearestColor` of a colour first in the table's
+/// first entry, 167, and in its last, 8,647, at a fixed 80,000 a
+/// millisecond [[inferred]].
+const WING_MATCH: f64 = 33.25;
+
+/// `GetNearestColor` in a WinG device context, so many instructions and
+/// `WING_MATCH` more for each entry looked at (`wingsel`): 167 for a colour
+/// in the first, 8,601 to 8,693 for one in none, less the 11 of the
+/// probe's own loop that WinBox runs itself (`wingsel` on the faithful
+/// clock, 177.6 where 167 was charged). Where the context has no WinG
+/// bitmap selected, `wingcost`'s 8,595 of colours mostly in none.
+const WING_NEAREST: f64 = 122.75;
+
+/// `SelectObject` of a WinG bitmap into a WinG device context, so many
+/// instructions and `WING_MATCH` more for each entry looked at in matching
+/// its background and text colours (`wingsel`, one bitmap selected then
+/// another, the mean of six runs each: 18,869 a pair with white and
+/// black, 257 entries looked at, and 35,865 with two colours in no entry,
+/// 512) [[inferred]], each run within 2.3%. A pen, `wingcost`'s and
+/// `wingsel`'s 435 a pair, is `SUPER_VGA`'s.
+const WING_SELECT_BITMAP: f64 = 899.0;
+
+/// `SelectObject` into a WinG device context of a bitmap not WinG's, the
+/// context's first of 1 by 1 (`wingsel`, it and then a WinG bitmap with
+/// two colours in no entry: 18,654 a pair, 721 more than the WinG
+/// bitmap's 17,933) [[inferred]].
+const WING_SELECT_OTHER: f64 = 721.0;
 
 /// `WinGSetDIBColorTable`, so many and so many more an entry (`wingcost`,
 /// 256 entries and 16: 148 and 21).
@@ -444,6 +476,26 @@ pub fn before(system: &System, module: &str, name: &str, stack: u32) -> f64 {
 
             base + row * height + pixel * width * height
         }
+        // A colour matched in a WinG device context, by WinG's search of
+        // the bitmap's colour table: `GetNearestColor`'s colour (the last
+        // argument, a double word) and context; `SelectObject`'s object
+        // (the last) and context, a WinG bitmap's selection matching the
+        // context's two colours.
+        ("GDI", call @ ("GetNearestColor" | "SelectObject")) if super_vga(system) => {
+            let bus = &system.cpu.bus;
+            let (of, hdc) = if call == "GetNearestColor" {
+                (bus.read32(stack + 4), bus.read16(stack + 8))
+            } else {
+                (u32::from(bus.read16(stack + 4)), bus.read16(stack + 6))
+            };
+
+            match crate::wing::wing_match(system, call, hdc, of) {
+                Some(WinGMatch::Nearest(entries)) => WING_NEAREST + WING_MATCH * entries,
+                Some(WinGMatch::Bitmap(entries)) => WING_SELECT_BITMAP + WING_MATCH * entries,
+                Some(WinGMatch::OtherBitmap) => WING_SELECT_OTHER,
+                None => recorded(SUPER_VGA, module, name),
+            }
+        }
         // The colours' far pointer last, then how many.
         ("WING", "WinGSetDIBColorTable") if super_vga(system) => {
             let count = f64::from(system.cpu.bus.read16(stack + 8));
@@ -462,12 +514,22 @@ pub fn before(system: &System, module: &str, name: &str, stack: u32) -> f64 {
         }
         ("USER", "_WSPRINTF") => wsprintf(system, stack),
         ("MMSYSTEM", "timeGetTime") => time_get_time(system),
-        _ => if super_vga(system) { SUPER_VGA } else { VGA }
-            .iter()
-            .chain(SYSTEM)
-            .find(|&&(each, call, _)| each == module && call == name)
-            .map_or(UNRECORDED, |&(_, _, instructions)| instructions),
+        _ => recorded(
+            if super_vga(system) { SUPER_VGA } else { VGA },
+            module,
+            name,
+        ),
     }
+}
+
+/// A call's recorded instructions, from the display's drawing or the
+/// calls that do not draw; one recorded on neither, `UNRECORDED`.
+fn recorded(drawing: &[(&str, &str, f64)], module: &str, name: &str) -> f64 {
+    drawing
+        .iter()
+        .chain(SYSTEM)
+        .find(|&&(each, call, _)| each == module && call == name)
+        .map_or(UNRECORDED, |&(_, _, instructions)| instructions)
 }
 
 /// `wsprintf`'s instructions: its format read, and its arguments, from the
