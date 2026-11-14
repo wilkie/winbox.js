@@ -1788,7 +1788,7 @@ impl TrueTypeFont {
     }
 
     /// A glyph's outline with no program run, as the scaler assembles it at
-    /// `k` sixty-fourths of a pixel a unit, in font units again: a simple
+    /// `grid` sixty-fourths of a pixel a unit, in font units again: a simple
     /// glyph as `outline_of` has it; a composite's components each scaled to
     /// sixty-fourths, put through their own transform, and placed at their
     /// offset scaled -- rounded to a whole pixel, a half going up, where the
@@ -1797,11 +1797,11 @@ impl TrueTypeFont {
     /// (`GDI.EXE` seg36 `6ebb`): so a slanted composite's offset is rounded
     /// upright. **Recorded** by
     /// `prttslt`: Wingdings' E9h, glyph 205 turned a right angle.
-    pub fn outline_on_grid(&self, glyph: u32, k: f64) -> Result<Vec<Contour>, Fault> {
-        self.outline_on_grid_at(glyph, k, 0)
+    pub fn outline_on_grid(&self, glyph: u32, grid: f64) -> Result<Vec<Contour>, Fault> {
+        self.outline_on_grid_at(glyph, grid, 0)
     }
 
-    fn outline_on_grid_at(&self, glyph: u32, k: f64, depth: u32) -> Result<Vec<Contour>, Fault> {
+    fn outline_on_grid_at(&self, glyph: u32, grid: f64, depth: u32) -> Result<Vec<Contour>, Fault> {
         let Some(range) = self.data.glyph_range(glyph)? else {
             return Ok(Vec::new());
         };
@@ -1827,7 +1827,7 @@ impl TrueTypeFont {
 
             if flags & 0x0002 != 0 {
                 let placed = |offset: f64| {
-                    let scaled = js::round(offset * k);
+                    let scaled = js::round(offset * grid);
 
                     if flags & 0x0004 != 0 {
                         ((scaled + 32.0) / 64.0).floor() * 64.0
@@ -1837,17 +1837,17 @@ impl TrueTypeFont {
                 };
                 let (offset_x, offset_y) = (placed(dx), placed(dy));
 
-                for contour in self.outline_on_grid_at(index, k, depth + 1)? {
+                for contour in self.outline_on_grid_at(index, grid, depth + 1)? {
                     shapes.push(
                         contour
                             .into_iter()
                             .map(|point| {
-                                let x = js::round(point.x * k);
-                                let y = js::round(point.y * k);
+                                let across = js::round(point.x * grid);
+                                let up = js::round(point.y * grid);
 
                                 Point {
-                                    x: (a * x + c * y + offset_x) / k,
-                                    y: (b * x + d * y + offset_y) / k,
+                                    x: (a * across + c * up + offset_x) / grid,
+                                    y: (b * across + d * up + offset_y) / grid,
                                     on: point.on,
                                 }
                             })
