@@ -26,7 +26,9 @@
 //! keys and clicks every second and a half of its clock, the same for the
 //! same seed (`scripted_input`); given with `--marks`, only after the
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
-//! were and only the last twenty. `--mount D:IMAGE` mounts an image of the
+//! were and only the last twenty. `--captions` prints, after the calls,
+//! the windows at the top as the run left them, with their captions.
+//! `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
 //! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
 //! FAT image. A program whose `--path` is on such a drive is read from it,
@@ -115,6 +117,36 @@ fn save_png(file: &Path, screen: &Screen) {
     }
 }
 
+/// The windows at the top as the run left them, in the order of their
+/// slots (`--captions`), each a line `window: ` and, as JSON, its class,
+/// whether it is shown, whether it is one of USER's message boxes, and its
+/// caption (its characters its bytes, Latin-1): for the compatibility
+/// catalog's titles (`scripts/catalog/titles.mjs`).
+fn print_captions(system: &winbox_win16::System) {
+    for window in system.windows.iter().flatten() {
+        if window.parent.is_some() || !window.paints_itself() {
+            continue;
+        }
+
+        let message_box = window.dialog.as_ref().is_some_and(|dialog| {
+            matches!(
+                dialog.proc,
+                winbox_win16::dialogs::DialogProc::MessageBox(_)
+            )
+        });
+
+        println!(
+            "window: {}",
+            serde_json::json!({
+                "class": window.class,
+                "visible": window.visible,
+                "box": message_box,
+                "title": window.title,
+            })
+        );
+    }
+}
+
 /// What the command line asks for: the host's files, and the survey.
 struct Options {
     file: Option<PathBuf>,
@@ -127,6 +159,7 @@ struct Options {
     marks: Option<PathBuf>,
     mounts: Vec<(char, PathBuf)>,
     shell: bool,
+    captions: bool,
     mode: winbox_win16::Mode,
     survey: Survey,
 }
@@ -177,6 +210,7 @@ fn options() -> Options {
         marks: None,
         mounts: Vec::new(),
         shell: false,
+        captions: false,
         mode: winbox_win16::Mode::Standard,
         survey: Survey::default(),
     };
@@ -190,6 +224,7 @@ fn options() -> Options {
             "--assets" => options.assets = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
             "--shell" => options.shell = true,
+            "--captions" => options.captions = true,
             "--mode" => {
                 options.mode = arguments
                     .next()
@@ -260,6 +295,7 @@ fn main() {
         marks,
         mounts,
         shell,
+        captions,
         mode,
         mut survey,
     } = options();
@@ -404,6 +440,10 @@ fn main() {
     }
 
     print!("{}", surveyed.report);
+
+    if captions {
+        print_captions(&surveyed.system);
+    }
 
     for folder in made {
         let _ = std::fs::remove_dir_all(folder);

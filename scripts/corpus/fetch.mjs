@@ -42,7 +42,7 @@ export function sourceUrl(entry) {
  * members here, anything older (PKZIP 1's shrink and implode) through the
  * system's `unzip`, which knows them.
  */
-function unpack(archive, into) {
+export function unpack(archive, into) {
   const bytes = readFileSync(archive);
   let end = bytes.length - 22;
 
@@ -183,4 +183,6 @@ async function main() {
   }
 }
 
-main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main();
+}

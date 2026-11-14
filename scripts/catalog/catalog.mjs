@@ -8,6 +8,7 @@
  *
  *   node scripts/catalog/catalog.mjs           # list, fetch what is not cached, write, count
  *   node scripts/catalog/catalog.mjs --counts  # count the catalog already written
+ *   node scripts/catalog/catalog.mjs --titles  # choose the titles again (`titles.mjs`), and write
  *
  * Each item's metadata is kept in `corpus/cache/catalog/<identifier>.json`
  * (gitignored, as the rest of `corpus/` is), so a second run asks
@@ -18,6 +19,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { corrections, withTitle } from './titles.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'corpus', 'cache', 'catalog');
@@ -233,6 +236,10 @@ export function counts(catalog) {
     withYear: catalog.filter((entry) => entry.year).length,
     withPublisher: catalog.filter((entry) => entry.publisher).length,
     withBoth: catalog.filter((entry) => entry.year && entry.publisher).length,
+    byTitleSource: catalog.reduce(
+      (by, entry) => ({ ...by, [entry.titleSource]: (by[entry.titleSource] ?? 0) + 1 }),
+      {}
+    ),
   };
 }
 
@@ -254,6 +261,7 @@ function print(summary) {
   console.log(
     `with a year: ${summary.withYear}, a publisher: ${summary.withPublisher}, both: ${summary.withBoth}`
   );
+  console.log(`titles by source: ${JSON.stringify(summary.byTitleSource)}`);
 }
 
 /** The catalog written: an entry a line, sorted by identifier. */
@@ -262,7 +270,7 @@ function write(catalog) {
   writeFileSync(
     OUT,
     `{\n"about": ${JSON.stringify(
-      "Windows 3.x programs published in archive.org's software library, metadata only: written by scripts/catalog/catalog.mjs; the design is kb/guides/compatibility.md. sha256 is filled when a program is fetched."
+      "Windows 3.x programs published in archive.org's software library, metadata only: written by scripts/catalog/catalog.mjs; the design is kb/guides/compatibility.md. sha256 is filled when a program is fetched. title is chosen from the candidates in titles (scripts/catalog/titles.mjs), titleSource naming which; titles.archiveOrg is archive.org's title as it has it."
     )},\n"items": [\n${catalog.map((entry) => JSON.stringify(entry)).join(',\n')}\n]\n}\n`
   );
 }
@@ -273,10 +281,18 @@ async function main() {
     return;
   }
 
+  if (process.argv.includes('--titles')) {
+    const fixes = corrections();
+
+    write(JSON.parse(readFileSync(OUT, 'utf8')).items.map((entry) => withTitle(entry, fixes)));
+    return;
+  }
+
   mkdirSync(CACHE, { recursive: true });
 
   const ids = await identifiers();
   const catalog = [];
+  const fixes = corrections();
   let failed = 0;
 
   console.error(`${ids.length} items`);
@@ -285,7 +301,7 @@ async function main() {
     try {
       const { item, fetched } = await metadata(identifier);
 
-      catalog.push(entryOf(identifier, item));
+      catalog.push(withTitle(entryOf(identifier, item), fixes));
 
       if (fetched) {
         await wait(DELAY);
