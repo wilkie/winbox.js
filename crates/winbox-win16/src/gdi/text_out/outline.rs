@@ -593,7 +593,14 @@ impl Pen<'_> {
             // pixel that is not square is fitted at each row's own stretch;
             // a rotated glyph is not fitted, the font's own `prep` saying so
             // when `GETINFO` says it is rotated.
-            let raw = if italic {
+            let raw = if italic && outline.lean.is_some() {
+                // GDI's engine's slant: the scaler assembles a composite
+                // upright, at the size, before the matrix slants it.
+                unfitted(
+                    font.outline_on_grid(glyph, scale * 64.0)
+                        .map_err(unreadable)?,
+                )
+            } else if italic {
                 unfitted(font.outline_of(glyph, 0).map_err(unreadable)?)
             } else if aspect != 1.0 && !rotated {
                 let down = turn_matrix[2].abs().max(turn_matrix[3].abs());
@@ -751,6 +758,7 @@ impl Pen<'_> {
                         },
                         ppem,
                         across: across_pixels,
+                        transformed: italic && outline.lean.is_some(),
                     },
                 );
                 let (box_left, box_right) = (filled.left, filled.right);
