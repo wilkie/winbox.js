@@ -2,7 +2,7 @@
 kind: topic
 name: Drives and disks
 summary: What Windows 3.1 and DOS say about the drives there are — GetDriveType as SYSTEM.DRV works it out, the network calls with no network, disk space, the drive IOCTL calls, MSCDEX and absolute disk reads — how DOSBox's C: lists a folder, stamps it and renames in it, and what DOSBox makes of a floppy, hard disk or CD-ROM image -- and how the engine, the native build and the page mount, swap and save such images as drives -- measured where Windows and DOSBox answer and documented where DOS does.
-probes: [drivetyp, netcaps, diskfree, dirorder, drvioctl, mscdex, imgflop, imgcd, imghdd, imgwrite, imgswap, imgbin, imgcue, imgcue2, imgtrk, drvdpb, ioctlall, biosequ, biosequa, biosequ2, biosequd, hostattr, imgroot]
+probes: [drivetyp, netcaps, diskfree, dirorder, drvioctl, mscdex, imgflop, imgcd, imghdd, imgwrite, imgswap, imgbin, imgcue, imgcue2, imgtrk, drvdpb, ioctlall, biosequ, biosequa, biosequ2, biosequd, hostattr, imgroot, abssect, mscdbuf]
 ---
 
 File Manager asks each drive letter whether it exists, what kind it is, whether it is on a network, and how much room it has.
@@ -94,7 +94,8 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 
 - [[read out]] DOSBox installs its own MSCDEX whether or not a disc is mounted (`MSCDEX_Init`, `dos_mscdex.cpp` 1312-1322) and answers these as recorded (`MSCDEX_Handler`, 1069-1167). Its version is 2.23 (`MSCDEX_VERSION_HIGH`, `_LOW`, 37-38). 1100h also writes ADADh over a word of DADAh on the caller's stack (1071-1074): through Windows that stack is the DOS extender's. The calls that take a buffer at ES:BX -- 1501h, 150Dh, 1505h, 150Fh, 1510h -- are not recorded: through Windows they need DPMI's real-mode calls and a buffer below 1 MB.
 - [[read out]] File Manager asks MSCDEX of each drive. With no handler, `INT 2Fh` went through an empty vector. Then WinBox left every register as it was, which to 1500h says "not installed".
-- WinBox now answers 1100h, 1500h, 150Bh and 150Ch as DOSBox does, a CD-ROM drive being a drive removable and remote (`multiplex_interrupt` in `crates/winbox-win16/src/run.rs`). Any other function changes nothing. See [[topic:cd-rom]].
+- [[measured]] [[probe:mscdbuf]], CD-ROM images as D: and E:, calls 1500h, 150Dh and 1501h through DPMI's 0300h with a buffer of `GlobalDosAlloc`'s, as a Windows program must, in both modes alike: 1500h BX 2, CX 3; 150Dh writes `03 04`, the drives from nought for A:; 1501h writes five bytes a drive, the subunit and the far pointer C8C3h:0000h, `00 00 00 c3 c8 01 00 00 c3 c8`; every register as it was. [[read out]] DOSBox's `GetDrives` and `GetDriverInfo` (`dos_mscdex.cpp` 182-185, 423-429); the header is a segment of its own DOS memory taken as the first disc is mounted (317-361).
+- WinBox now answers 1100h, 1500h, 150Bh and 150Ch as DOSBox does, and 150Dh and 1501h through DPMI's 0300h (an `INT 2Fh` a program makes itself passes its ES selector to DOS as a segment, not followed), a CD-ROM drive being a drive removable and remote (`multiplex_interrupt` in `crates/winbox-win16/src/run.rs`). Any other function changes nothing. See [[topic:cd-rom]].
 
 ## Free space
 
@@ -312,12 +313,15 @@ The owner's decisions (2026-10-22):
 
 ## Sectors
 
-- [[read out]] File Manager reads each drive's boot sector with `INT 25h` and takes one whose media byte is F8h with one FAT for a RAM drive (`WINFILE.EXE` seg6 `09e3`-`09fd`). The Rust engine's drives are files, not sectors, and answer AX 8002h with the carry set. `INT 25h` and `26h` return with the flags still on the stack. The Rust engine stopped at the interrupt, and File Manager never opened.
+- [[read out]] File Manager reads each drive's boot sector with `INT 25h` and takes one whose media byte is F8h with one FAT for a RAM drive (`WINFILE.EXE` seg6 `09e3`-`09fd`). `INT 25h` and `26h` return with the flags still on the stack. The Rust engine once stopped at the interrupt, and File Manager never opened.
+- [[read out]] DOSBox's handlers read and write nothing: a drive mounted answers the carry clear and AX nought, one not AX 8002h and the carry set (`dos.cpp` 1095-1118).
+- [[measured]] [[probe:abssect]] reads sector nought of C:, Z:, E: (not there) and D: (a CD-ROM image), with CX 1 and with CX FFFFh and a packet, then writes it, a buffer of 512 patterned bytes at DS:BX. Through Windows, in both modes, a drive there answers the carry clear and **AX as it was**, not DOSBox's nought, the flags left on the stack clear too, SP two less. A read's buffer comes back over-written, though DOSBox writes nothing: its first bytes differ from run to run and mode to mode (`03 05`, `00 96`, `43 3a 5c 4f 42 53`, "C:\OBS"), what the DOS extender's own buffer held. A write leaves the buffer as it was. E: answers AX 8002h and the carry set; the flags left on the stack carry it in standard mode and not in 386 enhanced mode, where E:'s read buffer is over-written as well. A: as a floppy image was asked first once: the call never returned, DOSBox going on with no record after, so the probe asks no floppy image.
+- The Rust engine answers so (`absolute_disk` in `crates/winbox-win16/src/run.rs`): a drive with a disk, the carry clear, AX and the buffer as they were; else AX 8002h and the carry set, the flags left on the stack as each mode leaves them. [[probe:abssect]]'s `write` records agree; its `read` and `big` records differ by the buffer alone, a known gap: the extender's leftovers are not laid out. Before, every drive answered AX 8002h with the carry set.
 
 ## Not yet done
 
 - DOSBox's Z: holds its own programs (`COMMAND.COM`, `MOUNT.COM` and the rest, `drive_virtual.cpp`); the harnesses' stand-in holds none, and no probe lists it.
-- Images as drives: hard disk images of other layouts, MSCDEX's buffer calls (below), CD audio, and `INT 25h` and `26h` as DOSBox answers them (it reads nothing, `dos.cpp` 1095-1118). [[format:fat]] has what is left of a FAT image, [[topic:cd-rom]] of a disc.
+- Images as drives: hard disk images of other layouts, MSCDEX's buffer calls (below), CD audio, and what `INT 25h` leaves in a read's buffer under Windows, the DOS extender's leftovers ([[probe:abssect]]; the extender's path for it is not read out), and `INT 25h` of a floppy image, which stopped the recording. [[format:fat]] has what is left of a FAT image, [[topic:cd-rom]] of a disc.
 - The page reading an image from its file a slice at a time, with no copy in memory: a worker reading synchronously (`FileReaderSync`, or an OPFS file's synchronous handle) for the Rust engine. It holds an image in memory now, once.
 - On the page, what is written to a floppy is kept for the visit, and saved only as a new file; it is not kept with a kept program from one visit to the next.
 - A handle's leave to read is asked again on each visit, as the browser has it; Firefox and Safari give no handle, and a kept program's images are chosen again there unless a copy is kept.
@@ -328,7 +332,7 @@ The owner's decisions (2026-10-22):
 - DOS's last error (`dos_error`) is the last a program's own call answered: Windows' own calls to DOS, which the Rust engine answers without DOS, set none, so an error of KERNEL's between two calls of a program's is not seen.
 - KERNEL's table of marked drives is made once as Windows starts; the Rust engine works it out at each call, so a floppy image mounted on the page while a program runs counts at once.
 - 6901h as anything but 6900h's refusal: DOSBox stops the machine at it, which WinBox does not do, so a serial number set is unmeasured; and 6900h as a real DOS answers it, from a FAT image's boot sector (offset 27h) -- DOSBox never does.
-- MSCDEX's calls with a buffer, and 1100h's word on the caller's stack.
+- MSCDEX's other calls with a buffer -- 1502h-1505h, 1508h, 150Fh and 1510h, the device driver's requests among them -- and the driver's header 1501h points at, which is not laid out: a device driver of DOSBox's own in DOS memory, its own design. And 1100h's word on the caller's stack, which through Windows is the extender's.
 - The stamps of the root's `.` and `..`, which are the host folder's and its parent's under DOSBox, and unmeasured. The Rust engine gives the root's own stamp to both. The root's stamp for a drive held in memory is not among its changes, so it is not kept from one visit to the next.
 - Long names on the host, which DOSBox lists by short names it makes (`CreateShortName`) and sorts by them.
 

@@ -1241,7 +1241,8 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
     "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
-    "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot",
+    "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot", "abssect",
+    "mscdbuf",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1330,6 +1331,20 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "solodata:flags",
         "the module's database holds its file's header, not the bits KERNEL sets in its flags",
+    ),
+    // `INT 25h` through Windows: a drive there answers the carry clear, and
+    // the read's buffer comes back over-written with what the DOS
+    // extender's own buffer held, which DOSBox never wrote (`abssect`); in
+    // 386 enhanced mode the buffer of a drive not there is over-written
+    // too. Those bytes are leftovers of the machine, not laid out here: the
+    // buffer is left as it was. The registers and the flags agree.
+    (
+        "abssect:read",
+        "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here",
+    ),
+    (
+        "abssect:big",
+        "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here",
     ),
     // GlobalReAlloc growing a block past one allocated after it moves it in
     // Windows, its selector the same; winbox.js gives each selector a 64 KiB

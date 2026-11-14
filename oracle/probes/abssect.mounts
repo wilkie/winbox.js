@@ -1,0 +1,3 @@
+# A: a floppy image, D: a CD-ROM image: see abssect.c.
+a: imgflop.img floppy
+d: imgcd.iso iso

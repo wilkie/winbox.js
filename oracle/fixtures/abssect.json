@@ -1,0 +1,74 @@
+{
+  "probe": "abssect",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "read",
+      "args": "2",
+      "result": "ax=0002 carry=0 pushed=0 depth=2 buffer=written 03 05 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "read",
+      "args": "25",
+      "result": "ax=0019 carry=0 pushed=0 depth=2 buffer=written 03 05 01 00 00 51 00 2e"
+    },
+    {
+      "function": "read",
+      "args": "4",
+      "result": "ax=8002 carry=1 pushed=1 depth=2 buffer=untouched 30 31 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "read",
+      "args": "3",
+      "result": "ax=0003 carry=0 pushed=0 depth=2 buffer=written 03 05 01 00 00 51 00 76"
+    },
+    {
+      "function": "big",
+      "args": "2",
+      "result": "ax=0002 carry=0 pushed=0 depth=2 buffer=written 03 05 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "big",
+      "args": "25",
+      "result": "ax=0019 carry=0 pushed=0 depth=2 buffer=written 03 05 01 00 00 51 00 2e"
+    },
+    {
+      "function": "big",
+      "args": "4",
+      "result": "ax=8002 carry=1 pushed=1 depth=2 buffer=untouched 30 31 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "big",
+      "args": "3",
+      "result": "ax=0003 carry=0 pushed=0 depth=2 buffer=written 03 05 01 00 00 51 00 76"
+    },
+    {
+      "function": "write",
+      "args": "2",
+      "result": "ax=0002 carry=0 pushed=0 depth=2 buffer=untouched 30 31 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "write",
+      "args": "25",
+      "result": "ax=0019 carry=0 pushed=0 depth=2 buffer=untouched 30 31 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "write",
+      "args": "4",
+      "result": "ax=8002 carry=1 pushed=1 depth=2 buffer=untouched 30 31 32 33 3b 3c 45 2e"
+    },
+    {
+      "function": "write",
+      "args": "3",
+      "result": "ax=0003 carry=0 pushed=0 depth=2 buffer=untouched 30 31 32 33 3b 3c 45 2e"
+    }
+  ]
+}
