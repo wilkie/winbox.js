@@ -615,30 +615,29 @@ async fn pattern_block(
         return Ok(None);
     }
 
-    let handle = match made {
-        Some(handle) => handle,
-        None => {
-            // The header and the bits, and a byte past them, as GDI's
-            // bitmap block is (`heap.rs`, `gdiobj`).
-            let handle = kernel(
-                engine,
-                "GlobalAlloc",
-                &[GuestArg::Word(GMEM_MOVEABLE), GuestArg::Long(size + 1)],
-            )
-            .await? as u16;
+    let handle = if let Some(handle) = made {
+        handle
+    } else {
+        // The header and the bits, and a byte past them, as GDI's bitmap
+        // block is (`heap.rs`, `gdiobj`).
+        let handle = kernel(
+            engine,
+            "GlobalAlloc",
+            &[GuestArg::Word(GMEM_MOVEABLE), GuestArg::Long(size + 1)],
+        )
+        .await? as u16;
 
-            if handle == 0 {
-                return Ok(None);
-            }
-
-            engine
-                .system()
-                .printing
-                .drivers
-                .patterns
-                .insert(object, handle);
-            handle
+        if handle == 0 {
+            return Ok(None);
         }
+
+        engine
+            .system()
+            .printing
+            .drivers
+            .patterns
+            .insert(object, handle);
+        handle
     };
     let far = kernel(engine, "GlobalLock", &[GuestArg::Word(handle)]).await?;
 
