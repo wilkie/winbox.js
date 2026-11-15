@@ -20,10 +20,11 @@
 //!   a fixed segment's handle odd, a moveable one's even, the data
 //!   segment's the module's instance).
 //! * The entry table has an entry for each export `kept.rs` has, by its
-//!   ordinal, but those whose place it only holds: in the stubs, where the linker puts it; in the data segment
-//!   for an export that is a place there (`exported_data.rs`); a constant
-//!   for each of KERNEL's (`linker::kernel_constant`). **Recorded** by
-//!   `keptdb`: the ordinals each module's table has.
+//!   ordinal, but those whose place it only holds: in the stubs, where
+//!   the linker puts it; in the data segment for an export that is a
+//!   place there (`exported_data.rs`); a constant for each of KERNEL's
+//!   (`linker::kernel_constant`). **Recorded** by `keptdb`: the ordinals
+//!   each module's table has.
 //! * The resident names: the module's name, then the names Windows' file
 //!   keeps resident (`RECORDED`); no resources, no module references, no
 //!   imported names: the stand-ins import nothing.
