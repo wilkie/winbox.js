@@ -29,8 +29,9 @@
 //!   (`115e`-`116a`); word 8 the offset of the data segment's entry in the
 //!   segment table (`116c`-`1184`); a shift of nought made 9 (`1152`-`1158`)
 //!   and an expected version of nought 201h (`118e`-`1199`).
-//! * The stack's offset, where the file gives none: its size and the data
-//!   segment's minimum allocation (seg2 `0b14`, as the task starts).
+//! * A program's stack's offset, where the file gives none: its size and
+//!   the data segment's minimum allocation (seg2 `0b14`, as the task
+//!   starts); a library's stays nought.
 //! * Every data segment, and every code segment of a program that cannot
 //!   be discarded, is made one to load at once (40h), a data segment no
 //!   longer discardable (`11b1`-`1205`); so are the entry point's and the
@@ -81,12 +82,12 @@ const MODULE_REFERENCE_COUNT: usize = 0x1e;
 /// A segment's flags KERNEL keeps from the file's, and what it adds.
 const KEPT_SEGMENT_FLAGS: u16 = 0x13f9;
 const SEGMENT_TYPE: u16 = 0x0007;
-const CODE_MARK: u16 = 0x4000;
-const LIBRARY_MARK: u16 = 0x8000;
+pub const CODE_MARK: u16 = 0x4000;
+pub const LIBRARY_MARK: u16 = 0x8000;
 pub const MOVEABLE: u16 = 0x0010;
 pub const PRELOAD: u16 = 0x0040;
 const DISCARDABLE: u16 = 0x1000;
-const DATA: u16 = 0x0001;
+pub const DATA: u16 = 0x0001;
 const ENTRY_WITH_DATA: u16 = 0x0400;
 /// A segment given its block, and one whose bytes are in it.
 pub const ALLOCATED: u16 = 0x0002;
@@ -263,14 +264,20 @@ pub fn layout(executable: &Executable, file_info: &[u8]) -> Vec<u8> {
     }
 
     mark_preloaded(&mut out, library);
-    stack_pointer(&mut out);
+
+    if !library {
+        stack_pointer(&mut out);
+    }
+
     out
 }
 
 /// The stack's starting offset, where the header gives none: the stack's
 /// size and the data segment's minimum allocation, on a word
 /// (`KRNL386.EXE` seg2 `0b14`-`0b38`, as the task is made; **recorded** by
-/// `moddb`: 2000h and `BE0h` make `2BE0h`).
+/// `moddb`: 2000h and `BE0h` make `2BE0h`). A program's alone: a library
+/// is no task's, and its word stays nought (**recorded** by `keptdb`:
+/// COMMDLG's, DDEML's, LZEXPAND's and VER's `0000:0000`).
 fn stack_pointer(out: &mut [u8]) {
     let data = usize::from(word(out, DATA_ENTRY));
 
@@ -289,7 +296,7 @@ fn stack_pointer(out: &mut [u8]) {
 
 /// The file's entry table made bundles, appended at `out`'s end, its
 /// offset at word 4.
-fn entry_bundles(out: &mut Vec<u8>, table: &[u8]) {
+pub(crate) fn entry_bundles(out: &mut Vec<u8>, table: &[u8]) {
     let mut bundle = out.len();
     let mut at = 0;
 

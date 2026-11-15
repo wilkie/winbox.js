@@ -2091,6 +2091,88 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "moddb:next",
         "a module's database has no next module's handle: WinBox keeps no chain of them",
     ),
+    // `keptdb` reads the databases of Windows' own modules. A module WinBox
+    // keeps with no file has its own two segments, the stubs and the data,
+    // where Windows' file has its code in many (`kept_database.rs`): what
+    // counts, numbers or places them differs, and what describes Windows'
+    // file -- its imports, its non-resident names, its swap area, its
+    // moveable entries -- WinBox's stand-in has no counterpart for.
+    (
+        "keptdb:segcount",
+        "a kept module's database has WinBox's two segments, not Windows' file's",
+    ),
+    (
+        "keptdb:segment",
+        "a kept module's database has WinBox's two segments, not Windows' file's",
+    ),
+    (
+        "keptdb:autodata",
+        "a kept module's data segment is WinBox's second, not Windows' file's number",
+    ),
+    (
+        "keptdb:csip",
+        "a kept module has no entry procedure of Windows' file",
+    ),
+    (
+        "keptdb:codehandle",
+        "a kept module's database has WinBox's two segments, not Windows' file's",
+    ),
+    (
+        "keptdb:entries",
+        "a kept module's entries are in WinBox's stubs, fixed, flags 1, not in Windows' file's segments",
+    ),
+    (
+        "keptdb:movable",
+        "a kept module's entries are in WinBox's fixed stubs: none moveable",
+    ),
+    (
+        "keptdb:tables",
+        "a kept module's tables are WinBox's: no resources, imports or Windows' segments",
+    ),
+    (
+        "keptdb:size",
+        "a kept module's database is WinBox's, smaller than Windows' file's",
+    ),
+    (
+        "keptdb:nonres",
+        "a kept module has no non-resident names table of Windows' file",
+    ),
+    (
+        "keptdb:swap",
+        "a kept module has no swap area of Windows' file",
+    ),
+    (
+        "keptdb:refcount",
+        "a kept module imports nothing: no module references",
+    ),
+    (
+        "keptdb:refs",
+        "a kept module imports nothing: no module references",
+    ),
+    (
+        "keptdb:usage",
+        "a kept module's count is GetModuleUsage's 1, not Windows' count of its importers",
+    ),
+    (
+        "keptdb:gang",
+        "KERNEL's imported names start 4 bytes past its module references; WinBox's at them",
+    ),
+    (
+        "keptdb:handle",
+        "WIN87EM, MCIWAVE and MCISEQ are kept from the start, where Windows loads them when asked",
+    ),
+    (
+        "keptdb:fileinfo",
+        "SOUND is kept as SOUND.DRV, where Windows loads it from MMSOUND.DRV",
+    ),
+    (
+        "keptdb:ordinals",
+        "kept.rs lacks SHELL's ordinals 107, 121, 123, 124, 127, 128 and VGA.DRV's 502",
+    ),
+    (
+        "keptdb:flags",
+        "a library loaded from its file lacks 4000h in its flags: where KERNEL sets it is not read out",
+    ),
 ];
 
 /// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the

@@ -1,0 +1,4494 @@
+{
+  "probe": "keptdb",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "handle",
+      "args": "KERNEL",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "KERNEL",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "KERNEL",
+      "result": "000e"
+    },
+    {
+      "function": "flags",
+      "args": "KERNEL",
+      "result": "80c9"
+    },
+    {
+      "function": "autodata",
+      "args": "KERNEL",
+      "result": "0004"
+    },
+    {
+      "function": "heap",
+      "args": "KERNEL",
+      "result": "0200"
+    },
+    {
+      "function": "stack",
+      "args": "KERNEL",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "KERNEL",
+      "result": "0001:aa1b"
+    },
+    {
+      "function": "sssp",
+      "args": "KERNEL",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "KERNEL",
+      "result": "0004"
+    },
+    {
+      "function": "refcount",
+      "args": "KERNEL",
+      "result": "0000"
+    },
+    {
+      "function": "nonres",
+      "args": "KERNEL",
+      "result": "0da2 0000087c"
+    },
+    {
+      "function": "movable",
+      "args": "KERNEL",
+      "result": "0033"
+    },
+    {
+      "function": "shift",
+      "args": "KERNEL",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "KERNEL",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "KERNEL",
+      "result": "0002"
+    },
+    {
+      "function": "gang",
+      "args": "KERNEL",
+      "result": "0 -4"
+    },
+    {
+      "function": "swap",
+      "args": "KERNEL",
+      "result": "02ac"
+    },
+    {
+      "function": "version",
+      "args": "KERNEL",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "KERNEL",
+      "result": "007d 005e 055e 0040 0068 0068 0079 007d"
+    },
+    {
+      "function": "segment",
+      "args": "KERNEL 1",
+      "result": "0162 c571 c146 c571 odd"
+    },
+    {
+      "function": "segment",
+      "args": "KERNEL 2",
+      "result": "0dbc 2ab8 d156 2ab8 even"
+    },
+    {
+      "function": "segment",
+      "args": "KERNEL 3",
+      "result": "106a 0c52 d156 0c54 even"
+    },
+    {
+      "function": "segment",
+      "args": "KERNEL 4",
+      "result": "1131 13d2 c067 21d2 odd"
+    },
+    {
+      "function": "autohandle",
+      "args": "KERNEL",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "KERNEL",
+      "result": "KERNEL 0"
+    },
+    {
+      "function": "resident",
+      "args": "KERNEL",
+      "result": "__GP@342"
+    },
+    {
+      "function": "refs",
+      "args": "KERNEL",
+      "result": ""
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 0",
+      "result": "01/03/01 01/01/01 ff/01/03 ff/01/02 01/01/01x9 ff/01/02 01/01/01x12"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 1",
+      "result": "01/01/01x9 ff/01/03 01/01/01"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 2",
+      "result": "01/01/01x2"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 3",
+      "result": "ff/01/02x6 ff/01/03x2 01/01/01 ff/01/02 ff/01/03x2 01/03/01x3 ff/01/03 01/01/01x6 ff/01/03x2 01/01/01x6 ff/01/03x2 01/01/01x14 ff/01/02 ff/01/03 01/01/01 ff/01/03 ff/01/02x2 ff/01/03 01/01/01x2 ff/01/02 01/01/01x4 ff/01/03 01/01/01 ff/01/03 01/01/01x5 fe/01/fex2 01/01/01 ff/01/02 01/01/01x10 01/03/01x3 ff/01/03x3 01/01/01 ff/01/03x3 01/01/01 ff/01/02 01/01/01 ff/01/03 01/01/01"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 4",
+      "result": "01/01/01 ff/01/03x2"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 5",
+      "result": "01/01/01x7 ff/01/02x2 01/01/01x3 ff/01/02 01/01/01x6 fe/01/fex2 01/01/01x3 fe/01/fex2 01/01/01 fe/01/fex3 01/01/01x6 fe/01/fe 01/01/01x2 fe/01/fex3 01/01/01x6 ff/01/03 01/01/01 ff/01/03 01/01/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 6",
+      "result": "ff/01/02 01/01/01"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 7",
+      "result": "01/01/01 01/03/01 01/01/01"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 8",
+      "result": "01/01/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 9",
+      "result": "ff/01/02 01/03/01x2 ff/01/02 01/01/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 10",
+      "result": "04/01/04"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 11",
+      "result": "01/01/01x7 ff/01/03 01/03/01 ff/01/02x2 01/01/01x7"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 12",
+      "result": "01/01/01x2 01/03/01x2"
+    },
+    {
+      "function": "entries",
+      "args": "KERNEL 13",
+      "result": "01/01/01x2"
+    },
+    {
+      "function": "ordinals",
+      "args": "KERNEL",
+      "result": "1-26 28-38 41-42 45-141 150-152 154-207 310-311 314-316 318-320 323-329 332-332 334-351 353-356 403-404"
+    },
+    {
+      "function": "fileinfo",
+      "args": "KERNEL",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\KRNL386.EXE"
+    },
+    {
+      "function": "size",
+      "args": "KERNEL",
+      "result": "5a0"
+    },
+    {
+      "function": "handle",
+      "args": "USER",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "USER",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "USER",
+      "result": "0005"
+    },
+    {
+      "function": "flags",
+      "args": "USER",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "USER",
+      "result": "002d"
+    },
+    {
+      "function": "heap",
+      "args": "USER",
+      "result": "157c"
+    },
+    {
+      "function": "stack",
+      "args": "USER",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "USER",
+      "result": "0003:0000"
+    },
+    {
+      "function": "sssp",
+      "args": "USER",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "USER",
+      "result": "002d"
+    },
+    {
+      "function": "refcount",
+      "args": "USER",
+      "result": "0008"
+    },
+    {
+      "function": "nonres",
+      "args": "USER",
+      "result": "1a63 000010a7"
+    },
+    {
+      "function": "movable",
+      "args": "USER",
+      "result": "010d"
+    },
+    {
+      "function": "shift",
+      "args": "USER",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "USER",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "USER",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "USER",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "USER",
+      "result": "0317"
+    },
+    {
+      "function": "version",
+      "args": "USER",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "USER",
+      "result": "03fc 01f8 0cc1 0040 0202 03a2 03b7 03c7"
+    },
+    {
+      "function": "segment",
+      "args": "USER 1",
+      "result": "02b4 ba2e c146 ba2e odd"
+    },
+    {
+      "function": "segment",
+      "args": "USER 2",
+      "result": "0ea2 0fb3 d156 0fb3 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 3",
+      "result": "0faa 279c d556 279c even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 4",
+      "result": "1250 0501 d156 0501 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 5",
+      "result": "12a4 0646 d156 0646 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 6",
+      "result": "131a 2092 d156 2092 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 7",
+      "result": "1536 1896 d156 1896 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 8",
+      "result": "16ca 10ff d156 10ff even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 9",
+      "result": "17ea 149f d156 149f even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 10",
+      "result": "1942 316c d156 316c even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 11",
+      "result": "1c6c 04a5 d156 04a5 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 12",
+      "result": "1cba 18d7 d156 18d7 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 13",
+      "result": "1e5a 2649 d156 2649 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 14",
+      "result": "20dc 112e d156 112e even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 15",
+      "result": "21f8 1b5c d156 1b5c even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 16",
+      "result": "23b8 0614 d156 0614 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 17",
+      "result": "241c 090f d156 090f even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 18",
+      "result": "24b4 1b52 d156 1b52 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 19",
+      "result": "2672 0c0d d156 0c0d even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 20",
+      "result": "273a 0554 d156 0554 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 21",
+      "result": "2794 0925 d156 0925 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 22",
+      "result": "2a62 0c50 d116 0c50 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 23",
+      "result": "2b33 0dcd d112 0dcf even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 24",
+      "result": "2c1c 0b56 d112 0b56 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 25",
+      "result": "2cde 2945 d112 2945 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 26",
+      "result": "2f83 10dc d112 10dd even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 27",
+      "result": "30a0 0477 d112 0478 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 28",
+      "result": "30f2 162b d112 162c even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 29",
+      "result": "325f 0343 d112 0344 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 30",
+      "result": "3298 2867 d112 2868 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 31",
+      "result": "352b 0205 d112 0206 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 32",
+      "result": "354f 0528 d112 0529 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 33",
+      "result": "35a9 1304 d112 1305 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 34",
+      "result": "36e1 0757 d112 0758 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 35",
+      "result": "375c 2661 d112 2662 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 36",
+      "result": "39cf 0440 d112 0441 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 37",
+      "result": "3a16 117a d112 117a even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 38",
+      "result": "3b38 07c3 d112 07c4 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 39",
+      "result": "3bbc 0862 d112 0862 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 40",
+      "result": "3c4e 0d1b d112 0d1b even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 41",
+      "result": "3d2d 19aa d116 19aa even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 42",
+      "result": "3ee0 0831 d112 0832 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 43",
+      "result": "3f6a 0b3c d112 0b3d even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 44",
+      "result": "283a 0376 8077 0376 even"
+    },
+    {
+      "function": "segment",
+      "args": "USER 45",
+      "result": "2874 0ab8 8177 0ab8 even"
+    },
+    {
+      "function": "autohandle",
+      "args": "USER",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "USER",
+      "result": "USER 0"
+    },
+    {
+      "function": "resident",
+      "args": "USER",
+      "result": "WEP@8 __GP@484"
+    },
+    {
+      "function": "refs",
+      "args": "USER",
+      "result": "KERNEL GDI SYSTEM KEYBOARD MOUSE DISPLAY SOUND COMM"
+    },
+    {
+      "function": "entries",
+      "args": "USER 0",
+      "result": "01/03/01 ff/03/03 ff/03/05x3 01/03/01 ff/03/05 ff/03/03"
+    },
+    {
+      "function": "entries",
+      "args": "USER 1",
+      "result": "01/03/01x4 01/01/01 01/03/01x9 ff/03/0d 01/03/01 ff/03/0dx2 01/03/01x13 ff/03/08 ff/03/0ex3 ff/03/07 ff/03/02 01/03/01x3 ff/03/06 01/03/01 ff/03/0e ff/03/08 01/03/01x2 ff/03/07 ff/03/08x2 01/03/01x2 ff/03/0d ff/03/12x4 01/03/01x18 ff/03/0d ff/03/06 ff/03/0d ff/03/19x2 ff/03/18 ff/03/19x9 ff/03/25x2 ff/03/19 ff/03/02 ff/03/19 01/03/01 ff/03/06 01/03/01x11"
+    },
+    {
+      "function": "entries",
+      "args": "USER 2",
+      "result": "01/03/01x11 ff/03/02x8 ff/03/27x8 01/03/01 ff/03/27x4 ff/03/09x10 ff/03/0a ff/03/09 ff/03/13 ff/03/0dx5 ff/03/03 ff/03/0d ff/03/04 ff/03/02 ff/03/17 ff/03/0cx5 ff/03/13 01/03/01x2 ff/03/29 01/03/01 ff/03/0d 01/03/01 ff/03/0a 01/01/01 ff/03/09 01/03/01x5 ff/03/27 ff/03/25x2 ff/03/06x2 ff/03/0fx2 ff/03/28x16 ff/03/29 ff/03/09 ff/03/19 ff/03/18 ff/03/09 ff/03/0d 01/03/01x5 ff/03/13x2 ff/03/02x2 01/03/01 ff/03/07 ff/03/0e 01/03/01x5 ff/03/19x2 ff/03/18x2 ff/03/19 01/03/01 ff/03/28 ff/03/05 01/03/01 ff/03/27 01/03/01 ff/03/09 ff/03/02 ff/03/29x3 ff/03/02x3 01/03/01 ff/03/07x3 ff/03/02 ff/03/09x2 ff/03/0e 01/03/01 ff/03/12 01/03/01x5 ff/03/29 ff/03/17 01/03/01x2 ff/03/19 01/03/01 ff/03/29 ff/03/09"
+    },
+    {
+      "function": "entries",
+      "args": "USER 3",
+      "result": "ff/03/06x2 ff/03/29x2 01/03/01 ff/03/02 01/03/01x6 ff/03/0d"
+    },
+    {
+      "function": "entries",
+      "args": "USER 4",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 5",
+      "result": "ff/03/1a"
+    },
+    {
+      "function": "entries",
+      "args": "USER 6",
+      "result": "ff/03/0a"
+    },
+    {
+      "function": "entries",
+      "args": "USER 7",
+      "result": "ff/03/19 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 8",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 9",
+      "result": "ff/03/0d 01/03/01x2 ff/03/29 01/03/01x3 ff/03/06"
+    },
+    {
+      "function": "entries",
+      "args": "USER 10",
+      "result": "01/01/01 01/03/01x4 ff/03/0c 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 11",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 12",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 13",
+      "result": "ff/03/0cx2 ff/03/09 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 14",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 15",
+      "result": "ff/03/0cx2 ff/03/0ex2 ff/03/0c 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 16",
+      "result": "ff/03/03"
+    },
+    {
+      "function": "entries",
+      "args": "USER 17",
+      "result": "ff/03/27 ff/03/08x2"
+    },
+    {
+      "function": "entries",
+      "args": "USER 18",
+      "result": "ff/03/0cx3"
+    },
+    {
+      "function": "entries",
+      "args": "USER 19",
+      "result": "ff/03/09x9"
+    },
+    {
+      "function": "entries",
+      "args": "USER 20",
+      "result": "ff/03/10x2 ff/03/25x2"
+    },
+    {
+      "function": "entries",
+      "args": "USER 21",
+      "result": "ff/03/0bx9"
+    },
+    {
+      "function": "entries",
+      "args": "USER 22",
+      "result": "ff/03/0f"
+    },
+    {
+      "function": "entries",
+      "args": "USER 23",
+      "result": "ff/03/0f"
+    },
+    {
+      "function": "entries",
+      "args": "USER 24",
+      "result": "ff/03/0f ff/03/08"
+    },
+    {
+      "function": "entries",
+      "args": "USER 25",
+      "result": "ff/03/02 ff/03/0cx5 ff/03/0ex2 ff/03/0fx2 ff/03/0ex2 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 26",
+      "result": "ff/03/0bx4"
+    },
+    {
+      "function": "entries",
+      "args": "USER 27",
+      "result": "01/03/01x2 ff/03/12 ff/03/29 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "USER 28",
+      "result": "ff/03/16"
+    },
+    {
+      "function": "entries",
+      "args": "USER 29",
+      "result": "ff/03/16x32"
+    },
+    {
+      "function": "ordinals",
+      "args": "USER",
+      "result": "1-8 10-116 118-280 282-294 299-299 301-301 306-306 308-309 314-314 319-326 331-337 341-341 343-343 356-359 362-362 368-373 400-400 402-404 406-408 410-418 420-423 430-438 445-445 447-447 451-452 454-466 470-473 480-484 499-499 501-532"
+    },
+    {
+      "function": "fileinfo",
+      "args": "USER",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\USER.EXE"
+    },
+    {
+      "function": "size",
+      "args": "USER",
+      "result": "12a0"
+    },
+    {
+      "function": "handle",
+      "args": "GDI",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "GDI",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "GDI",
+      "result": "0006"
+    },
+    {
+      "function": "flags",
+      "args": "GDI",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "GDI",
+      "result": "0030"
+    },
+    {
+      "function": "heap",
+      "args": "GDI",
+      "result": "2710"
+    },
+    {
+      "function": "stack",
+      "args": "GDI",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "GDI",
+      "result": "0002:0073"
+    },
+    {
+      "function": "sssp",
+      "args": "GDI",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "GDI",
+      "result": "0030"
+    },
+    {
+      "function": "refcount",
+      "args": "GDI",
+      "result": "0001"
+    },
+    {
+      "function": "nonres",
+      "args": "GDI",
+      "result": "1192 00000c41"
+    },
+    {
+      "function": "movable",
+      "args": "GDI",
+      "result": "009f"
+    },
+    {
+      "function": "shift",
+      "args": "GDI",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "GDI",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "GDI",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "GDI",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "GDI",
+      "result": "070b"
+    },
+    {
+      "function": "version",
+      "args": "GDI",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "GDI",
+      "result": "026a 0216 08bd 0040 0220 024c 0260 0262"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 1",
+      "result": "01e2 7c1e c146 7c1e odd"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 2",
+      "result": "09ca 152a d556 152a even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 3",
+      "result": "0b34 3168 d156 3168 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 4",
+      "result": "0e5a 0a14 d156 0a14 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 5",
+      "result": "1ed8 09ae d112 09af even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 6",
+      "result": "1f77 0725 d112 0725 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 7",
+      "result": "1ff2 2088 d112 2089 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 8",
+      "result": "2206 054b d112 054c even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 9",
+      "result": "2261 13d4 d112 13d4 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 10",
+      "result": "23a4 03ca d012 03cb even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 11",
+      "result": "0f04 13ba d156 13ba even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 12",
+      "result": "23e1 10a5 d112 10a5 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 13",
+      "result": "24ed 02e5 d012 02e6 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 14",
+      "result": "251c 049e d112 049f even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 15",
+      "result": "2569 0972 d112 0974 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 16",
+      "result": "2604 0cb2 d112 0cb4 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 17",
+      "result": "26d4 059f d112 05a0 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 18",
+      "result": "2734 0286 d112 0286 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 19",
+      "result": "275f 1cf2 d112 1cf3 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 20",
+      "result": "293f 2747 d112 2748 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 21",
+      "result": "1048 1e4b d156 1e4b even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 22",
+      "result": "1238 1102 d156 1102 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 23",
+      "result": "2bc3 0427 d112 0429 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 24",
+      "result": "2c09 1137 d112 1138 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 25",
+      "result": "2d23 09c8 d112 09c9 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 26",
+      "result": "2dc5 0546 d112 0547 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 27",
+      "result": "2e1c 0286 d112 0286 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 28",
+      "result": "2e47 1a2e d112 1a2e even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 29",
+      "result": "2ff9 069f d112 06a0 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 30",
+      "result": "306a 034b d112 034c even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 31",
+      "result": "1352 06b3 d156 06b3 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 32",
+      "result": "13c2 15a6 d156 15a6 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 33",
+      "result": "30a1 0175 d112 0175 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 34",
+      "result": "30b9 11b9 d112 11ba even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 35",
+      "result": "31d8 0333 d112 0334 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 36",
+      "result": "1522 70ab d156 70ab even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 37",
+      "result": "320d 042e d012 042f even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 38",
+      "result": "3250 0033 d012 0033 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 39",
+      "result": "3254 012f d112 012f even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 40",
+      "result": "3268 08ed d112 08ee even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 41",
+      "result": "32fd 0311 d012 0312 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 42",
+      "result": "1c38 19bb d156 19bb even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 43",
+      "result": "332f 1f0c d112 1f0d even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 44",
+      "result": "3525 026a d112 026b even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 45",
+      "result": "354e 0375 d112 0376 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 46",
+      "result": "1dd8 0008 c156 0008 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 47",
+      "result": "1ddc 04c0 8177 04c0 even"
+    },
+    {
+      "function": "segment",
+      "args": "GDI 48",
+      "result": "1e2c 0a5e 8177 0a5e even"
+    },
+    {
+      "function": "autohandle",
+      "args": "GDI",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "GDI",
+      "result": "GDI 0"
+    },
+    {
+      "function": "resident",
+      "args": "GDI",
+      "result": "WEP@59 __GP@46"
+    },
+    {
+      "function": "refs",
+      "args": "GDI",
+      "result": "KERNEL"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 0",
+      "result": "01/03/01 01/01/01 01/03/01 01/01/01x4 01/03/01x4 ff/01/04 01/03/01 ff/01/04 01/01/01 ff/01/04 01/01/01 ff/01/04 ff/03/15x2 01/01/01x2 ff/03/09x2 ff/03/0f ff/03/09 ff/03/19 ff/03/09 01/03/01x2 ff/03/17 01/03/01x4 ff/03/18 ff/03/15 ff/03/07 01/03/01 ff/03/1ax2 01/03/01 ff/03/1a 01/03/01x6 ff/03/04 ff/01/04 01/03/01 01/01/01 ff/03/09x2 ff/03/03x2 ff/03/04 01/03/01 ff/03/04 01/03/01x2 ff/03/09 01/03/01x2 ff/03/04 01/01/01 01/03/01x2 ff/03/05 ff/03/04 01/03/01 01/01/01x2 01/03/01 01/01/01 01/03/01 01/01/01x2 01/03/01 01/01/01 ff/03/04 ff/03/17 01/01/01x3 01/03/01 01/01/01 ff/03/10 01/03/01x2 ff/03/03x2 01/01/01x6 ff/03/17 01/03/01x5 01/01/01"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 1",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 2",
+      "result": "ff/03/02"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 3",
+      "result": "01/03/01x2 ff/03/13x2 ff/03/14x2 ff/03/13 01/03/01x4 ff/03/07x2 01/03/01 ff/03/0f ff/03/06"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 4",
+      "result": "01/03/01 01/01/01 01/03/01 ff/03/14"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 5",
+      "result": "01/01/01 01/03/01 ff/03/07 ff/01/04"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 6",
+      "result": "ff/03/14x2 01/03/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 7",
+      "result": "01/03/01x2"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 8",
+      "result": "01/03/01x2"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 9",
+      "result": "ff/03/13x2"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 10",
+      "result": "01/03/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 11",
+      "result": "ff/03/1fx2 01/03/01 ff/03/1f 01/03/01x2 ff/03/14"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 12",
+      "result": "ff/01/0dx2"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 13",
+      "result": "ff/01/0dx5 ff/03/0d ff/01/0d ff/03/0dx8"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 14",
+      "result": "ff/01/1bx6"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 15",
+      "result": "ff/03/1cx9"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 16",
+      "result": "ff/03/1c"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 17",
+      "result": "ff/03/1cx2"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 18",
+      "result": "ff/03/05 ff/03/06 ff/03/03x2 ff/03/05 ff/03/07x9 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 19",
+      "result": "ff/03/05"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 20",
+      "result": "ff/03/07"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 21",
+      "result": "01/03/01x2"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 22",
+      "result": "ff/03/09 ff/03/03x2 01/03/01x2 ff/03/03 01/03/01 ff/03/30"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 23",
+      "result": "ff/03/16x9"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 24",
+      "result": "ff/03/16"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 25",
+      "result": "ff/03/0f ff/03/16x3 ff/03/1fx7"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 26",
+      "result": "01/03/01 ff/03/02"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 27",
+      "result": "ff/03/02"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 28",
+      "result": "ff/03/02"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 29",
+      "result": "01/01/01"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 30",
+      "result": "ff/01/04 ff/03/13 01/03/01 ff/03/16"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 31",
+      "result": "ff/03/0bx5 ff/03/09 ff/03/04"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 32",
+      "result": "ff/03/0b ff/03/18 ff/03/09 ff/03/15"
+    },
+    {
+      "function": "entries",
+      "args": "GDI 33",
+      "result": "01/03/01x4 ff/03/13 01/03/01x4 01/01/01x2 01/03/01 01/01/01x6 01/03/01 ff/01/04 01/03/01 ff/01/04 01/03/01 ff/03/15 ff/01/04x2 ff/03/03"
+    },
+    {
+      "function": "ordinals",
+      "args": "GDI",
+      "result": "1-106 117-117 119-119 121-136 148-151 153-156 159-163 169-170 172-173 175-176 179-181 190-196 201-202 206-220 230-235 240-248 250-250 253-254 300-314 330-330 332-332 345-346 348-355 360-368 370-370 372-382 400-401 403-403 405-405 407-407 409-412 439-445 449-452 460-486"
+    },
+    {
+      "function": "fileinfo",
+      "args": "GDI",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\GDI.EXE"
+    },
+    {
+      "function": "size",
+      "args": "GDI",
+      "result": "de0"
+    },
+    {
+      "function": "handle",
+      "args": "MMSYSTEM",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "MMSYSTEM",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "MMSYSTEM",
+      "result": "0004"
+    },
+    {
+      "function": "flags",
+      "args": "MMSYSTEM",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "MMSYSTEM",
+      "result": "000a"
+    },
+    {
+      "function": "heap",
+      "args": "MMSYSTEM",
+      "result": "0080"
+    },
+    {
+      "function": "stack",
+      "args": "MMSYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "MMSYSTEM",
+      "result": "0002:0000"
+    },
+    {
+      "function": "sssp",
+      "args": "MMSYSTEM",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "MMSYSTEM",
+      "result": "000a"
+    },
+    {
+      "function": "refcount",
+      "args": "MMSYSTEM",
+      "result": "0003"
+    },
+    {
+      "function": "nonres",
+      "args": "MMSYSTEM",
+      "result": "092a 0000060f"
+    },
+    {
+      "function": "movable",
+      "args": "MMSYSTEM",
+      "result": "0078"
+    },
+    {
+      "function": "shift",
+      "args": "MMSYSTEM",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "MMSYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "MMSYSTEM",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "MMSYSTEM",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "MMSYSTEM",
+      "result": "03b5"
+    },
+    {
+      "function": "version",
+      "args": "MMSYSTEM",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "MMSYSTEM",
+      "result": "024c 009a 055a 0040 00a4 0211 0230 0236"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 1",
+      "result": "00f8 046a c146 046a odd"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 2",
+      "result": "0146 0a22 d556 0a22 even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 3",
+      "result": "01f6 1509 d156 1509 even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 4",
+      "result": "0356 086e d156 086e even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 5",
+      "result": "0434 3b49 d112 3b4a even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 6",
+      "result": "07fb 0aa5 d112 0aa6 even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 7",
+      "result": "08aa 188f d112 1890 even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 8",
+      "result": "0a3f 05dd d112 05de even"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 9",
+      "result": "03f4 0010 8167 0010 odd"
+    },
+    {
+      "function": "segment",
+      "args": "MMSYSTEM 10",
+      "result": "03f8 036e 8177 036e even"
+    },
+    {
+      "function": "autohandle",
+      "args": "MMSYSTEM",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "MMSYSTEM",
+      "result": "MMSYSTEM 0"
+    },
+    {
+      "function": "resident",
+      "args": "MMSYSTEM",
+      "result": "WEP@1 DRIVERPROC@6"
+    },
+    {
+      "function": "refs",
+      "args": "MMSYSTEM",
+      "result": "KERNEL USER KEYBOARD"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 0",
+      "result": "ff/03/02 ff/03/04"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 1",
+      "result": "ff/03/02 ff/03/04"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 2",
+      "result": "01/03/01x4 ff/03/02"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 3",
+      "result": "ff/03/08x7"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 4",
+      "result": "ff/03/08"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 5",
+      "result": "ff/03/06x7 01/03/01x3 ff/03/06x5 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 6",
+      "result": "ff/03/06x13"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 7",
+      "result": "ff/03/08x5"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 8",
+      "result": "ff/03/03x21"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 9",
+      "result": "ff/03/03x14"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 10",
+      "result": "01/03/01x3 ff/03/08 01/03/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 11",
+      "result": "ff/03/05x8"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 12",
+      "result": "ff/03/05 01/03/01 ff/03/05x6"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 13",
+      "result": "ff/03/04"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 14",
+      "result": "ff/03/04 01/03/01 ff/03/04x2"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 15",
+      "result": "ff/03/04x5"
+    },
+    {
+      "function": "entries",
+      "args": "MMSYSTEM 16",
+      "result": "ff/03/07x17"
+    },
+    {
+      "function": "ordinals",
+      "args": "MMSYSTEM",
+      "result": "1-2 5-6 30-34 101-107 109-109 201-216 301-313 350-354 401-421 501-514 601-607 701-708 710-717 900-900 902-905 1100-1104 1210-1226"
+    },
+    {
+      "function": "fileinfo",
+      "args": "MMSYSTEM",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\MMSYSTEM.DLL"
+    },
+    {
+      "function": "size",
+      "args": "MMSYSTEM",
+      "result": "6e0"
+    },
+    {
+      "function": "handle",
+      "args": "SOUND",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "SOUND",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "SOUND",
+      "result": "0006"
+    },
+    {
+      "function": "flags",
+      "args": "SOUND",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "SOUND",
+      "result": "0002"
+    },
+    {
+      "function": "heap",
+      "args": "SOUND",
+      "result": "0000"
+    },
+    {
+      "function": "stack",
+      "args": "SOUND",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "SOUND",
+      "result": "0001:0000"
+    },
+    {
+      "function": "sssp",
+      "args": "SOUND",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "SOUND",
+      "result": "0002"
+    },
+    {
+      "function": "refcount",
+      "args": "SOUND",
+      "result": "0001"
+    },
+    {
+      "function": "nonres",
+      "args": "SOUND",
+      "result": "0135 0000013a"
+    },
+    {
+      "function": "movable",
+      "args": "SOUND",
+      "result": "0000"
+    },
+    {
+      "function": "shift",
+      "args": "SOUND",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "SOUND",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "SOUND",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "SOUND",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "SOUND",
+      "result": "0000"
+    },
+    {
+      "function": "version",
+      "args": "SOUND",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "SOUND",
+      "result": "0085 004a 00e5 0040 0054 006c 007b 007d"
+    },
+    {
+      "function": "segment",
+      "args": "SOUND 1",
+      "result": "002a 07b8 c546 07b8 odd"
+    },
+    {
+      "function": "segment",
+      "args": "SOUND 2",
+      "result": "00ac 00aa 8167 00aa odd"
+    },
+    {
+      "function": "autohandle",
+      "args": "SOUND",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "SOUND",
+      "result": "SOUND 0"
+    },
+    {
+      "function": "resident",
+      "args": "SOUND",
+      "result": "WEP@18"
+    },
+    {
+      "function": "refs",
+      "args": "SOUND",
+      "result": "KERNEL"
+    },
+    {
+      "function": "entries",
+      "args": "SOUND 0",
+      "result": "01/03/01x5 01/01/01x2 01/03/01x4 01/01/01 01/03/01x6"
+    },
+    {
+      "function": "ordinals",
+      "args": "SOUND",
+      "result": "1-18"
+    },
+    {
+      "function": "fileinfo",
+      "args": "SOUND",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\MMSOUND.DRV"
+    },
+    {
+      "function": "size",
+      "args": "SOUND",
+      "result": "160"
+    },
+    {
+      "function": "handle",
+      "args": "KEYBOARD",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "KEYBOARD",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "KEYBOARD",
+      "result": "0008"
+    },
+    {
+      "function": "flags",
+      "args": "KEYBOARD",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "KEYBOARD",
+      "result": "000b"
+    },
+    {
+      "function": "heap",
+      "args": "KEYBOARD",
+      "result": "0000"
+    },
+    {
+      "function": "stack",
+      "args": "KEYBOARD",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "KEYBOARD",
+      "result": "0001:0053"
+    },
+    {
+      "function": "sssp",
+      "args": "KEYBOARD",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "KEYBOARD",
+      "result": "000b"
+    },
+    {
+      "function": "refcount",
+      "args": "KEYBOARD",
+      "result": "0001"
+    },
+    {
+      "function": "nonres",
+      "args": "KEYBOARD",
+      "result": "0137 000001b8"
+    },
+    {
+      "function": "movable",
+      "args": "KEYBOARD",
+      "result": "0008"
+    },
+    {
+      "function": "shift",
+      "args": "KEYBOARD",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "KEYBOARD",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "KEYBOARD",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "KEYBOARD",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "KEYBOARD",
+      "result": "0042"
+    },
+    {
+      "function": "version",
+      "args": "KEYBOARD",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "KEYBOARD",
+      "result": "00e2 00a4 015d 0040 00ae 00c6 00d8 00da"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 1",
+      "result": "0032 007e d556 007e even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 2",
+      "result": "0142 00a2 d012 00a2 even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 3",
+      "result": "003c 0263 d156 0263 even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 4",
+      "result": "014d 00c2 d112 00c3 even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 5",
+      "result": "015b 00a1 d112 00a2 even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 6",
+      "result": "0068 00a7 d056 00a7 even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 7",
+      "result": "0166 0037 d012 0038 even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 8",
+      "result": "016a 00db d112 00dc even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 9",
+      "result": "0179 0419 d112 041a even"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 10",
+      "result": "0074 0aff c146 0aff odd"
+    },
+    {
+      "function": "segment",
+      "args": "KEYBOARD 11",
+      "result": "012a 0144 8067 0144 odd"
+    },
+    {
+      "function": "autohandle",
+      "args": "KEYBOARD",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "KEYBOARD",
+      "result": "KEYBOARD 0"
+    },
+    {
+      "function": "resident",
+      "args": "KEYBOARD",
+      "result": "WEP@8"
+    },
+    {
+      "function": "refs",
+      "args": "KEYBOARD",
+      "result": "KERNEL"
+    },
+    {
+      "function": "entries",
+      "args": "KEYBOARD 0",
+      "result": "0a/03/0ax6 ff/03/06 0a/03/0a"
+    },
+    {
+      "function": "entries",
+      "args": "KEYBOARD 1",
+      "result": "0a/03/0a"
+    },
+    {
+      "function": "entries",
+      "args": "KEYBOARD 2",
+      "result": "ff/03/02 ff/03/03 ff/03/04 ff/03/05 ff/03/07 ff/03/08 0a/03/0a ff/03/09 0a/03/0ax4"
+    },
+    {
+      "function": "ordinals",
+      "args": "KEYBOARD",
+      "result": "1-8 100-100 126-137"
+    },
+    {
+      "function": "fileinfo",
+      "args": "KEYBOARD",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\KEYBOARD.DRV"
+    },
+    {
+      "function": "size",
+      "args": "KEYBOARD",
+      "result": "200"
+    },
+    {
+      "function": "handle",
+      "args": "SYSTEM",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "SYSTEM",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "SYSTEM",
+      "result": "0008"
+    },
+    {
+      "function": "flags",
+      "args": "SYSTEM",
+      "result": "c340"
+    },
+    {
+      "function": "autodata",
+      "args": "SYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "heap",
+      "args": "SYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "stack",
+      "args": "SYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "SYSTEM",
+      "result": "0001:01e4"
+    },
+    {
+      "function": "sssp",
+      "args": "SYSTEM",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "SYSTEM",
+      "result": "0002"
+    },
+    {
+      "function": "refcount",
+      "args": "SYSTEM",
+      "result": "0001"
+    },
+    {
+      "function": "nonres",
+      "args": "SYSTEM",
+      "result": "00fb 0000012a"
+    },
+    {
+      "function": "movable",
+      "args": "SYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "shift",
+      "args": "SYSTEM",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "SYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "SYSTEM",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "SYSTEM",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "SYSTEM",
+      "result": "0000"
+    },
+    {
+      "function": "version",
+      "args": "SYSTEM",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "SYSTEM",
+      "result": "0086 0000 00c9 0040 0054 006c 007c 007e"
+    },
+    {
+      "function": "segment",
+      "args": "SYSTEM 1",
+      "result": "0026 03c7 c146 03c7 odd"
+    },
+    {
+      "function": "segment",
+      "args": "SYSTEM 2",
+      "result": "0068 0067 8067 0067 odd"
+    },
+    {
+      "function": "modname",
+      "args": "SYSTEM",
+      "result": "SYSTEM 0"
+    },
+    {
+      "function": "resident",
+      "args": "SYSTEM",
+      "result": "WEP@10"
+    },
+    {
+      "function": "refs",
+      "args": "SYSTEM",
+      "result": "KERNEL"
+    },
+    {
+      "function": "entries",
+      "args": "SYSTEM 0",
+      "result": "01/01/01x10"
+    },
+    {
+      "function": "entries",
+      "args": "SYSTEM 1",
+      "result": "01/01/01"
+    },
+    {
+      "function": "ordinals",
+      "args": "SYSTEM",
+      "result": "1-10 20-20"
+    },
+    {
+      "function": "fileinfo",
+      "args": "SYSTEM",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\SYSTEM.DRV"
+    },
+    {
+      "function": "size",
+      "args": "SYSTEM",
+      "result": "140"
+    },
+    {
+      "function": "handle",
+      "args": "DISPLAY",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "DISPLAY",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "DISPLAY",
+      "result": "0007"
+    },
+    {
+      "function": "flags",
+      "args": "DISPLAY",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "DISPLAY",
+      "result": "000a"
+    },
+    {
+      "function": "heap",
+      "args": "DISPLAY",
+      "result": "0000"
+    },
+    {
+      "function": "stack",
+      "args": "DISPLAY",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "DISPLAY",
+      "result": "0004:0433"
+    },
+    {
+      "function": "sssp",
+      "args": "DISPLAY",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "DISPLAY",
+      "result": "000b"
+    },
+    {
+      "function": "refcount",
+      "args": "DISPLAY",
+      "result": "0002"
+    },
+    {
+      "function": "nonres",
+      "args": "DISPLAY",
+      "result": "01d5 0000061f"
+    },
+    {
+      "function": "movable",
+      "args": "DISPLAY",
+      "result": "0012"
+    },
+    {
+      "function": "shift",
+      "args": "DISPLAY",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "DISPLAY",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "DISPLAY",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "DISPLAY",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "DISPLAY",
+      "result": "01e4"
+    },
+    {
+      "function": "version",
+      "args": "DISPLAY",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "DISPLAY",
+      "result": "04e7 009a 05b4 0040 00ae 04c7 04d2 04d6"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 1",
+      "result": "0084 322a c166 322a odd"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 2",
+      "result": "091a 2650 c126 2650 odd"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 3",
+      "result": "0b82 1e5a c120 1e5a none"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 4",
+      "result": "03ac 0504 d576 0504 even"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 5",
+      "result": "0406 04b0 d176 04b0 even"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 6",
+      "result": "0d6a 1184 d132 1184 even"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 7",
+      "result": "0e84 0288 d132 0288 even"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 8",
+      "result": "0eae 05fa d132 05fa even"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 9",
+      "result": "0f0f 1e3f d136 1e3f even"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 10",
+      "result": "0454 0260 8167 0260 odd"
+    },
+    {
+      "function": "segment",
+      "args": "DISPLAY 11",
+      "result": "0000 0000 8067 1002 odd"
+    },
+    {
+      "function": "autohandle",
+      "args": "DISPLAY",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "DISPLAY",
+      "result": "DISPLAY 0"
+    },
+    {
+      "function": "resident",
+      "args": "DISPLAY",
+      "result": ""
+    },
+    {
+      "function": "refs",
+      "args": "DISPLAY",
+      "result": "KEYBOARD KERNEL"
+    },
+    {
+      "function": "entries",
+      "args": "DISPLAY 0",
+      "result": "01/03/01x2 ff/03/05 ff/03/04x2 ff/03/05x2 01/03/01 ff/03/07 01/03/01x2 ff/03/05 ff/01/05 01/03/01 01/01/01 ff/01/05 01/03/01 ff/01/05 ff/03/09x3"
+    },
+    {
+      "function": "entries",
+      "args": "DISPLAY 1",
+      "result": "ff/03/06 ff/03/08 01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "DISPLAY 2",
+      "result": "ff/03/05 01/03/01x3"
+    },
+    {
+      "function": "entries",
+      "args": "DISPLAY 3",
+      "result": "02/03/02x2 03/03/03x2"
+    },
+    {
+      "function": "entries",
+      "args": "DISPLAY 4",
+      "result": "01/03/01 ff/00/09 ff/00/06"
+    },
+    {
+      "function": "ordinals",
+      "args": "DISPLAY",
+      "result": "1-21 90-92 101-104 400-403 500-502"
+    },
+    {
+      "function": "fileinfo",
+      "args": "DISPLAY",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\VGA.DRV"
+    },
+    {
+      "function": "size",
+      "args": "DISPLAY",
+      "result": "6c0"
+    },
+    {
+      "function": "handle",
+      "args": "COMMDLG",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "COMMDLG",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "COMMDLG",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "COMMDLG",
+      "result": "c345"
+    },
+    {
+      "function": "autodata",
+      "args": "COMMDLG",
+      "result": "0009"
+    },
+    {
+      "function": "heap",
+      "args": "COMMDLG",
+      "result": "0400"
+    },
+    {
+      "function": "stack",
+      "args": "COMMDLG",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "COMMDLG",
+      "result": "0008:0000"
+    },
+    {
+      "function": "sssp",
+      "args": "COMMDLG",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "COMMDLG",
+      "result": "0009"
+    },
+    {
+      "function": "refcount",
+      "args": "COMMDLG",
+      "result": "0004"
+    },
+    {
+      "function": "nonres",
+      "args": "COMMDLG",
+      "result": "01c7 000004b2"
+    },
+    {
+      "function": "movable",
+      "args": "COMMDLG",
+      "result": "0030"
+    },
+    {
+      "function": "shift",
+      "args": "COMMDLG",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "COMMDLG",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "COMMDLG",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "COMMDLG",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "COMMDLG",
+      "result": "059d"
+    },
+    {
+      "function": "version",
+      "args": "COMMDLG",
+      "result": "0300"
+    },
+    {
+      "function": "tables",
+      "args": "COMMDLG",
+      "result": "0311 0090 041f 0040 009a 02de 02ef 02f7"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 1",
+      "result": "017e 2f23 d112 2f23 even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 2",
+      "result": "0496 59cf d112 59d0 even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 3",
+      "result": "0a6c 3eff d112 3eff even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 4",
+      "result": "0e80 281e d112 281f even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 5",
+      "result": "1128 0b40 d112 0b40 even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 6",
+      "result": "11eb 0200 d116 0200 even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 7",
+      "result": "006c 023a d156 023a even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 8",
+      "result": "0098 0074 d556 0074 even"
+    },
+    {
+      "function": "segment",
+      "args": "COMMDLG 9",
+      "result": "00a4 0d58 8077 0d58 even"
+    },
+    {
+      "function": "autohandle",
+      "args": "COMMDLG",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "COMMDLG",
+      "result": "COMMDLG 0"
+    },
+    {
+      "function": "resident",
+      "args": "COMMDLG",
+      "result": "WEP@28"
+    },
+    {
+      "function": "refs",
+      "args": "COMMDLG",
+      "result": "KERNEL GDI USER KEYBOARD"
+    },
+    {
+      "function": "entries",
+      "args": "COMMDLG 0",
+      "result": "ff/03/02x2"
+    },
+    {
+      "function": "entries",
+      "args": "COMMDLG 1",
+      "result": "ff/03/01 ff/03/02x2 ff/03/01 ff/03/06"
+    },
+    {
+      "function": "entries",
+      "args": "COMMDLG 2",
+      "result": "ff/03/05x4 ff/03/04x2"
+    },
+    {
+      "function": "entries",
+      "args": "COMMDLG 3",
+      "result": "ff/03/04x2 ff/03/03x4"
+    },
+    {
+      "function": "entries",
+      "args": "COMMDLG 4",
+      "result": "ff/03/01 ff/03/06 ff/03/02 ff/03/06 ff/03/02 ff/03/03 ff/03/02 ff/00/02 ff/00/05 ff/00/04 ff/00/01 ff/00/03 ff/00/02 ff/00/01x4 ff/00/02 ff/00/06 ff/00/01x9 ff/00/07"
+    },
+    {
+      "function": "ordinals",
+      "args": "COMMDLG",
+      "result": "1-2 5-9 11-16 18-23 25-53"
+    },
+    {
+      "function": "fileinfo",
+      "args": "COMMDLG",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL"
+    },
+    {
+      "function": "size",
+      "args": "COMMDLG",
+      "result": "4a0"
+    },
+    {
+      "function": "handle",
+      "args": "SHELL",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "SHELL",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "SHELL",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "SHELL",
+      "result": "c345"
+    },
+    {
+      "function": "autodata",
+      "args": "SHELL",
+      "result": "000d"
+    },
+    {
+      "function": "heap",
+      "args": "SHELL",
+      "result": "0100"
+    },
+    {
+      "function": "stack",
+      "args": "SHELL",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "SHELL",
+      "result": "0001:0010"
+    },
+    {
+      "function": "sssp",
+      "args": "SHELL",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "SHELL",
+      "result": "000d"
+    },
+    {
+      "function": "refcount",
+      "args": "SHELL",
+      "result": "0004"
+    },
+    {
+      "function": "nonres",
+      "args": "SHELL",
+      "result": "01b8 0000035a"
+    },
+    {
+      "function": "movable",
+      "args": "SHELL",
+      "result": "0033"
+    },
+    {
+      "function": "shift",
+      "args": "SHELL",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "SHELL",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "SHELL",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "SHELL",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "SHELL",
+      "result": "01a6"
+    },
+    {
+      "function": "version",
+      "args": "SHELL",
+      "result": "0300"
+    },
+    {
+      "function": "tables",
+      "args": "SHELL",
+      "result": "01ab 00b8 02ce 0040 00c2 017a 0189 0191"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 1",
+      "result": "0056 01e6 d556 01e6 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 2",
+      "result": "007c 1a5c d156 1a5c even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 3",
+      "result": "0234 09e8 d156 09e8 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 4",
+      "result": "02da 13fa d156 13fa even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 5",
+      "result": "043e 0234 d156 0234 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 6",
+      "result": "0466 015e d156 015e even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 7",
+      "result": "04bc 023a d112 023a even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 8",
+      "result": "04e6 0791 d112 0792 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 9",
+      "result": "0570 0dbf d112 0dc0 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 10",
+      "result": "0669 09e0 d112 09e0 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 11",
+      "result": "0712 0121 d112 0122 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 12",
+      "result": "0000 0000 8077 0016 even"
+    },
+    {
+      "function": "segment",
+      "args": "SHELL 13",
+      "result": "0482 0354 8077 0354 even"
+    },
+    {
+      "function": "autohandle",
+      "args": "SHELL",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "SHELL",
+      "result": "SHELL 0"
+    },
+    {
+      "function": "resident",
+      "args": "SHELL",
+      "result": "WEP@8"
+    },
+    {
+      "function": "refs",
+      "args": "SHELL",
+      "result": "KERNEL GDI USER KEYBOARD"
+    },
+    {
+      "function": "entries",
+      "args": "SHELL 0",
+      "result": "ff/03/02x7 ff/03/07 ff/03/06"
+    },
+    {
+      "function": "entries",
+      "args": "SHELL 1",
+      "result": "ff/03/06x3"
+    },
+    {
+      "function": "entries",
+      "args": "SHELL 2",
+      "result": "ff/03/04x2 ff/03/09"
+    },
+    {
+      "function": "entries",
+      "args": "SHELL 3",
+      "result": "ff/03/09x2 ff/03/0a"
+    },
+    {
+      "function": "entries",
+      "args": "SHELL 4",
+      "result": "ff/03/0a ff/03/05x2 ff/03/0a"
+    },
+    {
+      "function": "entries",
+      "args": "SHELL 5",
+      "result": "ff/03/04 ff/03/08 ff/03/04x2 ff/00/02 ff/00/01x2 ff/00/0d ff/00/07 ff/00/03x7 ff/00/04 ff/00/01x2 ff/00/08x2 ff/00/0d ff/00/01 ff/00/0bx3 ff/00/03 ff/00/0cx2"
+    },
+    {
+      "function": "ordinals",
+      "args": "SHELL",
+      "result": "1-9 11-13 20-22 32-34 36-39 100-128"
+    },
+    {
+      "function": "fileinfo",
+      "args": "SHELL",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\SHELL.DLL"
+    },
+    {
+      "function": "size",
+      "args": "SHELL",
+      "result": "360"
+    },
+    {
+      "function": "handle",
+      "args": "TOOLHELP",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "TOOLHELP",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "TOOLHELP",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "TOOLHELP",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "TOOLHELP",
+      "result": "0002"
+    },
+    {
+      "function": "heap",
+      "args": "TOOLHELP",
+      "result": "0200"
+    },
+    {
+      "function": "stack",
+      "args": "TOOLHELP",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "TOOLHELP",
+      "result": "0001:016a"
+    },
+    {
+      "function": "sssp",
+      "args": "TOOLHELP",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "TOOLHELP",
+      "result": "0002"
+    },
+    {
+      "function": "refcount",
+      "args": "TOOLHELP",
+      "result": "0002"
+    },
+    {
+      "function": "nonres",
+      "args": "TOOLHELP",
+      "result": "0236 0000017b"
+    },
+    {
+      "function": "movable",
+      "args": "TOOLHELP",
+      "result": "0000"
+    },
+    {
+      "function": "shift",
+      "args": "TOOLHELP",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "TOOLHELP",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "TOOLHELP",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "TOOLHELP",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "TOOLHELP",
+      "result": "0000"
+    },
+    {
+      "function": "version",
+      "args": "TOOLHELP",
+      "result": "0300"
+    },
+    {
+      "function": "tables",
+      "args": "TOOLHELP",
+      "result": "008f 004a 014a 0040 0054 006c 007e 0082"
+    },
+    {
+      "function": "segment",
+      "args": "TOOLHELP 1",
+      "result": "0040 2eee c546 2eee odd"
+    },
+    {
+      "function": "segment",
+      "args": "TOOLHELP 2",
+      "result": "033e 0120 8067 0120 odd"
+    },
+    {
+      "function": "autohandle",
+      "args": "TOOLHELP",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "TOOLHELP",
+      "result": "TOOLHELP 0"
+    },
+    {
+      "function": "resident",
+      "args": "TOOLHELP",
+      "result": "WEP@1"
+    },
+    {
+      "function": "refs",
+      "args": "TOOLHELP",
+      "result": "KERNEL USER"
+    },
+    {
+      "function": "entries",
+      "args": "TOOLHELP 0",
+      "result": "01/03/01"
+    },
+    {
+      "function": "entries",
+      "args": "TOOLHELP 1",
+      "result": "01/03/01x34"
+    },
+    {
+      "function": "ordinals",
+      "args": "TOOLHELP",
+      "result": "1-1 50-83"
+    },
+    {
+      "function": "fileinfo",
+      "args": "TOOLHELP",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\TOOLHELP.DLL"
+    },
+    {
+      "function": "size",
+      "args": "TOOLHELP",
+      "result": "220"
+    },
+    {
+      "function": "handle",
+      "args": "DDEML",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "DDEML",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "DDEML",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "DDEML",
+      "result": "c345"
+    },
+    {
+      "function": "autodata",
+      "args": "DDEML",
+      "result": "0003"
+    },
+    {
+      "function": "heap",
+      "args": "DDEML",
+      "result": "2000"
+    },
+    {
+      "function": "stack",
+      "args": "DDEML",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "DDEML",
+      "result": "0002:0050"
+    },
+    {
+      "function": "sssp",
+      "args": "DDEML",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "DDEML",
+      "result": "0003"
+    },
+    {
+      "function": "refcount",
+      "args": "DDEML",
+      "result": "0004"
+    },
+    {
+      "function": "nonres",
+      "args": "DDEML",
+      "result": "02ab 0000024a"
+    },
+    {
+      "function": "movable",
+      "args": "DDEML",
+      "result": "0026"
+    },
+    {
+      "function": "shift",
+      "args": "DDEML",
+      "result": "0009"
+    },
+    {
+      "function": "rescount",
+      "args": "DDEML",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "DDEML",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "DDEML",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "DDEML",
+      "result": "0754"
+    },
+    {
+      "function": "version",
+      "args": "DDEML",
+      "result": "0300"
+    },
+    {
+      "function": "tables",
+      "args": "DDEML",
+      "result": "00e5 0054 01af 0040 005e 00b4 00c3 00cb"
+    },
+    {
+      "function": "segment",
+      "args": "DDEML 1",
+      "result": "0004 7532 d156 7532 even"
+    },
+    {
+      "function": "segment",
+      "args": "DDEML 2",
+      "result": "0040 00c4 d556 00c4 even"
+    },
+    {
+      "function": "segment",
+      "args": "DDEML 3",
+      "result": "0041 025c 8177 025c even"
+    },
+    {
+      "function": "autohandle",
+      "args": "DDEML",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "DDEML",
+      "result": "DDEML 0"
+    },
+    {
+      "function": "resident",
+      "args": "DDEML",
+      "result": "WEP@1"
+    },
+    {
+      "function": "refs",
+      "args": "DDEML",
+      "result": "KERNEL GDI USER KEYBOARD"
+    },
+    {
+      "function": "entries",
+      "args": "DDEML 0",
+      "result": "ff/03/02 ff/03/01x23"
+    },
+    {
+      "function": "entries",
+      "args": "DDEML 1",
+      "result": "ff/03/01x14"
+    },
+    {
+      "function": "ordinals",
+      "args": "DDEML",
+      "result": "1-24 26-39"
+    },
+    {
+      "function": "fileinfo",
+      "args": "DDEML",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\DDEML.DLL"
+    },
+    {
+      "function": "size",
+      "args": "DDEML",
+      "result": "220"
+    },
+    {
+      "function": "handle",
+      "args": "TIMER",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "TIMER",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "TIMER",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "TIMER",
+      "result": "c301"
+    },
+    {
+      "function": "autodata",
+      "args": "TIMER",
+      "result": "0004"
+    },
+    {
+      "function": "heap",
+      "args": "TIMER",
+      "result": "0000"
+    },
+    {
+      "function": "stack",
+      "args": "TIMER",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "TIMER",
+      "result": "0001:0049"
+    },
+    {
+      "function": "sssp",
+      "args": "TIMER",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "TIMER",
+      "result": "0004"
+    },
+    {
+      "function": "refcount",
+      "args": "TIMER",
+      "result": "0003"
+    },
+    {
+      "function": "nonres",
+      "args": "TIMER",
+      "result": "000f 00000152"
+    },
+    {
+      "function": "movable",
+      "args": "TIMER",
+      "result": "0001"
+    },
+    {
+      "function": "shift",
+      "args": "TIMER",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "TIMER",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "TIMER",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "TIMER",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "TIMER",
+      "result": "005c"
+    },
+    {
+      "function": "version",
+      "args": "TIMER",
+      "result": "030a"
+    },
+    {
+      "function": "tables",
+      "args": "TIMER",
+      "result": "00cc 005e 00dc 0040 0068 0094 00b0 00b6"
+    },
+    {
+      "function": "segment",
+      "args": "TIMER 1",
+      "result": "001a 01d2 d576 01d2 even"
+    },
+    {
+      "function": "segment",
+      "args": "TIMER 2",
+      "result": "003e 0122 c166 0122 odd"
+    },
+    {
+      "function": "segment",
+      "args": "TIMER 3",
+      "result": "007c 05b1 d136 05b1 even"
+    },
+    {
+      "function": "segment",
+      "args": "TIMER 4",
+      "result": "0054 0220 8167 0220 odd"
+    },
+    {
+      "function": "autohandle",
+      "args": "TIMER",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "TIMER",
+      "result": "TIMER 0"
+    },
+    {
+      "function": "resident",
+      "args": "TIMER",
+      "result": "WEP@1 DRIVERPROC@2"
+    },
+    {
+      "function": "refs",
+      "args": "TIMER",
+      "result": "KERNEL USER MMSYSTEM"
+    },
+    {
+      "function": "entries",
+      "args": "TIMER 0",
+      "result": "ff/03/01 02/03/02"
+    },
+    {
+      "function": "ordinals",
+      "args": "TIMER",
+      "result": "1-2"
+    },
+    {
+      "function": "fileinfo",
+      "args": "TIMER",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\TIMER.DRV"
+    },
+    {
+      "function": "size",
+      "args": "TIMER",
+      "result": "120"
+    },
+    {
+      "function": "handle",
+      "args": "WIN87EM",
+      "result": "none"
+    },
+    {
+      "function": "handle",
+      "args": "LZEXPAND",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "LZEXPAND",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "LZEXPAND",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "LZEXPAND",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "LZEXPAND",
+      "result": "000c"
+    },
+    {
+      "function": "heap",
+      "args": "LZEXPAND",
+      "result": "0400"
+    },
+    {
+      "function": "stack",
+      "args": "LZEXPAND",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "LZEXPAND",
+      "result": "0000:0000"
+    },
+    {
+      "function": "sssp",
+      "args": "LZEXPAND",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "LZEXPAND",
+      "result": "000c"
+    },
+    {
+      "function": "refcount",
+      "args": "LZEXPAND",
+      "result": "0002"
+    },
+    {
+      "function": "nonres",
+      "args": "LZEXPAND",
+      "result": "008f 00000224"
+    },
+    {
+      "function": "movable",
+      "args": "LZEXPAND",
+      "result": "001e"
+    },
+    {
+      "function": "shift",
+      "args": "LZEXPAND",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "LZEXPAND",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "LZEXPAND",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "LZEXPAND",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "LZEXPAND",
+      "result": "0076"
+    },
+    {
+      "function": "version",
+      "args": "LZEXPAND",
+      "result": "0300"
+    },
+    {
+      "function": "tables",
+      "args": "LZEXPAND",
+      "result": "0105 00ae 01a1 0040 00b8 00d0 00f4 00f8"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 1",
+      "result": "0030 01c8 d156 01c8 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 2",
+      "result": "007e 075a d112 075a even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 3",
+      "result": "00fd 0018 d012 0018 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 4",
+      "result": "00ff 01f8 d112 01f8 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 5",
+      "result": "0122 0192 d012 0192 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 6",
+      "result": "013c 010c d112 010c even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 7",
+      "result": "014e 02f0 d112 02f0 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 8",
+      "result": "0184 0248 d112 0248 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 9",
+      "result": "01ab 033a d112 033a even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 10",
+      "result": "01e1 02f8 d112 02f8 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 11",
+      "result": "0214 0372 d112 0372 even"
+    },
+    {
+      "function": "segment",
+      "args": "LZEXPAND 12",
+      "result": "0052 0284 8077 0284 even"
+    },
+    {
+      "function": "autohandle",
+      "args": "LZEXPAND",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "LZEXPAND",
+      "result": "LZEXPAND 0"
+    },
+    {
+      "function": "resident",
+      "args": "LZEXPAND",
+      "result": "WEP@11 ___EXPORTEDSTUB@12"
+    },
+    {
+      "function": "refs",
+      "args": "LZEXPAND",
+      "result": "KERNEL USER"
+    },
+    {
+      "function": "entries",
+      "args": "LZEXPAND 0",
+      "result": "ff/03/04 ff/03/02x5 ff/03/04x3 ff/03/02 ff/03/03 ff/03/0b ff/00/0ax2 ff/00/08x2 ff/00/05x3 ff/00/09 ff/00/07 ff/00/01x3 ff/00/0a ff/00/06x2 ff/00/0bx3"
+    },
+    {
+      "function": "ordinals",
+      "args": "LZEXPAND",
+      "result": "1-30"
+    },
+    {
+      "function": "fileinfo",
+      "args": "LZEXPAND",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\LZEXPAND.DLL"
+    },
+    {
+      "function": "size",
+      "args": "LZEXPAND",
+      "result": "200"
+    },
+    {
+      "function": "handle",
+      "args": "VER",
+      "result": "loaded"
+    },
+    {
+      "function": "sig",
+      "args": "VER",
+      "result": "454e"
+    },
+    {
+      "function": "usage",
+      "args": "VER",
+      "result": "0001"
+    },
+    {
+      "function": "flags",
+      "args": "VER",
+      "result": "c341"
+    },
+    {
+      "function": "autodata",
+      "args": "VER",
+      "result": "0006"
+    },
+    {
+      "function": "heap",
+      "args": "VER",
+      "result": "0200"
+    },
+    {
+      "function": "stack",
+      "args": "VER",
+      "result": "0000"
+    },
+    {
+      "function": "csip",
+      "args": "VER",
+      "result": "0002:0000"
+    },
+    {
+      "function": "sssp",
+      "args": "VER",
+      "result": "0000:0000"
+    },
+    {
+      "function": "segcount",
+      "args": "VER",
+      "result": "0006"
+    },
+    {
+      "function": "refcount",
+      "args": "VER",
+      "result": "0004"
+    },
+    {
+      "function": "nonres",
+      "args": "VER",
+      "result": "00bb 00000216"
+    },
+    {
+      "function": "movable",
+      "args": "VER",
+      "result": "0011"
+    },
+    {
+      "function": "shift",
+      "args": "VER",
+      "result": "0004"
+    },
+    {
+      "function": "rescount",
+      "args": "VER",
+      "result": "0000"
+    },
+    {
+      "function": "os",
+      "args": "VER",
+      "result": "0802"
+    },
+    {
+      "function": "gang",
+      "args": "VER",
+      "result": "0 0"
+    },
+    {
+      "function": "swap",
+      "args": "VER",
+      "result": "0162"
+    },
+    {
+      "function": "version",
+      "args": "VER",
+      "result": "0300"
+    },
+    {
+      "function": "tables",
+      "args": "VER",
+      "result": "0130 0072 0196 0040 007c 00fc 0109 0111"
+    },
+    {
+      "function": "segment",
+      "args": "VER 1",
+      "result": "0032 0017 c046 0017 odd"
+    },
+    {
+      "function": "segment",
+      "args": "VER 2",
+      "result": "0036 009c d556 009c even"
+    },
+    {
+      "function": "segment",
+      "args": "VER 3",
+      "result": "0060 161f d112 1620 even"
+    },
+    {
+      "function": "segment",
+      "args": "VER 4",
+      "result": "01d7 0121 d112 0122 even"
+    },
+    {
+      "function": "segment",
+      "args": "VER 5",
+      "result": "0000 0000 8077 0016 even"
+    },
+    {
+      "function": "segment",
+      "args": "VER 6",
+      "result": "0046 0166 8077 0166 even"
+    },
+    {
+      "function": "autohandle",
+      "args": "VER",
+      "result": "same"
+    },
+    {
+      "function": "modname",
+      "args": "VER",
+      "result": "VER 0"
+    },
+    {
+      "function": "resident",
+      "args": "VER",
+      "result": "WEP@1"
+    },
+    {
+      "function": "refs",
+      "args": "VER",
+      "result": "LZEXPAND KERNEL USER KEYBOARD"
+    },
+    {
+      "function": "entries",
+      "args": "VER 0",
+      "result": "01/03/01 ff/03/03x2"
+    },
+    {
+      "function": "entries",
+      "args": "VER 1",
+      "result": "ff/03/03x6 ff/00/02 ff/00/03 ff/00/04x3 ff/00/03x2 ff/00/05x2"
+    },
+    {
+      "function": "ordinals",
+      "args": "VER",
+      "result": "1-3 6-20"
+    },
+    {
+      "function": "fileinfo",
+      "args": "VER",
+      "result": "08 01 0000 C:\\WINDOWS\\SYSTEM\\VER.DLL"
+    },
+    {
+      "function": "size",
+      "args": "VER",
+      "result": "200"
+    },
+    {
+      "function": "handle",
+      "args": "MCIWAVE",
+      "result": "none"
+    },
+    {
+      "function": "handle",
+      "args": "MCISEQ",
+      "result": "none"
+    },
+    {
+      "function": "codehandle",
+      "args": "KERNEL 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KERNEL 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KERNEL 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KERNEL 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 11",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 12",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 13",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 14",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 15",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 16",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 17",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 18",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 19",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 20",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 21",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 22",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 23",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 24",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 25",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 26",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 27",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 28",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 29",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 30",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 31",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 32",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 33",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 34",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 35",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 36",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 37",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 38",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 39",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 40",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 41",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 42",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 43",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 44",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "USER 45",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 11",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 12",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 13",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 14",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 15",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 16",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 17",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 18",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 19",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 20",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 21",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 22",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 23",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 24",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 25",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 26",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 27",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 28",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 29",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 30",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 31",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 32",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 33",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 34",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 35",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 36",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 37",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 38",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 39",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 40",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 41",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 42",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 43",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 44",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 45",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 46",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 47",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "GDI 48",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "MMSYSTEM 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SOUND 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SOUND 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "KEYBOARD 11",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SYSTEM 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SYSTEM 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DISPLAY 11",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "COMMDLG 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 11",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 12",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "SHELL 13",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "TOOLHELP 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "TOOLHELP 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DDEML 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DDEML 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "DDEML 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "TIMER 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "TIMER 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "TIMER 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "TIMER 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 1",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 6",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 7",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 8",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 9",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 10",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 11",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "LZEXPAND 12",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "VER 1",
+      "result": "other ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "VER 2",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "VER 3",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "VER 4",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "VER 5",
+      "result": "same ax|1"
+    },
+    {
+      "function": "codehandle",
+      "args": "VER 6",
+      "result": "same ax|1"
+    }
+  ]
+}

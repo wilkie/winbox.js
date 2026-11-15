@@ -198,6 +198,11 @@ impl System {
     pub fn load_program(&mut self, executable: Executable, path: &str) -> (usize, Vec<usize>, u16) {
         let file = path.rsplit('\\').next().unwrap_or(path);
         let name = file.split('.').next().unwrap_or(file).to_ascii_uppercase();
+
+        // The kept modules' databases as the machine now is: `DISPLAY`'s
+        // the display's own driver's (`kept_database.rs`).
+        self.write_kept_databases();
+
         let shared = self
             .modules
             .iter()

@@ -68,6 +68,7 @@ mod instruction_length;
 pub mod interrupts;
 pub mod invalidate_through;
 mod kept;
+pub mod kept_database;
 pub mod kernel;
 pub mod kernel_calls;
 pub mod key_input;

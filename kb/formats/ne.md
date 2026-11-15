@@ -29,6 +29,8 @@ Every Windows 3.1 program, library, driver and font resource is an NE file: an M
 
 [[read out]] KERNEL does not keep the file's header as it is: it lays out a module's database from it (seg2 `0d66`), the segment table at 40h with ten bytes an entry (the file's eight and the segment's handle), the entry table made bundles, the module references made handles, and the file's path at the end. [[measured]] [[probe:moddb]] reads its own. The layout is in [[topic:self-loading]], "The module's database".
 
+[[measured]] [[probe:keptdb]] reads those of Windows' own modules, the ones WinBox keeps with no file: each is laid out the same way, the header's tables at the offsets the read-out gives, every loaded segment's handle in its entry, the data segment's the module's instance, and the path it was loaded from last (`C:\WINDOWS\SYSTEM\MMSOUND.DRV` for `SOUND`). WinBox lays out a kept module's from what its stand-in has: two segments, its stubs and its data, an entry for each export at its ordinal, the module's name and the resident names Windows' file has, and the header's words that describe Windows' file as the probe recorded them ([[topic:self-loading]], "A kept module's database").
+
 ## Exports: entries and names
 
 - [[documented]] An export exists when the **entry table** has an entry for its ordinal. Its name, if it has one, is in the resident or the non-resident **name table**: a length byte, the name, and a word of ordinal. The first entry of each table is not an export: the resident one is the module's name, the non-resident one its description, both at ordinal nought.

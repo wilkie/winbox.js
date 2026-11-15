@@ -16113,6 +16113,245 @@
   },
   "gaps": {}
  },
+ "keptdb": {
+  "probe": "keptdb",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 896,
+  "functions": {
+   "autodata": {
+    "total": 15,
+    "agreed": 7,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "autohandle": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "codehandle": {
+    "total": 182,
+    "agreed": 52,
+    "disagreed": 130,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "csip": {
+    "total": 15,
+    "agreed": 4,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entries": {
+    "total": 125,
+    "agreed": 16,
+    "disagreed": 109,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fileinfo": {
+    "total": 15,
+    "agreed": 14,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "flags": {
+    "total": 15,
+    "agreed": 11,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "gang": {
+    "total": 15,
+    "agreed": 14,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "handle": {
+    "total": 18,
+    "agreed": 15,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "heap": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "modname": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "movable": {
+    "total": 15,
+    "agreed": 7,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nonres": {
+    "total": 15,
+    "agreed": 4,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ordinals": {
+    "total": 15,
+    "agreed": 13,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "os": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "refcount": {
+    "total": 15,
+    "agreed": 5,
+    "disagreed": 10,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "refs": {
+    "total": 15,
+    "agreed": 5,
+    "disagreed": 10,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rescount": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "resident": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segcount": {
+    "total": 15,
+    "agreed": 7,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 182,
+    "agreed": 13,
+    "disagreed": 169,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "shift": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sig": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 15,
+    "agreed": 0,
+    "disagreed": 15,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sssp": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stack": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "swap": {
+    "total": 15,
+    "agreed": 3,
+    "disagreed": 12,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "tables": {
+    "total": 15,
+    "agreed": 4,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "usage": {
+    "total": 15,
+    "agreed": 7,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "version": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "handle": "WIN87EM, MCIWAVE and MCISEQ are kept from the start, where Windows loads them when asked",
+   "usage": "a kept module's count is GetModuleUsage's 1, not Windows' count of its importers",
+   "flags": "a library loaded from its file lacks 4000h in its flags: where KERNEL sets it is not read out",
+   "autodata": "a kept module's data segment is WinBox's second, not Windows' file's number",
+   "csip": "a kept module has no entry procedure of Windows' file",
+   "segcount": "a kept module's database has WinBox's two segments, not Windows' file's",
+   "refcount": "a kept module imports nothing: no module references",
+   "nonres": "a kept module has no non-resident names table of Windows' file",
+   "movable": "a kept module's entries are in WinBox's fixed stubs: none moveable",
+   "gang": "KERNEL's imported names start 4 bytes past its module references; WinBox's at them",
+   "swap": "a kept module has no swap area of Windows' file",
+   "tables": "a kept module's tables are WinBox's: no resources, imports or Windows' segments",
+   "segment": "a kept module's database has WinBox's two segments, not Windows' file's",
+   "refs": "a kept module imports nothing: no module references",
+   "entries": "a kept module's entries are in WinBox's stubs, fixed, flags 1, not in Windows' file's segments",
+   "ordinals": "kept.rs lacks SHELL's ordinals 107, 121, 123, 124, 127, 128 and VGA.DRV's 502",
+   "fileinfo": "SOUND is kept as SOUND.DRV, where Windows loads it from MMSOUND.DRV",
+   "size": "a kept module's database is WinBox's, smaller than Windows' file's",
+   "codehandle": "a kept module's database has WinBox's two segments, not Windows' file's"
+  }
+ },
  "kevent": {
   "probe": "kevent",
   "display": "vga",

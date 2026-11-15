@@ -32,6 +32,15 @@ pub(crate) fn through_thunk(system: &System, far: u32) -> u32 {
     far
 }
 
+/// The kept module whose handle -- its database's selector, not its
+/// instance -- a selector is.
+fn kept_of_handle(system: &System, selector: u16) -> Option<usize> {
+    match system.handles.resolve_module(selector) {
+        Some(Object::Kept(kept)) if system.kept[kept].handle() == selector => Some(kept),
+        _ => None,
+    }
+}
+
 /// The module segment a procedure is in, or the one a module's handle and
 /// a segment number name (seg1 `483e`-`48b2`).
 fn segment_of(system: &mut System, proc: u32) -> Option<GlobalBlock> {
@@ -73,6 +82,18 @@ pub(crate) fn module_of_proc(system: &mut System, proc: u32) -> u16 {
 /// (seg1 `48fa`-`4924`). **Recorded** by `ktask2`.
 pub fn get_code_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let proc = args.dword(system);
+
+    // A kept module's handle and a segment's number: the segment's handle
+    // in its database, and its selector (`kept_database.rs`). **Recorded**
+    // by `keptdb`: the table's handle in AX, its selector in DX.
+    if let Some(kept) = kept_of_handle(system, (proc >> 16) as u16) {
+        let handle = system.kept_segment_handle(kept, proc as u16);
+
+        return Ok(Answer::Dword(match handle {
+            0 => 0,
+            handle => u32::from(handle | 1) << 16 | u32::from(handle),
+        }));
+    }
 
     Ok(Answer::Dword(segment_of(system, proc).map_or(0, |block| {
         u32::from(block.handle | 1) << 16 | u32::from(block.handle)

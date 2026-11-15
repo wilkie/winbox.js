@@ -1220,6 +1220,9 @@ impl System {
             usage: 0,
             brought: Vec::new(),
         });
+        // Its database, as KERNEL keeps one for each module it loaded
+        // (`kept_database.rs`).
+        self.write_kept_database(index);
     }
 
     /// A module winbox.js keeps only once it is loaded, as a driver's file
@@ -1266,11 +1269,7 @@ impl System {
         }
 
         let module = self.module_of(&self.kept[kept]);
-        let ordinals = module
-            .exports
-            .len()
-            .max(1000)
-            .max(crate::mmsystem::mmio::hidden_extent(module.name));
+        let ordinals = stub_ordinals(module);
         let step = usize::from(STEP);
         let mut code = vec![0u8; (ordinals + 1) * step];
 
@@ -1303,8 +1302,21 @@ impl System {
 
         self.descriptors.map(&mut self.cpu.bus, index, &code, true);
         self.kept[kept].stubs = Some(index);
+        // Its database's segment table given the stubs' handle, as KERNEL
+        // writes a segment's as it loads it.
+        self.write_kept_database(kept);
         index
     }
+}
+
+/// How many ordinals a kept module's stubs have room for: as many as it
+/// exports, a thousand at least.
+pub(crate) fn stub_ordinals(module: &Kept) -> usize {
+    module
+        .exports
+        .len()
+        .max(1000)
+        .max(crate::mmsystem::mmio::hidden_extent(module.name))
 }
 
 #[cfg(test)]
