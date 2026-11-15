@@ -47,6 +47,12 @@ pub struct KernelCalls {
     /// Whether `THHOOK`'s address has been handed out: its words are then
     /// kept up to date (`thhook.rs`).
     pub thhook_out: bool,
+    /// The selector table and arenas laid out in the heap's own block: the
+    /// heap's generation and the tasks and modules there were when they
+    /// were, and the table's entries written, to be noughts again
+    /// (`thhook.rs`).
+    pub arenas_laid: Option<(u64, usize, usize)>,
+    pub table_entries: Vec<usize>,
     /// KERNEL's own signal handler, the words at 26h and 28h of its data
     /// (`SetSigHandler`'s action 4).
     pub kernel_sig_handler: u32,

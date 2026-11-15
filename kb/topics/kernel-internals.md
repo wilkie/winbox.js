@@ -109,18 +109,18 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 
 ### Debugger and TOOLHELP
 
-| Ord | Export                           | Callers                                 | WinBox       | Recommendation                  |
-| --- | -------------------------------- | --------------------------------------- | ------------ | ------------------------------- |
-| 332 | [[fn:KERNEL.ThHook]]             | TOOLHELP (by ordinal, `GetProcAddress`) | data         | done (b); 220h, 22Eh, 230h gaps |
-| 341 | [[fn:KERNEL.ToolHelpHook]]       | TOOLHELP (by ordinal, `GetProcAddress`) | implemented  | done (a), never called          |
-| 202 | [[fn:KERNEL.RegisterPtrace]]     | TOOLHELP.DLL                            | implemented  | done                            |
-| 205 | [[fn:KERNEL.CVWBreak]]           | KEYBOARD.DRV                            | retail no-op | done (c) ([[probe:kgaps]])      |
-| 314 | [[fn:KERNEL.DebugDefineSegment]] | KERNEL (near)                           | retail no-op | done (c), not measured          |
-| 318 | [[fn:KERNEL.FatalExitHook]]      | none                                    | implemented  | done                            |
-| 328 | [[fn:KERNEL._DEBUGOUTPUT]]       | none                                    | retail no-op | done                            |
-| 329 | [[fn:KERNEL.K329]]               | none                                    | retail no-op | done                            |
-| 339 | [[fn:KERNEL.DiagQuery]]          | none                                    | implemented  | done                            |
-| 340 | [[fn:KERNEL.DiagOutput]]         | USER.EXE                                | retail no-op | done                            |
+| Ord | Export                           | Callers                                 | WinBox       | Recommendation             |
+| --- | -------------------------------- | --------------------------------------- | ------------ | -------------------------- |
+| 332 | [[fn:KERNEL.ThHook]]             | TOOLHELP (by ordinal, `GetProcAddress`) | data         | done (b); 220h gap         |
+| 341 | [[fn:KERNEL.ToolHelpHook]]       | TOOLHELP (by ordinal, `GetProcAddress`) | implemented  | done (a), never called     |
+| 202 | [[fn:KERNEL.RegisterPtrace]]     | TOOLHELP.DLL                            | implemented  | done                       |
+| 205 | [[fn:KERNEL.CVWBreak]]           | KEYBOARD.DRV                            | retail no-op | done (c) ([[probe:kgaps]]) |
+| 314 | [[fn:KERNEL.DebugDefineSegment]] | KERNEL (near)                           | retail no-op | done (c), not measured     |
+| 318 | [[fn:KERNEL.FatalExitHook]]      | none                                    | implemented  | done                       |
+| 328 | [[fn:KERNEL._DEBUGOUTPUT]]       | none                                    | retail no-op | done                       |
+| 329 | [[fn:KERNEL.K329]]               | none                                    | retail no-op | done                       |
+| 339 | [[fn:KERNEL.DiagQuery]]          | none                                    | implemented  | done                       |
+| 340 | [[fn:KERNEL.DiagOutput]]         | USER.EXE                                | retail no-op | done                       |
 
 ### Faults and parameter errors
 
@@ -218,7 +218,7 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 - Where `EMSCopy`'s entry is: [[probe:emscopy]]'s `entry` and [[probe:emspast]]'s `entry`, `block` and `bytes` are known gaps. WinBox lays out no KERNEL code segment cut at A940h, and its `MMSYSTEM` is its own.
 - The procedures `RegisterPtrace` and `ToolHelpHook` set are never called in WinBox, since it tells no debugger of KERNEL's events, nor is the one `GetSetKernelDOSProc` sets.
 - KERNEL's own prefix, which `THHOOK`'s 220h and `WinOldApCall(1)` give and every task's prefix names as its parent (`kgaps:kernelpdb`); DS the task's database for a `DoSignal` handler (`kgaps:dosignalds`); `GetSetKernelDOSProc`'s first answer (`kgaps:dosprocold`).
-- The global heap's header and arenas in `GlobalMasterHandle`'s block, the selector table at `THHOOK`'s 22Eh and 230h, and the module and prefix chains behind its words, laid out as KERNEL lays them.
+- The global heap's header in `GlobalMasterHandle`'s block, its free blocks' and sentinels' arenas, and the module and prefix chains behind `THHOOK`'s words, laid out as KERNEL lays them. The selector table at 22Eh and 230h and an arena for each block are laid out since 2026-11-15 ([[probe:seltab]]).
 - Ctrl+Break from WinBox's keyboard calling `DoSignal`, and `CVWBreak`'s popped word loaded into the flags.
 - Which undeclared exports the SDK's printed reference documents all the same (`DOS3Call`, `NetBIOSCall`, `AllocCStoDSAlias`, `DefineHandleTable`, `GetLPErrMode` and others). The census goes by the headers alone.
 - The words at 251h-257h of KERNEL's data that `WinOldApCall(0)` answers: no code of KERNEL's writes them.
