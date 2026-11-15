@@ -208,6 +208,92 @@ DWORD FAR PASCAL _export ColorInfo(PDEV FAR *pdev, DWORD color, LPDWORD physical
     return color & 0xffffffL;
 }
 
+#ifdef PRDRV_PATTERN
+/*
+ * Under `PRDRV_PATTERN` (`prpatbr.dll.c`) a pattern brush's `LOGBRUSH` is
+ * logged as what it points at: the block its colour's far pointer is in,
+ * whether the hatch is that block's handle, the block's size and its locks;
+ * the `BITMAP` at the pointer, its bits' pointer as an offset from it and
+ * its device as the context's own or not; and the first rows of its bits,
+ * every plane's.
+ */
+/* The bits of byte `at` of a row of one bit a pixel that hold pixels: those
+ * past the width are what memory held, and are left out. */
+static BYTE maskOf(WORD width, WORD at)
+{
+    WORD first = at * 8;
+
+    if (first >= width) {
+        return 0;
+    }
+
+    return width - first >= 8 ? 0xff : (BYTE)(0xff << (8 - (width - first)));
+}
+
+static void patternOf(PDEV FAR *pdev, LPLOGBRUSH brush, LPSTR out, LPSTR xform)
+{
+    LPBYTE header = (LPBYTE)brush->lbColor;
+    LPWORD words = (LPWORD)header;
+    WORD hatch = brush->lbHatch;
+    DWORD owner;
+    DWORD bits;
+    DWORD device;
+    WORD rows;
+    WORD row;
+    WORD plane;
+    WORD at;
+    LPBYTE from;
+
+    wsprintf(text, "RealizeObject pattern%s origin %d,%d", out ? "" : " size",
+             (int)LOWORD((DWORD)xform), (int)HIWORD((DWORD)xform));
+
+    if (header == NULL) {
+        lstrcat(text, " colour nought");
+        append();
+        return;
+    }
+
+    owner = GlobalHandle(SELECTOROF(header));
+    wsprintf(text + lstrlen(text), " at %04X hatch %s size %ld locks %d", OFFSETOF(header),
+             (LPSTR)(LOWORD(owner) == hatch ? "block" : "other"), GlobalSize(LOWORD(owner)),
+             GlobalFlags(LOWORD(owner)) & GMEM_LOCKCOUNT);
+    append();
+
+    if (out == NULL) {
+        return;
+    }
+
+    bits = *(DWORD FAR *)(header + 0x0a);
+    device = *(DWORD FAR *)(header + 0x12);
+    wsprintf(text, "  bitmap %d %dx%d row %d planes %d bits %d at %s+%d widthplanes %ld device %s",
+             words[0], words[1], words[2], words[3], header[8], header[9],
+             (LPSTR)(HIWORD(bits) == SELECTOROF(header) ? "same" : "other"),
+             (int)(LOWORD(bits) - OFFSETOF(header)), *(DWORD FAR *)(header + 0x0e),
+             (LPSTR)(device == (DWORD)pdev ? "context" : device ? "other" : "none"));
+    wsprintf(text + lstrlen(text), " %04X %04X %04X %04X %04X", words[0x16 / 2], words[0x18 / 2],
+             words[0x1a / 2], words[0x1c / 2], words[0x1e / 2]);
+    append();
+
+    rows = words[2] < 8 ? words[2] : 8;
+    from = (LPBYTE)bits;
+
+    for (row = 0; row < rows && from; row++) {
+        wsprintf(text, "  row %d", row);
+
+        for (plane = 0; plane < header[8]; plane++) {
+            lstrcat(text, " ");
+
+            for (at = 0; at < words[3] && at < 4; at++) {
+                wsprintf(text + lstrlen(text), "%02X",
+                         from[(row * header[8] + plane) * words[3] + at] & maskOf(words[1], at));
+            }
+        }
+
+        append();
+    }
+}
+#endif
+
 WORD FAR PASCAL _export RealizeObject(PDEV FAR *pdev, int style, LPSTR in, LPSTR out, LPSTR xform)
 {
     (void)pdev;
@@ -235,9 +321,16 @@ WORD FAR PASCAL _export RealizeObject(PDEV FAR *pdev, int style, LPSTR in, LPSTR
     if (style == 2) {
         LPLOGBRUSH brush = (LPLOGBRUSH)in;
 
-        wsprintf(text, "RealizeObject brush %d %06lX %d%s", brush->lbStyle, brush->lbColor,
-                 brush->lbHatch, out ? "" : " size");
-        append();
+#ifdef PRDRV_PATTERN
+        if (brush->lbStyle == BS_PATTERN) {
+            patternOf(pdev, brush, out, xform);
+        } else
+#endif
+        {
+            wsprintf(text, "RealizeObject brush %d %06lX %d%s", brush->lbStyle, brush->lbColor,
+                     brush->lbHatch, out ? "" : " size");
+            append();
+        }
 
         if (out) {
             _fmemcpy(out, in, sizeof(LOGBRUSH));

@@ -11,7 +11,8 @@ use crate::call::{Answer, Args, Stop};
 use crate::handles::{Kind, Object};
 use crate::system::System;
 
-use super::objects::{Brush, GdiObject, LogBrush};
+use super::ddb::{Bitmap, bits_size, format_of, read_byte};
+use super::objects::{Brush, GdiObject, LogBrush, PatternCopy};
 
 const BS_PATTERN: u16 = 3;
 
@@ -34,9 +35,34 @@ fn pattern_of(bitmap: &DeviceBitmap) -> Pattern {
     }
 }
 
+/// The brush's own copy of its bitmap (`GDI.EXE` seg4 `00c7`-`0178`): a
+/// bitmap of the same size and format, the display's for one the display
+/// made, made with `CreateBitmapIndirect` for any other, and the bits
+/// copied into it. Its bits as `GetBitmapBits` would answer them.
+fn copy_of(bitmap: &Bitmap) -> PatternCopy {
+    let (planes, bits_pixel) = format_of(&bitmap.pixels);
+    let bits = (0..bits_size(&bitmap.pixels).max(0))
+        .map(|at| read_byte(bitmap, at))
+        .collect();
+
+    PatternCopy {
+        width: bitmap.pixels.width() as u16,
+        height: bitmap.pixels.height() as u16,
+        planes: planes as u8,
+        bits_pixel: bits_pixel as u8,
+        bits,
+    }
+}
+
 /// A brush of a pattern, its colour its first pixel's: a handle, or nought
 /// where there are none left.
-fn allocate(system: &mut System, pattern: Pattern, logbrush: LogBrush, dib_record: Vec<u8>) -> u16 {
+fn allocate(
+    system: &mut System,
+    pattern: Pattern,
+    logbrush: LogBrush,
+    dib_record: Vec<u8>,
+    copy: Option<PatternCopy>,
+) -> u16 {
     let [red, green, blue] = pattern
         .palette
         .borrow()
@@ -53,6 +79,7 @@ fn allocate(system: &mut System, pattern: Pattern, logbrush: LogBrush, dib_recor
         realised: None,
         pattern: Some(pattern),
         dib_record: Some(dib_record),
+        copy,
     }));
 
     system
@@ -103,6 +130,7 @@ pub fn create_pattern_brush_as(system: &mut System, handle: u16, logbrush: LogBr
     }
 
     let pattern = pattern_of(&bitmap.pixels);
+    let copy = copy_of(bitmap);
 
     // The bitmap as a metafile keeps it, from the brush's own copy of it:
     // 3, nought, and the bitmap made a DIB (`metarec`; `GDI.EXE` seg20
@@ -110,7 +138,7 @@ pub fn create_pattern_brush_as(system: &mut System, handle: u16, logbrush: LogBr
     let mut dib_record = vec![3, 0, 0, 0];
 
     dib_record.extend(super::dib::packed_dib_of(system, &bitmap.pixels));
-    allocate(system, pattern, logbrush, dib_record)
+    allocate(system, pattern, logbrush, dib_record, Some(copy))
 }
 
 pub(crate) fn create_pattern_brush_call(
@@ -207,6 +235,7 @@ pub fn create_dib_pattern_brush(system: &mut System, block: u16, usage: u16) -> 
             hatch: 0,
         },
         dib_record,
+        None,
     )
 }
 
@@ -218,4 +247,69 @@ pub(crate) fn create_dib_pattern_brush_call(
     let usage = args.word(system);
 
     Ok(Answer::Word(create_dib_pattern_brush(system, block, usage)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::gdi::bitmaps::create_bitmap;
+    use crate::gdi::objects::delete_object;
+
+    /// The copy a brush keeps of a bitmap made of these words.
+    fn copy_made_of(width: i16, height: i16, words: &[u16], delete_first: bool) -> PatternCopy {
+        let mut system = System::new();
+        let bytes: Vec<u8> = words.iter().flat_map(|word| word.to_le_bytes()).collect();
+        let given = system.string_block(&" ".repeat(bytes.len()));
+
+        system.write_far(given, &bytes);
+
+        let bitmap = create_bitmap(&mut system, width, height, 1, 1, given);
+        let brush = create_pattern_brush(&mut system, bitmap);
+
+        if delete_first {
+            assert!(delete_object(&mut system, bitmap));
+        }
+
+        match system.gdi_object_of(brush) {
+            Some((_, GdiObject::Brush(brush))) => brush.copy.clone().expect("a copy"),
+            _ => panic!("a brush"),
+        }
+    }
+
+    /// `prpatbr`: what a printer's driver is handed of a monochrome pattern
+    /// brush's bitmap -- its size, a row of two bytes, one plane of a bit,
+    /// and its rows as made -- the same where the bitmap was deleted before
+    /// the brush was selected.
+    #[test]
+    fn keeps_its_bitmap_as_made() {
+        let mono8 = [
+            0x00aa, 0x0055, 0x00f0, 0x000f, 0x00cc, 0x0033, 0x0081, 0x007e,
+        ];
+
+        for delete_first in [false, true] {
+            let copy = copy_made_of(8, 8, &mono8, delete_first);
+
+            assert_eq!((copy.width, copy.height), (8, 8));
+            assert_eq!((copy.planes, copy.bits_pixel), (1, 1));
+            assert_eq!(
+                copy.bits,
+                [
+                    0xaa, 0, 0x55, 0, 0xf0, 0, 0x0f, 0, 0xcc, 0, 0x33, 0, 0x81, 0, 0x7e, 0
+                ]
+            );
+        }
+
+        let mono16 = [
+            0x01ff, 0x0280, 0x0440, 0x0820, 0x1010, 0x2008, 0x4004, 0x8002, 0xaa55, 0x55aa, 0x0f0f,
+            0xf0f0,
+        ];
+        let copy = copy_made_of(16, 12, &mono16, false);
+
+        assert_eq!((copy.width, copy.height), (16, 12));
+        assert_eq!(copy.bits.len(), 24);
+        assert_eq!(
+            copy.bits[..8],
+            [0xff, 0x01, 0x80, 0x02, 0x40, 0x04, 0x20, 0x08]
+        );
+    }
 }

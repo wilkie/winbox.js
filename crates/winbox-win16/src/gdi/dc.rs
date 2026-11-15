@@ -146,6 +146,7 @@ impl System {
             realised: None,
             pattern: None,
             dib_record: None,
+            copy: None,
         }));
         let pen = self.gdi_object(GdiObject::Pen(Pen {
             color: [0x00, 0x00, 0x00, 0xff],

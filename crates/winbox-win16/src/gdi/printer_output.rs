@@ -46,6 +46,10 @@ const PS_SOLID: u16 = 0;
 const PS_NULL: u16 = 5;
 const PS_INSIDEFRAME: u16 = 6;
 const BS_HOLLOW: u16 = 1;
+const BS_PATTERN: u16 = 3;
+/// GDI's `BITMAP` for drivers at the start of a bitmap's block.
+const BITMAP_HEADER: u32 = 0x20;
+const GMEM_MOVEABLE: u16 = 0x0002;
 
 /// The `DRAWMODE` and the `TEXTXFORM` in the context's block.
 const DRAWMODE: u32 = 0;
@@ -413,15 +417,11 @@ async fn realize_object(
     logical: &[u8],
     fifth: impl Fn(u32) -> u32,
 ) -> Result<Option<Realized>, Stop> {
-    let object = object_key(&mut engine.system(), object);
-    let kept = cache_mut(&mut engine.system(), dc)
-        .and_then(|cache| cache.iter().find(|(of, _)| *of == object))
-        .map(|(_, list)| list)
-        .and_then(|list| list.iter().find(|each| each.key == key).cloned());
-
-    if kept.is_some() {
-        return Ok(kept);
+    if let Some(realized) = kept(&mut engine.system(), dc, object, &key) {
+        return Ok(Some(realized));
     }
+
+    let object = object_key(&mut engine.system(), object);
 
     let (procedure, lp_pdevice) = proc(&engine.system(), dc, REALIZE_OBJECT);
 
@@ -577,10 +577,114 @@ pub async fn realize_pen(engine: &Engine, dc: usize) -> Result<bool, Stop> {
     Ok(true)
 }
 
+/// A pattern brush's copy of its bitmap, as GDI hands it to a driver to
+/// realize the brush with (`GDI.EXE` seg1 `250e`-`255b`): the copy's
+/// global block, GDI's `BITMAP` for drivers at its start and the bits
+/// after it, locked; its bits' far pointer set to them, and its device to
+/// the context's. The block and the far pointer; none for a brush with no
+/// copy, or one whose copy passes a segment, which is not laid out here.
+///
+/// **Recorded** by `prpatbr`: the colour's far pointer is the block's
+/// start and the hatch its handle; the `BITMAP` has the bitmap's size, a
+/// plane's row in bytes, its planes and bits a pixel, the bits at 20h,
+/// the bytes of a plane at 0Eh, its device the context's own, and at 16h,
+/// 18h and 1Ah nought, the rows that fit in 64 KiB and the bytes left
+/// after them, as GDI lays out a bitmap's block (`heap.rs`). Windows makes
+/// the block as the brush is made (seg4 `00a7`); WinBox makes it as a
+/// driver first realizes the brush, the only one handed it.
+async fn pattern_block(
+    engine: &Engine,
+    object: usize,
+    lp_pdevice: u32,
+) -> Result<Option<(u16, u32)>, Stop> {
+    let (made, copy) = {
+        let system = engine.system();
+        let copy = match &system.gdi.objects[object] {
+            GdiObject::Brush(brush) => brush.copy.clone(),
+            _ => None,
+        };
+
+        (system.printing.drivers.patterns.get(&object).copied(), copy)
+    };
+    let Some(copy) = copy else {
+        return Ok(None);
+    };
+    let size = BITMAP_HEADER + copy.bits.len() as u32;
+
+    if size >= 0x10000 {
+        return Ok(None);
+    }
+
+    let handle = match made {
+        Some(handle) => handle,
+        None => {
+            // The header and the bits, and a byte past them, as GDI's
+            // bitmap block is (`heap.rs`, `gdiobj`).
+            let handle = kernel(
+                engine,
+                "GlobalAlloc",
+                &[GuestArg::Word(GMEM_MOVEABLE), GuestArg::Long(size + 1)],
+            )
+            .await? as u16;
+
+            if handle == 0 {
+                return Ok(None);
+            }
+
+            engine
+                .system()
+                .printing
+                .drivers
+                .patterns
+                .insert(object, handle);
+            handle
+        }
+    };
+    let far = kernel(engine, "GlobalLock", &[GuestArg::Word(handle)]).await?;
+
+    if far == 0 {
+        return Ok(None);
+    }
+
+    let mut system = engine.system();
+    let row = super::ddb::row_bytes(i64::from(copy.bits_pixel), i64::from(copy.width)) as u32;
+    let line = (row * u32::from(copy.planes)).max(1);
+    let lines = 0x10000 / line;
+    let mut header = vec![0u8; BITMAP_HEADER as usize];
+
+    header[2..4].copy_from_slice(&copy.width.to_le_bytes());
+    header[4..6].copy_from_slice(&copy.height.to_le_bytes());
+    header[6..8].copy_from_slice(&(row as u16).to_le_bytes());
+    header[8] = copy.planes;
+    header[9] = copy.bits_pixel;
+    header[0x0a..0x0e].copy_from_slice(&offset_by(far, BITMAP_HEADER).to_le_bytes());
+    header[0x0e..0x12].copy_from_slice(&(row * u32::from(copy.height)).to_le_bytes());
+    header[0x12..0x16].copy_from_slice(&lp_pdevice.to_le_bytes());
+    header[0x18..0x1a].copy_from_slice(&(lines as u16).to_le_bytes());
+    header[0x1a..0x1c].copy_from_slice(&((0x10000 - lines * line) as u16).to_le_bytes());
+    system.write_far(far, &header);
+    system.write_far(offset_by(far, BITMAP_HEADER), &copy.bits);
+
+    Ok(Some((handle, far)))
+}
+
+/// A realization kept for the object and the key, where there is one.
+fn kept(system: &mut System, dc: usize, object: usize, key: &[i32]) -> Option<Realized> {
+    let object = object_key(system, object);
+
+    cache_mut(system, dc)
+        .and_then(|cache| cache.iter().find(|(of, _)| *of == object))
+        .map(|(_, list)| list)
+        .and_then(|list| list.iter().find(|each| each.key == key).cloned())
+}
+
 /// The selected brush realized (seg1 `2304`): its `LOGBRUSH`, and after it
 /// the background's physical colour (`23a1`), and the brush's origin as
 /// the fifth argument. A hatched brush is realized again for another
-/// background; a pattern's for another origin (`2345`-`2373`).
+/// background; a pattern's for another origin (`2345`-`2373`). A pattern
+/// brush's colour is a far pointer to its copy of its bitmap and its hatch
+/// the copy's block, locked while the driver realizes it (`250e`, `2621`;
+/// `pattern_block`).
 pub async fn realize_brush(engine: &Engine, dc: usize) -> Result<bool, Stop> {
     let (object, logbrush, origin, bk) = {
         let system = engine.system();
@@ -595,18 +699,34 @@ pub async fn realize_brush(engine: &Engine, dc: usize) -> Result<bool, Stop> {
         3 => vec![i32::from(origin.0), i32::from(origin.1)],
         _ => Vec::new(),
     };
+    let pattern =
+        if logbrush.style == BS_PATTERN && kept(&mut engine.system(), dc, object, &key).is_none() {
+            let (_, lp_pdevice) = proc(&engine.system(), dc, REALIZE_OBJECT);
+
+            pattern_block(engine, object, lp_pdevice).await?
+        } else {
+            None
+        };
+    let (color, hatch) = match pattern {
+        Some((handle, far)) => (far, handle),
+        None => (logbrush.color, logbrush.hatch),
+    };
     let logical = words(&[
         i32::from(logbrush.style),
-        (logbrush.color & 0xffff) as i32,
-        (logbrush.color >> 16) as i32,
-        i32::from(logbrush.hatch),
+        (color & 0xffff) as i32,
+        (color >> 16) as i32,
+        i32::from(hatch),
         (bk & 0xffff) as i32,
         (bk >> 16) as i32,
     ]);
     let packed = u32::from(origin.0 as u16) | u32::from(origin.1 as u16) << 16;
-    let Some(realized) =
-        realize_object(engine, dc, object, key, OBJ_BRUSH, &logical, |_| packed).await?
-    else {
+    let realized = realize_object(engine, dc, object, key, OBJ_BRUSH, &logical, |_| packed).await?;
+
+    if let Some((handle, _)) = pattern {
+        kernel(engine, "GlobalUnlock", &[GuestArg::Word(handle)]).await?;
+    }
+
+    let Some(realized) = realized else {
         return Ok(false);
     };
 
@@ -2041,6 +2161,13 @@ async fn delete_driver_object(engine: &Engine, object: usize, style: u16) -> Res
         }
 
         kernel(engine, "GlobalFree", &[GuestArg::Word(realized.handle)]).await?;
+    }
+
+    // A pattern brush's copy of its bitmap let go with it.
+    let pattern = engine.system().printing.drivers.patterns.remove(&object);
+
+    if let Some(handle) = pattern {
+        kernel(engine, "GlobalFree", &[GuestArg::Word(handle)]).await?;
     }
 
     Ok(())

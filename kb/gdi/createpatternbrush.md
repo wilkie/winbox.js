@@ -6,7 +6,7 @@ ordinal: 60
 summary: Makes a brush that paints a bitmap's top-left eight by eight pixels over and over.
 versions:
   '3.1': exact
-probes: [patbrush, patmono, gdidraw]
+probes: [patbrush, patmono, gdidraw, prpatbr]
 source: crates/winbox-win16/src/gdi/brushes.rs
 topics: [brush-dithering, accessories]
 ---
@@ -32,3 +32,4 @@ topics: [brush-dithering, accessories]
 - [[measured]] [[fn:GDI.CreateDIBPatternBrush]], from a packed DIB, paints the same way ([[probe:gdidraw]]); see [[fn:GDI.SetDIBits]].
 - Not recorded: a bitmap smaller than eight pixels, which winbox.js repeats; a colour pattern on a monochrome device context.
 - The `DSPoa` case is weak: the pattern's set bits all fall where the source is white.
+- [[read out]] The brush's copy of the bitmap is a bitmap of GDI's own, of the same size and format, its bits copied in (`GDI.EXE` seg4 `00a7`-`0178`). A printer's driver realizing the brush is handed it: the `LOGBRUSH`'s colour is a far pointer to the copy's block, GDI's `BITMAP` for drivers with the bits after it, and its hatch is the block's handle (seg1 `250e`). [[measured]] [[probe:prpatbr]] records it with a driver of the probe's own; see [[topic:printer-drivers]]. WinBox keeps the copy with the brush, and lays out the block as a driver first realizes the brush.

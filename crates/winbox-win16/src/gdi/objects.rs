@@ -53,6 +53,22 @@ pub struct Brush {
     /// `DIBCreatePatternBrush` record, its style, how its colours are given,
     /// and its DIB (`metarec`; `GDI.EXE` seg20 `1792`-`1932`).
     pub dib_record: Option<Vec<u8>>,
+    /// A pattern brush's own copy of its bitmap, as `CreatePatternBrush`
+    /// makes it (`GDI.EXE` seg4 `00a7`-`0178`): what a printer's driver is
+    /// handed to realize it with (`printer_output.rs`).
+    pub copy: Option<PatternCopy>,
+}
+
+/// A bitmap as a pattern brush keeps it: its size and format, and its
+/// bits as the display's driver keeps them -- each row's planes in turn,
+/// a plane's row padded to a word.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PatternCopy {
+    pub width: u16,
+    pub height: u16,
+    pub planes: u8,
+    pub bits_pixel: u8,
+    pub bits: Vec<u8>,
 }
 
 /// A `LOGBRUSH`: its style, colour and hatch.
@@ -224,6 +240,7 @@ fn solid(red: u8, green: u8, blue: u8) -> GdiObject {
         realised: None,
         pattern: None,
         dib_record: None,
+        copy: None,
     })
 }
 
@@ -275,6 +292,7 @@ pub fn get_stock_object(system: &mut System, index: i16) -> u16 {
             realised: None,
             pattern: None,
             dib_record: None,
+            copy: None,
         }),
         WHITE_PEN => stock_pen([0xff, 0xff, 0xff, 0xff], 0, 0x00ff_ffff),
         BLACK_PEN => stock_pen([0x00, 0x00, 0x00, 0xff], 0, 0),
@@ -374,6 +392,7 @@ pub fn create_solid_brush(system: &mut System, colorref: u32) -> u16 {
         realised: None,
         pattern: None,
         dib_record: None,
+        copy: None,
     }))
 }
 
@@ -450,6 +469,7 @@ pub fn brush_of(system: &mut System, style: u16, colorref: u32, hatch: i32) -> u
         realised: None,
         pattern: None,
         dib_record: None,
+        copy: None,
     }))
 }
 

@@ -1,0 +1,647 @@
+{
+  "probe": "prpatbr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1"
+    },
+    {
+      "function": "driver",
+      "args": "0",
+      "result": "Enable 1 Plain LPT1: 0"
+    },
+    {
+      "function": "driver",
+      "args": "1",
+      "result": "Enable 0 Plain LPT1: 0"
+    },
+    {
+      "function": "driver",
+      "args": "2",
+      "result": "RealizeObject brush 0 FFFFFF 0 size"
+    },
+    {
+      "function": "driver",
+      "args": "3",
+      "result": "RealizeObject brush 0 FFFFFF 0"
+    },
+    {
+      "function": "driver",
+      "args": "4",
+      "result": "RealizeObject pen 0 0 000000 size"
+    },
+    {
+      "function": "driver",
+      "args": "5",
+      "result": "RealizeObject pen 0 0 000000"
+    },
+    {
+      "function": "driver",
+      "args": "6",
+      "result": "RealizeObject font 0 0 0 \"\" size"
+    },
+    {
+      "function": "driver",
+      "args": "7",
+      "result": "RealizeObject font 0 0 0 \"\""
+    },
+    {
+      "function": "call",
+      "args": "SelectObject",
+      "result": "1",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "8",
+      "result": "RealizeObject pattern size origin 0,0 at 0000 hatch block size 64 locks 0",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "9",
+      "result": "RealizeObject pattern origin 0,0 at 0000 hatch block size 64 locks 0",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "10",
+      "result": "  bitmap 0 8x8 row 2 planes 1 bits 1 at same+32 widthplanes 16 device context 0000 8000 0000 0000 0000",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "11",
+      "result": "  row 0 AA00",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "12",
+      "result": "  row 1 5500",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "13",
+      "result": "  row 2 F000",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "14",
+      "result": "  row 3 0F00",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "15",
+      "result": "  row 4 CC00",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "16",
+      "result": "  row 5 3300",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "17",
+      "result": "  row 6 8100",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "18",
+      "result": "  row 7 7E00",
+      "section": "mono 8x8"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject",
+      "result": "1",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "19",
+      "result": "RealizeObject pattern size origin 0,0 at 0000 hatch block size 64 locks 0",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "20",
+      "result": "RealizeObject pattern origin 0,0 at 0000 hatch block size 64 locks 0",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "21",
+      "result": "  bitmap 0 16x12 row 2 planes 1 bits 1 at same+32 widthplanes 24 device context 0000 8000 0000 0000 0000",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "22",
+      "result": "  row 0 FF01",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "23",
+      "result": "  row 1 8002",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "24",
+      "result": "  row 2 4004",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "25",
+      "result": "  row 3 2008",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "26",
+      "result": "  row 4 1010",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "27",
+      "result": "  row 5 0820",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "28",
+      "result": "  row 6 0440",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "driver",
+      "args": "29",
+      "result": "  row 7 0280",
+      "section": "mono 16x12"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject",
+      "result": "1",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "30",
+      "result": "RealizeObject pattern size origin 0,0 at 0000 hatch block size 128 locks 0",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "31",
+      "result": "RealizeObject pattern origin 0,0 at 0000 hatch block size 128 locks 0",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "32",
+      "result": "  bitmap 0 8x8 row 2 planes 4 bits 1 at same+32 widthplanes 16 device context 0000 2000 0000 0000 0000",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "33",
+      "result": "  row 0 FF00 6D00 6D00 FF00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "34",
+      "result": "  row 1 BD00 9900 DB00 BD00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "35",
+      "result": "  row 2 CF00 8600 9600 CF00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "36",
+      "result": "  row 3 DE00 4C00 6D00 DE00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "37",
+      "result": "  row 4 F700 D300 DB00 F700",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "38",
+      "result": "  row 5 FB00 B200 B200 FB00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "39",
+      "result": "  row 6 BF00 2D00 6D00 BF00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "driver",
+      "args": "40",
+      "result": "  row 7 EE00 CA00 DA00 EE00",
+      "section": "colour 8x8"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject",
+      "result": "1",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "41",
+      "result": "RealizeObject pattern size origin 0,0 at 0000 hatch block size 224 locks 0",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "42",
+      "result": "RealizeObject pattern origin 0,0 at 0000 hatch block size 224 locks 0",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "43",
+      "result": "  bitmap 0 20x10 row 4 planes 4 bits 1 at same+32 widthplanes 40 device context 0000 1000 0000 0000 0000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "44",
+      "result": "  row 0 FFFFF000 6DB6D000 6DB6D000 FFFFF000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "45",
+      "result": "  row 1 BDFF7000 996D3000 DB6DB000 BDFF7000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "46",
+      "result": "  row 2 CF7FD000 865B4000 96DB6000 CF7FD000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "47",
+      "result": "  row 3 DEFFB000 4CB69000 6DB6D000 DEFFB000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "48",
+      "result": "  row 4 F7BFE000 D32DA000 DB6DB000 F7BFE000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "49",
+      "result": "  row 5 FBFFF000 B2DB6000 B2DB6000 FBFFF000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "50",
+      "result": "  row 6 BFEF7000 2DA65000 6DB6D000 BFEF7000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "driver",
+      "args": "51",
+      "result": "  row 7 EEFBD000 CA699000 DA6DB000 EEFBD000",
+      "section": "colour 20x10"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject bitmap",
+      "result": "1",
+      "section": "bitmap deleted first"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "52",
+      "result": "RealizeObject pattern size origin 0,0 at 0000 hatch block size 64 locks 0",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "53",
+      "result": "RealizeObject pattern origin 0,0 at 0000 hatch block size 64 locks 0",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "54",
+      "result": "  bitmap 0 8x8 row 2 planes 1 bits 1 at same+32 widthplanes 16 device context 0000 8000 0000 0000 0000",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "55",
+      "result": "  row 0 AA00",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "56",
+      "result": "  row 1 5500",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "57",
+      "result": "  row 2 F000",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "58",
+      "result": "  row 3 0F00",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "59",
+      "result": "  row 4 CC00",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "60",
+      "result": "  row 5 3300",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "61",
+      "result": "  row 6 8100",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "62",
+      "result": "  row 7 7E00",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "63",
+      "result": "Enable 1 Plain LPT1: 0",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "64",
+      "result": "Enable 0 Plain LPT1: 0",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "65",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "66",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "67",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "68",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "69",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "second context"
+    },
+    {
+      "function": "driver",
+      "args": "70",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "second context"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject",
+      "result": "1",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "71",
+      "result": "RealizeObject pattern size origin 3,5 at 0000 hatch block size 64 locks 0",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "72",
+      "result": "RealizeObject pattern origin 3,5 at 0000 hatch block size 64 locks 0",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "73",
+      "result": "  bitmap 0 8x8 row 2 planes 1 bits 1 at same+32 widthplanes 16 device context 0000 8000 0000 0000 0000",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "74",
+      "result": "  row 0 AA00",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "75",
+      "result": "  row 1 5500",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "76",
+      "result": "  row 2 F000",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "77",
+      "result": "  row 3 0F00",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "78",
+      "result": "  row 4 CC00",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "79",
+      "result": "  row 5 3300",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "80",
+      "result": "  row 6 8100",
+      "section": "second"
+    },
+    {
+      "function": "driver",
+      "args": "81",
+      "result": "  row 7 7E00",
+      "section": "second"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "82",
+      "result": "RealizeObject -2 delete",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "83",
+      "result": "RealizeObject -2 delete",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "84",
+      "result": "RealizeObject -2 delete",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "85",
+      "result": "RealizeObject -2 delete",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "86",
+      "result": "RealizeObject -2 delete",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "87",
+      "result": "RealizeObject -2 delete",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "88",
+      "result": "Disable 2 font0=160 font1=160",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "89",
+      "result": "Disable 1 font0=160 font1=0",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "90",
+      "result": "WEP font0=160 font1=0",
+      "section": "deleted"
+    }
+  ]
+}

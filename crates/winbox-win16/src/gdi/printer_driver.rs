@@ -140,6 +140,10 @@ pub struct Drivers {
     /// What GDI keeps of each driver's context for drawing
     /// (`printer_output.rs`).
     pub drawing: HashMap<usize, super::printer_output::Drawing>,
+    /// The global block of each pattern brush's copy of its bitmap, by the
+    /// brush's object, made as a driver is first asked to realize the brush
+    /// (`printer_output.rs`, `pattern_block`).
+    pub patterns: HashMap<usize, u16>,
     /// The context whose font the driver is realizing, for GDI's TrueType
     /// engine (`[064Eh]`, `engine_font.rs`).
     pub realizing: Option<usize>,
