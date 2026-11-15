@@ -59,6 +59,8 @@ const TITLES = join(CACHE, 'titles');
 
 const SECONDS = 10;
 const RATE = 3000;
+/** Virtual seconds a setup is run alone first, to find where it first waits. */
+const FIRST_WAIT = 30;
 /** Virtual seconds a setup is given. */
 const INSTALL_SECONDS = 180;
 /** Enter pressed every so many milliseconds of a setup's run, from the first. */
@@ -236,7 +238,13 @@ function outcome(run) {
     result = run.killed
       ? { status: 'running', signature: 'the host stopped it' }
       : panic
-        ? { status: 'fault', signature: `WinBox: ${panic[1].trim().slice(0, 160)}` }
+        ? {
+            status: 'fault',
+            signature: `WinBox: ${panic[1]
+              .trim()
+              .replace(/\/\S*\//g, '')
+              .slice(0, 160)}`,
+          }
         : { status: 'fault', signature: `WinBox: no output (${run.err.trim().split('\n').pop()})` };
   }
 
@@ -265,7 +273,18 @@ function outcome(run) {
     }
   }
 
-  return { ...result, box, windows, calls, instructions, ms: run.ms };
+  /* The DOS functions the run asked that WinBox did not answer (AX, as `trace` prints them). */
+  const dos = /^DOS functions not answered: \[(.*)\]/m.exec(run.out)?.[1];
+
+  return {
+    ...result,
+    box,
+    windows,
+    calls,
+    instructions,
+    ms: run.ms,
+    ...(dos ? { dos: [...new Set(dos.split(', '))] } : {}),
+  };
 }
 
 /** What a run's box or windows say it needs: enhanced mode, or more colours. */
@@ -409,6 +428,13 @@ export function groupItems(bytes) {
   return { group: string(bytes.readUInt16LE(0x16)), items };
 }
 
+/**
+ * Windows' own programs' windows, which Program Manager opens when Enter
+ * reaches it after a setup has ended: not where the setup stopped.
+ */
+const WINDOWS_OWN =
+  /^(Program Manager|File Manager|Control Panel|Notepad|Write|Paintbrush|Clock|Calculator|Cardfile|Calendar|Terminal|Recorder|Character Map|Media Player|Sound Recorder|Windows Setup|PIF Editor|Clipboard Viewer|Windows Help|Task List|Print Manager|Main|Accessories|Games|StartUp)\b/;
+
 /** An item of a group that is not a program to try: a setup, a help file, a text. */
 const NOT_THE_PROGRAM =
   /setup|install|uninst|remove|read ?me|help|register|order|readme|\.(hlp|txt|wri|doc|bat|pif|ini)\b/i;
@@ -422,10 +448,45 @@ const NOT_THE_PROGRAM =
  * where it stopped.
  */
 async function install(item, folder, needs, mounts) {
-  const drive = driveFor(item, folder, join(INSTALLS, item.id));
   const setupPath = needs.setup
     ? `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.setup)}`
     : needs.onImage;
+
+  /*
+   * First the setup alone for `FIRST_WAIT` seconds, nothing pressed: where
+   * it first waits (a box's text, or its window's caption), which Enter
+   * would answer and so hide, on a drive thrown away after.
+   */
+  const probeDrive = driveFor(item, folder, join(DRIVES, `${item.id}.setup`));
+  const probe = outcome(
+    await trace(
+      runArgs({
+        exe: needs.setup ? join(probeDrive, 'CORPUS', shortOf(item.id), needs.setup) : null,
+        path: setupPath,
+        drive: probeDrive,
+        mounts,
+        mode: needs.mode,
+        display: 'vga',
+        sound: wantsSound(needs),
+        seconds: FIRST_WAIT,
+        screen: join(CACHE, 'screens', `${item.id}.setup-first.png`),
+        extra: ['--shell'],
+      }),
+      5 * 60_000
+    )
+  );
+
+  rmSync(probeDrive, { recursive: true, force: true });
+
+  const ownWindows = (windows) =>
+    windows
+      .filter((window) => window.visible && !window.box && !WINDOWS_OWN.test(window.title))
+      .map((window) => window.title)
+      .filter(Boolean);
+  const first = probe.box
+    ? `${probe.box.title}: ${probe.box.text}`
+    : (ownWindows(probe.windows).slice(-1)[0] ?? `${probe.status} ${probe.signature}`.trim());
+  const drive = driveFor(item, folder, join(INSTALLS, item.id));
   const run = await trace(
     runArgs({
       exe: needs.setup ? join(folder, needs.setup) : null,
@@ -452,8 +513,13 @@ async function install(item, folder, needs, mounts) {
     signature: result.signature,
     ms: run.ms,
     groups: groups.map((group) => ({ group: group.group, items: group.items })),
-    shown: result.windows.filter((window) => window.visible).map((window) => window.title),
+    shown: result.windows
+      .filter((window) => window.visible && !WINDOWS_OWN.test(window.title))
+      .map((window) => window.title),
     box: result.box,
+    first,
+    firstBox: Boolean(probe.box),
+    ...(result.dos ? { dos: result.dos } : {}),
   };
   writeFileSync(
     join(CACHE, 'traces', `${item.id}.setup.txt`),
@@ -614,17 +680,20 @@ async function pass(item, commit) {
     installed = await install(item, folder, { ...needs, onImage }, mounts);
 
     if (!installed.program) {
+      /*
+       * Where it stopped: the box it first waited at, which Enter then
+       * answered; else what it showed last, or first.
+       */
       const where = installed.box
         ? `${installed.box.title}: ${installed.box.text}`
         : (installed.shown.filter(Boolean).slice(-1)[0] ?? '');
+      const signature = installed.firstBox
+        ? `box "${installed.first}"`
+        : `${installed.status}${installed.signature ? ` (${installed.signature})` : ''}, at "${where || installed.first}"${installed.dos ? `; DOS functions not answered: AX=${installed.dos.join(', ')}` : ''}`;
 
       return done({
         status: 'installer',
-        signature:
-          `${installed.status}${installed.signature ? ` (${installed.signature})` : ''}${where ? `, at "${where}"` : ''}`.slice(
-            0,
-            240
-          ),
+        signature: signature.slice(0, 240),
         install: installed,
       });
     }
@@ -723,6 +792,7 @@ async function pass(item, commit) {
       instructions: result.instructions,
       ms: result.ms,
       ...(result.box ? { box: result.box } : {}),
+      ...(result.dos ? { dos: result.dos } : {}),
       ...(tries.length > 1 ? { tries } : {}),
       ...(installed
         ? {
@@ -743,11 +813,17 @@ async function pass(item, commit) {
 /* --- Results ---------------------------------------------------------------- */
 
 /** A fault's group: its kind and the module it was in, without the address. */
-function faultGroup(signature) {
-  const match = /caused (.+?) in module (\S*?)(?: at |[0-9A-F]{4}:)/.exec(signature);
+function faultGroup(signature, program) {
+  const match = /caused (.+?) in module (\S*?)(?: at |)([0-9A-F]{4}:[0-9A-F]{4})/.exec(signature);
+  const own = (program ?? '').split(/[\\/]/).pop().toUpperCase();
 
+  /*
+   * A fault keeps its place: the same place in a library, or in programs
+   * built with the same compiler's code, is one piece of work. A program's
+   * own module is named as such, so programs of one runtime meet.
+   */
   return match
-    ? `${match[1]} in ${match[2] || 'a module'}`
+    ? `${match[1]} in ${match[2] && match[2] !== own ? match[2] : 'the program'} at ${match[3]}`
     : signature.replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….');
 }
 
@@ -763,12 +839,16 @@ export function groupsOf(result) {
     case 'library':
       return signature.split(', ').map((module) => `library ${module}`);
     case 'fault':
-      return [`fault: ${faultGroup(signature)}`];
+      return [`fault: ${faultGroup(signature, result.needs?.program)}`];
     case 'box':
       return [`box: ${signature.replace(/[A-Z]:\\[^\s"]*/gi, '<path>')}`];
     case 'installer':
+      if (signature.startsWith('box ')) {
+        return [`installer: ${signature.replace(/[A-Z]:\\[^\s"]*/gi, '<path>')}`];
+      }
+
       return [
-        `installer: ${signature.replace(/, at ".*$/, '').replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….')}`,
+        `installer: ${signature.replace(/, at ".*?"/, '').replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….')}`,
       ];
     case 'fetch':
       return [
@@ -805,6 +885,9 @@ function writeResults(items) {
       status: state.result.status,
       signature: state.result.signature ?? '',
       ...(state.result.box ? { box: state.result.box } : {}),
+      ...((state.result.dos ?? state.result.install?.dos)
+        ? { dos: state.result.dos ?? state.result.install.dos }
+        : {}),
       needs: needs
         ? {
             program: needs.program ?? null,
@@ -819,7 +902,19 @@ function writeResults(items) {
             images: needs.images ?? [],
           }
         : null,
-      ...(state.result.install ? { install: state.result.install } : {}),
+      ...(state.result.install
+        ? {
+            /* The setup's run: what it left, never the host's paths. */
+            install: {
+              status: state.result.install.status,
+              ...(state.result.install.program ? { program: state.result.install.program } : {}),
+              ...(state.result.install.from ? { from: state.result.install.from } : {}),
+              ...(state.result.install.groups
+                ? { groups: state.result.install.groups.map((group) => group.group) }
+                : {}),
+            },
+          }
+        : {}),
       commit: state.result.commit,
       date: state.result.date,
     });

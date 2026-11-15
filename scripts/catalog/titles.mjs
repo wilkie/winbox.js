@@ -553,6 +553,14 @@ const NOT_A_NAME = [
    * "HANOI MFC Application", "GOMOKU Application".
    */
   /^[A-Z0-9_]+ (?:MFC )?Application$/,
+  /*
+   * Windows' own product name, which programs built from the SDK's
+   * version resource carry as their `ProductName` ("Microsoft® Windows(TM)
+   * Operating System"); and a settings dialog's caption, which a screen
+   * saver run without `/s` shows ("Fishes Settings", "Cows Configuration").
+   */
+  /^microsoft\W*windows\W*(?:\(tm\))?\s*operating system$/i,
+  /\b(?:configuration|settings)$/i,
 ];
 
 /**
