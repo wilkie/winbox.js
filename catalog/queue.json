@@ -16,7 +16,6 @@
   {"signature":"fetch: no program named","status":"fetch","count":6,"games":1,"items":["APOGEE","CD_Deluxe_Pack_V1.0","encore_middle_school_advantage_2003_typing","Individual_Software_Multimedia_Typing_Instructor","Power_Tools_V20","QCARDDLL"]},
   {"signature":"fetch: program not in the download","status":"fetch","count":6,"games":5,"items":["dexterdressup","KIMANDERSON","scratch-2.0_20240110","talkie1","time-trials","zawsda"]},
   {"signature":"unsupported: Interrupt(75)","status":"unsupported","count":6,"games":6,"items":["arthurca_202106","CAT_HAT_WIN","GREENEGGS_WIN","IN_THE_DARK_WIN","RACE_WIN","SEUSS_ABC_WIN"]},
-  {"signature":"fault: a General Protection Fault in VBRUN100.DLL at 004E:0042","status":"fault","count":5,"games":2,"items":["MEDLEY_SE230072","MEDLEY_SE230240","MEDLEY_SEC10003","win3_eggcartn","win3_quiknote"]},
   {"signature":"running: last KERNEL._lread, KERNEL._lread, KERNEL._lread","status":"running","count":5,"games":5,"items":["3d-mania-game-pack","HEDGEHOGS_WIN","PINTA_WIN","TOYLAND_WIN","win3_bowser_knp"]},
   {"signature":"running: last KERNEL.GlobalReAlloc, KERNEL.GlobalLock, KERNEL.GlobalSize","status":"running","count":5,"games":5,"items":["gtrwx_BTMATSTR","win3_Casino_knp","win3_CUBEv5_knp","win3_MS2_knp","win3_Virus_knp"]},
   {"signature":"unsupported: Interrupt(19)","status":"unsupported","count":5,"games":4,"items":["win3_FM","win3_NAMETHAT","win3_SCORCARD","win3_winpark","xgcm_SoftwareLibrary"]},
