@@ -90,6 +90,71 @@ function namesByOrdinal() {
   return exportNames;
 }
 
+/** WinBox's own exports, by module: each ordinal answered and each name (`kb/data/winbox-exports.json`). */
+let winboxExports;
+
+function ownExports() {
+  if (!winboxExports) {
+    const tables = JSON.parse(
+      readFileSync(join(ROOT, 'kb', 'data', 'winbox-exports.json'), 'utf8')
+    );
+
+    winboxExports = new Map(
+      tables.modules.map((module) => {
+        const answered = module.exports.filter((each) => each.implemented);
+
+        return [
+          module.name,
+          {
+            ordinals: new Map(answered.map((each) => [each.ordinal, each.name])),
+            names: new Set(answered.map((each) => each.name.toUpperCase())),
+          },
+        ];
+      })
+    );
+  }
+
+  return winboxExports;
+}
+
+/**
+ * An import's name as a person reads it: `MODULE.Name`, an ordinal named
+ * by WinBox's table, else Windows' (`exports-3.1.json`), else `@ordinal`.
+ */
+export function importName(each) {
+  const [module, rest] = [each.slice(0, each.indexOf('.')), each.slice(each.indexOf('.') + 1)];
+
+  if (!rest.startsWith('@')) {
+    return each;
+  }
+
+  const ordinal = Number(rest.slice(1));
+
+  return `${module}.${ownExports().get(module)?.ordinals.get(ordinal) ?? namesByOrdinal().get(module)?.get(ordinal) ?? rest}`;
+}
+
+/**
+ * The imports of WinBox's own modules that WinBox does not export: a
+ * call to one goes to `UndefDynLink`, as in Windows, and ends the program.
+ */
+export function unlinkedOf(functions) {
+  return functions
+    .filter((each) => {
+      const module = each.slice(0, each.indexOf('.'));
+      const rest = each.slice(each.indexOf('.') + 1);
+      const own = ownExports().get(module);
+
+      if (!own) {
+        return false;
+      }
+
+      return rest.startsWith('@')
+        ? !own.ordinals.has(Number(rest.slice(1)))
+        : !own.names.has(rest.toUpperCase());
+    })
+    .map(importName);
+}
+
 /** Every file of a folder, at any depth. */
 export function filesOf(folder) {
   const found = [];
@@ -192,7 +257,7 @@ export function neImports(bytes) {
         if (kind === 1) {
           const ordinal = bytes.readUInt16LE(r + 6);
 
-          functions.add(`${module}.${namesByOrdinal().get(module)?.get(ordinal) ?? `@${ordinal}`}`);
+          functions.add(`${module}.@${ordinal}`);
         } else if (kind === 2) {
           functions.add(`${module}.${nameAt(names + bytes.readUInt16LE(r + 6))}`);
         }
@@ -417,7 +482,7 @@ export function needsOf(item, folder, images = []) {
     flags.push('quicktime');
   }
 
-  if (discs.length) {
+  if (discs.some((file) => /\.(iso|cue|bin|mdf|nrg|ccd)$/i.test(file))) {
     flags.push('cd');
   }
 
@@ -429,9 +494,19 @@ export function needsOf(item, folder, images = []) {
     flags.push('midi');
   }
 
-  if ([...functions].some((each) => PALETTE.includes(each.split('.')[1].toUpperCase()))) {
+  if (
+    [...functions].some((each) =>
+      PALETTE.includes(
+        importName(each)
+          .slice(each.indexOf('.') + 1)
+          .toUpperCase()
+      )
+    )
+  ) {
     flags.push('palette');
   }
+
+  needs.unlinked = unlinkedOf([...functions]).sort();
 
   needs.flags = flags;
   needs.libraries = lacking.sort();

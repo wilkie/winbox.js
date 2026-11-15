@@ -28,7 +28,8 @@
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty. `--captions` prints, after the calls,
 //! the windows at the top as the run left them, with their captions, and
-//! a message box's text.
+//! a message box's text. `--sound` installs WinBox's own sound card on the
+//! run's drive, as winbox-native's `--sound` does.
 //! `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
 //! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
@@ -165,7 +166,45 @@ fn print_captions(system: &winbox_win16::System) {
     }
 }
 
-/// What the command line asks for: the host's files, and the survey.
+/// WinBox's own sound card installed on the run's drive (`--sound`), over
+/// the installation, as winbox-native's `--sound` installs it: its driver
+/// named in the installation's `SYSTEM.INI`, changed, on the drive, and
+/// the MIDI Mapper's setups naming its devices, where the drive has none.
+fn install_sound(root: &Path, windows: Option<&Path>) {
+    let windows_file = |name: &[&str]| {
+        windows.and_then(|windows| {
+            std::fs::read(
+                name.iter()
+                    .fold(windows.join("WINDOWS"), |at, part| at.join(part)),
+            )
+            .ok()
+        })
+    };
+
+    if let Some(text) = windows_file(&["SYSTEM.INI"])
+        .or_else(|| std::fs::read(root.join("WINDOWS").join("SYSTEM.INI")).ok())
+    {
+        let _ = std::fs::create_dir_all(root.join("WINDOWS"));
+        let _ = std::fs::write(
+            root.join("WINDOWS").join("SYSTEM.INI"),
+            winbox_win16::wbsound::install(&text),
+        );
+    }
+
+    let setups = root.join("WINDOWS").join("SYSTEM").join("MIDIMAP.CFG");
+
+    if !setups.exists()
+        && let Some(installed) = windows_file(&["SYSTEM", "MIDIMAP.CFG"])
+            .and_then(|bytes| winbox_win16::wbsound::install_setups(&bytes))
+    {
+        let _ = std::fs::create_dir_all(root.join("WINDOWS").join("SYSTEM"));
+        let _ = std::fs::write(&setups, installed);
+    }
+}
+
+/// What the command line asks for: the host's files, and the survey; each
+/// flag a switch of its own.
+#[allow(clippy::struct_excessive_bools)]
 struct Options {
     file: Option<PathBuf>,
     drive: Option<PathBuf>,
@@ -178,6 +217,7 @@ struct Options {
     mounts: Vec<(char, PathBuf)>,
     shell: bool,
     captions: bool,
+    sound: bool,
     mode: winbox_win16::Mode,
     survey: Survey,
 }
@@ -229,6 +269,7 @@ fn options() -> Options {
         mounts: Vec::new(),
         shell: false,
         captions: false,
+        sound: false,
         mode: winbox_win16::Mode::Standard,
         survey: Survey::default(),
     };
@@ -243,6 +284,7 @@ fn options() -> Options {
             "--oracle-drives" => options.oracle_drives = true,
             "--shell" => options.shell = true,
             "--captions" => options.captions = true,
+            "--sound" => options.sound = true,
             "--mode" => {
                 options.mode = arguments
                     .next()
@@ -314,6 +356,7 @@ fn main() {
         mounts,
         shell,
         captions,
+        sound,
         mode,
         mut survey,
     } = options();
@@ -391,6 +434,10 @@ fn main() {
         }
         None => windows,
     };
+    if sound {
+        install_sound(&root, windows.as_deref());
+    }
+
     // Windows installed beneath it, its files read and never written, where
     // an installation's drive is given.
     let c = match &windows {

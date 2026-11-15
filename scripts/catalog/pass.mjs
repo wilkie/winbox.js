@@ -42,6 +42,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
+import { StringDecoder } from 'node:string_decoder';
 import { fileURLToPath } from 'node:url';
 
 import { PROGRAMS, catalogItems, downloadPath, keep, stateOf } from './fetch.mjs';
@@ -134,6 +135,8 @@ function trace(args, timeout) {
   return new Promise((resolve) => {
     const started = Date.now();
     const child = spawn(TRACE, args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    /* The captions' JSON is UTF-8, each character one of the caption's bytes. */
+    const utf8 = new StringDecoder('utf8');
     const tail = [];
     const other = [];
     let calls = 0;
@@ -161,7 +164,7 @@ function trace(args, timeout) {
     };
 
     child.stdout.on('data', (chunk) => {
-      const lines = (partial + chunk.toString('latin1')).split('\n');
+      const lines = (partial + utf8.write(chunk)).split('\n');
 
       partial = lines.pop();
       lines.forEach(line);
@@ -241,6 +244,27 @@ function outcome(run) {
     result.signature = `${box.title}: ${box.text}`.slice(0, 240);
   }
 
+  /*
+   * A window shown that the program did not make with `CreateWindow` or
+   * show with `ShowWindow`: a dialog of `DialogBox`, whose loop is USER's
+   * and makes no call of the program's. Waiting there is `idle` by the
+   * same rule: a message call among its last thousand calls, or under a
+   * tenth of its seconds' instructions run.
+   */
+  if (result.status === 'running' && windows.some((window) => window.visible && !window.box)) {
+    const recent = run.out
+      .split('\n')
+      .filter((line) => CALL.test(line))
+      .slice(-1000);
+
+    if (
+      recent.some((line) => /^USER\.(GetMessage|WaitMessage|PeekMessage)[ (]/.test(line)) ||
+      instructions < SECONDS * RATE * 1000 * 0.1
+    ) {
+      result = { status: 'idle', signature: '' };
+    }
+  }
+
   return { ...result, box, windows, calls, instructions, ms: run.ms };
 }
 
@@ -256,8 +280,17 @@ function askedFor(result) {
   };
 }
 
+/**
+ * A program that needs sound or MIDI: run with WinBox's own sound card
+ * installed (`trace --sound`, as winbox-native's), as a person running it
+ * with sound would.
+ */
+function wantsSound(needs) {
+  return Boolean(needs.flags?.some((flag) => flag === 'sound' || flag === 'midi'));
+}
+
 /** The arguments of a run of a program. */
-function runArgs({ exe, path, drive, mounts, mode, display, seconds, screen, extra = [] }) {
+function runArgs({ exe, path, drive, mounts, mode, display, sound, seconds, screen, extra = [] }) {
   return [
     ...(exe ? [exe] : []),
     '--path',
@@ -266,6 +299,7 @@ function runArgs({ exe, path, drive, mounts, mode, display, seconds, screen, ext
     drive,
     '--windows',
     windowsFor(display),
+    ...(sound ? ['--sound'] : []),
     '--display',
     display,
     '--mode',
@@ -283,8 +317,12 @@ function runArgs({ exe, path, drive, mounts, mode, display, seconds, screen, ext
   ];
 }
 
-/** The images an item's downloads hold, and the drive each is mounted as. */
-function mountsOf(item, folder) {
+/**
+ * The images an item's downloads hold, and the drive each is mounted as: a
+ * disc's always, as D:, as the corpus mounts one; a floppy's, as A:, only
+ * where `floppies` asks (the program is on it).
+ */
+function mountsOf(item, folder, floppies = false) {
   const images = [
     ...item.source.archiveOrg.downloads.map((each) => downloadPath(item.id, each.file)),
     ...filesOf(folder),
@@ -298,7 +336,7 @@ function mountsOf(item, folder) {
     mounts.push(['D', disc]);
   }
 
-  if (floppy) {
+  if (floppy && floppies) {
     mounts.push(['A', floppy]);
   }
 
@@ -396,6 +434,7 @@ async function install(item, folder, needs, mounts) {
       mounts,
       mode: needs.mode,
       display: 'vga',
+      sound: wantsSound(needs),
       seconds: INSTALL_SECONDS,
       screen: join(CACHE, 'screens', `${item.id}.setup.png`),
       extra: ['--shell', '--marks', enterMarks()],
@@ -473,6 +512,24 @@ async function install(item, folder, needs, mounts) {
   return { ...record, drive, program: null };
 }
 
+/**
+ * A run that ended in `UndefDynLink`, which a call to an import not linked
+ * goes to, is `missing` where the program imports functions of WinBox's
+ * modules that WinBox does not export (`needs.unlinked`): those are the
+ * signature.
+ */
+function refined(result, needs) {
+  if (
+    result.status === 'ended' &&
+    /KERNEL\.UndefDynLink$/.test(result.signature) &&
+    needs.unlinked?.length
+  ) {
+    return { status: 'missing', signature: needs.unlinked.join(', ') };
+  }
+
+  return {};
+}
+
 /** An item's needs and its run, classified; its state kept. */
 async function pass(item, commit) {
   const state = stateOf(item.id);
@@ -497,11 +554,13 @@ async function pass(item, commit) {
     needs = { error: `reading it: ${error.message}` };
   }
 
-  const mounts = mountsOf(item, folder);
+  /* A program not in the download: on an image, a floppy's among them. */
+  const fromImage = Boolean(needs.error && item.run && !/\.bat$/i.test(item.run));
+  const mounts = mountsOf(item, folder, fromImage);
 
   needs.images = mounts.map(([letter, image]) => `${letter}: ${basename(image)}`);
 
-  if (mounts.length && !needs.flags?.includes('cd') && mounts.some(([letter]) => letter === 'D')) {
+  if (!needs.flags?.includes('cd') && mounts.some(([letter]) => letter === 'D')) {
     needs.flags = [...(needs.flags ?? []), 'cd'];
   }
 
@@ -521,7 +580,7 @@ async function pass(item, commit) {
   /* A program not in the download: on an image, where one is mounted. */
   let onImage = null;
 
-  if (needs.error && mounts.length && item.run && !/\.bat$/i.test(item.run)) {
+  if (fromImage && mounts.length) {
     const name = item.run
       .trim()
       .split(/\s+/)
@@ -600,6 +659,7 @@ async function pass(item, commit) {
         mounts,
         mode,
         display,
+        sound: wantsSound(needs),
         seconds: SECONDS,
         screen: join(CACHE, 'screens', `${item.id}.png`),
       }),
@@ -630,17 +690,21 @@ async function pass(item, commit) {
 
   needs.mode = mode;
   needs.display = display;
+  result = { ...result, ...refined(result, needs) };
 
   /* A title from the run, for the items not titled from their program yet. */
-  if (!foundOf(item.id) && program.file && !installed) {
+  if ((!foundOf(item.id) || foundOf(item.id).by === 'pass') && program.file) {
     try {
-      const found = readFolder(folder, needs.program);
+      const found = installed
+        ? readFolder(dirname(program.file), basename(program.file))
+        : readFolder(folder, needs.program);
 
       applyRun(found, {
         mode,
         stopped: result.status,
         windows: result.windows.filter((window) => !window.box),
       });
+      found.by = 'pass';
       mkdirSync(TITLES, { recursive: true });
       writeFileSync(join(TITLES, `${item.id}.json`), JSON.stringify(found, null, 1));
     } catch {
@@ -841,6 +905,34 @@ async function main() {
   const args = process.argv.slice(2);
   const items = catalogItems();
 
+  /* The needs read again without a run, the run's mode and display kept. */
+  if (args.includes('--needs')) {
+    for (const item of items) {
+      const state = stateOf(item.id);
+
+      if (!state.fetch?.ok || !state.needs || !state.result) {
+        continue;
+      }
+
+      const folder = join(PROGRAMS, item.id);
+      const needs = { ...needsOf(item, folder, []), mode: state.needs.mode };
+      const mounts = mountsOf(item, folder);
+
+      needs.images = mounts.map(([letter, image]) => `${letter}: ${basename(image)}`);
+      needs.flags = [
+        ...new Set([...(needs.flags ?? []), ...(mounts.some(([l]) => l === 'D') ? ['cd'] : [])]),
+      ];
+
+      if (state.needs.display) {
+        needs.display = state.needs.display;
+      }
+
+      keep(item.id, { needs, result: { ...state.result, ...refined(state.result, needs) } });
+    }
+
+    return;
+  }
+
   if (args.includes('--results')) {
     const { results, queue, catalog } = writeResults(items);
     const { write } = await import('./catalog.mjs');
@@ -869,13 +961,18 @@ async function main() {
       encoding: 'utf8',
     }
   ).trim();
+  /* `--status running`: the items whose last run had that status, run again. */
+  const statusAt = args.indexOf('--status');
+  const status = statusAt >= 0 ? args.splice(statusAt, 2)[1] : null;
   const ids = args.filter((arg) => !arg.startsWith('--'));
   const chosen = ids.length
     ? items.filter((item) => ids.includes(item.id))
     : items.filter((item) => {
         const state = stateOf(item.id);
 
-        return state.fetch && state.result?.commit !== commit;
+        return status
+          ? state.result?.status === status
+          : state.fetch && state.result?.commit !== commit;
       });
 
   mkdirSync(join(CACHE, 'traces'), { recursive: true });
