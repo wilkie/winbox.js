@@ -4,3 +4,5 @@ coverage/
 playwright-report/
 test-results/
 pnpm-lock.yaml
+# Written by scripts/catalog, an entry a line
+catalog/*.json
