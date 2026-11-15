@@ -27,7 +27,8 @@
 //! same seed (`scripted_input`); given with `--marks`, only after the
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty. `--captions` prints, after the calls,
-//! the windows at the top as the run left them, with their captions.
+//! the windows at the top as the run left them, with their captions, and
+//! a message box's text.
 //! `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
 //! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
@@ -123,7 +124,9 @@ fn save_png(file: &Path, screen: &Screen) {
 /// caption (its characters its bytes, Latin-1): for the compatibility
 /// catalog's titles (`scripts/catalog/titles.mjs`).
 fn print_captions(system: &winbox_win16::System) {
-    for window in system.windows.iter().flatten() {
+    for (slot, window) in system.windows.iter().enumerate() {
+        let Some(window) = window else { continue };
+
         if window.parent.is_some() || !window.paints_itself() {
             continue;
         }
@@ -134,16 +137,31 @@ fn print_captions(system: &winbox_win16::System) {
                 winbox_win16::dialogs::DialogProc::MessageBox(_)
             )
         });
+        let mut line = serde_json::json!({
+            "class": window.class,
+            "visible": window.visible,
+            "box": message_box,
+            "title": window.title,
+        });
 
-        println!(
-            "window: {}",
-            serde_json::json!({
-                "class": window.class,
-                "visible": window.visible,
-                "box": message_box,
-                "title": window.title,
-            })
-        );
+        // A box's text: its static that is not its icon (`SS_ICON`, style
+        // 3), as `MessageBox` makes them (`user_calls::message_box`).
+        if message_box {
+            let text = system
+                .windows
+                .iter()
+                .flatten()
+                .find(|child| {
+                    child.parent == Some(slot)
+                        && child.class.eq_ignore_ascii_case("static")
+                        && child.style & 0xf != 3
+                })
+                .map_or(String::new(), |child| child.title.clone());
+
+            line["text"] = serde_json::Value::String(text);
+        }
+
+        println!("window: {line}");
     }
 }
 
