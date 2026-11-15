@@ -4,7 +4,7 @@ name: A compatibility database
 summary: A design for a database of how Windows 3.x games and applications run on WinBox — a committed catalog of archive.org's Windows 3.x software library, metadata only; what each program needs, found from its files; an automated first pass that fetches, installs and runs each on the survey's clock and groups the failures into a work queue; ratings by people; a table on the site — with a prototype's counts and a sample of ten games, and the decisions still open.
 ---
 
-This page is a design, with a prototype and the first pass. The prototype is built: `scripts/catalog/catalog.mjs` writes the catalog, `scripts/catalog/sample.mjs` takes ten games of it through the pipeline once (2026-11-14), and `scripts/catalog/titles.mjs` finds titles from the programs themselves (2026-11-14). The first pass is built and has run over the whole catalog (2026-11-14, below, "The first pass"): `scripts/catalog/fetch.mjs` fetches every item, `scripts/catalog/needs.mjs` reads what each needs, and `scripts/catalog/pass.mjs` installs, runs and classifies each, and writes `catalog/results.json` and the work queue, `catalog/queue.json`. The site's table and ratings are not built here. It follows the model of [[guide:launcher]] and [[guide:enhanced-mode]].
+This page is a design, with a prototype and the first pass. The prototype is built: `scripts/catalog/catalog.mjs` writes the catalog, `scripts/catalog/sample.mjs` takes ten games of it through the pipeline once (2026-11-14), `scripts/catalog/titles.mjs` finds titles from the programs themselves (2026-11-14), `scripts/catalog/wikipedia.mjs` matches the catalog to Wikipedia's list, and `pnpm kb` builds the table with its ratings (2026-11-14). The first pass is built and has run over the whole catalog (2026-11-14, below, "The first pass"): `scripts/catalog/fetch.mjs` fetches every item, `scripts/catalog/needs.mjs` reads what each needs, and `scripts/catalog/pass.mjs` installs, runs and classifies each, and writes `catalog/results.json` and the work queue, `catalog/queue.json`. It follows the model of [[guide:launcher]] and [[guide:enhanced-mode]].
 
 The corpus (`corpus/README.md`) is some forty programs, chosen for what they exercise and held to what Windows recorded of them under DOSBox, call for call and pixel for pixel. It finds what the probes did not think to ask. A compatibility database is wider and shallower: every Windows 3.x program that can be found, each tried once, with a one-word answer and the reason. It says which programs run, and it turns the ones that do not into a list of gaps, the most common first. A program it turns up that needs a closer look goes into the corpus, and is held to the oracle from then on.
 
@@ -154,7 +154,57 @@ The same reading, without a run, of the 33 other items already fetched (the corp
 | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **archive.org's Software Library: Windows 3.x** (`softwarelibrary_win3`) | The programs themselves, each an item with a download, a title, a creator, often a year, and the program its DOSBox starts. The games are `softwarelibrary_win3_games`. There is no single applications collection: the applications are `softwarelibrary_win3_productivity` and `softwarelibrary_win3_desktoptoys`, and two curated collections, `softwarelibrary_win3_showcase` and `softwarelibrary_win3_shareware`, overlap both. `softwarelibrary_win3_winhelp` is help files, not programs, and is left out. The public advanced-search API lists them, and the metadata API gives each item's metadata and file list. No key is needed. | The metadata, which is all the catalog keeps. The programs are fetched only to run them, and are never committed, as with the corpus. Each item's own rights are those of its publisher: the catalog links to the item, and the site does not host any program. |
 | **Wikipedia's "List of Windows 3.x games"**                              | Some 880 rows, each a title, a release date and a developer or publisher, as of 2026-11-14 (counted from its wikitext, read through the MediaWiki API). "Index of Windows games" is for Windows 95 onwards and points to this list.                                                                                                                                                                                                                                                                                                                                                                                                            | A checklist for coverage: which known titles the catalog lacks, and a year and publisher where archive.org gives none. Facts such as titles and dates can be used, and any text quoted from it is CC BY-SA, which the kb's own licence matches.                 |
-| **MobyGames**                                                            | Games by platform, with publishers, developers and release dates. Its API answers 401 "You must have an API key to use this resource" without one, and its documentation page refused the prototype's request with a 403 (2026-11-14), so its terms were not read here.                                                                                                                                                                                                                                                                                                                                                                        | Nothing yet. If the owner wants it: a key in the owner's name, its terms read first (rate limits, attribution, and whether its data may be stored in a public repository), and it used only for gaps archive.org and Wikipedia leave.                           |
+| **MobyGames**                                                            | Games by platform (Windows 3.x is platform 5, Windows 3), with publishers, developers and release dates, through an API that takes a key. The owner has one (2026-11-14).                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | A game's id and its link, under its API terms ("MobyGames", below). `scripts/catalog/mobygames.mjs` is written and has not been run.                                                                                                                            |
+
+## Matching
+
+A catalog entry is matched to another list's games by its title, year and publisher, by one set of rules for every list (`scripts/catalog/match.mjs`):
+
+- **Titles** are compared without case, accents, punctuation, "for Windows", a version ("v1.2") or a bracket's part, a leading "The" or a trailing "Game", with Roman numerals as numbers. The same words score 1; the same without spaces ("SkiFree", "Ski Free") 0.95; the same main part, before a colon or a spaced dash, 0.9; otherwise Dice's coefficient over the words. Every title an entry has is tried (its title and each candidate in `titles`, archive.org's with its prefix stripped), the best kept.
+- **The year** agrees within one (a release and its re-release, a list's date and archive.org's): the score is raised 0.05. More than two years apart lowers it 0.15 and is a contradiction.
+- **The company** agrees where a word of a name of one side's (not "Inc", "Software", "Games" and their like) is in the other's, or begins it, four letters or more ("Saada", "SaadaSoft"): the score is raised 0.1.
+- **Confident**: the best title scores 0.9 or more, nothing contradicts it, the year or the company agrees (or the title is the same exactly and neither is known), and no other candidate scores within 0.1 of it. A title of one word ("Hearts", "Golf", "Simon", many shareware games share each) needs the company to agree, or the year where no company is known on one side. An entry still titled by a file name ("BATTLES") needs both.
+- **Ambiguous**: the best title scores 0.75 or more, but not confidently. These are kept with their candidates for a person to decide, and are not shown in the table.
+
+### Wikipedia
+
+`scripts/catalog/wikipedia.mjs` reads the "List of Windows 3.x games" as wikitext, one request through the MediaWiki API, and matches every catalog entry against its rows. Only the facts of a matched row (title, year, developers and publishers, which the list keeps in one column, and its article) are kept, in `catalog/wikipedia.json`, with the page's revision; the list is CC BY-SA 4.0, as the kb is, and the table credits it. The table uses a row's year and companies only where archive.org gives none, marked as Wikipedia's, and links to the game's article.
+
+[[measured]] 2026-11-14, revision 1374135951 (2026-09-10), 882 rows:
+
+| Kind         | Confident | Ambiguous |  None |
+| ------------ | --------: | --------: | ----: |
+| games        |       161 |        83 | 1,242 |
+| applications |        27 |        12 |   759 |
+
+165 of the 882 rows are matched by one entry or more. The applications matched are the games and edutainment archive.org files under productivity or desktop toys ("Taipei", "Rodney's Funscreen"). Read over by eye, the confident matches are the same programs, with a few to look at again: a description taken as a candidate title can match a different game of the same name ("Colors", whose module description is "Columns Game", matches the list's Columns of 1990), and the three tables of Full Tilt! Pinball match the list's one row by their main part. Confident is not certain; the review list holds what the rules would not decide.
+
+### MobyGames
+
+MobyGames' terms were read on 2026-11-14 from the copies the Internet Archive keeps: its API documentation (`mobygames.com/info/api/`, as of 2026-09-12) and its API License Agreement (`mobygames.com/info/api-terms/`, as of 2025-03-12, the only copy kept). The live pages answer automated requests with a Cloudflare challenge. What they say, in brief:
+
+- **Access.** The key is private, passed as the `api_key` query argument, and may not be shared (section 3.b). It is read from `MOBYGAMES_API_KEY` or `~/.config/winbox/mobygames-key`, and no URL holding it is printed or written.
+- **Rate.** Non-commercial keys: 720 requests an hour, one every five seconds, and never more than one a second; 429 past it. Attempts to get around the limit end the licence (3.c).
+- **Copies.** MobyGames' content may be copied only as an intermediate step, deleted when no longer needed (3.a.ii). Everything retrieved is MobyGames' and confidential to the licensee (5, 17).
+- **Public display.** Content publicly available on MobyGames may be shown "to promote MobyGames and enable Your Users to search and browse the data", deleted when it is no longer public, and not "co-mingled or combined with non-MobyGames Content" (8.a.ii). What is shown may be at most a day older than the site, or the page says how much older it is (8.a.iii).
+- **Generative AI.** Neither the site nor its content may be used, without MobyGames' written consent, "in connection with the development, training, fine tuning, grounding (including through retrieval-augmented generation (RAG)), of any large language model ... or any software or tool that incorporates generative artificial intelligence" (8.a.iv.2).
+- **Publicity.** No public statement about the Developers Program without MobyGames' approval (18).
+- **Attribution.** The terms ask for none in a set form; MobyGames keeps every right in its content, logos and name (5).
+
+What that means here:
+
+- **The API was not called.** This page, the scripts and the matching were written by an AI agent; reading MobyGames' answers to match them would be the use 8.a.iv.2 forbids without consent. `scripts/catalog/mobygames.mjs` is for a person to run, and its matches are for a person to review.
+- **Only ids and links are written.** `catalog/mobygames.json` keeps, for each confident match, MobyGames' game id, its URL and the platform, and our own score; for an ambiguous one, its candidates' ids, URLs and scores. No title, year, company or other content of MobyGames' is committed or shown: the table's year and publisher are archive.org's or Wikipedia's, and MobyGames gives a link. The answers it matched from stay in `corpus/cache/catalog/mobygames/` (gitignored) until the matches are reviewed, and `--purge` deletes them.
+- **Whether an id and a link may be kept in a public repository at all** is not settled by the terms (an id is "data ... retrieved from MobyGames", and the copies are to be intermediate): a question for the owner, below.
+
+```sh
+node scripts/catalog/wikipedia.mjs                # the list (fetched once), matched, catalog/wikipedia.json
+node scripts/catalog/mobygames.mjs --kind game    # a person, with the key: about 3 hours for the games
+node scripts/catalog/mobygames.mjs --write        # match what is cached, catalog/mobygames.json
+node scripts/catalog/mobygames.mjs --purge        # delete the cached answers once reviewed
+```
+
+`mobygames.mjs` searches MobyGames' titles (a substring, without case) on Windows 3.x and Windows, with up to three of the entry's titles, cleaned of brackets, "for Windows" and versions, then asks for the companies of the releases of the best three candidates whose title scores 0.9: about one to six requests an entry, five seconds apart. Its matches are the same rules' as Wikipedia's, a game's alternate titles each a candidate of its own.
 
 ## The automated first pass
 
@@ -301,22 +351,51 @@ Setups that said they need 256 colours or enhanced mode (`win3_ExileII-`'s box, 
 
 Each rating carries the WinBox commit it was made on, the display and mode, the date, a note, and who made it (a name they choose, or none). A rating made on an older commit is shown as such, and is a reason to look again, not a result.
 
-How ratings are kept, two options:
+The owner decided (2026-11-14): ratings are files in the repository, added by pull request. A rating is reviewed like any other change, sits next to the commit it was made on, and is published under the kb's licence with everything else. A page people fill in may be added later as a way in that ends in a file.
 
-- **A. Files in the repository.** `catalog/ratings/<id>.json`, a list of ratings for each program, added by pull request. A rating is reviewed like any other change, sits next to the commit it was made on, and is published under the kb's licence with everything else. The cost: a person needs a GitHub account and the patience for a pull request, so fewer people will rate.
-- **B. A page people fill in.** A form on the site, or a hosted page with shared storage, where anyone rates in a minute. The cost: storage outside the repository, ratings that nobody reviews, spam to deal with, a privacy notice for whatever is collected, and a way to bring the ratings back into the repository to publish them.
+### Ratings
 
-Recommended: **A** first. There will be a handful of people rating at the start, and the repository keeps ratings reviewed and tied to commits at no extra cost. **B** can be added later as a way in that ends in A: a form whose submissions become pull requests, or are copied in by a maintainer.
+`catalog/ratings/<id>.json`, one file for each program rated, named by its catalog id; the file holds a list, so a program rated again keeps its earlier ratings. The table shows the latest by date.
+
+```json
+{
+  "ratings": [
+    {
+      "rating": "playable",
+      "commit": "1172e53a",
+      "date": "2026-11-14",
+      "note": "Played three rounds to the end. The shareware box comes up first, as on Windows; the sound of a win is missing.",
+      "rater": "a name or handle",
+      "display": "vga",
+      "mode": "standard"
+    }
+  ]
+}
+```
+
+| Field     | What it holds                                                                                                                | Required |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------- | -------- |
+| `rating`  | `perfect`, `playable`, `runs with problems` or `fails`, as above.                                                            | yes      |
+| `commit`  | The WinBox commit the program was used on (`git rev-parse --short HEAD`): 7 to 40 hexadecimal digits, in small letters.      | yes      |
+| `date`    | The day it was used, `YYYY-MM-DD`; not after today.                                                                          | yes      |
+| `note`    | What was tried and what was seen, 1 to 1,000 characters: how far it was played or used, and what differed from Windows.      | yes      |
+| `rater`   | A name or handle the rater chooses, 60 characters at most. Never an email address: one is refused. Left out to be anonymous. | no       |
+| `display` | `vga` (16 colours) or `vga256`.                                                                                              | no       |
+| `mode`    | `standard` or `enhanced`.                                                                                                    | no       |
+
+No other field is accepted. `scripts/kb/compatibility.ts` checks every file when the site builds (`validateRatings`), so the pre-commit hook, which builds the site, refuses a file that is not sound, and `npx jest test/kb` tests the rules.
+
+**To add a rating:** run the program in WinBox at a commit you name, use it as a person would (a game played through a level or more, an application's document opened, edited and saved), and compare it with Windows where you can. Find its id in `catalog/catalog.json` (the table's archive.org link ends with it). Add your rating to `catalog/ratings/<id>.json`, making the file if it is not there, run `pnpm kb`, and open a pull request.
 
 ## Publishing
 
-A page on the kb site, `/compatibility/`, built by `pnpm kb` from `catalog/catalog.json`, `catalog/results.json` and the ratings. It is a sortable, filterable table: title, publisher, year, kind, form, needs, the first pass's status, the latest rating, and the commit of each. Each row links to:
+The owner decided (2026-11-14) that the table is public on the kb site from the start. It is built: `pnpm kb` writes `/compatibility/` (`scripts/kb/compatibility.ts`) from `catalog/catalog.json`, `catalog/results.json` and `catalog/queue.json` where the first pass has written them, `catalog/ratings/`, and the matches in `catalog/wikipedia.json` and `catalog/mobygames.json`. A program the first pass has not reached yet is shown as not run; the results may be missing, empty or partial, and are read as a list, an object of `items`, an object keyed by id, or a record a line.
 
-- the archive.org item, where the program is published (never a copy of it);
-- for a failure, its signature's group in the work queue, and from there the kb page that explains the gap or the probe that measures it, once one exists ([[topic:win386]] for `enhanced`, [[topic:win32s]] for `win32s`, the function's own page for `missing`);
-- the corpus entry, if the program is in the corpus.
+Its columns: the title; the year and publisher (archive.org's, else Wikipedia's, marked so); the kind; the needs; the first pass's status, with its signature and the commit and date it ran on; the latest rating, with its commit, date and rater; and links. The links are the archive.org item, where the program is published (never a copy of it); MobyGames' page and Wikipedia's article, where matched confidently; and "why", the kb page or probe that explains a failure: the one the work queue names for its group, else the function's own page for `missing` and [[topic:win32s]] for `win32s`.
 
-The work queue is a second page, the signatures sorted by how many programs each holds.
+It is one plain table, sorted by title, that reads without a script. A short script of the page's own sorts it by any column's heading (a button, its order in `aria-sort`), and narrows it by words, kind, status and rating; a line read out to screen readers says how many rows are shown. Each link names its program for a screen reader ("Solus on archive.org"). At 2,284 rows the page is about 1 MB.
+
+The work queue is to be a second page, the signatures sorted by how many programs each holds.
 
 ## Costs
 
@@ -403,17 +482,19 @@ All ten fetched, matched archive.org's SHA-1 and unpacked; none was a Win32 or a
 6. **Coverage**: Wikipedia's list matched against the catalog by title and year, and what is missing looked for elsewhere. MobyGames if the owner wants it.
 7. **Enhanced mode and 256 colours**: programs that need them run again in that mode or display, as each becomes ready ([[guide:enhanced-mode]]).
 
-## The owner's decisions
+## The owner's decisions (2026-11-14)
 
-The owner decided (2026-11-14) the questions this page put:
+Games and applications both; the table public on the kb site from the start; everything downloaded; ratings as files in the repository; MobyGames used, with the owner's key.
 
-1. **Scope**: games and applications, together.
-2. **Publishing**: a public table on the kb site.
-3. **Download budget**: everything, the 36.4 GB.
-4. **Ratings**: files in the repository (A).
-5. **MobyGames**: used, with the owner's key, for publishers, developers and dates, and to confirm titles. That work, the site's table and the ratings' format are another piece of work's.
+## Open questions for the owner
+
+1. **MobyGames and AI.** Its API terms forbid using its site or content "in connection with" any tool that incorporates generative AI without its written consent (8.a.iv.2). Ask MobyGames for that consent, or run `mobygames.mjs` and review its matches yourself, without an AI agent?
+2. **MobyGames ids in a public repository.** The terms allow intermediate copies only, and call everything retrieved confidential (3.a.ii, 17). Is a game's id and link, committed and shown as a link, within them, or should MobyGames be asked, or the links be made at build time and never committed?
+3. **Publicity.** The terms ask for MobyGames' approval of any public statement about its API programme (18). The page says, once there are links, that they were "matched through its API"; keep that, or say only "MobyGames"?
 
 ## Not yet done
+
+MobyGames: `mobygames.mjs` has not been run, and its matches need the owner's answers below first. The ambiguous matches of `catalog/wikipedia.json` (83 games, 12 applications) are not reviewed, and the list's rows that match no entry (717 of 882) are not yet looked for elsewhere. No program is rated yet. The work queue's page is not built.
 
 - **Installers.** Enter every four seconds takes some setups through and not others: a Visual Basic setup kit's form (`win3_CLRMATCH`) takes neither Enter nor Alt+C in WinBox, and why is not followed; Microsoft's toolkit's (`win3_ffws1`) says it "Could not open the file named: 'C:\CORPUS\DISK1\_MSTEST.EX_'"; the VB setup kit's bootstrap (`win3_ANDTILES`, `win3_bogle10`) cannot start the `SETUP1.EXE` it expanded with `VerInstallFile`, which answered nought. Each is a queue entry for a read-out, not followed here. Setups that need steps of their own (a second floppy, a choice of options) have none yet. When the setup has ended, Enter reaches Program Manager and opens Main's items; the DOS functions those ask (11h, find first by FCB, among them) are left out of a setup's signature, which takes those of its 30 seconds alone.
 - **Discs.** A disc's image is mounted as D:, and a program its batch file starts from the disc is not followed: a batch file that names no Windows program in the download is `fetch`. Hard disks' images (`.img` with a partition table, or FAT32) are not mounted.
