@@ -466,7 +466,7 @@ async function install(item, folder, needs, mounts) {
         drive: probeDrive,
         mounts,
         mode: needs.mode,
-        display: 'vga',
+        display: needs.display ?? 'vga',
         sound: wantsSound(needs),
         seconds: FIRST_WAIT,
         screen: join(CACHE, 'screens', `${item.id}.setup-first.png`),
@@ -494,7 +494,7 @@ async function install(item, folder, needs, mounts) {
       drive,
       mounts,
       mode: needs.mode,
-      display: 'vga',
+      display: needs.display ?? 'vga',
       sound: wantsSound(needs),
       seconds: INSTALL_SECONDS,
       screen: join(CACHE, 'screens', `${item.id}.setup.png`),
@@ -519,7 +519,12 @@ async function install(item, folder, needs, mounts) {
     box: result.box,
     first,
     firstBox: Boolean(probe.box),
-    ...(result.dos ? { dos: result.dos } : {}),
+    /*
+     * The DOS functions not answered while the setup ran alone: once Enter
+     * has taken it through, Program Manager's and File Manager's own ask
+     * theirs as well (Enter opens Main's items when the setup has gone).
+     */
+    ...(probe.dos ? { dos: probe.dos } : {}),
   };
   writeFileSync(
     join(CACHE, 'traces', `${item.id}.setup.txt`),
@@ -561,9 +566,14 @@ async function install(item, folder, needs, mounts) {
     }
   }
 
-  /* No group: the one Windows program it put on the drive. */
+  /*
+   * No group: the one Windows program it put on the drive, outside a
+   * setup's own folders of the moment (Microsoft's toolkit's `~MSSTFQF.T`)
+   * and its own files (`_MSTEST.EXE`).
+   */
   const made = filesOf(drive)
-    .filter((file) => !/^(CORPUS|WINDOWS)[\\/]/i.test(relative(drive, file)))
+    .filter((file) => !/^(CORPUS|WINDOWS|TEMP|TMP)[\\/]/i.test(relative(drive, file)))
+    .filter((file) => !/(^|[\\/])[~_]/.test(relative(drive, file)))
     .filter((file) => /\.exe$/i.test(file) && !NOT_THE_PROGRAM.test(basename(file)))
     .filter((file) => headerOf(readFileSync(file)) === 'NE');
 
@@ -679,17 +689,29 @@ async function pass(item, commit) {
   if (needs.setup || (onImage && /\\_?(setup|install)[^\\]*\.exe$/i.test(onImage))) {
     installed = await install(item, folder, { ...needs, onImage }, mounts);
 
+    /* A setup that says it needs enhanced mode or more colours: again so. */
+    const asked = askedFor({
+      box: installed.box,
+      windows: [{ title: installed.first }, ...installed.shown.map((title) => ({ title }))],
+    });
+
+    if (!installed.program && (asked.enhanced || asked.colours)) {
+      needs.mode = asked.enhanced ? 'enhanced' : needs.mode;
+      needs.display = asked.colours ? 'vga256' : needs.display;
+      installed = await install(item, folder, { ...needs, onImage }, mounts);
+    }
+
     if (!installed.program) {
       /*
-       * Where it stopped: the box it first waited at, which Enter then
-       * answered; else what it showed last, or first.
+       * Where it stopped: the box it was left in, else the last window of
+       * its own it showed; where it showed none at the end, where it first
+       * waited (a box Enter then answered).
        */
       const where = installed.box
         ? `${installed.box.title}: ${installed.box.text}`
         : (installed.shown.filter(Boolean).slice(-1)[0] ?? '');
-      const signature = installed.firstBox
-        ? `box "${installed.first}"`
-        : `${installed.status}${installed.signature ? ` (${installed.signature})` : ''}, at "${where || installed.first}"${installed.dos ? `; DOS functions not answered: AX=${installed.dos.join(', ')}` : ''}`;
+      const how = `${installed.status}${installed.signature ? ` (${installed.signature})` : ''}`;
+      const signature = `${how}, ${where ? `at "${where}"` : `first waited at "${installed.first}"`}${installed.dos ? `; DOS functions not answered: AX=${installed.dos.join(', ')}` : ''}`;
 
       return done({
         status: 'installer',
@@ -714,7 +736,7 @@ async function pass(item, commit) {
   }
 
   let mode = needs.mode ?? 'standard';
-  let display = 'vga';
+  let display = needs.display ?? 'vga';
   let result;
   const tries = [];
 
@@ -831,6 +853,14 @@ function faultGroup(signature, program) {
 export function groupsOf(result) {
   const { status, signature = '' } = result;
 
+  /* A self-loading application's run stops where its own loader's work was not done. */
+  if (
+    result.needs?.flags?.includes('self-loading') &&
+    ['fault', 'ended', 'unsupported', 'running', 'missing'].includes(status)
+  ) {
+    return [`${status}: a self-loading application (NE flag 0800h)`];
+  }
+
   switch (status) {
     case 'idle':
       return [];
@@ -843,12 +873,12 @@ export function groupsOf(result) {
     case 'box':
       return [`box: ${signature.replace(/[A-Z]:\\[^\s"]*/gi, '<path>')}`];
     case 'installer':
-      if (signature.startsWith('box ')) {
-        return [`installer: ${signature.replace(/[A-Z]:\\[^\s"]*/gi, '<path>')}`];
-      }
-
+      /* Where it stopped is its own, but where it first waited may be a runtime's (a path made general). */
       return [
-        `installer: ${signature.replace(/, at ".*?"/, '').replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….')}`,
+        `installer: ${signature
+          .replace(/, at ".*?"(;|$)/, '$1')
+          .replace(/[A-Z]:\\[^\s"]*/gi, '<path>')
+          .replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….')}`,
       ];
     case 'fetch':
       return [

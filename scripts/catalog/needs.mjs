@@ -53,8 +53,9 @@ const VFW = ['MSVIDEO', 'AVIFILE', 'MSACM', 'AVICAP'];
 
 /**
  * QuickTime for Windows' modules: `QTW.DLL` and `QTIM.DLL`, as its 16-bit
- * runtime names them. [[inferred]] from the runtime's file names; the
- * programs themselves say which they import (`imports`).
+ * runtime's files name them. No program of the catalog with a `.MOV` was
+ * found to import one (2026-11-14): they play their movies through MCI, so
+ * it is the runtime's files, or a `.MOV`, in the download that say so.
  */
 const QUICKTIME = ['QTW', 'QTIM'];
 
@@ -316,7 +317,10 @@ export function programOf(run, files) {
         .filter((token) => token && !token.startsWith('/'));
 
       for (const [index, token] of tokens.entries()) {
-        const base = token.split(/[\\/]/).pop();
+        const base = token
+          .split(/[\\/]/)
+          .pop()
+          .replace(/^[A-Za-z]:/, '');
 
         if (/^win(\.com)?$/i.test(base) && tokens[index + 1]) {
           candidates.push(tokens[index + 1]);
@@ -327,7 +331,10 @@ export function programOf(run, files) {
     }
 
     for (const candidate of candidates.reverse()) {
-      const base = candidate.split(/[\\/]/).pop();
+      const base = candidate
+        .split(/[\\/]/)
+        .pop()
+        .replace(/^[A-Za-z]:/, '');
       const found = findFile(files, /\./.test(base) ? base : `${base}.exe`);
 
       if (found && headerOf(readFileSync(found)) !== 'DOS') {
@@ -356,14 +363,48 @@ function moduleNames(folder) {
     : [];
 }
 
-/** The installation's modules, `WINDOWS` and `SYSTEM` of the oracle's drive. */
+/**
+ * A New Executable's module name: the first entry of its resident names
+ * (at 26h in the header), as the loader knows it (`VGA.DRV` is `DISPLAY`).
+ */
+function moduleNameOf(file) {
+  try {
+    const bytes = readFileSync(file);
+    const ne = bytes.readUInt32LE(0x3c);
+
+    if (bytes.toString('latin1', ne, ne + 2) !== 'NE') {
+      return null;
+    }
+
+    const at = ne + bytes.readUInt16LE(ne + 0x26);
+
+    return bytes.toString('latin1', at + 1, at + 1 + bytes[at]).toUpperCase();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The installation's modules, `WINDOWS` and `SYSTEM` of the oracle's
+ * drive: by their files' names and by their module names.
+ */
 let installed;
 
 function installation() {
   if (!installed) {
     const windows = join(ROOT, 'oracle', 'build', 'drive-c', 'WINDOWS');
+    const modules = [windows, join(windows, 'SYSTEM')].flatMap((folder) =>
+      readdirSync(folder)
+        .filter((name) => /\.(dll|drv|exe)$/i.test(name))
+        .map((name) => moduleNameOf(join(folder, name)))
+    );
 
-    installed = new Set([...OWN, ...moduleNames(windows), ...moduleNames(join(windows, 'SYSTEM'))]);
+    installed = new Set([
+      ...OWN,
+      ...moduleNames(windows),
+      ...moduleNames(join(windows, 'SYSTEM')),
+      ...modules.filter(Boolean),
+    ]);
   }
 
   return installed;
@@ -466,6 +507,19 @@ export function needsOf(item, folder, images = []) {
 
   const flags = [];
 
+  /*
+   * A self-loading application: 0800h in the header's flags (at 0Ch), its
+   * segments loaded by its own loader in its first segment, which Windows
+   * calls in place of loading them.
+   */
+  if (needs.header === 'NE') {
+    const ne = bytes.readUInt32LE(0x3c);
+
+    if (bytes.readUInt16LE(ne + 0x0c) & 0x0800) {
+      flags.push('self-loading');
+    }
+  }
+
   if (needs.header === 'PE' || has(/^W32SYS\.DLL$/) || has(/^WIN32S/)) {
     flags.push('win32s');
   }
@@ -478,7 +532,11 @@ export function needsOf(item, folder, images = []) {
     flags.push('vfw');
   }
 
-  if (QUICKTIME.some((module) => imports.has(module)) || has(/\.MOV$/) || has(/^QTW\.DLL$/)) {
+  if (
+    QUICKTIME.some((module) => imports.has(module)) ||
+    has(/\.MOV$/) ||
+    has(/^(QTW|QTIM)\.DLL$/)
+  ) {
     flags.push('quicktime');
   }
 
