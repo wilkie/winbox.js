@@ -1,0 +1,925 @@
+#!/usr/bin/env node
+/**
+ * The compatibility catalog's first pass, after the fetch
+ * (`scripts/catalog/fetch.mjs`): each item's needs read from its files
+ * (`needs.mjs`), its setup run where it has one, its program run in WinBox
+ * for ten seconds of the survey's clock (`trace`), and the run classified.
+ * The design is `kb/guides/compatibility.md`, "The automated first pass".
+ *
+ *   cargo build --release -p winbox-win16 --example trace
+ *   node scripts/catalog/pass.mjs                # every item fetched and not yet run at this commit
+ *   node scripts/catalog/pass.mjs win3_nails     # these, again
+ *   node scripts/catalog/pass.mjs --results      # catalog/results.json, catalog/queue.json, the needs in catalog/catalog.json
+ *
+ * Each program runs inside WinBox alone, on a drive made for the run with a
+ * copy of its item's folder as `C:\CORPUS\<ID>\`, over the oracle's
+ * installation (read, never written), on the VGA's 16 colours in standard
+ * mode; in enhanced mode where the Win386 supervisor is among its files, or
+ * where its run says it needs enhanced mode; on 256 colours where its run
+ * says it needs more colours. A setup runs as Program Manager starts it
+ * (`trace --shell`), on a drive kept for its program, with Enter pressed
+ * every few seconds (`ENTER`), and the program it leaves is found from the
+ * Program Manager group it made. A disc's or a floppy's image is mounted as
+ * a drive (`trace --mount`), as the corpus mounts a disc.
+ *
+ * What is kept: each item's state in `corpus/cache/catalog/pass/<id>.json`,
+ * its screen and the end of its trace in `corpus/cache/catalog/`
+ * (gitignored); in the repository only `catalog/results.json` and
+ * `catalog/queue.json`, made by `--results`, and the needs in the catalog.
+ */
+
+import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import {
+  cpSync,
+  createReadStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { basename, dirname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { PROGRAMS, catalogItems, downloadPath, keep, stateOf } from './fetch.mjs';
+import { filesOf, headerOf, needsOf } from './needs.mjs';
+import { classify } from './sample.mjs';
+import { applyRun, clean, decode, foundOf, readFolder } from './titles.mjs';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const CACHE = join(ROOT, 'corpus', 'cache', 'catalog');
+const TRACE = join(ROOT, 'target', 'release', 'examples', 'trace');
+const DRIVES = join(CACHE, 'drives');
+const INSTALLS = join(CACHE, 'installs');
+const TITLES = join(CACHE, 'titles');
+
+const SECONDS = 10;
+const RATE = 3000;
+/** Virtual seconds a setup is given. */
+const INSTALL_SECONDS = 180;
+/** Enter pressed every so many milliseconds of a setup's run, from the first. */
+const ENTER = 4000;
+/** Runs at once. */
+const PARALLEL = Number(process.env.PASS_PARALLEL ?? 12);
+
+/** A image mounted as a drive: a disc's (as the corpus mounts one), a floppy's. */
+const DISC = /\.(iso|cue)$/i;
+const FLOPPY = /\.(img|ima|dsk|vfd)$/i;
+
+/** The Windows installation beneath the run's drive, for a display. */
+function windowsFor(display) {
+  return join(ROOT, 'oracle', 'build', display === 'vga' ? 'drive-c' : `drive-c-${display}`);
+}
+
+function sha256Of(file) {
+  return new Promise((resolve, reject) => {
+    const hash = createHash('sha256');
+
+    createReadStream(file)
+      .on('data', (chunk) => hash.update(chunk))
+      .on('end', () => resolve(hash.digest('hex')))
+      .on('error', reject);
+  });
+}
+
+/** The folder's name as DOS has it under `C:\CORPUS\`: the identifier's letters and digits, eight. */
+function shortOf(id) {
+  return (
+    id
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 8) || 'PROGRAM'
+  );
+}
+
+/** A path within a folder as DOS names it. */
+function dosPath(path) {
+  return path.split(/[\\/]/).join('\\').toUpperCase();
+}
+
+/** The marks that press Enter every `ENTER` milliseconds of a setup's run. */
+function enterMarks() {
+  const file = join(CACHE, 'enter-marks.json');
+  const stepMarks = [];
+
+  for (let time = ENTER; time < INSTALL_SECONDS * 1000; time += ENTER) {
+    for (const [kind, at] of [
+      ['down', time],
+      ['up', time + 50],
+    ]) {
+      stepMarks.push({ calls: 0, instructions: 0, time: at, kind, key: '\r', code: 'Enter' });
+    }
+  }
+
+  writeFileSync(file, JSON.stringify({ stepMarks }));
+  return file;
+}
+
+/** The lines of a run's calls kept whole: the last so many. */
+const KEPT = 2000;
+const CALL = /^[A-Z][A-Z0-9_]*\.\w+[ (]/;
+const END = /^(stopped|application fault|window|bytes|registers|DOS)/;
+
+/**
+ * One run of `trace`: its output, its errors, and the host's milliseconds.
+ * A busy program's calls run to millions of lines, so its calls are
+ * counted as they come and only the last `KEPT` kept, with a line saying a
+ * window was made or shown before them (what `classify` asks of the
+ * earlier calls); every other line is kept.
+ */
+function trace(args, timeout) {
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const child = spawn(TRACE, args, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    const tail = [];
+    const other = [];
+    let calls = 0;
+    let shown = false;
+    let partial = '';
+    let err = '';
+    let killed = false;
+    const timer = setTimeout(() => {
+      killed = true;
+      child.kill('SIGKILL');
+    }, timeout);
+    const line = (text) => {
+      if (CALL.test(text)) {
+        calls++;
+        tail.push(text);
+
+        if (tail.length > KEPT) {
+          const dropped = tail.shift();
+
+          shown ||= /^USER\.(ShowWindow|CreateWindow)/.test(dropped);
+        }
+      } else {
+        other.push(text);
+      }
+    };
+
+    child.stdout.on('data', (chunk) => {
+      const lines = (partial + chunk.toString('latin1')).split('\n');
+
+      partial = lines.pop();
+      lines.forEach(line);
+    });
+    child.stderr.on('data', (chunk) => (err = (err + chunk).slice(-4000)));
+    child.on('close', () => {
+      clearTimeout(timer);
+
+      if (partial) {
+        line(partial);
+      }
+
+      const out = [
+        ...other.filter((text) => !END.test(text)),
+        ...(shown ? ['USER.ShowWindow (before the calls kept)'] : []),
+        ...tail,
+        ...other.filter((text) => END.test(text)),
+      ].join('\n');
+
+      resolve({ out, calls, err, killed, ms: Date.now() - started });
+    });
+  });
+}
+
+/** The windows at the top a run left (`--captions`), their captions and a box's text decoded. */
+function windowsOf(out) {
+  return out
+    .split('\n')
+    .filter((line) => line.startsWith('window: '))
+    .map((line) => {
+      try {
+        return JSON.parse(line.slice(8));
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .map((window) => ({
+      ...window,
+      title: clean(decode(Buffer.from(window.title ?? '', 'latin1'))),
+      ...(window.text !== undefined
+        ? { text: clean(decode(Buffer.from(window.text, 'latin1'))) }
+        : {}),
+    }));
+}
+
+/** The box a run left shown, if one: its caption and its text. */
+function boxOf(windows) {
+  const box = windows.find((window) => window.box && window.visible);
+
+  return box ? { title: box.title, text: box.text ?? '' } : null;
+}
+
+/**
+ * A run classified (`sample.mjs`'s `classify`), its box's text the
+ * signature of `box`, a panic of the engine's a fault of WinBox's own, and
+ * a run the host stopped `running`.
+ */
+function outcome(run) {
+  const windows = windowsOf(run.out);
+  const box = boxOf(windows);
+  const { calls } = run;
+  const instructions = Number(/after (\d+) instructions/.exec(run.out)?.[1] ?? 0);
+  let result = classify(run.out);
+
+  if (result.status === 'no-output') {
+    const panic = /panicked at [^\n]*\n([^\n]*)/.exec(run.err);
+
+    result = run.killed
+      ? { status: 'running', signature: 'the host stopped it' }
+      : panic
+        ? { status: 'fault', signature: `WinBox: ${panic[1].trim().slice(0, 160)}` }
+        : { status: 'fault', signature: `WinBox: no output (${run.err.trim().split('\n').pop()})` };
+  }
+
+  if (result.status === 'box' && box) {
+    result.signature = `${box.title}: ${box.text}`.slice(0, 240);
+  }
+
+  return { ...result, box, windows, calls, instructions, ms: run.ms };
+}
+
+/** What a run's box or windows say it needs: enhanced mode, or more colours. */
+function askedFor(result) {
+  const said = [result.box?.text, result.box?.title, ...result.windows.map((w) => w.title)]
+    .filter(Boolean)
+    .join(' \n ');
+
+  return {
+    enhanced: /enhanced mode|386 enhanced|386-enhanced/i.test(said),
+    colours: /256[- ]colou?r|256 colou?r|more colou?rs|colou?r palette|SVGA|super ?vga/i.test(said),
+  };
+}
+
+/** The arguments of a run of a program. */
+function runArgs({ exe, path, drive, mounts, mode, display, seconds, screen, extra = [] }) {
+  return [
+    ...(exe ? [exe] : []),
+    '--path',
+    path,
+    '--drive',
+    drive,
+    '--windows',
+    windowsFor(display),
+    '--display',
+    display,
+    '--mode',
+    mode,
+    '--boxes',
+    '3',
+    '--seconds',
+    String(seconds + 0.1),
+    '--budget',
+    String(seconds * 2 * RATE * 1000),
+    '--captions',
+    ...mounts.flatMap(([letter, image]) => ['--mount', `${letter}:${image}`]),
+    ...(screen ? ['--screen', screen] : []),
+    ...extra,
+  ];
+}
+
+/** The images an item's downloads hold, and the drive each is mounted as. */
+function mountsOf(item, folder) {
+  const images = [
+    ...item.source.archiveOrg.downloads.map((each) => downloadPath(item.id, each.file)),
+    ...filesOf(folder),
+  ].filter((file) => existsSync(file));
+  const disc =
+    images.find((file) => /\.cue$/i.test(file)) ?? images.find((file) => DISC.test(file));
+  const floppy = images.find((file) => FLOPPY.test(file) && statSync(file).size <= 2_949_120);
+  const mounts = [];
+
+  if (disc) {
+    mounts.push(['D', disc]);
+  }
+
+  if (floppy) {
+    mounts.push(['A', floppy]);
+  }
+
+  return mounts;
+}
+
+/** A drive made for a run: the item's folder copied as `C:\CORPUS\<ID>\`. */
+function driveFor(item, folder, at) {
+  rmSync(at, { recursive: true, force: true });
+  mkdirSync(join(at, 'CORPUS'), { recursive: true });
+  cpSync(folder, join(at, 'CORPUS', shortOf(item.id)), { recursive: true });
+  return at;
+}
+
+/** A file on a drive by its DOS path, its names matched in any case. */
+function onDrive(drive, path) {
+  let at = drive;
+
+  for (const part of path
+    .replace(/^[A-Za-z]:\\?/, '')
+    .split('\\')
+    .filter(Boolean)) {
+    const found = existsSync(at)
+      ? readdirSync(at).find((name) => name.toUpperCase() === part.toUpperCase())
+      : null;
+
+    if (!found) {
+      return null;
+    }
+
+    at = join(at, found);
+  }
+
+  return at;
+}
+
+/**
+ * The items of Program Manager's group files (`.GRP`, "PMCC"): the header's
+ * item count at 20h and their offsets from 22h; each item's name at 12h and
+ * command line at 14h, offsets into the file of strings ending in nought.
+ * The format is Windows 3.1's `PROGMAN.EXE`'s, as WinBox's
+ * `progman/loaded.rs` writes it.
+ */
+export function groupItems(bytes) {
+  if (bytes.toString('latin1', 0, 4) !== 'PMCC') {
+    return [];
+  }
+
+  const string = (at) => {
+    const end = bytes.indexOf(0, at);
+
+    return bytes.toString('latin1', at, end < 0 ? bytes.length : end);
+  };
+  const count = bytes.readUInt16LE(0x20);
+  const items = [];
+
+  for (let index = 0; index < count; index++) {
+    const at = bytes.readUInt16LE(0x22 + index * 2);
+
+    if (!at || at + 0x18 > bytes.length) {
+      continue;
+    }
+
+    items.push({
+      name: string(bytes.readUInt16LE(at + 0x12)),
+      command: string(bytes.readUInt16LE(at + 0x14)),
+    });
+  }
+
+  return { group: string(bytes.readUInt16LE(0x16)), items };
+}
+
+/** An item of a group that is not a program to try: a setup, a help file, a text. */
+const NOT_THE_PROGRAM =
+  /setup|install|uninst|remove|read ?me|help|register|order|readme|\.(hlp|txt|wri|doc|bat|pif|ini)\b/i;
+
+/**
+ * A setup run as Program Manager starts it, Enter pressed every few
+ * seconds, on a drive kept for the program it leaves. The program is the
+ * first item of the groups it made that is not a setup, a help or a text;
+ * else the one Windows program it put on the drive outside `CORPUS` and
+ * `WINDOWS`. Where it leaves none, the classification is `installer`, with
+ * where it stopped.
+ */
+async function install(item, folder, needs, mounts) {
+  const drive = driveFor(item, folder, join(INSTALLS, item.id));
+  const setupPath = needs.setup
+    ? `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.setup)}`
+    : needs.onImage;
+  const run = await trace(
+    runArgs({
+      exe: needs.setup ? join(folder, needs.setup) : null,
+      path: setupPath,
+      drive,
+      mounts,
+      mode: needs.mode,
+      display: 'vga',
+      seconds: INSTALL_SECONDS,
+      screen: join(CACHE, 'screens', `${item.id}.setup.png`),
+      extra: ['--shell', '--marks', enterMarks()],
+    }),
+    15 * 60_000
+  );
+  const result = outcome(run);
+  const windows = join(drive, 'WINDOWS');
+  const groups = (existsSync(windows) ? readdirSync(windows) : [])
+    .filter((name) => /\.grp$/i.test(name))
+    .map((name) => groupItems(readFileSync(join(windows, name))))
+    .filter((group) => group.items);
+  const record = {
+    status: result.status,
+    signature: result.signature,
+    ms: run.ms,
+    groups: groups.map((group) => ({ group: group.group, items: group.items })),
+    shown: result.windows.filter((window) => window.visible).map((window) => window.title),
+    box: result.box,
+  };
+  writeFileSync(
+    join(CACHE, 'traces', `${item.id}.setup.txt`),
+    run.out.split('\n').slice(-300).join('\n')
+  );
+
+  /* The items that are not a setup's, a help's or a text's first; then a program named as a setup. */
+  const commands = groups.flatMap((group) =>
+    group.items.map((each) => ({ ...each, command: each.command.trim().split(/\s+/)[0] }))
+  );
+  const ordered = [
+    ...commands.filter(
+      (each) => !NOT_THE_PROGRAM.test(each.name) && !NOT_THE_PROGRAM.test(each.command)
+    ),
+    ...commands.filter((each) => /\.exe$/i.test(each.command) && !/uninst/i.test(each.command)),
+  ];
+
+  for (const group of [{ items: ordered }]) {
+    for (const { command } of group.items) {
+      if (!command) {
+        continue;
+      }
+
+      const path = /^[A-Za-z]:/.test(command) ? command : `C:\\${command}`;
+
+      if (/^[Cc]:/.test(path)) {
+        const file = onDrive(drive, path);
+
+        if (file && headerOf(readFileSync(file)) === 'NE') {
+          return { ...record, drive, program: { path: path.toUpperCase(), file, from: 'group' } };
+        }
+      } else if (mounts.some(([letter]) => path.toUpperCase().startsWith(`${letter}:`))) {
+        return {
+          ...record,
+          drive,
+          program: { path: path.toUpperCase(), file: null, from: 'group' },
+        };
+      }
+    }
+  }
+
+  /* No group: the one Windows program it put on the drive. */
+  const made = filesOf(drive)
+    .filter((file) => !/^(CORPUS|WINDOWS)[\\/]/i.test(relative(drive, file)))
+    .filter((file) => /\.exe$/i.test(file) && !NOT_THE_PROGRAM.test(basename(file)))
+    .filter((file) => headerOf(readFileSync(file)) === 'NE');
+
+  if (made.length === 1) {
+    return {
+      ...record,
+      drive,
+      program: { path: `C:\\${dosPath(relative(drive, made[0]))}`, file: made[0], from: 'files' },
+    };
+  }
+
+  return { ...record, drive, program: null };
+}
+
+/** An item's needs and its run, classified; its state kept. */
+async function pass(item, commit) {
+  const state = stateOf(item.id);
+  const folder = join(PROGRAMS, item.id);
+  const date = new Date().toLocaleDateString('sv');
+  const done = (result) =>
+    keep(item.id, { result: { ...result, commit, date }, needs: state.needs ?? null });
+
+  if (item.emulator && item.emulator !== 'dosbox') {
+    return done({ status: 'not-windows', signature: `archive.org runs it in ${item.emulator}` });
+  }
+
+  if (!state.fetch?.ok) {
+    return done({ status: 'fetch', signature: state.fetch?.error ?? 'not fetched' });
+  }
+
+  let needs;
+
+  try {
+    needs = needsOf(item, folder, []);
+  } catch (error) {
+    needs = { error: `reading it: ${error.message}` };
+  }
+
+  const mounts = mountsOf(item, folder);
+
+  needs.images = mounts.map(([letter, image]) => `${letter}: ${basename(image)}`);
+
+  if (mounts.length && !needs.flags?.includes('cd') && mounts.some(([letter]) => letter === 'D')) {
+    needs.flags = [...(needs.flags ?? []), 'cd'];
+  }
+
+  state.needs = needs;
+
+  /* Each download's SHA-256, as the corpus records one (`fetch.mjs --hash`). */
+  if (!state.sha256) {
+    const sha256 = {};
+
+    for (const download of item.source.archiveOrg.downloads) {
+      sha256[download.file] = await sha256Of(downloadPath(item.id, download.file));
+    }
+
+    keep(item.id, { sha256 });
+  }
+
+  /* A program not in the download: on an image, where one is mounted. */
+  let onImage = null;
+
+  if (needs.error && mounts.length && item.run && !/\.bat$/i.test(item.run)) {
+    const name = item.run
+      .trim()
+      .split(/\s+/)
+      .pop()
+      .replace(/^[A-Za-z]:\\?/, '');
+
+    onImage = `${mounts[0][0]}:\\${dosPath(name)}`;
+  }
+
+  if (needs.error && !onImage) {
+    return done({ status: 'fetch', signature: needs.error });
+  }
+
+  if (!onImage && needs.header !== 'NE') {
+    return done(
+      needs.header === 'PE'
+        ? { status: 'win32s', signature: 'PE' }
+        : { status: 'not-windows', signature: needs.header ?? 'no program' }
+    );
+  }
+
+  if (needs.libraries?.length) {
+    return done({ status: 'library', signature: needs.libraries.join(', ') });
+  }
+
+  let drive;
+  let program;
+  let installed = null;
+
+  if (needs.setup || (onImage && /\\_?(setup|install)[^\\]*\.exe$/i.test(onImage))) {
+    installed = await install(item, folder, { ...needs, onImage }, mounts);
+
+    if (!installed.program) {
+      const where = installed.box
+        ? `${installed.box.title}: ${installed.box.text}`
+        : (installed.shown.filter(Boolean).slice(-1)[0] ?? '');
+
+      return done({
+        status: 'installer',
+        signature:
+          `${installed.status}${installed.signature ? ` (${installed.signature})` : ''}${where ? `, at "${where}"` : ''}`.slice(
+            0,
+            240
+          ),
+        install: installed,
+      });
+    }
+
+    drive = installed.drive;
+    program = installed.program;
+  } else if (onImage) {
+    drive = join(DRIVES, item.id);
+    rmSync(drive, { recursive: true, force: true });
+    mkdirSync(drive, { recursive: true });
+    program = { path: onImage, file: null };
+  } else {
+    drive = driveFor(item, folder, join(DRIVES, item.id));
+    program = {
+      path: `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.program)}`,
+      file: join(folder, needs.program),
+    };
+  }
+
+  let mode = needs.mode ?? 'standard';
+  let display = 'vga';
+  let result;
+  const tries = [];
+
+  /* The run, and again in enhanced mode or on 256 colours where it says it needs them. */
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const run = await trace(
+      runArgs({
+        exe: program.file,
+        path: program.path,
+        drive,
+        mounts,
+        mode,
+        display,
+        seconds: SECONDS,
+        screen: join(CACHE, 'screens', `${item.id}.png`),
+      }),
+      3 * 60_000
+    );
+
+    result = outcome(run);
+    writeFileSync(
+      join(CACHE, 'traces', `${item.id}.txt`),
+      run.out.split('\n').slice(-300).join('\n')
+    );
+    tries.push({ mode, display, status: result.status, signature: result.signature });
+
+    const asked = askedFor(result);
+
+    if (asked.enhanced && mode === 'standard' && result.status !== 'idle') {
+      mode = 'enhanced';
+    } else if (asked.colours && display === 'vga' && result.status !== 'idle') {
+      display = 'vga256';
+    } else {
+      break;
+    }
+  }
+
+  if (!installed) {
+    rmSync(drive, { recursive: true, force: true });
+  }
+
+  needs.mode = mode;
+  needs.display = display;
+
+  /* A title from the run, for the items not titled from their program yet. */
+  if (!foundOf(item.id) && program.file && !installed) {
+    try {
+      const found = readFolder(folder, needs.program);
+
+      applyRun(found, {
+        mode,
+        stopped: result.status,
+        windows: result.windows.filter((window) => !window.box),
+      });
+      mkdirSync(TITLES, { recursive: true });
+      writeFileSync(join(TITLES, `${item.id}.json`), JSON.stringify(found, null, 1));
+    } catch {
+      /* A title is not the pass's to fail on. */
+    }
+  }
+
+  return keep(item.id, {
+    needs,
+    result: {
+      status: result.status,
+      signature: result.signature,
+      mode,
+      display,
+      calls: result.calls,
+      instructions: result.instructions,
+      ms: result.ms,
+      ...(result.box ? { box: result.box } : {}),
+      ...(tries.length > 1 ? { tries } : {}),
+      ...(installed
+        ? {
+            install: {
+              program: program.path,
+              from: program.from,
+              status: installed.status,
+              ms: installed.ms,
+            },
+          }
+        : {}),
+      commit,
+      date,
+    },
+  });
+}
+
+/* --- Results ---------------------------------------------------------------- */
+
+/** A fault's group: its kind and the module it was in, without the address. */
+function faultGroup(signature) {
+  const match = /caused (.+?) in module (\S*?)(?: at |[0-9A-F]{4}:)/.exec(signature);
+
+  return match
+    ? `${match[1]} in ${match[2] || 'a module'}`
+    : signature.replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….');
+}
+
+/** The work queue's groups an item's result belongs to. */
+export function groupsOf(result) {
+  const { status, signature = '' } = result;
+
+  switch (status) {
+    case 'idle':
+      return [];
+    case 'missing':
+      return [`missing ${signature}`];
+    case 'library':
+      return signature.split(', ').map((module) => `library ${module}`);
+    case 'fault':
+      return [`fault: ${faultGroup(signature)}`];
+    case 'box':
+      return [`box: ${signature.replace(/[A-Z]:\\[^\s"]*/gi, '<path>')}`];
+    case 'installer':
+      return [
+        `installer: ${signature.replace(/, at ".*$/, '').replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….')}`,
+      ];
+    case 'fetch':
+      return [
+        `fetch: ${signature
+          .replace(/^.*?: (archive\.org answered \d+)/, '$1')
+          .replace(/^\S+ not in the download$/, 'program not in the download')
+          .replace(
+            /^\S+ names no Windows program in the download$/,
+            'its batch file names no Windows program in the download'
+          )}`,
+      ];
+    default:
+      return [`${status}: ${signature.replace(/[0-9a-f]{4}:[0-9a-f]{4}/gi, '….')}`];
+  }
+}
+
+function writeResults(items) {
+  const results = [];
+
+  for (const item of items) {
+    const state = stateOf(item.id);
+
+    if (!state.result) {
+      continue;
+    }
+
+    const { needs } = state;
+
+    results.push({
+      id: item.id,
+      kind: item.kind,
+      title: item.title,
+      titleSource: item.titleSource,
+      status: state.result.status,
+      signature: state.result.signature ?? '',
+      ...(state.result.box ? { box: state.result.box } : {}),
+      needs: needs
+        ? {
+            program: needs.program ?? null,
+            header: needs.header ?? null,
+            mode: needs.mode ?? null,
+            display: needs.display ?? null,
+            flags: needs.flags ?? [],
+            imports: needs.imports ?? [],
+            libraries: needs.libraries ?? [],
+            setup: needs.setup ?? null,
+            installer: needs.installer ?? null,
+            images: needs.images ?? [],
+          }
+        : null,
+      ...(state.result.install ? { install: state.result.install } : {}),
+      commit: state.result.commit,
+      date: state.result.date,
+    });
+  }
+
+  const lines = results.map((result) => `  ${JSON.stringify(result)}`);
+
+  writeFileSync(
+    join(ROOT, 'catalog', 'results.json'),
+    `{\n "about": "The compatibility catalog's first pass: each item's status, signature and needs, the WinBox commit it ran on and the date (kb/guides/compatibility.md). Made by scripts/catalog/pass.mjs --results.",\n "items": [\n${lines.join(',\n')}\n ]\n}\n`
+  );
+
+  const groups = new Map();
+
+  for (const result of results) {
+    for (const group of groupsOf(result)) {
+      if (!groups.has(group)) {
+        groups.set(group, {
+          signature: group,
+          status: result.status,
+          count: 0,
+          games: 0,
+          items: [],
+        });
+      }
+
+      const entry = groups.get(group);
+
+      entry.count++;
+      entry.games += result.kind === 'game' ? 1 : 0;
+      entry.items.push(result.id);
+    }
+  }
+
+  const queue = [...groups.values()].sort(
+    (a, b) => b.count - a.count || a.signature.localeCompare(b.signature)
+  );
+
+  writeFileSync(
+    join(ROOT, 'catalog', 'queue.json'),
+    `{\n "about": "The work queue: the first pass's failures grouped by signature, most programs first (kb/guides/compatibility.md). Made by scripts/catalog/pass.mjs --results from catalog/results.json; never edited by hand.",\n "groups": [\n${queue.map((group) => `  ${JSON.stringify(group)}`).join(',\n')}\n ]\n}\n`
+  );
+
+  /* The needs into the catalog. */
+  const catalog = JSON.parse(readFileSync(join(ROOT, 'catalog', 'catalog.json'), 'utf8'));
+  const byId = new Map(results.map((result) => [result.id, result]));
+
+  for (const entry of catalog.items) {
+    const result = byId.get(entry.id);
+
+    if (result?.needs) {
+      const { program, header, mode, display, flags, libraries, setup, installer } = result.needs;
+
+      entry.needs = { program, header, mode, display, flags, libraries, setup, installer };
+    }
+
+    const sha256 = stateOf(entry.id).sha256;
+
+    if (sha256) {
+      for (const download of entry.source.archiveOrg.downloads) {
+        download.sha256 = sha256[download.file] ?? download.sha256;
+      }
+
+      entry.sha256 = sha256[entry.source.archiveOrg.downloads[0]?.file] ?? null;
+    }
+  }
+
+  return { results, queue, catalog };
+}
+
+function counts(results) {
+  const table = {};
+
+  for (const result of results) {
+    table[result.status] ??= { game: 0, application: 0 };
+    table[result.status][result.kind]++;
+  }
+
+  return table;
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const items = catalogItems();
+
+  if (args.includes('--results')) {
+    const { results, queue, catalog } = writeResults(items);
+    const { write } = await import('./catalog.mjs');
+
+    write(catalog.items);
+    console.log(counts(results));
+    console.log(
+      queue
+        .slice(0, 30)
+        .map((group) => `${group.count}\t${group.signature}`)
+        .join('\n')
+    );
+    return;
+  }
+
+  if (!existsSync(TRACE)) {
+    throw new Error(`${relative(ROOT, TRACE)} is not built`);
+  }
+
+  /* The engine's commit: the last that changed what runs the programs. */
+  const commit = execFileSync(
+    'git',
+    ['log', '-1', '--format=%h', '--abbrev=10', '--', 'crates', 'Cargo.lock'],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+    }
+  ).trim();
+  const ids = args.filter((arg) => !arg.startsWith('--'));
+  const chosen = ids.length
+    ? items.filter((item) => ids.includes(item.id))
+    : items.filter((item) => {
+        const state = stateOf(item.id);
+
+        return state.fetch && state.result?.commit !== commit;
+      });
+
+  mkdirSync(join(CACHE, 'traces'), { recursive: true });
+  mkdirSync(join(CACHE, 'screens'), { recursive: true });
+  mkdirSync(DRIVES, { recursive: true });
+  console.error(`${chosen.length} items to run at ${commit}`);
+
+  const started = Date.now();
+  let done = 0;
+  const worker = async () => {
+    while (chosen.length) {
+      const item = chosen.shift();
+      let state;
+
+      try {
+        state = await pass(item, commit);
+      } catch (error) {
+        state = keep(item.id, {
+          result: {
+            status: 'fault',
+            signature: `the pass: ${error.message}`.slice(0, 200),
+            commit,
+            date: new Date().toLocaleDateString('sv'),
+          },
+        });
+      }
+
+      done++;
+      console.log(
+        `${item.id}\t${state.result.status}\t${state.result.signature ?? ''}\t${state.result.ms ?? ''}`
+      );
+
+      if (done % 50 === 0) {
+        console.error(
+          `${done} run, ${chosen.length} left, ${Math.round((Date.now() - started) / 1000)} s`
+        );
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: PARALLEL }, worker));
+  console.error(`done: ${done} in ${Math.round((Date.now() - started) / 1000)} s`);
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  await main();
+}

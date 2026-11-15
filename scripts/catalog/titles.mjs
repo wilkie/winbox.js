@@ -911,7 +911,7 @@ export function captionTitle(caption) {
 }
 
 /** A run's windows kept in what was found, and its caption among the candidates. */
-function applyRun(found, run) {
+export function applyRun(found, run) {
   found.run = run;
 
   const caption = captionOf(run.windows);

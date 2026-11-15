@@ -265,7 +265,7 @@ function print(summary) {
 }
 
 /** The catalog written: an entry a line, sorted by identifier. */
-function write(catalog) {
+export function write(catalog) {
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(
     OUT,
