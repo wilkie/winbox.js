@@ -30,6 +30,13 @@ import {
   readProbes,
   readReport,
 } from './evidence.js';
+import {
+  RATING_MEANING,
+  RATINGS,
+  readCompatibility,
+  renderTable,
+  STATUS_LABEL as COMPATIBILITY_STATUS,
+} from './compatibility.js';
 import { collectExports } from './exports.js';
 import { type Status, VERSIONS } from './frontmatter.js';
 import { readSignatures } from './signatures.js';
@@ -286,7 +293,7 @@ mermaid.initialize({ startOnLoad: true, theme: matchMedia('(prefers-color-scheme
 <body>
 <header class="site">
 <a class="home" href="${up}index.html">Windows API Knowledge Base</a>
-<nav aria-label="Sections" class="sections"><a href="${up}topics/index.html">Topics</a> <a href="${up}formats/index.html">Formats</a> <a href="${up}evidence/index.html">Evidence</a> <a href="${up}guides/index.html">Guides</a> <a href="${up}search/index.html">Search</a></nav>
+<nav aria-label="Sections" class="sections"><a href="${up}topics/index.html">Topics</a> <a href="${up}formats/index.html">Formats</a> <a href="${up}evidence/index.html">Evidence</a> <a href="${up}guides/index.html">Guides</a> <a href="${up}compatibility/index.html">Compatibility</a> <a href="${up}search/index.html">Search</a></nav>
 <nav aria-label="Breadcrumb">${trail}</nav>
 </header>
 <main${kind ? ' data-pagefind-body' : ''}>
@@ -699,6 +706,150 @@ function renderSearch() {
   );
 }
 
+/** A commit's page on the repository's host, from the source link's form; null where it is not known. */
+function commitUrl(sha: string) {
+  const match = SOURCE_URL.match(/^(https:\/\/[^/]+\/.+?)\/(-\/)?blob\/[^/]+$/);
+  return match ? `${match[1]}/${match[2] ?? ''}commit/${sha}` : null;
+}
+
+/** The table's own script: sorting by a column's heading, and narrowing by the form's fields. */
+const COMPATIBILITY_SCRIPT = `(() => {
+  const table = document.querySelector('table.compat');
+  const body = table.tBodies[0];
+  const form = document.querySelector('form.filters');
+  const shown = document.getElementById('shown');
+  const rows = [...body.rows];
+  const total = rows.length;
+  form.hidden = false;
+  const filter = () => {
+    const q = form.q.value.trim().toLowerCase();
+    const kind = form.kind.value, status = form.status.value, rating = form.rating.value;
+    let count = 0;
+    for (const row of rows) {
+      const d = row.dataset;
+      const show = (!q || d.title.includes(q) || d.publisher.includes(q) || d.needs.includes(q)) &&
+        (!kind || d.kind === kind) && (!status || d.status === status) && (!rating || d.rating === rating);
+      row.hidden = !show;
+      count += show;
+    }
+    shown.textContent = count.toLocaleString('en') + ' of ' + total.toLocaleString('en') + ' programs shown.';
+  };
+  form.addEventListener('input', filter);
+  form.addEventListener('change', filter);
+  for (const th of table.tHead.querySelectorAll('th[data-key]')) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = th.textContent;
+    th.replaceChildren(button);
+    button.addEventListener('click', () => {
+      const key = th.dataset.key;
+      const order = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+      for (const other of table.tHead.querySelectorAll('th[aria-sort]')) other.removeAttribute('aria-sort');
+      th.setAttribute('aria-sort', order);
+      const sign = order === 'ascending' ? 1 : -1;
+      const numeric = key === 'year' || key === 'rating';
+      const value = (row) => (numeric ? Number(row.dataset[key]) : row.dataset[key]);
+      /* A row with nothing in the column (no year, no rating, not run) goes last either way. */
+      const blank = (row) => row.dataset[key] === '' || (key === 'rating' && row.dataset[key] === '9') || (key === 'status' && row.dataset[key] === 'not run');
+      rows.sort((a, b) => {
+        if (blank(a) !== blank(b)) return blank(a) ? 1 : -1;
+        const x = value(a), y = value(b);
+        const c = numeric ? (x === y ? 0 : x < y ? -1 : 1) : x.localeCompare(y);
+        return c ? c * sign : a.dataset.title.localeCompare(b.dataset.title);
+      });
+      body.append(...rows);
+    });
+  }
+})();`;
+
+/**
+ * The compatibility table (`compatibility.ts`): every program of the catalog,
+ * the first pass's status, people's ratings and the links. It is a plain
+ * table that reads without a script; the script sorts it by a column and
+ * narrows it by kind, status, rating and words, and says how many rows show.
+ */
+function renderCompatibility() {
+  const data = readCompatibility(ROOT);
+
+  if (!data) {
+    return null;
+  }
+
+  const { rows, counts, statuses, total } = renderTable(data, {
+    targets: site.targets,
+    commitUrl,
+    up: '../',
+  });
+
+  const number = (n: number) => n.toLocaleString('en');
+  const option = (value: string, label: string) =>
+    `<option value="${escape(value)}">${escape(label)}</option>`;
+  const statusOptions = [...statuses.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([status, count]) =>
+      option(status, `${COMPATIBILITY_STATUS[status] ?? status} (${number(count)})`)
+    )
+    .join('');
+  const columns: [string | null, string][] = [
+    ['title', 'Title'],
+    ['year', 'Year'],
+    ['publisher', 'Publisher'],
+    ['kind', 'Kind'],
+    ['needs', 'Needs'],
+    ['status', 'First pass'],
+    ['rating', 'Rating'],
+    [null, 'Links'],
+  ];
+
+  const guide = site.targets.guides.get('compatibility');
+  const guideLink = (anchor: string, text: string) =>
+    guide ? `<a href="../${guide.url}${anchor}">${text}</a>` : text;
+
+  return layout(
+    1,
+    'Compatibility',
+    [
+      ['Modules', 'index.html'],
+      ['Compatibility', null],
+    ],
+    `<h1>Compatibility</h1>
+<p class="lead">How the Windows 3.x programs of archive.org's software library run on WinBox: what an automated first pass found when it ran each one, and what people found when they used it.</p>
+<p>${number(total)} programs: ${number(counts.run)} run by the first pass so far, ${number(counts.rated)} rated by people. The first pass's <strong>starts</strong> means a program reached the point where a person would begin to use it, not that it works; a rating says that. How the table is made, what each status means, and how to add a rating: ${guideLink('', 'a compatibility database')}.</p>
+<form class="filters" role="search" aria-label="Filter the table" hidden>
+<label>Words <input type="search" name="q" placeholder="Title, publisher or need"></label>
+<label>Kind <select name="kind"><option value="">all</option>${option('game', 'games')}${option('application', 'applications')}</select></label>
+<label>First pass <select name="status"><option value="">all</option>${statusOptions}</select></label>
+<label>Rating <select name="rating"><option value="">all</option>${RATINGS.map((rating, at) => option(String(at), rating)).join('')}${option('9', 'not rated')}</select></label>
+</form>
+<p class="note" id="shown" role="status" aria-live="polite">${number(total)} programs.</p>
+<table class="compat">
+<caption>Programs by title. With JavaScript, each column's heading sorts by it.</caption>
+<thead><tr>${columns
+      .map(([key, label]) =>
+        key
+          ? `<th scope="col" data-key="${key}"${key === 'title' ? ' aria-sort="ascending"' : ''}>${label}</th>`
+          : `<th scope="col">${label}</th>`
+      )
+      .join('')}</tr></thead>
+<tbody>
+${rows.join('\n')}
+</tbody>
+</table>
+<h2>Ratings</h2>
+<ul>${RATINGS.map((rating) => `<li><strong>${rating}</strong>: ${escape(RATING_MEANING[rating])}.</li>`).join('')}</ul>
+<p>A rating is made on a WinBox commit, shown beside it; one made on an older commit is a reason to look again, not a result. Ratings are files in the repository, <code>catalog/ratings/&lt;id&gt;.json</code>, added by pull request: the guide's section Ratings says how to add one, ${guideLink('', 'a compatibility database')}.</p>
+<h2>Sources</h2>
+<p>The programs are archive.org's, from its Software Library: Windows 3.x. Each row links to the item where the program is published; this site hosts none of them. A year or publisher marked <abbr class="from" title="from Wikipedia">W</abbr> is from Wikipedia's <a href="${escape(data.wikipediaSource?.url ?? 'https://en.wikipedia.org/wiki/List_of_Windows_3.x_games')}">List of Windows 3.x games</a> (CC BY-SA 4.0), where archive.org gives none, and a Wikipedia link goes to the game's article there. ${
+      data.mobygames.size
+        ? `A MobyGames link goes to the game's page on <a href="https://www.mobygames.com">MobyGames</a>, matched through its API${data.mobygamesAsked ? ` on ${escape(data.mobygamesAsked.slice(0, 10))}` : ''}; only the link is kept here, none of MobyGames' data.`
+        : 'MobyGames links are not shown yet: see the guide.'
+    }</p>
+<script>
+${COMPATIBILITY_SCRIPT}
+</script>`
+  );
+}
+
 const STYLE = `:root {
   --bg: #ffffff; --fg: #1b1b1f; --muted: #5b5b66; --line: #d9d9e0; --link: #1f5fbf;
   --exact: #1d6b3a; --partial: #8a5a00; --stub: #6b6b75; --unrecorded: #1f5fbf; --unsurveyed: #9a9aa5;
@@ -748,6 +899,22 @@ main pre { background: var(--line); padding: 0.75rem 1rem; border-radius: 6px; o
 main pre.mermaid { background: none; padding: 0; }
 main blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--line); color: var(--muted); }
 ul.articles { padding-left: 1.2rem; } ul.articles li { margin: 0.3rem 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 1rem 0 0.25rem; }
+.filters label { display: flex; flex-direction: column; font-size: 0.85rem; color: var(--muted); gap: 0.15rem; }
+.filters input, .filters select { font: inherit; font-size: 0.95rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 0.25rem 0.4rem; }
+table.compat { font-size: 0.9rem; }
+table.compat th[scope="row"] { font-weight: 600; }
+table.compat thead button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+table.compat th[aria-sort="ascending"] button::after { content: " \\2191"; }
+table.compat th[aria-sort="descending"] button::after { content: " \\2193"; }
+table.compat .sig { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.8rem; overflow-wrap: anywhere; }
+table.compat td.links { white-space: nowrap; }
+table.compat td.links a + a { margin-left: 0.4rem; }
+.status, .rating { font-weight: 600; }
+.status.s-idle, .rating.r-0, .rating.r-1 { color: var(--exact); }
+.rating.r-2 { color: var(--partial); }
+.nowrap { white-space: nowrap; }
+abbr.from { font-size: 0.7rem; vertical-align: super; text-decoration: none; color: var(--muted); margin-left: 0.1rem; }
 footer.site { margin-top: 3rem; padding-bottom: 2rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); }
 `;
 
@@ -989,6 +1156,12 @@ export function build() {
   }
 
   write(join(OUT, 'search', 'index.html'), renderSearch());
+
+  const compatibility = renderCompatibility();
+
+  if (compatibility) {
+    write(join(OUT, 'compatibility', 'index.html'), compatibility);
+  }
   write(join(OUT, 'evidence', 'index.html'), renderEvidence(probes));
 
   for (const probe of probes) {
