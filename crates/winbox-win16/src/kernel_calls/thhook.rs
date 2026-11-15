@@ -39,7 +39,7 @@ const TABLE_LENGTH: u16 = 0x8000;
 /// (`be5b`-`be82`). The block runs to the table's end (`be9e`, `beb3`,
 /// DPMI 0501h). **Recorded** by `seltab` on the oracle's machine: 1D7C0h
 /// in standard mode, 728E0h in enhanced mode, the block's last byte
-/// 257BFh and 7A8DFh -- largest blocks of EBA000h and 3943000h as
+/// 257BFh and 7A8DFh -- largest blocks of `EBA000h` and `3943000h` as
 /// Windows started.
 const TABLE_START_STANDARD: u32 = 0x1_d7c0;
 const TABLE_START_ENHANCED: u32 = 0x7_28e0;
