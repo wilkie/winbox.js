@@ -814,7 +814,7 @@ function renderCompatibility() {
     ],
     `<h1>Compatibility</h1>
 <p class="lead">How the Windows 3.x programs of archive.org's software library run on WinBox: what an automated first pass found when it ran each one, and what people found when they used it.</p>
-<p>${number(total)} programs: ${number(counts.run)} run by the first pass so far, ${number(counts.rated)} rated by people. The first pass's <strong>starts</strong> means a program reached the point where a person would begin to use it, not that it works; a rating says that. How the table is made, what each status means, and how to add a rating: ${guideLink('', 'a compatibility database')}.</p>
+<p>${number(total)} programs: ${number(counts.run)} run by the first pass so far, ${number(counts.rated)} rated by people. The first pass's <strong>starts</strong> means a program reached the point where a person would begin to use it, not that it works; a rating says that. A program that imports a runtime Windows 3.1 did not bring, and does not bring it either (Visual Basic's, Klik &amp; Play's, Borland's controls), is run with the runtime in <code>WINDOWS\\SYSTEM</code>, as a copy of Windows that had installed it would have it: its status says so (<em>with VBRUN300</em>). How the table is made, what each status means, where the runtimes come from, and how to add a rating: ${guideLink('', 'a compatibility database')}.</p>
 <form class="filters" role="search" aria-label="Filter the table" hidden>
 <label>Words <input type="search" name="q" placeholder="Title, publisher or need"></label>
 <label>Kind <select name="kind"><option value="">all</option>${option('game', 'games')}${option('application', 'applications')}</select></label>

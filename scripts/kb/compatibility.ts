@@ -52,6 +52,8 @@ export interface Result {
   status: string;
   signature?: string;
   needs?: string[] | Record<string, unknown>;
+  /** The runtimes the first pass placed in `WINDOWS\SYSTEM` for it (`catalog/runtimes.json`). */
+  runtimes?: string[];
   commit?: string;
   date?: string;
   /** A reference to the kb page or probe that explains it: `topic:win386`, `fn:USER.Foo`, `probe:name`. */
@@ -461,8 +463,10 @@ export function renderTable(data: Compatibility, options: TableOptions) {
     const explanation = result ? explanationOf(result, targets) : undefined;
     const statusCell = result
       ? `<span class="status s-${escape(status)}">${escape(STATUS_LABEL[status] ?? status)}</span>${
-          result.signature ? `<br><span class="sig">${escape(result.signature)}</span>` : ''
-        }${result.commit ? `<br><span class="note">on ${commit(result.commit)}${result.date ? `, ${escape(result.date)}` : ''}</span>` : ''}`
+          result.runtimes?.length
+            ? ` <span class="note">with ${escape(result.runtimes.join(' and '))}</span>`
+            : ''
+        }${result.signature ? `<br><span class="sig">${escape(result.signature)}</span>` : ''}${result.commit ? `<br><span class="note">on ${commit(result.commit)}${result.date ? `, ${escape(result.date)}` : ''}</span>` : ''}`
       : '<span class="note nowrap">not run yet</span>';
 
     const ratingCell = rating

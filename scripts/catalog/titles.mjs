@@ -201,7 +201,7 @@ export function namesOf(bytes) {
  * and for each resource its offset and length in units of the shift, its
  * flags, its number and four reserved bytes.
  */
-function resourceOf(bytes, type) {
+export function resourceOf(bytes, type) {
   const ne = neAt(bytes);
 
   if (ne === null || bytes.readUInt16LE(ne + 0x24) === bytes.readUInt16LE(ne + 0x26)) {
@@ -240,7 +240,7 @@ function resourceOf(bytes, type) {
  * its key (a string ended by a nought), the value at the next four-byte
  * boundary, and its children at the next one after, to its end.
  */
-function blockOf(data, at) {
+export function blockOf(data, at) {
   const length = data.readUInt16LE(at);
   const valueLength = data.readUInt16LE(at + 2);
   const keyEnd = data.indexOf(0, at + 4);

@@ -18,6 +18,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { runtimeBytes, runtimesFor } from './runtimes.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /** The Win386 supervisor's refusal in standard mode (`kb/topics/win386.md`). */
@@ -489,6 +491,25 @@ export function needsOf(item, folder, images = []) {
     (module) => !installation().has(module) && !ownFolder.has(module) && !everywhere.has(module)
   );
 
+  /*
+   * The runtimes the pass places for what it lacks (`runtimes.mjs`), as an
+   * installed Windows would have them in `SYSTEM`; their own imports and
+   * functions are the program's as well (`KNPG` imports `MMSYSTEM`).
+   */
+  const placed = runtimesFor(lacking, new Set([...ownFolder, ...everywhere]));
+
+  for (const module of placed.runtimes) {
+    const found = neImports(runtimeBytes(module));
+
+    for (const each of found?.modules ?? []) {
+      imports.add(each);
+    }
+
+    for (const each of found?.functions ?? []) {
+      functions.add(each);
+    }
+  }
+
   needs.imports = [...imports].sort();
 
   /* Win386: the supervisor's string in the program or a library of its folder. */
@@ -567,7 +588,8 @@ export function needsOf(item, folder, images = []) {
   needs.unlinked = unlinkedOf([...functions]).sort();
 
   needs.flags = flags;
-  needs.libraries = lacking.sort();
+  needs.libraries = placed.libraries;
+  needs.runtimes = placed.runtimes;
 
   const setups = files.filter((file) => SETUP.test(basename(file)));
 
