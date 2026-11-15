@@ -88,7 +88,9 @@ impl System {
     /// A module's relocations applied, segment by segment, each segment's
     /// in the order of their offsets.
     pub fn link(&mut self, module: usize) {
-        for number in 0..self.modules[module].executable.segments.len() {
+        // A self-loading program's first segment alone, the one KERNEL
+        // loads: its own loader applies the rest's (`self_load.rs`).
+        for number in 0..self.modules[module].segments.len() {
             let at = self.modules[module].segments[number];
             let mut relocations = self.modules[module].executable.segments[number]
                 .relocations
@@ -230,6 +232,23 @@ impl System {
         let stubs = self.stubs(kept);
 
         Some(Value::Place(stubs, STEP * (ordinal + 1)))
+    }
+
+    /// Where a module's entry is as the linker links an import of it by
+    /// ordinal: a selector and an offset, or `FFFFh` and KERNEL's number;
+    /// none where the module has no such entry.
+    pub(crate) fn linked_address(&mut self, from: &str, ordinal: u16) -> Option<u32> {
+        let target = Target::ImportOrdinal {
+            module: from.to_string(),
+            ordinal,
+        };
+
+        Some(match self.bound(from, &target)? {
+            Value::Place(segment, offset) => {
+                u32::from(segment_selector(segment)) << 16 | u32::from(offset)
+            }
+            Value::Number(number) => u32::from(CONSTANT_SEGMENT) << 16 | u32::from(number),
+        })
     }
 
     /// KERNEL's `UndefDynlink`, its ordinal 120, among its stubs.

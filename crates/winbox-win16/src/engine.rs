@@ -109,7 +109,7 @@ impl Engine {
     pub fn run(&self, budget: u64, seconds: f64) -> Stop {
         self.limit(budget, seconds);
 
-        let mut tasks = Tasks::new(Box::pin(self.run_until_returned()));
+        let mut tasks = Tasks::new(Box::pin(self.run_task()));
 
         loop {
             match self.round(&mut tasks, &self) {
@@ -143,7 +143,7 @@ impl Engine {
 
         EngineRun {
             kept: Kept(Rc::clone(self)),
-            tasks: Tasks::new(Box::pin(async move { engine.run_until_returned().await })),
+            tasks: Tasks::new(Box::pin(async move { engine.run_task().await })),
             end,
             until,
             stopped: None,
@@ -283,6 +283,13 @@ impl Engine {
     /// A task started, run once it is granted the processor.
     async fn task_run(&self, slot: usize) -> Result<(), Stop> {
         Held(self, slot).await;
+        self.run_task().await
+    }
+
+    /// A task run from its start: a self-loading program's own loader
+    /// booted first (`self_load.rs`).
+    async fn run_task(&self) -> Result<(), Stop> {
+        crate::self_load::boot(self).await?;
         self.run_until_returned().await
     }
 
@@ -306,6 +313,9 @@ impl Engine {
                 Event::Returned => return Ok(()),
                 Event::Interrupt(interrupt) => self.deliver_interrupt(interrupt).await?,
                 Event::Fault(vector) => self.application_fault(vector).await?,
+                Event::NotPresent(selector) => {
+                    crate::self_load::demand_load(self, selector).await?;
+                }
                 Event::Floating(code) => crate::win87em::report(self, code).await?,
                 Event::Yield => GiveBack(self, false).await,
                 Event::Stop(stop) => return Err(stop),

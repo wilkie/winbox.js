@@ -30,6 +30,10 @@ pub(crate) enum Event {
     /// A fault KERNEL takes the program through its boxes for
     /// (`fault.rs`).
     Fault(u8),
+    /// A segment of a self-loading program reached while it is not loaded:
+    /// its selector, which KERNEL's handler of the fault has the program's
+    /// loader load before the instruction runs again (`self_load.rs`).
+    NotPresent(u16),
     /// An exception WIN87EM's emulator reports, its code for `INT 3Eh`'s
     /// procedure (`win87em.rs`).
     Floating(u16),
@@ -233,6 +237,11 @@ impl System {
                 // instruction then runs again.
                 #[cfg(feature = "audit")]
                 Exit::Host if self.audit_missed() => {}
+                // A self-loading program's segment not loaded yet: KERNEL's
+                // handler of the fault loads it (`self_load.rs`).
+                other @ (Exit::Fault(_) | Exit::Host) if self.segment_to_load(other).is_some() => {
+                    return self.processor_stop(other);
+                }
                 Exit::Host => match (self.cpu.bus.asked(), self.gdi_data) {
                     (Some(at), Some(start)) if at.wrapping_sub(start) < 0x10000 => {
                         let byte = self.gdi_heap_read(at - start);

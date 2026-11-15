@@ -155,7 +155,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "FreeLibrary" | "FreeModule" => Implementation::Async(modules_kernel::free_library),
         _ => {
             return crate::atoms::kernel_implementation(name)
-                .or_else(|| crate::kernel_calls::implementation(name));
+                .or_else(|| crate::kernel_calls::implementation(name))
+                .or_else(|| crate::self_load::implementation(name));
         }
     })
 }

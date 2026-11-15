@@ -63,6 +63,9 @@ pub struct Task {
     pub global_notify: u32,
     /// Its message queue.
     pub queue: crate::queue::Queue,
+    /// Whether its program's own loader is yet to load its segments, before
+    /// it runs (`self_load.rs`).
+    pub booting: bool,
 }
 
 impl System {
@@ -89,13 +92,6 @@ impl System {
         previous: u16,
         strings: Option<Vec<u8>>,
     ) -> Result<(), Exit> {
-        let module = &self.modules[program];
-        let header = module.executable.header.clone();
-        let data = module.data().expect("a program's data segment");
-        let top = module.data_top();
-        let place = |segment: u16| module.translate(segment).map_or(0, segment_selector);
-        let (ss, cs) = (place(header.stack_ss), place(header.entry_cs));
-
         // The current directory: Windows', where Windows was started, when
         // the first program starts (`tasks2`). Each after starts in its
         // starter's, as it is when the task is made (`add_task`), and has
@@ -158,10 +154,7 @@ impl System {
         self.descriptors
             .map(&mut self.cpu.bus, environment, &segment, false);
 
-        let stack_size = u32::from(header.initial_stack_size);
         let memory = &mut self.cpu.bus;
-
-        memory.zero(((data as u32) << 16) + top, stack_size as usize);
 
         // The prefix: `INT 20h`, the environment's selector, and the
         // command line -- its length, its characters and a nought, with no
@@ -177,18 +170,13 @@ impl System {
         memory.write(prefix + 0x81, tail);
         memory.write8(prefix + 0x81 + tail.len() as u32, 0);
 
-        self.cpu.load_segment(DS, segment_selector(data))?;
-        self.cpu.load_segment(SS, ss)?;
-        self.cpu.load_segment(CS, cs)?;
-        self.cpu
-            .load_segment(ES, segment_selector(program_segment))?;
-        self.cpu.regs[SP] = (top + stack_size) as u16;
-        self.cpu.ip = u32::from(header.entry_ip);
-        self.cpu.regs[BX] = header.initial_stack_size;
-        self.cpu.regs[CX] = header.initial_heap_size;
-        // hModule.
-        self.cpu.regs[DI] = 0x88;
-        self.cpu.regs[SI] = 0;
+        // A self-loading program's segments are its own loader's to load
+        // first (`self_load.rs`): its registers are set once they are.
+        let booting = self.modules[program].self_loading();
+
+        if !booting {
+            self.entry_registers(program, program_segment)?;
+        }
 
         if self.scheduler.slots.is_empty() {
             self.first_task(self.task_handle, program);
@@ -204,7 +192,43 @@ impl System {
             transfer_area: None,
             global_notify: 0,
             queue: crate::queue::Queue::default(),
+            booting,
         });
+        Ok(())
+    }
+
+    /// The registers a program starts with at its entry point, its stack
+    /// noughts: DS its data segment, SS:SP the stack above its data, CS:IP
+    /// its entry point, ES its prefix, BX and CX its stack's and heap's
+    /// sizes.
+    pub(crate) fn entry_registers(
+        &mut self,
+        program: usize,
+        program_segment: usize,
+    ) -> Result<(), Exit> {
+        let module = &self.modules[program];
+        let header = module.executable.header.clone();
+        let data = module.data().expect("a program's data segment");
+        let top = module.data_top();
+        let place = |segment: u16| module.translate(segment).map_or(0, segment_selector);
+        let (ss, cs) = (place(header.stack_ss), place(header.entry_cs));
+        let stack_size = u32::from(header.initial_stack_size);
+
+        self.cpu
+            .bus
+            .zero(((data as u32) << 16) + top, stack_size as usize);
+        self.cpu.load_segment(DS, segment_selector(data))?;
+        self.cpu.load_segment(SS, ss)?;
+        self.cpu.load_segment(CS, cs)?;
+        self.cpu
+            .load_segment(ES, segment_selector(program_segment))?;
+        self.cpu.regs[SP] = (top + stack_size) as u16;
+        self.cpu.ip = u32::from(header.entry_ip);
+        self.cpu.regs[BX] = header.initial_stack_size;
+        self.cpu.regs[CX] = header.initial_heap_size;
+        // hModule.
+        self.cpu.regs[DI] = 0x88;
+        self.cpu.regs[SI] = 0;
         Ok(())
     }
 }

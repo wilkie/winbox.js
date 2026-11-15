@@ -353,6 +353,9 @@ async function bindResources(script, target) {
   }
 }
 
+/** The NE header's flag of a self-loading program. */
+const SELF_LOADING = 0x0800;
+
 /** Compiles and links one probe. */
 async function build(name) {
   const source = join(PROBES, `${name}.c`);
@@ -426,6 +429,19 @@ async function build(name) {
     const header = data.readUInt16LE(0x3c);
 
     data.writeUInt16LE(0x030a, header + 0x3e);
+    await writeFile(executable, data);
+  }
+
+  /* A probe that defines `PROBE_SELF_LOADING` is a self-loading program:
+   * its header's flags (at 0Ch) given 0800h, which no option of the
+   * linker's sets. KERNEL then loads its first segment alone and calls the
+   * loader whose table starts that segment, which the probe lays out
+   * itself (`KRNL386.EXE` seg2 `188c`, `19df`). */
+  if (text.includes('#define PROBE_SELF_LOADING')) {
+    const data = await readFile(executable);
+    const header = data.readUInt16LE(0x3c);
+
+    data.writeUInt16LE(data.readUInt16LE(header + 0x0c) | SELF_LOADING, header + 0x0c);
     await writeFile(executable, data);
   }
 

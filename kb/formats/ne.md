@@ -11,7 +11,7 @@ Every Windows 3.1 program, library, driver and font resource is an NE file: an M
 | Offset from the NE header | Field                                                             |
 | ------------------------- | ----------------------------------------------------------------- |
 | `0x04`                    | the entry table, relative to the header, and at `0x06` its length |
-| `0x0c`                    | flags; `0x8000` marks a library                                   |
+| `0x0c`                    | flags; `0x8000` marks a library, `0x0800` a self-loading program  |
 | `0x1c`                    | the number of segments, and at `0x22` the segment table           |
 | `0x20`                    | the length of the non-resident name table                         |
 | `0x24`                    | the resource table                                                |
@@ -20,6 +20,14 @@ Every Windows 3.1 program, library, driver and font resource is an NE file: an M
 | `0x2c`                    | the non-resident name table, as an offset into the **file**       |
 | `0x32`                    | the alignment shift segments and resources are counted in         |
 | `0x3e`                    | the Windows version expected                                      |
+
+## Self-loading programs
+
+[[read out]] A program whose flags have `0x0800` loads its own segments: KERNEL loads segment 1 alone (`KRNL386.EXE` seg2 `188c`, `1ea6`), which must start with the loader's table -- `A0` (`3041h`), then far pointers to the program's boot procedure (at 4) and segment loader (at 8), places KERNEL fills with its own services (0Ch, 10h, 14h, 24h), and the program's exit procedure (18h), which Windows 3.1 never calls. Segment 1 can refer to no other segment: its relocations are applied before the loader has loaded anything. The table, the services and when KERNEL calls the loader are [[topic:self-loading]]. [[measured]] [[probe:selfld]] is such a program, its table laid out by Watcom at its code segment's start and the flag set by `build-probes.mjs`.
+
+## In memory
+
+[[read out]] KERNEL does not keep the file's header as it is: it lays out a module's database from it (seg2 `0d66`), the segment table at 40h with ten bytes an entry (the file's eight and the segment's handle), the entry table made bundles, the module references made handles, and the file's path at the end. [[measured]] [[probe:moddb]] reads its own. The layout is in [[topic:self-loading]], "The module's database".
 
 ## Exports: entries and names
 

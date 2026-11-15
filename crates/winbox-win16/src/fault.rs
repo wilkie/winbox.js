@@ -78,6 +78,10 @@ impl System {
     /// through KERNEL's boxes; another fault it raises, by its own vector;
     /// anything else, the stop as it was (`fault_vector.rs`).
     pub(crate) fn processor_stop(&self, exit: winbox_cpu::Exit) -> Event {
+        if let Some(selector) = self.segment_to_load(exit) {
+            return Event::NotPresent(selector);
+        }
+
         match self.fault_vector(exit) {
             Some(vector @ (GENERAL_PROTECTION | PAGE_FAULT)) => Event::Fault(vector),
             Some(vector) => Event::Stop(Stop::Processor(winbox_cpu::Exit::Fault(vector))),

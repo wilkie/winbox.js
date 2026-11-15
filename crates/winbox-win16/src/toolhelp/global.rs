@@ -92,6 +92,10 @@ pub(crate) fn global_blocks(system: &mut System) -> Vec<GlobalBlock> {
         let segments = loaded.segments.clone();
 
         for (at, &segment) in segments.iter().enumerate() {
+            if segment == crate::loader::NOT_LOADED {
+                continue;
+            }
+
             let mine = Some(segment) == own;
             let kind = if mine { GT_DGROUP } else { GT_CODE };
 

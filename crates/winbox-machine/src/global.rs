@@ -8,6 +8,23 @@ use crate::{Descriptors, Memory, OWN_PAGES_ABOVE};
 /// The first descriptor index a block is given.
 pub const FIRST_SELECTOR: usize = 100;
 
+/// `GMEM_MOVEABLE`.
+const GMEM_MOVEABLE: u16 = 0x0002;
+/// A descriptor's present bit, in its access byte.
+const PRESENT: u16 = 0x0080;
+
+/// A block's first selector made present, or not.
+fn set_present(memory: &mut Memory, index: usize, present: bool) {
+    let rights = Descriptors::rights_of(memory, index);
+    let rights = if present {
+        rights | PRESENT
+    } else {
+        rights & !PRESENT
+    };
+
+    Descriptors::set_rights(memory, index, rights);
+}
+
 /// A block given out.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Block {
@@ -200,6 +217,19 @@ impl GlobalHeap {
         }
 
         self.set_limits(memory, descriptors, index);
+
+        // A moveable block of nothing is a handle with no memory
+        // (`KRNL386.EXE` seg1 `40ab`): discarded, its selector not present
+        // until the block is given a size -- a self-loading program's
+        // segments are made so, and a touch of one is what loads it
+        // (`self_load.rs`).
+        if size == 0 && flags & GMEM_MOVEABLE != 0 {
+            if let Some(block) = self.blocks.get_mut(&index) {
+                block.discarded = true;
+            }
+
+            set_present(memory, index, false);
+        }
 
         // Too big for the first megabyte, Windows gives it pages of its
         // own (`pages.rs`).
@@ -395,6 +425,7 @@ impl GlobalHeap {
         let block = self.blocks.get_mut(&index)?;
 
         block.discarded = false;
+        set_present(memory, index, true);
 
         if selectors > block.selectors {
             return self.relocate(memory, descriptors, index, size);

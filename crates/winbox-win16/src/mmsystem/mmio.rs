@@ -275,16 +275,21 @@ pub fn hidden_extent(module: &str) -> usize {
     if module.eq_ignore_ascii_case("MMSYSTEM") {
         usize::from(super::mmtask::MAIN_ORDINAL) + 1
     } else if module.eq_ignore_ascii_case("KERNEL") {
-        usize::from(crate::resources::DEFAULT_ORDINAL) + 1
+        usize::from(crate::self_load::SET_OWNER_ORDINAL) + 1
     } else {
         0
     }
 }
 
 pub fn hidden(module: &str, ordinal: u16) -> Option<Export> {
-    // KERNEL's own resource handler (`resources.rs`).
+    // KERNEL's own resource handler (`resources.rs`), and its procedures a
+    // self-loading program's loader is given (`self_load.rs`).
     if module.eq_ignore_ascii_case("KERNEL") {
-        return (ordinal == crate::resources::DEFAULT_ORDINAL).then_some(Export {
+        if ordinal != crate::resources::DEFAULT_ORDINAL {
+            return crate::self_load::hidden(ordinal);
+        }
+
+        return Some(Export {
             name: "ResourceHandler",
             pops: 6,
             returns: 2,

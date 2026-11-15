@@ -1319,15 +1319,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "popmax:minrects",
         "a pop-up made WS_MINIMIZE is not minimized as it is made",
     ),
-    // `solodata` reads its module's flags from the header KERNEL keeps in
-    // memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
-    // a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
-    // winbox.js's database holds the file's header, which reads 201h. What
-    // the bit does -- the prologue and the thunk -- agrees.
-    (
-        "solodata:flags",
-        "the module's database holds its file's header, not the bits KERNEL sets in its flags",
-    ),
     // `INT 25h` through Windows: a drive there answers the carry clear, and
     // the read's buffer comes back over-written with what the DOS
     // extender's own buffer held, which DOSBox never wrote (`abssect`); in
@@ -2092,6 +2083,13 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "visline-hercules:dotted, one rectangle",
         "a styled pen's dots on the screen: the display driver's styling not followed (kb/topics/visible-regions.md)",
+    ),
+    // `moddb` reads word 6 of its module's database, the next module's
+    // handle in KERNEL's chain of them from its head at 21Ch: Windows has
+    // one after the program, WinBox keeps no chain (`module_database.rs`).
+    (
+        "moddb:next",
+        "a module's database has no next module's handle: WinBox keeps no chain of them",
     ),
 ];
 

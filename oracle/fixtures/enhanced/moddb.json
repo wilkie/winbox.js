@@ -1,0 +1,220 @@
+{
+  "probe": "moddb",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "header",
+      "args": "00",
+      "result": "454e"
+    },
+    {
+      "function": "header",
+      "args": "02",
+      "result": "0001"
+    },
+    {
+      "function": "header",
+      "args": "04",
+      "result": "007f"
+    },
+    {
+      "function": "next",
+      "args": "",
+      "result": "next"
+    },
+    {
+      "function": "header",
+      "args": "08",
+      "result": "004a"
+    },
+    {
+      "function": "header",
+      "args": "0a",
+      "result": "008f"
+    },
+    {
+      "function": "header",
+      "args": "0c",
+      "result": "0242"
+    },
+    {
+      "function": "header",
+      "args": "0e",
+      "result": "0002"
+    },
+    {
+      "function": "header",
+      "args": "10",
+      "result": "0400"
+    },
+    {
+      "function": "header",
+      "args": "12",
+      "result": "2000"
+    },
+    {
+      "function": "header",
+      "args": "14",
+      "result": "0744"
+    },
+    {
+      "function": "header",
+      "args": "16",
+      "result": "0001"
+    },
+    {
+      "function": "header",
+      "args": "18",
+      "result": "2be0"
+    },
+    {
+      "function": "header",
+      "args": "1a",
+      "result": "0002"
+    },
+    {
+      "function": "header",
+      "args": "1c",
+      "result": "0002"
+    },
+    {
+      "function": "header",
+      "args": "1e",
+      "result": "0002"
+    },
+    {
+      "function": "header",
+      "args": "20",
+      "result": "000d"
+    },
+    {
+      "function": "header",
+      "args": "22",
+      "result": "0040"
+    },
+    {
+      "function": "header",
+      "args": "24",
+      "result": "0054"
+    },
+    {
+      "function": "header",
+      "args": "26",
+      "result": "0054"
+    },
+    {
+      "function": "header",
+      "args": "28",
+      "result": "006e"
+    },
+    {
+      "function": "header",
+      "args": "2a",
+      "result": "0072"
+    },
+    {
+      "function": "header",
+      "args": "2c",
+      "result": "0105"
+    },
+    {
+      "function": "header",
+      "args": "2e",
+      "result": "0000"
+    },
+    {
+      "function": "header",
+      "args": "30",
+      "result": "0000"
+    },
+    {
+      "function": "header",
+      "args": "32",
+      "result": "0001"
+    },
+    {
+      "function": "header",
+      "args": "34",
+      "result": "0000"
+    },
+    {
+      "function": "header",
+      "args": "36",
+      "result": "0002"
+    },
+    {
+      "function": "header",
+      "args": "38",
+      "result": "0072"
+    },
+    {
+      "function": "header",
+      "args": "3a",
+      "result": "0072"
+    },
+    {
+      "function": "header",
+      "args": "3c",
+      "result": "0000"
+    },
+    {
+      "function": "header",
+      "args": "3e",
+      "result": "0300"
+    },
+    {
+      "function": "segment",
+      "args": "1",
+      "result": "0089 0a38 4556 0a38 cs-1"
+    },
+    {
+      "function": "segment",
+      "args": "2",
+      "result": "0622 01d8 0057 0be0 ds-1"
+    },
+    {
+      "function": "names",
+      "args": "",
+      "result": "05 4d 4f 44 44 42 00 00 05 46 49 52 53 54 01 00 06 53 45 43 4f 4e 44 02 00 00"
+    },
+    {
+      "function": "reference",
+      "args": "0 KERNEL",
+      "result": "same"
+    },
+    {
+      "function": "reference",
+      "args": "1 USER",
+      "result": "same"
+    },
+    {
+      "function": "imported",
+      "args": "",
+      "result": "00 06 4b 45 52 4e 45 4c 04 55 53 45 52 00 00 02"
+    },
+    {
+      "function": "bundle",
+      "args": "0",
+      "result": "0000 0002 end 01 09 01 56 01 01 09 01 72 01"
+    },
+    {
+      "function": "fileinfo",
+      "args": "",
+      "result": "08 01 00 00 MODDB.EXE"
+    },
+    {
+      "function": "size",
+      "args": "",
+      "result": "c0"
+    }
+  ]
+}

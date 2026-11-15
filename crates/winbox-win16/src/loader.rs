@@ -49,6 +49,10 @@ pub fn loaded_segment(mut bytes: Vec<u8>, size: u32) -> Vec<u8> {
     bytes
 }
 
+/// Where `Module::segments` has a segment that is not loaded: no segment
+/// is given the first descriptor.
+pub const NOT_LOADED: usize = 0;
+
 /// A module loaded from its file: a program, or a library it needs.
 #[derive(Debug)]
 pub struct Module {
@@ -91,10 +95,19 @@ pub struct Own {
 
 impl Module {
     /// Where a segment of its numbering was put: its descriptor index.
+    /// None for one not loaded, as a self-loading program's are until its
+    /// own loader loads them (`self_load.rs`).
     pub fn translate(&self, segment: u16) -> Option<usize> {
         self.segments
             .get(usize::from(segment).checked_sub(1)?)
             .copied()
+            .filter(|&index| index != NOT_LOADED)
+    }
+
+    /// Whether its own loader loads its segments: bit 11 of its header's
+    /// flags (`self_load.rs`).
+    pub fn self_loading(&self) -> bool {
+        crate::self_load::is_self_loading(&self.executable)
     }
 
     /// Where an entry point is: its segment's descriptor index and offset.
@@ -199,7 +212,7 @@ impl System {
         // queue (`Descriptors::reserve`). As `Win16.load`.
         let database = match shared {
             Some(_) => None,
-            None => self.module_database(&executable),
+            None => self.module_database(&executable, path),
         };
         let own = self.own_selectors();
         let program = self.place(executable, &name, path);
@@ -224,6 +237,10 @@ impl System {
             })
         });
 
+        if let Some(index) = database {
+            self.fill_database(program, index);
+        }
+
         // Its local heap is made as it calls `InitTask`, at the end of its
         // data segment (`kernel::task_heap`).
         let handle = self
@@ -236,22 +253,23 @@ impl System {
 
     /// A module's database: a descriptor as KERNEL gives one, the one freed
     /// last first, from those above any block where none was freed,
-    /// holding the file's header from its `NE` to the end of its entry
-    /// table. A program's and a library's alike. As `moduleDatabase`.
-    pub(crate) fn module_database(&mut self, executable: &Executable) -> Option<usize> {
-        let start = executable.header_offset as usize;
-        let end = start
-            + usize::from(executable.header.entry_table_offset)
-            + usize::from(executable.header.entry_table_length);
-        let bytes = executable.bytes()[start..end.min(executable.bytes().len())].to_vec();
+    /// holding the module's header and tables as KERNEL lays them out in
+    /// memory (`module_database.rs`), its file's path last. A program's and
+    /// a library's alike. As `moduleDatabase`.
+    pub(crate) fn module_database(&mut self, executable: &Executable, path: &str) -> Option<usize> {
+        let bytes =
+            crate::module_database::layout(executable, &crate::module_database::file_info(path));
         let index = self.descriptors.take(1)?;
 
         self.descriptors
             .map(&mut self.cpu.bus, index, &bytes, false);
-        self.descriptors.set_limit(
+        // A block of the global heap, rounded to 32 bytes as any is, which
+        // `GlobalSize` answers (**recorded** by `moddb`: ACh bytes, C0h).
+        self.global.set_segment_size(
             &mut self.cpu.bus,
+            &mut self.descriptors,
             index,
-            (bytes.len() as u32).saturating_sub(1),
+            (bytes.len() as u32 + 31) & !31,
         );
         Some(index)
     }
@@ -299,6 +317,7 @@ impl System {
         }
 
         if let Some(database) = database {
+            self.global.forget_segment(database);
             self.descriptors.give(&mut self.cpu.bus, database);
         }
 
@@ -307,7 +326,7 @@ impl System {
         }
 
         for index in self.modules[module].segments.clone() {
-            if Some(index) != data {
+            if Some(index) != data && index != NOT_LOADED {
                 self.free_segment(index);
             }
         }
@@ -395,6 +414,22 @@ impl System {
     pub(crate) fn import_names(executable: &Executable) -> Vec<String> {
         let mut names: Vec<String> = Vec::new();
 
+        // A self-loading program's: its module references, each of which
+        // KERNEL loads in turn (`KRNL386.EXE` seg2 `1923`-`19b6`); the
+        // relocations of its segments past the first are its loader's to
+        // read, and may not be in the file as KERNEL would read them.
+        if crate::self_load::is_self_loading(executable) {
+            for name in &executable.module_references {
+                let name = name.to_ascii_uppercase();
+
+                if !names.contains(&name) {
+                    names.push(name);
+                }
+            }
+
+            return names;
+        }
+
         for segment in &executable.segments {
             for relocation in &segment.relocations {
                 if let Target::ImportOrdinal { module: from, .. }
@@ -444,7 +479,7 @@ impl System {
         // Its database before its segments, as KERNEL loads a module and
         // like a program's: a descriptor of its own, the module's handle
         // (**recorded** by `segfree`). As `loadFound`.
-        let database = self.module_database(&executable);
+        let database = self.module_database(&executable, path);
         let library = self.place(executable, name, path);
 
         // `COMMDLG.DLL` loaded afresh: its data as the file has it, which
@@ -490,9 +525,72 @@ impl System {
         }
 
         self.load_libraries_for(library, beside, order);
+
+        if let Some(index) = database {
+            self.fill_database(library, index);
+        }
+
         self.link(library);
         order.push(library);
         library
+    }
+
+    /// What KERNEL writes in a module's database as it loads the module:
+    /// its count of one; each segment it loaded, its handle -- one below
+    /// its selector for a moveable segment, the selector for a fixed one --
+    /// and its flags marked given a block and loaded (2 and 4); and each
+    /// module it imports from by the handle of that module, where the file
+    /// has the offset of its name (`KRNL386.EXE` seg2 `1923`-`19b6`).
+    /// **Recorded** by `moddb`: a count of one, the code's handle CS less
+    /// one and the data's DS less one, flags 4556h and 57h, and each
+    /// module reference `GetModuleHandle`'s answer for its name.
+    pub(crate) fn fill_database(&mut self, module: usize, database: usize) {
+        use crate::module_database as layout;
+
+        let base = (database as u32) << 16;
+        let table = u32::from(self.cpu.bus.read16(base + layout::SEGMENT_TABLE as u32));
+        let segments = self.modules[module].segments.clone();
+
+        self.cpu.bus.write16(base + layout::USAGE as u32, 1);
+
+        for (number, &index) in segments.iter().enumerate() {
+            if index != NOT_LOADED {
+                self.mark_segment_loaded(base + table, number, index);
+            }
+        }
+
+        let references = u32::from(self.cpu.bus.read16(base + layout::MODULE_REFERENCES as u32));
+        let names = self.modules[module].executable.module_references.clone();
+
+        for (at, name) in names.iter().enumerate() {
+            let handle = crate::kernel::module_handle_named(self, &name.to_ascii_uppercase());
+
+            self.cpu
+                .bus
+                .write16(base + references + 2 * at as u32, handle);
+        }
+    }
+
+    /// A segment's entry in a database's segment table, at `table`, given
+    /// the handle of its descriptor and marked loaded (`fill_database`).
+    pub(crate) fn mark_segment_loaded(&mut self, table: u32, number: usize, index: usize) {
+        use crate::module_database as layout;
+
+        let entry = table + (number * layout::SEGMENT_ENTRY) as u32;
+        let memory = &mut self.cpu.bus;
+        let flags = memory.read16(entry + layout::SEGMENT_FLAGS as u32);
+        let selector = segment_selector(index);
+        let handle = if flags & layout::MOVEABLE != 0 {
+            selector - 1
+        } else {
+            selector
+        };
+
+        memory.write16(entry + layout::SEGMENT_HANDLE as u32, handle);
+        memory.write16(
+            entry + layout::SEGMENT_FLAGS as u32,
+            flags | layout::ALLOCATED | layout::LOADED,
+        );
     }
 
     /// A library's instance, as `LoadLibrary` answers it and its entry
@@ -523,10 +621,18 @@ impl System {
 
     /// A module placed: its segments mapped, from descriptor 1 on, its
     /// prologues patched and its blocks sized; registered under its name.
+    /// A self-loading program's first segment alone, its loader's: KERNEL
+    /// loads that one as any other, and the program's loader the rest
+    /// (`self_load.rs`).
     fn place(&mut self, executable: Executable, name: &str, path: &str) -> usize {
         let mut segments = Vec::new();
+        let placed = if crate::self_load::is_self_loading(&executable) {
+            executable.segments.len().min(1)
+        } else {
+            executable.segments.len()
+        };
 
-        for index in 0..executable.segments.len() {
+        for index in 0..placed {
             let bytes = loaded_segment(
                 executable.segment_bytes(index),
                 segment_block_size(&executable, index + 1),
@@ -635,7 +741,10 @@ impl System {
                 continue;
             }
 
-            let at = ((module.segments[usize::from(segment) - 1] as u32) << 16) + u32::from(offset);
+            let Some(placed) = module.translate(u16::from(segment)) else {
+                continue;
+            };
+            let at = ((placed as u32) << 16) + u32::from(offset);
 
             if memory.read8(at + 2) != 0x90 {
                 continue;
