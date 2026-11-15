@@ -47,6 +47,7 @@ import { fileURLToPath } from 'node:url';
 
 import { PROGRAMS, catalogItems, downloadPath, keep, stateOf } from './fetch.mjs';
 import { filesOf, headerOf, needsOf } from './needs.mjs';
+import { runtimeBytes } from './runtimes.mjs';
 import { classify } from './sample.mjs';
 import { applyRun, clean, decode, foundOf, readFolder } from './titles.mjs';
 
@@ -366,11 +367,40 @@ function mountsOf(item, folder, floppies = false) {
   return mounts;
 }
 
-/** A drive made for a run: the item's folder copied as `C:\CORPUS\<ID>\`. */
-function driveFor(item, folder, at) {
+/**
+ * The runtimes a program needs and does not bring (`needs.runtimes`,
+ * `runtimes.mjs`), put in the drive's `WINDOWS\SYSTEM`, over the
+ * installation beneath it, as an installed Windows would have them.
+ */
+function placeRuntimes(drive, needs) {
+  if (!needs?.runtimes?.length) {
+    return;
+  }
+
+  const system = join(drive, 'WINDOWS', 'SYSTEM');
+
+  mkdirSync(system, { recursive: true });
+
+  for (const module of needs.runtimes) {
+    const bytes = runtimeBytes(module);
+
+    if (!bytes) {
+      throw new Error(`the runtime ${module} is not fetched: scripts/catalog/runtimes.mjs --fetch`);
+    }
+
+    writeFileSync(join(system, `${module}.DLL`), bytes);
+  }
+}
+
+/**
+ * A drive made for a run: the item's folder copied as `C:\CORPUS\<ID>\`,
+ * and the runtimes it needs in `WINDOWS\SYSTEM`.
+ */
+function driveFor(item, folder, at, needs) {
   rmSync(at, { recursive: true, force: true });
   mkdirSync(join(at, 'CORPUS'), { recursive: true });
   cpSync(folder, join(at, 'CORPUS', shortOf(item.id)), { recursive: true });
+  placeRuntimes(at, needs);
   return at;
 }
 
@@ -461,7 +491,7 @@ async function install(item, folder, needs, mounts) {
    * it first waits (a box's text, or its window's caption), which Enter
    * would answer and so hide, on a drive thrown away after.
    */
-  const probeDrive = driveFor(item, folder, join(DRIVES, `${item.id}.setup`));
+  const probeDrive = driveFor(item, folder, join(DRIVES, `${item.id}.setup`), needs);
   const probe = outcome(
     await trace(
       runArgs({
@@ -490,7 +520,7 @@ async function install(item, folder, needs, mounts) {
   const first = probe.box
     ? `${probe.box.title}: ${probe.box.text}`
     : (ownWindows(probe.windows).slice(-1)[0] ?? `${probe.status} ${probe.signature}`.trim());
-  const drive = driveFor(item, folder, join(INSTALLS, item.id));
+  const drive = driveFor(item, folder, join(INSTALLS, item.id), needs);
   const run = await trace(
     runArgs({
       exe: needs.setup ? join(folder, needs.setup) : null,
@@ -615,8 +645,13 @@ async function pass(item, commit) {
   const state = stateOf(item.id);
   const folder = join(PROGRAMS, item.id);
   const date = new Date().toLocaleDateString('sv');
+  /* The runtimes placed for it, where any were (`placeRuntimes`). */
+  const placed = () => (state.needs?.runtimes?.length ? { runtimes: state.needs.runtimes } : {});
   const done = (result) =>
-    keep(item.id, { result: { ...result, commit, date }, needs: state.needs ?? null });
+    keep(item.id, {
+      result: { ...result, ...placed(), commit, date },
+      needs: state.needs ?? null,
+    });
 
   if (item.emulator && item.emulator !== 'dosbox') {
     return done({ status: 'not-windows', signature: `archive.org runs it in ${item.emulator}` });
@@ -730,9 +765,10 @@ async function pass(item, commit) {
     drive = join(DRIVES, item.id);
     rmSync(drive, { recursive: true, force: true });
     mkdirSync(drive, { recursive: true });
+    placeRuntimes(drive, needs);
     program = { path: onImage, file: null };
   } else {
-    drive = driveFor(item, folder, join(DRIVES, item.id));
+    drive = driveFor(item, folder, join(DRIVES, item.id), needs);
     program = {
       path: `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.program)}`,
       file: join(folder, needs.program),
@@ -820,6 +856,7 @@ async function pass(item, commit) {
       ...(result.box ? { box: result.box } : {}),
       ...(result.dos ? { dos: result.dos } : {}),
       ...(tries.length > 1 ? { tries } : {}),
+      ...placed(),
       ...(installed
         ? {
             install: {
@@ -918,6 +955,7 @@ function writeResults(items) {
       titleSource: item.titleSource,
       status: state.result.status,
       signature: state.result.signature ?? '',
+      ...(state.result.runtimes ? { runtimes: state.result.runtimes } : {}),
       ...(state.result.box ? { box: state.result.box } : {}),
       ...((state.result.dos ?? state.result.install?.dos)
         ? { dos: state.result.dos ?? state.result.install.dos }
@@ -931,6 +969,7 @@ function writeResults(items) {
             flags: needs.flags ?? [],
             imports: needs.imports ?? [],
             libraries: needs.libraries ?? [],
+            runtimes: needs.runtimes ?? [],
             setup: needs.setup ?? null,
             installer: needs.installer ?? null,
             images: needs.images ?? [],
@@ -1000,9 +1039,20 @@ function writeResults(items) {
     const result = byId.get(entry.id);
 
     if (result?.needs) {
-      const { program, header, mode, display, flags, libraries, setup, installer } = result.needs;
+      const { program, header, mode, display, flags, libraries, runtimes, setup, installer } =
+        result.needs;
 
-      entry.needs = { program, header, mode, display, flags, libraries, setup, installer };
+      entry.needs = {
+        program,
+        header,
+        mode,
+        display,
+        flags,
+        libraries,
+        ...(runtimes.length ? { runtimes } : {}),
+        setup,
+        installer,
+      };
     }
 
     const sha256 = stateOf(entry.id).sha256;

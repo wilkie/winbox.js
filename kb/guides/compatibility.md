@@ -4,7 +4,7 @@ name: A compatibility database
 summary: A design for a database of how Windows 3.x games and applications run on WinBox — a committed catalog of archive.org's Windows 3.x software library, metadata only; what each program needs, found from its files; an automated first pass that fetches, installs and runs each on the survey's clock and groups the failures into a work queue; ratings by people; a table on the site — with a prototype's counts and a sample of ten games, and the decisions still open.
 ---
 
-This page is a design, with a prototype and the first pass. The prototype is built: `scripts/catalog/catalog.mjs` writes the catalog, `scripts/catalog/sample.mjs` takes ten games of it through the pipeline once (2026-11-14), `scripts/catalog/titles.mjs` finds titles from the programs themselves (2026-11-14), `scripts/catalog/wikipedia.mjs` matches the catalog to Wikipedia's list, and `pnpm kb` builds the table with its ratings (2026-11-14). The first pass is built and has run over the whole catalog (2026-11-14, below, "The first pass"): `scripts/catalog/fetch.mjs` fetches every item, `scripts/catalog/needs.mjs` reads what each needs, and `scripts/catalog/pass.mjs` installs, runs and classifies each, and writes `catalog/results.json` and the work queue, `catalog/queue.json`. It follows the model of [[guide:launcher]] and [[guide:enhanced-mode]].
+This page is a design, with a prototype and the first pass. The prototype is built: `scripts/catalog/catalog.mjs` writes the catalog, `scripts/catalog/sample.mjs` takes ten games of it through the pipeline once (2026-11-14), `scripts/catalog/titles.mjs` finds titles from the programs themselves (2026-11-14), `scripts/catalog/wikipedia.mjs` matches the catalog to Wikipedia's list, and `pnpm kb` builds the table with its ratings (2026-11-14). The first pass is built and has run over the whole catalog (2026-11-14, below, "The first pass"): `scripts/catalog/fetch.mjs` fetches every item, `scripts/catalog/needs.mjs` reads what each needs, `scripts/catalog/runtimes.mjs` fetches the runtimes it places (Visual Basic's, Klik & Play's, Borland's controls), and `scripts/catalog/pass.mjs` installs, runs and classifies each, and writes `catalog/results.json` and the work queue, `catalog/queue.json`. It follows the model of [[guide:launcher]] and [[guide:enhanced-mode]].
 
 The corpus (`corpus/README.md`) is some forty programs, chosen for what they exercise and held to what Windows recorded of them under DOSBox, call for call and pixel for pixel. It finds what the probes did not think to ask. A compatibility database is wider and shallower: every Windows 3.x program that can be found, each tried once, with a one-word answer and the reason. It says which programs run, and it turns the ones that do not into a list of gaps, the most common first. A program it turns up that needs a closer look goes into the corpus, and is held to the oracle from then on.
 
@@ -52,7 +52,7 @@ These are found from the program's own files where possible, before it runs, and
 | **Win32s**                      | The program's header is `PE`, not `NE` ([[topic:win32s]]), or the setup installs Win32s (its `W32SYS` and `WIN32S` files).                                                                                                                                                                                                                                                                                                                                 |
 | **CD**                          | The item's form is `disc`, or the install leaves a program that reads its files from the disc's letter.                                                                                                                                                                                                                                                                                                                                                    |
 | **Sound or MIDI**               | A module reference to `MMSYSTEM` or `SOUND`; `.WAV` and `.MID` files in the download; calls to `waveOut` and `midiOut` in the run.                                                                                                                                                                                                                                                                                                                         |
-| **Libraries it does not bring** | Every module reference that is neither Windows' own, nor WinBox's, nor in the download (`VBRUN300`, `BWCC`, `CTL3D`, ...). The corpus leaves such programs out. The catalog records them, and a missing library becomes a classification of its own.                                                                                                                                                                                                       |
+| **Libraries it does not bring** | Every module reference that is neither Windows' own, nor WinBox's, nor in the download (`VBRUN300`, `BWCC`, `CTL3D`, ...). The corpus leaves such programs out. The catalog records them. A runtime the first pass has (Visual Basic's, Klik & Play's, Borland's controls; "Runtimes", below) is placed for the run, and named in `runtimes`; any other missing library becomes a classification of its own.                                               |
 
 A setup's `SETUP.INF`, or an `.INF` of its own, lists the files it copies and where, and so names the runtimes it brings (WinG, Win32s, VfW). It is read as data, never run, to fill `needs` before the install, and the install itself confirms it.
 
@@ -226,7 +226,7 @@ Each program goes through the same steps, on WinBox, with nothing run on the hos
 | `fault`       | KERNEL reported a fault, or the processor stopped; or WinBox itself stopped (`WinBox: ...`, a panic, such as an image it cannot mount).                                                                                                                                                                                                                                                                                                                                                                                                                    | the fault, and where                            |
 | `ended`       | Its task ended within its seconds: done, or a refusal.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | its last calls                                  |
 | `win32s`      | It is a Win32 program.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | `PE`                                            |
-| `library`     | It imports a module, or a library of its download imports one, that neither WinBox, nor the installation's `WINDOWS` and `SYSTEM`, nor its download has: a library it does not bring. Found before it runs.                                                                                                                                                                                                                                                                                                                                                | the modules                                     |
+| `library`     | It imports a module, or a library of its download imports one, that neither WinBox, nor the installation's `WINDOWS` and `SYSTEM`, nor its download, nor the runtimes the pass places has: a library it does not bring. Found before it runs.                                                                                                                                                                                                                                                                                                              | the modules                                     |
 | `installer`   | Its setup did not leave a program to run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | where the setup stopped                         |
 | `fetch`       | Its download failed, did not match archive.org's SHA-1, or does not hold the program the item names.                                                                                                                                                                                                                                                                                                                                                                                                                                                       | why                                             |
 | `not-windows` | The program is a DOS program, not a Windows one; or archive.org runs the item in an emulator other than DOSBox (Ruffle for Flash, others for other machines).                                                                                                                                                                                                                                                                                                                                                                                              | its header, or the emulator                     |
@@ -234,6 +234,38 @@ Each program goes through the same steps, on WinBox, with nothing run on the hos
 A program that needs 386 enhanced mode is not a failure of its own: the Win386 supervisor's refusal among its files (its program or a library in its folder) says so, and it is run in enhanced mode (`trace --mode enhanced`, [[guide:enhanced-mode]]). Its status is that run's, and its `needs` says `enhanced`, so the table can show both. A Win32 program is `win32s`, as WinBox does not run Win32s ([[topic:win32s]]).
 
 `idle` is not "works". It means the program reached the point where a person would start using it, and nothing stopped it on the way. The rest is for people (below).
+
+### Runtimes
+
+Windows 3.1 brings no Visual Basic runtime, no Klik & Play runtime and no Borland custom controls. A program that needed one was shipped without it, as its users were expected to have it in `WINDOWS\SYSTEM` from another program's install or a download of its own. The owner decided (2026-11-14) that the pass finds them on archive.org and never commits them.
+
+**Which.** The libraries of five or more programs of the queue, as the first pass left it: `VBRUN100` (164), `VBRUN200` (156), `VBRUN300` (90), `KNPG` (86), `KNPS` (75) and `BWCC` (11). The next are `CTL3D` and `GTIMER`, two programs each. Every program imports them by these names (its module reference table); what it imports of each, from its relocation records, is in `catalog/runtimes.json` (`ordinals`, by how many programs import each): Visual Basic's programs import only ordinal 100, which each `VBRUN`'s non-resident names table names `THUNRTMAIN` [[read out]], Klik & Play's some forty of `KNPG`'s and sixty of `KNPS`'s, Borland's eight of `BWCC`'s. Every ordinal imported is one the runtime chosen exports (its entry table).
+
+**Where they come from.** archive.org's search API (`advancedsearch.php`, then each item's metadata), politely as the fetch is: the User-Agent "WinBox catalog", a request at a time a second or more apart, no credentials. An item that is the runtime itself is taken where there is one, at the latest version found; else the product that shipped it.
+
+| Module     | archive.org item                        | File                                | Version                                     |    Size | SHA-1                                      | Programs |
+| ---------- | --------------------------------------- | ----------------------------------- | ------------------------------------------- | ------: | ------------------------------------------ | -------: |
+| `VBRUN100` | `vbrunDLL` (Microsoft)                  | `VBRUN100.DLL`                      | 1.00 (its description; no version resource) | 271,264 | `7c203968aee0ab4900540cfb0d32223efc508540` |      164 |
+| `VBRUN200` | `vbrunDLL` (Microsoft)                  | `VBRUN200.DLL`                      | 2.0.9.8 (`02.00.0908`)                      | 356,992 | `16fb807a50dcb8afc165eefd72f47c03ba40f602` |      156 |
+| `VBRUN300` | `vbrunDLL` (Microsoft)                  | `VBRUN300.DLL`                      | 3.0.5.38 (`03.00.0538`)                     | 398,416 | `eb4dad28be190a37b46b9ee0dfbc0b02d1a5a71b` |       90 |
+| `KNPG`     | `cdrom_klik_and_play` (Klik & Play, CD) | `KNP.iso`, `KNPG.DLL`               | 1.1.0.3                                     |  54,976 | `d755b96423477fffd6450bc63d6058f98dfaccbd` |       86 |
+| `KNPS`     | `klikplay_12PL` (Klik & Play 1.2)       | `Klikplay.zip`, `Klikplay/KNPS.DLL` | 1.1.0.17                                    |  83,568 | `c134a7efd43ace7a4d1828ab13b031a406badd5b` |       75 |
+| `BWCC`     | `BWCC_ZIP` (Borland)                    | `BWCC.ZIP`, `BWCC.DLL`              | 1.3.14.1 (`1.03`)                           | 152,304 | `76b80d4a384ecbce4837d9745ce6389153f6f451` |       11 |
+
+The version is the fixed part of the file's version resource, its `FileVersion` string beside it; the SHA-256 of each, its module description, its imports, how many ordinals it exports and which of them the programs import, and the programs, are in `catalog/runtimes.json`. The 11 games that need `KNPG` and not `KNPS` bring their own `KNPS`, so only `KNPG` is placed for them.
+
+- **Visual Basic.** `vbrunDLL` holds the three DLLs and Microsoft's own self-extracting distributions of them (`vbrun100.exe`, `vbrun200.exe`, `vbrun300.exe`); each distribution's member is the same bytes as the DLL beside it (read as a zip, as data). They are the versions most programs of the catalog that bring their own carry: [[measured]] of the copies in the catalog's downloads, 51 of 51 `VBRUN100.DLL` are these bytes, 26 of 27 `VBRUN200.DLL` (one other build of 2.0.9.8), 56 of 77 `VBRUN300.DLL` (the other 21 are 3.0.5.37). `VBRUN300.DLL` 3.0.5.38 is the post-release build Microsoft's `VBRUN300.TXT` in the same distribution describes: it fixes a General Protection Fault in `KRNL286` at 0001:259F when a program runs in standard mode, which is the mode the pass runs in. Other items hold the same files (`VBRUN300_EXE`, `VBRUN100_ZIP`, `VBRUN200_ZIP`, `VBRUN123_ZIP`, `MS_VisualBasic_RunTime`'s `vb3run.exe`); `vbrunDLL` is the one that has all three, each as the DLL and as Microsoft's distribution.
+- **Klik & Play.** No item is the runtime alone: Europress shipped it with Klik & Play, which games made with it named as needed. `KNPG` (the game library) comes from the English retail CD (`cdrom_klik_and_play`, `KNP.iso`): its menus, dialogs and strings are in the language of the edition, and 1.1.0.3 is the latest version any item or program of the catalog has (the demo, `KLIKPLAY`, has 1.1.0.1). `KNPS` (the graphic library; a bitmap and its version resource, no text) comes from Klik & Play 1.2 (`klikplay_12PL`, the Polish edition, `Klikplay.zip`), 1.1.0.17, the latest found in an item of Klik & Play's own: the English CD has 1.1.0.16, the Japanese Game Collection (`KlikNPlayGameCollection`) 1.1.0.17 as well. The pair is one programs of the catalog bring together too (`KNPG` d755b964 with `KNPS` c134a7ef). [[measured]] Five games run with `KNPS` 1.1.0.16 and with 1.1.0.17 reached the same statuses. 19 programs bring a `KNPS` 1.1.0.18 (Action Point's, 2009) that no item of Klik & Play's was found to hold.
+- **Borland's controls.** `BWCC_ZIP` is Borland's own distribution of `BWCC.DLL`, with its header and a note of 10 March 1993: "the latest version of BWCC.dll. Please place it in your windows/system directory". It is 1.03 (1.3.14.1). Programs of the catalog bring later ones, up to 2.04, which no item that is the runtime was found to hold. The eight ordinals the eleven programs import are all among the 1.03's exports.
+
+**How they are placed.** `scripts/catalog/runtimes.mjs --fetch` fetches each into its own folder of the gitignored `corpus/cache/catalog/runtimes/<module>/`: a whole file held to archive.org's SHA-1, a member of an archive or a disc's image through archive.org's view of it; every file held to the SHA-1 and SHA-256 `catalog/runtimes.json` records. The files are read only as data (their headers, entry tables and version resources) and run only inside WinBox. When a program's needs name a module the pass has a runtime of, and the program does not bring it (`needs.mjs`), the module is a runtime of the program's, not a library missing; so, in turn, is each runtime that runtime imports and the program does not bring (`KNPG` imports `KNPS`; the eleven games that lack only `KNPG` bring their own `KNPS`). The runtime's imports and functions count as the program's (`KNPG` imports `MMSYSTEM`: such a game runs with WinBox's sound card). `pass.mjs` copies the runtimes into the run's drive as `C:\WINDOWS\SYSTEM\<MODULE>.DLL`, over the installation beneath it, before the program runs, and before a setup runs; they are where an installed copy of Windows would have had them. The program's result names them (`runtimes`), and the table says "with VBRUN300". `library` is kept for the libraries still missing.
+
+```sh
+node scripts/catalog/runtimes.mjs --fetch   # each runtime, checked against catalog/runtimes.json
+node scripts/catalog/pass.mjs --status library
+node scripts/catalog/pass.mjs --results
+node scripts/catalog/runtimes.mjs --write   # catalog/runtimes.json: hashes, versions, ordinals, programs
+```
 
 ### What is committed
 
@@ -245,10 +277,11 @@ Failures are grouped by signature, and the groups sorted by how many programs ea
 
 ## The first pass
 
-[[measured]] 2026-11-14, every item of the catalog, WinBox at `a80d16c3bc` (the last commit that changed what runs the programs; `results.json` names it for each), on the survey's clock, twelve runs at once, one `trace` process each.
+[[measured]] 2026-11-14, every item of the catalog, WinBox at `a80d16c3bc` (the last commit that changed what runs the programs; `results.json` names it for each), on the survey's clock, twelve runs at once, one `trace` process each. The 514 programs it left `library` were run again the same day, at the same commit, with the runtimes placed ("Runtimes", above; "With the runtimes", below): the counts here are after that run.
 
 ```sh
 node scripts/catalog/fetch.mjs              # every item, the smallest first; resumed when run again
+node scripts/catalog/runtimes.mjs --fetch   # the runtimes, checked against catalog/runtimes.json
 cargo build --release -p winbox-win16 --example trace
 node scripts/catalog/pass.mjs               # every item fetched and not yet run at this commit
 node scripts/catalog/catalog.mjs --titles   # titles from the runs' captions
@@ -259,63 +292,96 @@ node scripts/catalog/pass.mjs --results     # catalog/results.json, catalog/queu
 
 | Status        | Games | Applications |   All |
 | ------------- | ----: | -----------: | ----: |
-| `idle`        |   847 |          511 | 1,358 |
+| `idle`        | 1,157 |          677 | 1,834 |
 | `box`         |    18 |            7 |    25 |
-| `running`     |    47 |           15 |    62 |
-| `unsupported` |    25 |            8 |    33 |
-| `fault`       |    89 |           34 |   123 |
-| `ended`       |    12 |           11 |    23 |
+| `running`     |    61 |           19 |    80 |
+| `unsupported` |    27 |           10 |    37 |
+| `fault`       |    93 |           37 |   130 |
+| `ended`       |    14 |           11 |    25 |
 | `win32s`      |     1 |            2 |     3 |
-| `library`     |   339 |          175 |   514 |
+| `library`     |     7 |            0 |     7 |
 | `installer`   |    39 |            3 |    42 |
 | `fetch`       |    25 |           19 |    44 |
 | `not-windows` |    44 |           13 |    57 |
 | all           | 1,486 |          798 | 2,284 |
 
-`idle` is 1,358 of 2,284, 59%: 57% of the games and 64% of the applications. Of the rest, a library not brought is the largest share (514), and the most of those Visual Basic's and Klik & Play's runtimes, which Windows 3.1 does not bring either; the next is self-loading applications (74, below). 25 programs are in a box of their own, mostly shareware notices waiting to be answered ("Please register by sending $15 ..."), which a person would answer and go on.
+`idle` is 1,834 of 2,284, 80%: 78% of the games and 85% of the applications (before the runtimes, 1,358, 59%). The largest group left is self-loading applications (74, below); 7 programs still lack a library the pass has no runtime of. 25 programs are in a box of their own, mostly shareware notices waiting to be answered ("Please register by sending $15 ..."), which a person would answer and go on.
+
+### With the runtimes
+
+[[measured]] 2026-11-14, the 514 programs the first pass left `library`, run again at `a80d16c3bc` with the runtimes placed (`pass.mjs --status library`; 282 s of wall time for 497 of them, twelve at once, and the other 17 in a trial before):
+
+| Status        | Before | After |
+| ------------- | -----: | ----: |
+| `idle`        |  1,358 | 1,834 |
+| `running`     |     62 |    80 |
+| `fault`       |    123 |   130 |
+| `unsupported` |     33 |    37 |
+| `ended`       |     23 |    25 |
+| `library`     |    514 |     7 |
+
+Of the 514: 476 `idle`, 18 `running`, 7 `fault`, 4 `unsupported`, 2 `ended`, and 7 still `library`. By runtime:
+
+| Runtime             | Programs | `idle` | Other                                    |
+| ------------------- | -------: | -----: | ---------------------------------------- |
+| `VBRUN100`          |      164 |    159 | 4 `fault`, 1 `unsupported`               |
+| `VBRUN200`          |      156 |    150 | 4 `running`, 1 `fault`, 1 `unsupported`  |
+| `VBRUN300`          |       90 |     83 | 4 `running`, 2 `ended`, 1 `fault`        |
+| `KNPG` (and `KNPS`) |       86 |     73 | 10 `running`, 2 `unsupported`, 1 `fault` |
+| `BWCC`              |       11 |     11 |                                          |
+
+What they reach now, the new signatures among them:
+
+- **A General Protection Fault in `VBRUN100.DLL` at 004E:0042**, four Visual Basic 1.0 programs (`MEDLEY_SE230072`, `MEDLEY_SE230240`, `MEDLEY_SEC10003`, `win3_eggcartn`; a fifth of the queue's group brought its own runtime); one in `VBRUN200.DLL` at 0051:010B (`MEDLEY_SE130040`), one in `KNPS.DLL` at 0001:4AD1 (`pokeballgo`), one in an unknown module at 068F:331F (`writeit_SoftwareLibrary`). Not followed: each is a read-out of the runtime's code at that place before anything is said of it.
+- **Klik & Play games busy for their ten seconds** (10): `KERNEL.GlobalReAlloc`, `GlobalLock`, `GlobalSize` again and again (4, with one that brought its runtime: the queue's 5), `GlobalAlloc`, `GlobalLock`, `_hread` (3), `GlobalAlloc`, `GlobalLock`, `GlobalSize` (1), `_lread` (1), `OffsetRect` (1). Whether they are loading their data for longer than ten seconds or waiting for something WinBox does not give is not followed.
+- **Visual Basic programs busy** (8): in `DefHookProc` after `DefWindowProc` (3), `Dos3Call` (2), and one each in `LocalAlloc`, `SetTimer`, `EnableWindow`.
+- **`Interrupt(16)`** (INT 10h), two Visual Basic programs (`win3_journal`, `MEDLEY_SEC40020`); **the sequencer playing a system-exclusive message**, two Klik & Play games (`epolice`, `win3_LAOL_knp`).
+- **Ended**: `friday-death-to-arthur-yahtzee` after `WIN87EM.__FPMATH`, `win3_wntriv12` in `KERNEL.UndefDynLink` after `LoadString`, with no import of Windows' modules that WinBox lacks (`needs.unlinked` is empty), so not `missing`.
+
+The 7 still `library` need libraries no runtime of the pass's is: `CTL3D` (`twains-world-cdrm1256390`, `win3_Fructus`), `GTIMER` (`win3_AdvMicM`, `win3_MicMan93`), `WINNLS` (`MANDL`), `CNCS` (`win3_siragame_knp`) and OLE 2's seven modules (`fishoot`).
 
 ### The work queue
 
-The 30 largest of 192 groups (`catalog/queue.json`; a program lacking two libraries is in both of theirs):
+The 30 largest of 196 groups (`catalog/queue.json`; a program lacking two libraries is in both of theirs):
 
-| ---: | --- | ---: | ---: | --- |
-| 1 | library VBRUN100 | 164 | 82 | `blink_blank_11`, `COLORBLD_WIN`, `LIFEWS` |
-| 2 | library VBRUN200 | 156 | 82 | `barney-kill`, `MEDLEY_SE120003`, `MEDLEY_SE130002` |
-| 3 | library VBRUN300 | 90 | 72 | `bible-baseball-for-windows`, `booger-bungee`, `DUCKS_SCR` |
-| 4 | library KNPG | 86 | 86 | `bug_20191005`, `CC1KNP`, `chanseygolf` |
-| 5 | library KNPS | 75 | 75 | `bug_20191005`, `CC1KNP`, `chanseygolf` |
-| 6 | fault: a self-loading application (NE flag 0800h) | 74 | 69 | `101puz`, `aladdintreasuregame`, `alphabet-pals-why-do-we-have-to` |
-| 7 | fetch: its batch file names no Windows program in the download | 22 | 18 | `alice-eventyrspill`, `auto-desk-capitol-contents`, `BusytownDOS` |
-| 8 | not-windows: DOS | 21 | 18 | `3DSDEMO`, `abbie-win-en-v-200-shareware`, `ablast20` |
-| 9 | installer: idle | 12 | 12 | `HUMANBODY_WIN`, `LETSMAKE_WIN`, `MSBEARTH_WIN` |
-| 10 | library BWCC | 11 | 10 | `MEDLEY_SEC20006`, `win3_4PLAY12`, `win3_BBARNEY` |
-| 11 | fault: Processor(Unimplemented(236)) at …. | 10 | 2 | `MEDLEY_SE230228`, `MEDLEY_SE230230`, `MEDLEY_SE230231` |
-| 12 | fetch: no download that holds a program | 9 | 0 | `CowsScreenSaver`, `GatesDoesWindows`, `softwarelibrary_win3_desktoptoys` |
-| 13 | not-windows: not MZ | 9 | 4 | `as-easy-as-for-windows-version-1.60ac`, `dos-box-osamu-sato-games-v-1.2`, `maelstrom_20160213` |
-| 14 | unsupported: Interrupt(16) | 9 | 7 | `DANGHEAD_WIN`, `FINEART_WIN`, `win3_biograf` |
-| 15 | not-windows: archive.org runs it in ruffle-swf | 8 | 8 | `aquariyum`, `chickendance_swf`, `eyeballdropper_swf` |
-| 16 | not-windows: LE | 7 | 3 | `msdos_Zombieville_1997`, `nesticle_dos`, `vidprev_202303` |
-| 17 | fault: Processor(Unimplemented(228)) at …. | 6 | 3 | `win3_BARTEYE2`, `win3_BARTEYES`, `win3_BCUBES` |
-| 18 | fetch: no program named | 6 | 1 | `APOGEE`, `CD_Deluxe_Pack_V1.0`, `encore_middle_school_advantage_2003_typing` |
-| 19 | fetch: program not in the download | 6 | 5 | `dexterdressup`, `KIMANDERSON`, `scratch-2.0_20240110` |
-| 20 | unsupported: Interrupt(75) | 6 | 6 | `arthurca_202106`, `CAT_HAT_WIN`, `GREENEGGS_WIN` |
-| 21 | unsupported: Interrupt(19) | 5 | 4 | `win3_FM`, `win3_NAMETHAT`, `win3_SCORCARD` |
-| 22 | unsupported: Unsupported("MCIWAVE playing in its task more than its buffers hold") | 5 | 4 | `BRAINGAMES_WIN`, `LITPAINT`, `win3_WHEEL` |
-| 23 | running: last KERNEL._lread, KERNEL._lread, KERNEL._lread | 4 | 4 | `3d-mania-game-pack`, `HEDGEHOGS_WIN`, `PINTA_WIN` |
-| 24 | running: last USER.SetCursor, USER.DefWindowProc, USER.DefWindowProc | 4 | 4 | `win3_FOOTBALL`, `win3_wfball11`, `win3_WFTBALL` |
-| 25 | unsupported: Unsupported("DefWindowProc making an MDI child") | 4 | 1 | `MEDLEY_SEC60008`, `win3_CAMAZE`, `win3_fcc` |
-| 26 | fault: a General Protection Fault in <unknown> at 018F:B3ED | 3 | 0 | `MEDLEY_SE110078`, `MEDLEY_SE130039`, `MIDIE100_SETUP` |
-| 27 | not-windows: archive.org runs it in vice-resid | 3 | 3 | `spacepanic_c64`, `superman_tap`, `tmnt_tap` |
-| 28 | running: last KERNEL.SizeofResource, KERNEL.GlobalAlloc, KERNEL.GlobalLock | 3 | 3 | `win3_SVPOKE`, `win3_svpoke10`, `win3_SVPOKER` |
-| 29 | win32s: PE | 3 | 1 | `draft-choice-for-windows-version-2.0k`, `GagBoy`, `sanskrittrainer` |
-| 30 | box: : QuickTime for Windows is not installed! | 2 | 2 | `AFHV_WIN`, `BARRY_WIN` |
+|   # | Signature                                                                          | Programs | Games | The first three                                                                                 |
+| --: | ---------------------------------------------------------------------------------- | -------: | ----: | ----------------------------------------------------------------------------------------------- |
+|   1 | fault: a self-loading application (NE flag 0800h)                                  |       74 |    69 | `101puz`, `aladdintreasuregame`, `alphabet-pals-why-do-we-have-to`                              |
+|   2 | fetch: its batch file names no Windows program in the download                     |       22 |    18 | `alice-eventyrspill`, `auto-desk-capitol-contents`, `BusytownDOS`                               |
+|   3 | not-windows: DOS                                                                   |       21 |    18 | `3DSDEMO`, `abbie-win-en-v-200-shareware`, `ablast20`                                           |
+|   4 | installer: idle                                                                    |       12 |    12 | `HUMANBODY_WIN`, `LETSMAKE_WIN`, `MSBEARTH_WIN`                                                 |
+|   5 | unsupported: Interrupt(16)                                                         |       11 |     7 | `DANGHEAD_WIN`, `FINEART_WIN`, `MEDLEY_SEC40020`                                                |
+|   6 | fault: Processor(Unimplemented(236)) at ….                                         |       10 |     2 | `MEDLEY_SE230228`, `MEDLEY_SE230230`, `MEDLEY_SE230231`                                         |
+|   7 | fetch: no download that holds a program                                            |        9 |     0 | `CowsScreenSaver`, `GatesDoesWindows`, `softwarelibrary_win3_desktoptoys`                       |
+|   8 | not-windows: not MZ                                                                |        9 |     4 | `as-easy-as-for-windows-version-1.60ac`, `dos-box-osamu-sato-games-v-1.2`, `maelstrom_20160213` |
+|   9 | not-windows: archive.org runs it in ruffle-swf                                     |        8 |     8 | `aquariyum`, `chickendance_swf`, `eyeballdropper_swf`                                           |
+|  10 | not-windows: LE                                                                    |        7 |     3 | `msdos_Zombieville_1997`, `nesticle_dos`, `vidprev_202303`                                      |
+|  11 | fault: Processor(Unimplemented(228)) at ….                                         |        6 |     3 | `win3_BARTEYE2`, `win3_BARTEYES`, `win3_BCUBES`                                                 |
+|  12 | fetch: no program named                                                            |        6 |     1 | `APOGEE`, `CD_Deluxe_Pack_V1.0`, `encore_middle_school_advantage_2003_typing`                   |
+|  13 | fetch: program not in the download                                                 |        6 |     5 | `dexterdressup`, `KIMANDERSON`, `scratch-2.0_20240110`                                          |
+|  14 | unsupported: Interrupt(75)                                                         |        6 |     6 | `arthurca_202106`, `CAT_HAT_WIN`, `GREENEGGS_WIN`                                               |
+|  15 | fault: a General Protection Fault in VBRUN100.DLL at 004E:0042                     |        5 |     2 | `MEDLEY_SE230072`, `MEDLEY_SE230240`, `MEDLEY_SEC10003`                                         |
+|  16 | running: last KERNEL._lread, KERNEL._lread, KERNEL._lread                          |        5 |     5 | `3d-mania-game-pack`, `HEDGEHOGS_WIN`, `PINTA_WIN`                                              |
+|  17 | running: last KERNEL.GlobalReAlloc, KERNEL.GlobalLock, KERNEL.GlobalSize           |        5 |     5 | `gtrwx_BTMATSTR`, `win3_Casino_knp`, `win3_CUBEv5_knp`                                          |
+|  18 | unsupported: Interrupt(19)                                                         |        5 |     4 | `win3_FM`, `win3_NAMETHAT`, `win3_SCORCARD`                                                     |
+|  19 | unsupported: Unsupported("MCIWAVE playing in its task more than its buffers hold") |        5 |     4 | `BRAINGAMES_WIN`, `LITPAINT`, `win3_WHEEL`                                                      |
+|  20 | running: last USER.DefWindowProc, USER.DefHookProc, USER.DefHookProc               |        4 |     2 | `MEDLEY_SEC30019`, `MEDLEY_SEC30020`, `win3_StarMerc`                                           |
+|  21 | running: last USER.SetCursor, USER.DefWindowProc, USER.DefWindowProc               |        4 |     4 | `win3_FOOTBALL`, `win3_wfball11`, `win3_WFTBALL`                                                |
+|  22 | unsupported: Unsupported("DefWindowProc making an MDI child")                      |        4 |     1 | `MEDLEY_SEC60008`, `win3_CAMAZE`, `win3_fcc`                                                    |
+|  23 | fault: a General Protection Fault in <unknown> at 018F:B3ED                        |        3 |     0 | `MEDLEY_SE110078`, `MEDLEY_SE130039`, `MIDIE100_SETUP`                                          |
+|  24 | not-windows: archive.org runs it in vice-resid                                     |        3 |     3 | `spacepanic_c64`, `superman_tap`, `tmnt_tap`                                                    |
+|  25 | running: last KERNEL.GlobalAlloc, KERNEL.GlobalLock, KERNEL._HREAD                 |        3 |     3 | `pfe1v3`, `win3_illusion_knp`, `win3_iode2_knp`                                                 |
+|  26 | running: last KERNEL.SizeofResource, KERNEL.GlobalAlloc, KERNEL.GlobalLock         |        3 |     3 | `win3_SVPOKE`, `win3_svpoke10`, `win3_SVPOKER`                                                  |
+|  27 | unsupported: Unsupported("the sequencer playing a system-exclusive message")       |        3 |     3 | `16chmp-11`, `epolice`, `win3_LAOL_knp`                                                         |
+|  28 | win32s: PE                                                                         |        3 |     1 | `draft-choice-for-windows-version-2.0k`, `GagBoy`, `sanskrittrainer`                            |
+|  29 | box: : QuickTime for Windows is not installed!                                     |        2 |     2 | `AFHV_WIN`, `BARRY_WIN`                                                                         |
+|  30 | box: Living Books Player: Current display driver palette too small.                |        2 |     0 | `ArthursTeacherTroubleV11`, `JustGrandmaAndMeV11`                                               |
 
 What the larger groups are, as far as the pass reads them:
 
-- **Visual Basic's runtimes** (`VBRUN100`, `VBRUN200`, `VBRUN300`): 164, 156 and 90 programs import one that their download does not bring. They are Microsoft's redistributable runtimes, not part of Windows 3.1. Klik & Play's (`KNPG`, `KNPS`) are 86 games'; `BWCC` (Borland's controls) 11.
 - **Self-loading applications** (74): every program of the group has 0800h in its New Executable header's flags (at 0Ch), a program whose segments its own loader in its first segment loads, which Windows calls in place of loading them. Their runs stop before or at their first instructions: an invalid opcode at their entry (`Processor(Fault(6))`, 0 instructions, the bytes there not code), or a General Protection Fault at the same place in different programs (0002:E37A, 0002:0060). No code of WinBox's read the flag, so the entry was run as if its segments were loaded. Since 2026-11-14 WinBox boots their loaders as KERNEL does ([[topic:self-loading]]): run again as the pass runs them [[measured]], every one's loader loads its segments and its own code runs. 69 then stop at one place, a General Protection Fault reading MMSYSTEM's module database (word 1Ch, the segment count, through `GetModuleHandle("MMSYSTEM")` after `waveOutOpen`), which WinBox's own MMSYSTEM, kept with no file, leaves blank; 4 are `running`, 1 `idle` (a Visual Basic program at its runtime's box), and the 3 self-loading setups stop as their programs do. The table above is the pass's before that.
 - **Processor** (`Unimplemented(236)`, `228`, `237`): the core stopped at an opcode it does not run, ECh, E4h and EDh, `IN` from a port (18 programs together). `Unimplemented(99)` and `(15)` are one setup each.
-- **Interrupts**: `Interrupt(16)` is INT 10h, the video BIOS (9); `Interrupt(19)` INT 13h, the disk BIOS (5); `Interrupt(75)` INT 4Bh (6). Microsoft Kids' programs, installed in enhanced mode, stop at INT 10h.
+- **Interrupts**: `Interrupt(16)` is INT 10h, the video BIOS (11, 2 of them Visual Basic programs run with their runtime); `Interrupt(19)` INT 13h, the disk BIOS (5); `Interrupt(75)` INT 4Bh (6). Microsoft Kids' programs, installed in enhanced mode, stop at INT 10h.
 - **`fetch`**: 22 items run a batch file that names no Windows program in the download (DOS menus, or a program on a disc's image the batch file mounts); 9 have no download with a program (the collections' own items, screen savers kept as `.scr` alone); 6 name no program at all and 6 a program their download does not hold; TROLL_WIN's 6.4 GB was not finished.
 - **`not-windows`**: 21 DOS programs, 7 `LE` (a VxD or a DOS extender's), 9 not `MZ` (a batch file or a `.COM`), 20 that archive.org runs in Ruffle or another machine's emulator.
 
@@ -501,4 +567,5 @@ MobyGames: `mobygames.mjs` has not been run, and its matches need the owner's an
 - **Titles.** The pass's captions give titles for the items titled by a file name; titles by a settings dialog or a version split badly ("wEyes v") remain for corrections. MobyGames and Wikipedia to confirm titles and link to them.
 - **The classifier.** `idle` was checked against the sample's screens and the corpus's programs; the shareware notices left as `box` are a program waiting for its user, as `idle` is, and are kept apart only because their text is the signature. A self-loading application's faults are grouped as one signature: when the pass was run, WinBox's loader did not read the flag; it does now ([[topic:self-loading]]).
 - **The sample's two.** CAN241's box ("has been corrupted") and Disgruntled Warthog's wait are not followed.
+- **Runtimes.** `KNPS` 1.1.0.18, which 19 programs bring (Action Point's, 2009), and `BWCC` 2.x (up to 2.04 among the programs' own) were not found on archive.org in an item of the runtime's or its product's own; the pass places 1.1.0.17 and 1.03. `CTL3D`, `GTIMER`, `WINNLS`, `CNCS` and OLE 2's modules (one or two programs each) have no runtime yet. Programs that bring their own runtime keep it, whatever its version. The faults in `VBRUN100.DLL`, `VBRUN200.DLL` and `KNPS.DLL` and the Klik & Play games busy for ten seconds (above, "With the runtimes") are not followed. Titles from the captions of the programs that now run are not chosen yet (`catalog.mjs --titles`).
 - **Run again** as signatures are fixed: `node scripts/catalog/pass.mjs --status <status>`, then `--results`.

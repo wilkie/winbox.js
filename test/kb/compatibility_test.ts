@@ -154,5 +154,20 @@ describe('the compatibility table', () => {
     expect(table.total).toBe(data!.entries.length);
     expect(table.rows[0]).toMatch(/^<tr data-title=/);
     expect(table.rows.join('\n')).toContain('https://archive.org/details/');
+
+    /* A runtime the first pass placed is named beside the status. */
+    const entry = data!.entries[0];
+    const placed = renderTable(
+      {
+        ...data!,
+        entries: [entry],
+        results: new Map([
+          [entry.id, { id: entry.id, status: 'idle', runtimes: ['KNPG', 'KNPS'] }],
+        ]),
+      },
+      { targets, commitUrl: () => null, up: '../' }
+    );
+
+    expect(placed.rows[0]).toContain('<span class="note">with KNPG and KNPS</span>');
   });
 });
