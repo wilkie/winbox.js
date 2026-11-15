@@ -193,6 +193,103 @@ For each program and each run, a record: the status, the signature, the needs, t
 
 Failures are grouped by signature, and the groups sorted by how many programs each holds: "`USER.Foo` missing, 37 programs", "fault in `WIN87EM` at ..., 12 programs". Each group is a piece of work for the knowledge base's usual method, a read-out and a probe before any change ([[guide:contributing]]). When a commit fixes a signature, the programs that had it are run again, and those that now get further join whatever group they reach next. The queue is made from `catalog/results.json` by a script, and shown on the site (below). It is never edited by hand.
 
+## The first pass
+
+[[measured]] 2026-11-14, every item of the catalog, WinBox at `a80d16c3bc` (the last commit that changed what runs the programs; `results.json` names it for each), on the survey's clock, twelve runs at once, one `trace` process each.
+
+```sh
+node scripts/catalog/fetch.mjs              # every item, the smallest first; resumed when run again
+cargo build --release -p winbox-win16 --example trace
+node scripts/catalog/pass.mjs               # every item fetched and not yet run at this commit
+node scripts/catalog/catalog.mjs --titles   # titles from the runs' captions
+node scripts/catalog/pass.mjs --results     # catalog/results.json, catalog/queue.json, needs in the catalog
+```
+
+### By status
+
+| Status        | Games | Applications |   All |
+| ------------- | ----: | -----------: | ----: |
+| `idle`        |   847 |          511 | 1,358 |
+| `box`         |    18 |            7 |    25 |
+| `running`     |    47 |           15 |    62 |
+| `unsupported` |    25 |            8 |    33 |
+| `fault`       |    89 |           34 |   123 |
+| `ended`       |    12 |           11 |    23 |
+| `win32s`      |     1 |            2 |     3 |
+| `library`     |   339 |          175 |   514 |
+| `installer`   |    39 |            3 |    42 |
+| `fetch`       |    25 |           19 |    44 |
+| `not-windows` |    44 |           13 |    57 |
+| all           | 1,486 |          798 | 2,284 |
+
+`idle` is 1,358 of 2,284, 59%: 57% of the games and 64% of the applications. Of the rest, a library not brought is the largest share (514), and the most of those Visual Basic's and Klik & Play's runtimes, which Windows 3.1 does not bring either; the next is self-loading applications (74, below). 25 programs are in a box of their own, mostly shareware notices waiting to be answered ("Please register by sending $15 ..."), which a person would answer and go on.
+
+### The work queue
+
+The 30 largest of 192 groups (`catalog/queue.json`; a program lacking two libraries is in both of theirs):
+
+| ---: | --- | ---: | ---: | --- |
+| 1 | library VBRUN100 | 164 | 82 | `blink_blank_11`, `COLORBLD_WIN`, `LIFEWS` |
+| 2 | library VBRUN200 | 156 | 82 | `barney-kill`, `MEDLEY_SE120003`, `MEDLEY_SE130002` |
+| 3 | library VBRUN300 | 90 | 72 | `bible-baseball-for-windows`, `booger-bungee`, `DUCKS_SCR` |
+| 4 | library KNPG | 86 | 86 | `bug_20191005`, `CC1KNP`, `chanseygolf` |
+| 5 | library KNPS | 75 | 75 | `bug_20191005`, `CC1KNP`, `chanseygolf` |
+| 6 | fault: a self-loading application (NE flag 0800h) | 74 | 69 | `101puz`, `aladdintreasuregame`, `alphabet-pals-why-do-we-have-to` |
+| 7 | fetch: its batch file names no Windows program in the download | 22 | 18 | `alice-eventyrspill`, `auto-desk-capitol-contents`, `BusytownDOS` |
+| 8 | not-windows: DOS | 21 | 18 | `3DSDEMO`, `abbie-win-en-v-200-shareware`, `ablast20` |
+| 9 | installer: idle | 12 | 12 | `HUMANBODY_WIN`, `LETSMAKE_WIN`, `MSBEARTH_WIN` |
+| 10 | library BWCC | 11 | 10 | `MEDLEY_SEC20006`, `win3_4PLAY12`, `win3_BBARNEY` |
+| 11 | fault: Processor(Unimplemented(236)) at …. | 10 | 2 | `MEDLEY_SE230228`, `MEDLEY_SE230230`, `MEDLEY_SE230231` |
+| 12 | fetch: no download that holds a program | 9 | 0 | `CowsScreenSaver`, `GatesDoesWindows`, `softwarelibrary_win3_desktoptoys` |
+| 13 | not-windows: not MZ | 9 | 4 | `as-easy-as-for-windows-version-1.60ac`, `dos-box-osamu-sato-games-v-1.2`, `maelstrom_20160213` |
+| 14 | unsupported: Interrupt(16) | 9 | 7 | `DANGHEAD_WIN`, `FINEART_WIN`, `win3_biograf` |
+| 15 | not-windows: archive.org runs it in ruffle-swf | 8 | 8 | `aquariyum`, `chickendance_swf`, `eyeballdropper_swf` |
+| 16 | not-windows: LE | 7 | 3 | `msdos_Zombieville_1997`, `nesticle_dos`, `vidprev_202303` |
+| 17 | fault: Processor(Unimplemented(228)) at …. | 6 | 3 | `win3_BARTEYE2`, `win3_BARTEYES`, `win3_BCUBES` |
+| 18 | fetch: no program named | 6 | 1 | `APOGEE`, `CD_Deluxe_Pack_V1.0`, `encore_middle_school_advantage_2003_typing` |
+| 19 | fetch: program not in the download | 6 | 5 | `dexterdressup`, `KIMANDERSON`, `scratch-2.0_20240110` |
+| 20 | unsupported: Interrupt(75) | 6 | 6 | `arthurca_202106`, `CAT_HAT_WIN`, `GREENEGGS_WIN` |
+| 21 | unsupported: Interrupt(19) | 5 | 4 | `win3_FM`, `win3_NAMETHAT`, `win3_SCORCARD` |
+| 22 | unsupported: Unsupported("MCIWAVE playing in its task more than its buffers hold") | 5 | 4 | `BRAINGAMES_WIN`, `LITPAINT`, `win3_WHEEL` |
+| 23 | running: last KERNEL._lread, KERNEL._lread, KERNEL._lread | 4 | 4 | `3d-mania-game-pack`, `HEDGEHOGS_WIN`, `PINTA_WIN` |
+| 24 | running: last USER.SetCursor, USER.DefWindowProc, USER.DefWindowProc | 4 | 4 | `win3_FOOTBALL`, `win3_wfball11`, `win3_WFTBALL` |
+| 25 | unsupported: Unsupported("DefWindowProc making an MDI child") | 4 | 1 | `MEDLEY_SEC60008`, `win3_CAMAZE`, `win3_fcc` |
+| 26 | fault: a General Protection Fault in <unknown> at 018F:B3ED | 3 | 0 | `MEDLEY_SE110078`, `MEDLEY_SE130039`, `MIDIE100_SETUP` |
+| 27 | not-windows: archive.org runs it in vice-resid | 3 | 3 | `spacepanic_c64`, `superman_tap`, `tmnt_tap` |
+| 28 | running: last KERNEL.SizeofResource, KERNEL.GlobalAlloc, KERNEL.GlobalLock | 3 | 3 | `win3_SVPOKE`, `win3_svpoke10`, `win3_SVPOKER` |
+| 29 | win32s: PE | 3 | 1 | `draft-choice-for-windows-version-2.0k`, `GagBoy`, `sanskrittrainer` |
+| 30 | box: : QuickTime for Windows is not installed! | 2 | 2 | `AFHV_WIN`, `BARRY_WIN` |
+
+What the larger groups are, as far as the pass reads them:
+
+- **Visual Basic's runtimes** (`VBRUN100`, `VBRUN200`, `VBRUN300`): 164, 156 and 90 programs import one that their download does not bring. They are Microsoft's redistributable runtimes, not part of Windows 3.1. Klik & Play's (`KNPG`, `KNPS`) are 86 games'; `BWCC` (Borland's controls) 11.
+- **Self-loading applications** (74): every program of the group has 0800h in its New Executable header's flags (at 0Ch), a program whose segments its own loader in its first segment loads, which Windows calls in place of loading them. Their runs stop before or at their first instructions: an invalid opcode at their entry (`Processor(Fault(6))`, 0 instructions, the bytes there not code), or a General Protection Fault at the same place in different programs (0002:E37A, 0002:0060). No code of WinBox's reads the flag [[inferred]] (a search of its loader), so the entry is run as if its segments were loaded.
+- **Processor** (`Unimplemented(236)`, `228`, `237`): the core stopped at an opcode it does not run, ECh, E4h and EDh, `IN` from a port (18 programs together). `Unimplemented(99)` and `(15)` are one setup each.
+- **Interrupts**: `Interrupt(16)` is INT 10h, the video BIOS (9); `Interrupt(19)` INT 13h, the disk BIOS (5); `Interrupt(75)` INT 4Bh (6). Microsoft Kids' programs, installed in enhanced mode, stop at INT 10h.
+- **`fetch`**: 22 items run a batch file that names no Windows program in the download (DOS menus, or a program on a disc's image the batch file mounts); 9 have no download with a program (the collections' own items, screen savers kept as `.scr` alone); 6 name no program at all and 6 a program their download does not hold; TROLL_WIN's 6.4 GB was not finished.
+- **`not-windows`**: 21 DOS programs, 7 `LE` (a VxD or a DOS extender's), 9 not `MZ` (a batch file or a `.COM`), 20 that archive.org runs in Ruffle or another machine's emulator.
+
+### Needs
+
+Over the 2,284 items [[measured]]: `sound` 737, `palette` 459, `midi` 119, `self-loading` 76, `cd` 61, `vfw` 35, `quicktime` 34, `wing` 22, `win32s` 17 (Win32s's files in the download; 3 programs are `PE` themselves). Enhanced mode: 10, 6 found by the Win386 supervisor's string among their files and 4 by their setups' text; `vga256`: 32, by their windows' text. No program with a `.MOV` imports one of QuickTime's modules: it is the runtime's files (`QTIM.DLL`) and the movies in the download that say so. 3 programs import a function of WinBox's modules that WinBox does not export (`USER` ordinal 345, which Windows' table leaves unnamed).
+
+### Installs
+
+64 items run a setup. 22 left a program, 20 found from the Program Manager group the setup made, 2 from the one program it wrote; their programs' runs: 9 `idle`, 6 `fault`, 3 `unsupported`, 2 `ended`, a `box` and a `running`. 42 are `installer`. By installer: Microsoft's toolkit 4 of 17, InstallShield 7 of 12, the rest 11 of 35. Where they stopped:
+
+- **Enter did not take them on** (12, "`installer: idle`"): a dialog Enter does not answer as its default, or a choice of options (Microsoft Kids' "Kids Setup", Sesame Street's options, ROCKYBULLWINKLE's).
+- **They stopped at a box**: a Visual Basic setup kit's bootstrap could not start the `SETUP1.EXE` it had expanded with `VerInstallFile`, which answered nought ("Error - Could not execute: C:\WINDOWS\SETUP1.exe 2"; `win3_ANDTILES`, `win3_bogle10`); a second floppy asked for (`win3_Skat2095`); "Windows 3.1.x Not Supported" (`kid-pix-sd-win31`).
+- **Faults and engine gaps in the setup itself**: a self-loading setup's, `~TMP0905` of two (0437:2825 and 0447:2825), InstallShield's `_INS0463`, `GetTextExtent` with no device context, a null `RECT`.
+- **Ended with nothing installed**: Caribbean Treasure's setup (`win3_CARIBB`) takes Enter through its welcome and its folder and then ends, with no file written and no box; three more with the same welcome (`win3_EASTER`, `win3_LANIMALS`, `win3_MMASH`) end with no program written (Meteor Mash's leaves `CNCS.DLL` in `SYSTEM`).
+
+Setups that said they need 256 colours or enhanced mode (`win3_ExileII-`'s box, `NFLCHIEFS`'s, Microsoft Kids' "You need to run Windows in enhanced mode") were installed again so.
+
+### Totals and timings
+
+- **Downloads**: 2,283 items fetched, 29.85 GB of downloads in this pass and 78 MB the titles' before it, every one matching archive.org's SHA-1; TROLL_WIN's 6.4 GB stopped at 2.0 GB, to be resumed. 37.6 GB unpacked, well under the 150 GB at which the fetch stops. The fetch took about 65 minutes; the small items come at the rate of the second between requests, the large at 10 to 22 MB/s. The slowest: `the-chessmaster-3000-multimedia` (1.2 GB, 280 s), `netdisc-9` (918 MB, 237 s), `cgw-1997-06` (1.1 GB, 182 s).
+- **Runs**: the whole catalog run again at the last commit took 713 s of wall time, twelve at once. 1,624 programs ran: 2,098 s of the host's time together, a median of 159 ms and a mean of 1.3 s; a setup's two runs come on top. The slowest: Action Point's `actionpoint_mojofltr_*` (192 s each, stopped by the host's three minutes; `running`), `stickman_201910` (77 s), `cgolf` (68 s), `win3_Atmoids` (54 s): programs busy all their ten seconds, playing sound.
+- **DOS functions not answered**, as `trace` lists them by AX, among the programs' own runs, by AH: 59h (get extended error) in 16 programs, 34h (the InDOS flag's address) in 6, 45h (duplicate a handle) in 5, 38h (country) in 3, 5Ch (lock a region) in 2. A run goes on past them; they are kept in `results.json` (`dos`), not in the queue.
+
 ## Human verification
 
 `idle` says a program started. Whether it can be played or used takes a person. A rating is one of:
@@ -253,7 +350,7 @@ Reading the metadata took 48 minutes (14:31 to 15:19), a request every 1.3 secon
 
 **Time per run.** [[measured]] The sample's nine runs (below) took 117 ms to 1.6 s of the host's time each for their ten virtual seconds, 555 ms on average. A program that waits for messages is quick, as the engine passes idle time without running instructions; a busy one runs its 20 to 30 million instructions and takes about 1.5 s. The corpus's 38 programs take 98 to 105 seconds together ([[topic:timing]]), about 2.7 s each, as their reports hold them to more calls. At 1.5 s each, all 2,284 items would take under an hour of runs on one core, before installs. Installs take longer: Lode Runner's setup draws its menu some 27 virtual seconds in, before its system test and its copying ([[topic:win386]]).
 
-**Downloads** dominate. 36.4 GB is about an hour at a sustained 10 MB/s; what archive.org sustains for this was not measured. The 2,170 items under 50 MB are 1.9 GB.
+**Downloads** dominate. 36.4 GB is about an hour at a sustained 10 MB/s; what archive.org sustains for this was not measured here. The first pass measured it (above, "Totals and timings"): about 65 minutes for all but the largest item, three downloads at once. The 2,170 items under 50 MB are 1.9 GB.
 
 ## The prototype
 
@@ -318,6 +415,9 @@ The owner decided (2026-11-14) the questions this page put:
 
 ## Not yet done
 
-Titles for the some 1,750 items not yet fetched: they have archive.org's title with its prefix stripped until the first pass fetches and runs them, when `titles.mjs` is to read each as it does the 534. The 69 titles still a file name. MobyGames and Wikipedia to confirm titles and link to them. `.INF` files of other setup programs than Microsoft's toolkit are not read.
-
-Everything after phase 1. `needs` is not filled in the catalog: the sample reads module references (`importsOf`) and the Win386 supervisor's string, and nothing reads `.INF` files or imports by ordinal yet. The sample does not install, and takes only loose games in one zip. A box's text is not in the trace (the call is printed without its arguments), so the `box` signature is its last calls; the text is on its screen. CAN241's box and Disgruntled Warthog's wait are not followed. The classifier's `idle` rule (a message call among the last thousand, or under a tenth of the seconds' instructions) was checked against the sample's ten screens and the corpus's 36 programs; a program that is busy after showing its window, as `starmerc` is, is `running`, and whether that is right for a given program takes a person.
+- **Installers.** Enter every four seconds takes some setups through and not others: a Visual Basic setup kit's form (`win3_CLRMATCH`) takes neither Enter nor Alt+C in WinBox, and why is not followed; Microsoft's toolkit's (`win3_ffws1`) says it "Could not open the file named: 'C:\CORPUS\DISK1\_MSTEST.EX_'"; the VB setup kit's bootstrap (`win3_ANDTILES`, `win3_bogle10`) cannot start the `SETUP1.EXE` it expanded with `VerInstallFile`, which answered nought. Each is a queue entry for a read-out, not followed here. Setups that need steps of their own (a second floppy, a choice of options) have none yet. When the setup has ended, Enter reaches Program Manager and opens Main's items; the DOS functions those ask (11h, find first by FCB, among them) are left out of a setup's signature, which takes those of its 30 seconds alone.
+- **Discs.** A disc's image is mounted as D:, and a program its batch file starts from the disc is not followed: a batch file that names no Windows program in the download is `fetch`. Hard disks' images (`.img` with a partition table, or FAT32) are not mounted.
+- **Titles.** The pass's captions give titles for the items titled by a file name; titles by a settings dialog or a version split badly ("wEyes v") remain for corrections. MobyGames and Wikipedia to confirm titles and link to them.
+- **The classifier.** `idle` was checked against the sample's screens and the corpus's programs; the shareware notices left as `box` are a program waiting for its user, as `idle` is, and are kept apart only because their text is the signature. A self-loading application's faults are grouped as one signature: WinBox's loader does not read the flag (no code of its reads 0800h of the header's flags) [[inferred]].
+- **The sample's two.** CAN241's box ("has been corrupted") and Disgruntled Warthog's wait are not followed.
+- **Run again** as signatures are fixed: `node scripts/catalog/pass.mjs --status <status>`, then `--results`.
