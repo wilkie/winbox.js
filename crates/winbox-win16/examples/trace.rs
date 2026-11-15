@@ -28,7 +28,7 @@
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty. `--captions` prints, after the calls,
 //! the windows at the top as the run left them, with their captions, and
-//! a message box's text. `--sound` installs WinBox's own sound card on the
+//! a message box's or a window's text (its statics). `--sound` installs WinBox's own sound card on the
 //! run's drive, as winbox-native's `--sound` does.
 //! `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
@@ -145,21 +145,36 @@ fn print_captions(system: &winbox_win16::System) {
             "title": window.title,
         });
 
-        // A box's text: its static that is not its icon (`SS_ICON`, style
-        // 3), as `MessageBox` makes them (`user_calls::message_box`).
-        if message_box {
-            let text = system
-                .windows
-                .iter()
-                .flatten()
-                .find(|child| {
-                    child.parent == Some(slot)
-                        && child.class.eq_ignore_ascii_case("static")
-                        && child.style & 0xf != 3
-                })
-                .map_or(String::new(), |child| child.title.clone());
+        // A box's text, or a window's: the statics beneath it, at any
+        // depth, that are not icons (`SS_ICON`, style 3), as `MessageBox`
+        // makes a box's (`user_calls::message_box`), in the order of their
+        // slots.
+        let beneath = |mut child: Option<usize>| {
+            while let Some(at) = child {
+                if at == slot {
+                    return true;
+                }
 
-            line["text"] = serde_json::Value::String(text);
+                child = system.windows.get(at).and_then(|w| w.as_ref()?.parent);
+            }
+
+            false
+        };
+        let text: Vec<&str> = system
+            .windows
+            .iter()
+            .flatten()
+            .filter(|child| {
+                child.class.eq_ignore_ascii_case("static")
+                    && child.style & 0xf != 3
+                    && !child.title.is_empty()
+                    && beneath(child.parent)
+            })
+            .map(|child| child.title.as_str())
+            .collect();
+
+        if message_box || !text.is_empty() {
+            line["text"] = serde_json::Value::String(text.join("\n"));
         }
 
         println!("window: {line}");

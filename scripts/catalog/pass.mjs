@@ -289,7 +289,11 @@ function outcome(run) {
 
 /** What a run's box or windows say it needs: enhanced mode, or more colours. */
 function askedFor(result) {
-  const said = [result.box?.text, result.box?.title, ...result.windows.map((w) => w.title)]
+  const said = [
+    result.box?.text,
+    result.box?.title,
+    ...result.windows.flatMap((w) => [w.title, w.text]),
+  ]
     .filter(Boolean)
     .join(' \n ');
 
@@ -481,7 +485,7 @@ async function install(item, folder, needs, mounts) {
   const ownWindows = (windows) =>
     windows
       .filter((window) => window.visible && !window.box && !WINDOWS_OWN.test(window.title))
-      .map((window) => window.title)
+      .map((window) => (window.text ? `${window.title}: ${window.text}` : window.title))
       .filter(Boolean);
   const first = probe.box
     ? `${probe.box.title}: ${probe.box.text}`
@@ -515,7 +519,7 @@ async function install(item, folder, needs, mounts) {
     groups: groups.map((group) => ({ group: group.group, items: group.items })),
     shown: result.windows
       .filter((window) => window.visible && !WINDOWS_OWN.test(window.title))
-      .map((window) => window.title),
+      .map((window) => (window.text ? `${window.title}: ${window.text}` : window.title)),
     box: result.box,
     first,
     firstBox: Boolean(probe.box),
