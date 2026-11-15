@@ -1,0 +1,2 @@
+# A floppy image as A:: see biosequ.c.
+a: imgflop.img floppy

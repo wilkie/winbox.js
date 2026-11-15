@@ -8,7 +8,7 @@ pub mod layered;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use winbox_machine::{FatVolume, HostDrive, HostLayer, IsoVolume, MemoryDrive, Volume};
+use winbox_machine::{EmptyDrive, FatVolume, HostDrive, HostLayer, IsoVolume, MemoryDrive, Volume};
 use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
@@ -808,12 +808,7 @@ pub fn run_setup<T>(
 
     let c = HostDrive::layered(drive.join("C"), setup.beneath.lowers());
 
-    std::fs::create_dir_all(drive.join("A")).unwrap();
-    std::fs::create_dir_all(drive.join("Z")).unwrap();
-    setup
-        .system
-        .files
-        .mount('A', HostDrive::removable(drive.join("A")));
+    setup.system.files.mount('A', EmptyDrive::default());
     setup.system.files.mount('C', c);
 
     for path in &setup.without {
@@ -822,10 +817,7 @@ pub fn run_setup<T>(
 
         setup.system.files.unlink('C', &parts, &name);
     }
-    setup
-        .system
-        .files
-        .mount('Z', HostDrive::new(drive.join("Z")));
+    setup.system.files.mount('Z', MemoryDrive::virtual_drive());
     mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
 
     let upper = setup.upper.clone();
@@ -1053,9 +1045,9 @@ pub fn run_in_memory(
         assert!(c.add_file(path, bytes.clone(), now));
     }
 
-    setup.system.files.mount('A', MemoryDrive::removable());
+    setup.system.files.mount('A', EmptyDrive::default());
     setup.system.files.mount('C', c);
-    setup.system.files.mount('Z', MemoryDrive::new());
+    setup.system.files.mount('Z', MemoryDrive::virtual_drive());
     mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
 
     let upper = setup.upper.clone();
@@ -1086,9 +1078,9 @@ pub fn run_drive(
 ) -> (Stop, Vec<[String; 3]>, System) {
     let mut system = setup.system;
 
-    system.files.mount('A', MemoryDrive::removable());
+    system.files.mount('A', EmptyDrive::default());
     system.files.mount('C', c);
-    system.files.mount('Z', MemoryDrive::new());
+    system.files.mount('Z', MemoryDrive::virtual_drive());
 
     let setup = Setup { system, ..setup };
     let engine = winbox_win16::Engine::new(setup.start(prepare));
@@ -1244,7 +1236,9 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "winflags", "dpmiver", "about", "enhmode", "freemem", "dpmildt", "dpmimem", "dpmirm",
     "dpmiexc", "dpmigro", "dpmigrw", "dpminul", "dpmiout", "w386ver", "w386env", "w386dpmi",
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
-    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed",
+    "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
+    "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot", "abssect",
+    "mscdbuf",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1334,37 +1328,19 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "solodata:flags",
         "the module's database holds its file's header, not the bits KERNEL sets in its flags",
     ),
-    // DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
-    // whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
-    // is its own, "512,127,16513,0" (`drive_virtual.cpp`), whose byte in
-    // DOS's table of media bytes no `MOUNT` writes, so nought. winbox.js's
-    // C:, a FAT16 volume, answers the folder's figures too; its Z: is an
-    // empty folder, which answers a folder's figures and F8h. A:, B:, C:
-    // and the numbers past Z: agree, for 36h, 1Bh and 1Ch, and where
-    // 1Ch's DS:BX points (`diskfree`, `diskmed`).
+    // `INT 25h` through Windows: a drive there answers the carry clear, and
+    // the read's buffer comes back over-written with what the DOS
+    // extender's own buffer held, which DOSBox never wrote (`abssect`); in
+    // 386 enhanced mode the buffer of a drive not there is over-written
+    // too. Those bytes are leftovers of the machine, not laid out here: the
+    // buffer is left as it was. The registers and the flags agree.
     (
-        "diskfree:space",
-        "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
+        "abssect:read",
+        "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here",
     ),
     (
-        "diskfree:allocation",
-        "there is no Z: here, DOSBox's own drive, 512,127,16513",
-    ),
-    (
-        "diskfree:media",
-        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-    ),
-    (
-        "diskmed:call",
-        "there is no Z: here, DOSBox's own drive, 512,127,16513",
-    ),
-    (
-        "diskmed:media",
-        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-    ),
-    (
-        "diskmed:table",
-        "there is no Z: here, DOSBox's own drive, whose media byte is nought",
+        "abssect:big",
+        "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here",
     ),
     // GlobalReAlloc growing a block past one allocated after it moves it in
     // Windows, its selector the same; winbox.js gives each selector a 64 KiB

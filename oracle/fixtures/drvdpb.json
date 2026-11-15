@@ -1,0 +1,144 @@
+{
+  "probe": "drvdpb",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dpb",
+      "args": "0",
+      "result": "3200 0002 0c0c 0000"
+    },
+    {
+      "function": "segment",
+      "args": "0",
+      "result": "base=000c8380 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "block",
+      "args": "0",
+      "result": "02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 00 00 00 00 00 00 ff ff ff"
+    },
+    {
+      "function": "dpb",
+      "args": "1",
+      "result": "32ff 0b0b 0c0c 0001"
+    },
+    {
+      "function": "segment",
+      "args": "1",
+      "result": "base=00005de0 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "dpb",
+      "args": "2",
+      "result": "3200 0001 0c0c 0002"
+    },
+    {
+      "function": "segment",
+      "args": "2",
+      "result": "base=000c8380 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "block",
+      "args": "2",
+      "result": "01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 00 00 00 00 00 00 ff ff"
+    },
+    {
+      "function": "dpb",
+      "args": "3",
+      "result": "3200 0002 0c0c 0003"
+    },
+    {
+      "function": "segment",
+      "args": "3",
+      "result": "base=000c8380 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "block",
+      "args": "3",
+      "result": "02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 00 00 00 00 00 00 ff ff ff"
+    },
+    {
+      "function": "dpb",
+      "args": "4",
+      "result": "3200 0003 0c0c 0004"
+    },
+    {
+      "function": "segment",
+      "args": "4",
+      "result": "base=000c8380 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "block",
+      "args": "4",
+      "result": "03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 18 19 00 00 00 00 00 00 ff ff ff ff"
+    },
+    {
+      "function": "dpb",
+      "args": "5",
+      "result": "32ff 0b0b 0c0c 0005"
+    },
+    {
+      "function": "segment",
+      "args": "5",
+      "result": "base=00005de0 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "dpb",
+      "args": "26",
+      "result": "3200 0019 0c0c 001a"
+    },
+    {
+      "function": "segment",
+      "args": "26",
+      "result": "base=000c8380 limit=0000ffff access=f2 bits=7 dpmi=same"
+    },
+    {
+      "function": "block",
+      "args": "26",
+      "result": "19 00 00 00 00 00 00 ff ff ff ff ff 00 00 00 00 00 01 00 00 ff ff ff ff 00 00 00 00 00 00 00 00 00"
+    },
+    {
+      "function": "dpb",
+      "args": "default",
+      "result": "1f00 0002 0c0c 0000"
+    },
+    {
+      "function": "segment",
+      "args": "default",
+      "result": "own"
+    },
+    {
+      "function": "mediawrite",
+      "args": "before",
+      "result": "f8"
+    },
+    {
+      "function": "mediawrite",
+      "args": "written",
+      "result": "55"
+    },
+    {
+      "function": "mediawrite",
+      "args": "other",
+      "result": "55"
+    },
+    {
+      "function": "mediawrite",
+      "args": "again",
+      "result": "55"
+    },
+    {
+      "function": "mediawrite",
+      "args": "space",
+      "result": "55"
+    }
+  ]
+}

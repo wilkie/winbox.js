@@ -1,0 +1,3 @@
+# Two CD-ROM images, D: and E:: see mscdbuf.c.
+d: imgcd.iso iso
+e: imgread.iso iso

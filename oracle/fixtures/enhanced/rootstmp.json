@@ -1,0 +1,45 @@
+{
+  "probe": "rootstmp",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "start",
+      "args": "root .. against .",
+      "result": "same"
+    },
+    {
+      "function": "start",
+      "args": "ORACLE .. against root .",
+      "result": "same"
+    },
+    {
+      "function": "made",
+      "args": ".",
+      "result": "different"
+    },
+    {
+      "function": "made",
+      "args": "..",
+      "result": "same"
+    },
+    {
+      "function": "deleted",
+      "args": ".",
+      "result": "different"
+    },
+    {
+      "function": "deleted",
+      "args": "..",
+      "result": "same"
+    }
+  ]
+}

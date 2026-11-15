@@ -1,0 +1,79 @@
+{
+  "probe": "emptya",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "type",
+      "args": "0",
+      "result": "2"
+    },
+    {
+      "function": "call",
+      "args": "3d00 A:\\X.TXT",
+      "result": "0003 0b0b 0c0c 00e6 1"
+    },
+    {
+      "function": "call",
+      "args": "3d00 A:X.TXT",
+      "result": "0003 0b0b 0c0c 0108 1"
+    },
+    {
+      "function": "call",
+      "args": "3c00 A:\\N.TXT",
+      "result": "0003 0b0b 0000 00ff 1"
+    },
+    {
+      "function": "call",
+      "args": "4300 A:\\",
+      "result": "0003 0b0b 0c0c 00ef 1"
+    },
+    {
+      "function": "call",
+      "args": "4300 A:\\X.TXT",
+      "result": "0003 0b0b 0c0c 00e6 1"
+    },
+    {
+      "function": "call",
+      "args": "3b00 A:\\",
+      "result": "0003 0b0b 0c0c 00ef 1"
+    },
+    {
+      "function": "call",
+      "args": "3900 A:\\D",
+      "result": "0003 0b0b 0c0c 00f3 1"
+    },
+    {
+      "function": "call",
+      "args": "4e00 A:\\*.*",
+      "result": "0003 0b0b 0016 00f8 1"
+    },
+    {
+      "function": "call",
+      "args": "3600 1",
+      "result": "ffff 0b0b 0c0c 0001 0"
+    },
+    {
+      "function": "call",
+      "args": "1c00 1",
+      "result": "1cff 0b0b 0c0c 0001 0"
+    },
+    {
+      "function": "call",
+      "args": "4408 1",
+      "result": "000f 0001 0c0c 0d0d 1"
+    },
+    {
+      "function": "call",
+      "args": "4700 1",
+      "result": "ax=000f carry=1"
+    }
+  ]
+}

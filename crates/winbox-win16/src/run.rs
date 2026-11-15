@@ -216,6 +216,7 @@ impl System {
                             self.absolute_disk();
                             self.instructions += 1;
                         }
+                        0x11 => self.equipment_interrupt(),
                         0x12 => self.memory_size_interrupt(),
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
@@ -255,6 +256,21 @@ impl System {
 }
 
 impl System {
+    /// The BIOS's equipment word, as DOSBox's BIOS keeps it: its own
+    /// fixed bits and the floppy images mounted (`cmos::equipment`).
+    pub(crate) fn equipment(&self) -> u16 {
+        crate::cmos::equipment(self.files.floppy_disks())
+    }
+
+    /// The BIOS's equipment word, `INT 11h`, as DOSBox's `INT11_Handler`
+    /// answers it (`ints/bios.cpp` 364-367), **recorded** by `biosequ` and
+    /// its kin through Windows, in both modes alike.
+    fn equipment_interrupt(&mut self) {
+        self.cpu.regs[winbox_cpu::AX] = self.equipment();
+        self.cpu.ip += 2;
+        self.instructions += 1;
+    }
+
     /// The BIOS's conventional memory, in KB, `INT 12h`: 640, as DOSBox's
     /// `INT12_Handler` answers the word it set (`ints/bios.cpp` 413-414,
     /// 873), **recorded** by `biosmem` through Windows.
@@ -400,6 +416,34 @@ impl System {
                 self.cpu.regs[BX] = 0xadad;
             }
             0x150c => self.cpu.regs[BX] = 0x0217,
+            // The CD-ROM drives' numbers, and five bytes a drive of its
+            // subunit and its driver's header, at ES:BX: as DOSBox's
+            // `GetDrives` and `GetDriverInfo` write them (`dos_mscdex.cpp`
+            // 182-185, 423-429). Through Windows a program reaches them by
+            // DPMI's 0300h with a buffer below 1 MB; an `INT 2Fh` of its own
+            // passes ES's selector to DOS as a segment, which is not
+            // followed here. **Recorded** by `mscdbuf`, in both modes: the
+            // header at C8C3h:0, DOSBox's own DOS memory as its first disc
+            // was mounted (317-361). The header itself is not laid out.
+            0x150d | 0x1501 if self.at_real_call() => {
+                const DRIVER_HEADER_SEGMENT: u16 = 0xc8c3;
+
+                let at = u32::from(self.cpu.segments[winbox_cpu::ES].selector) << 16
+                    | u32::from(self.cpu.regs[BX]);
+                let bytes: Vec<u8> = if self.cpu.regs[AX] == 0x150d {
+                    compact_discs.iter().map(|&drive| drive as u8).collect()
+                } else {
+                    (0..compact_discs.len() as u8)
+                        .flat_map(|subunit| {
+                            let [low, high] = DRIVER_HEADER_SEGMENT.to_le_bytes();
+
+                            [subunit, 0, 0, low, high]
+                        })
+                        .collect()
+                };
+
+                self.write_far(at, &bytes);
+            }
             0x1600 if self.mode == crate::Mode::Enhanced => self.cpu.regs[AX] = WINDOWS_VERSION,
             0x1683 if self.mode == crate::Mode::Enhanced => {
                 self.cpu.regs[AX] = 0x1600;
@@ -412,19 +456,37 @@ impl System {
 
     /// `INT 25h` and `26h`, a volume's sectors read or written by number,
     /// as File Manager reads a drive's boot sector to tell a RAM drive
-    /// (`WINFILE.EXE` seg6 `09e3`). These drives are files, not sectors:
-    /// each answers as a drive with no disk under it does, AX 8002h and the
-    /// carry set, which File
-    /// Manager takes for no RAM drive. Unlike every other interrupt, these
-    /// return with the flags still on the stack, which the caller pops (DOS
-    /// as documented).
+    /// (`WINFILE.EXE` seg6 `09e3`). DOSBox's handlers read and write
+    /// nothing: a drive mounted answers the carry clear, one not AX 8002h
+    /// and the carry set (`dos.cpp` 1095-1118). Through Windows, **recorded**
+    /// by `abssect` in both modes: a drive there answers the carry clear and
+    /// AX as it was, and a read's buffer comes back over-written with what
+    /// the extender's own buffer held, which DOSBox never wrote and is not
+    /// laid out here (the buffer is left as it was); a drive not there AX
+    /// 8002h and the carry set, the flags left on the stack carrying it in
+    /// standard mode and not in 386 enhanced mode. Unlike every other
+    /// interrupt, these return with the flags still on the stack, which the
+    /// caller pops (DOS as documented).
     fn absolute_disk(&mut self) {
         let sp = self.cpu.regs[winbox_cpu::SP].wrapping_sub(2);
         let stack = self.cpu.segments[winbox_cpu::SS].base;
+        let drive = self.cpu.regs[winbox_cpu::AX] as u8;
+        let there = drive < 26 && self.files.has_disk(char::from(b'A' + drive));
+        let pushed = if there {
+            self.cpu.flags &= !1;
+            self.cpu.flags
+        } else {
+            self.cpu.regs[winbox_cpu::AX] = 0x8002;
+            self.cpu.flags |= 1;
 
-        self.cpu.regs[winbox_cpu::AX] = 0x8002;
-        self.cpu.flags |= 1;
-        self.cpu.bus.write16(stack + u32::from(sp), self.cpu.flags);
+            if self.dpmi_enhanced() {
+                self.cpu.flags & !1
+            } else {
+                self.cpu.flags
+            }
+        };
+
+        self.cpu.bus.write16(stack + u32::from(sp), pushed);
         self.cpu.regs[winbox_cpu::SP] = sp;
         self.cpu.ip += 2;
     }

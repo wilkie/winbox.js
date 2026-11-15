@@ -96,7 +96,7 @@ WinBox does the same (`DiscFile`, `crates/winbox-machine/src/files/iso.rs` and `
 
 - A write to a disc's file opened to read and write: DOSBox's `isoFile::Write` fails and DOS answers whatever error it last set (`dos.cpp` 590-603), which WinBox does not keep; both answer 5.
 - `DOS_MakeName` on a folder's drive, C: among them: WinBox takes any name there, cuts nothing and refuses nothing, where DOSBox does as on an image.
-- MSCDEX's calls that take a buffer (1501h, 1505h, 150Dh, 150Fh, 1510h), which through Windows need DPMI's real-mode calls and memory below 1 MB.
+- MSCDEX's calls that take a buffer but 150Dh and 1501h ([[topic:drives-and-disks]], "MSCDEX"): 1502h-1505h, 1508h, 150Fh and 1510h, which through Windows need DPMI's real-mode calls and memory below 1 MB, and the driver's header 1501h points at.
 - CD audio: an audio track is kept, never played; MSCDEX's audio calls and the lengths of tracks in `WAVE`, `MP3` or `OGG` files, which DOSBox measures through `SDL_sound`. A track after such a file has no start known here, where DOSBox has one.
 - A disc of audio tracks alone, which DOSBox mounts as a drive with no files labelled `Audio_CD` (`drive_iso.cpp` 167-174): WinBox refuses it.
 - `GetRealFileName`'s last try, a sheet's file named as a DOS path through DOSBox's own mounted folders: the native build has no counterpart for an image of the host's, and the page matches the files dropped with the sheet by name (and by the name's last part), without regard to case, where DOSBox on Linux minds it.

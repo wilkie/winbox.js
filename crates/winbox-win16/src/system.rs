@@ -236,6 +236,14 @@ pub struct System {
     pub searches: crate::dos::Searches,
     /// DOS functions asked for and not answered, by AX.
     pub unanswered_dos: Vec<u16>,
+    /// Each drive's media byte as DOS's table was last written with it,
+    /// A: first: written as the drive's disk comes, not at each call, so a
+    /// program's own write stays (`dos::System::write_media_table`).
+    pub media_written: [Option<u8>; 26],
+    /// The error DOS answered last, as DOSBox keeps `dos.errorcode`: what
+    /// a call that fails without setting one of its own answers (4301h of a
+    /// name not there, `hostattr`).
+    pub dos_error: u16,
     /// `MakeProcInstance`'s thunks: the block they are made in, and how
     /// many of its are made.
     pub thunks: (u32, usize),
@@ -629,6 +637,8 @@ impl System {
             transfer_area: (0, 0x80),
             searches: crate::dos::Searches::default(),
             unanswered_dos: Vec::new(),
+            media_written: [None; 26],
+            dos_error: 0,
             thunks: (0, crate::modules_kernel::THUNKS),
             clock_day: None,
             page_locks: HashMap::new(),

@@ -1,0 +1,4 @@
+# A: a floppy image, D: the hard disk image, E: a CD-ROM image: see imgroot.c.
+a: imgflop.img floppy
+d: imghdd.img hdd
+e: imgcd.iso iso

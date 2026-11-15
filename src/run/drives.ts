@@ -44,6 +44,12 @@ export interface Disk {
   written: boolean;
 
   /**
+   * The file's own bytes, where `bytes` are the image as written: what a
+   * kept program's overlay of it is told against (`keepOverlays`).
+   */
+  original?: Uint8Array;
+
+  /**
    * A cue sheet's files, in the order it names them, each as the page holds
    * it: its `.bin`s, an audio track's file. None for any other image.
    */

@@ -3572,6 +3572,77 @@ for (const { engine, page: at } of ENGINES) {
       expect(errors).toEqual([]);
     });
 
+    test('keeps what a kept program wrote to its floppy, across a reload, until forgotten', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(IMGFLOP) || !existsSync(NOTEPAD),
+        'the imgflop probe, or the installation, has not been built here'
+      );
+      test.setTimeout(90000);
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const overlays = () => page.evaluate(() => (globalThis as any).winbox.overlayCount());
+      const floppy = () =>
+        page.evaluate(() => {
+          const image = (globalThis as any).winbox.engine.diskImage('A', 0);
+
+          return image ? Array.from(image as Uint8Array).join() : '';
+        });
+      const drives = page.locator('#drives > li');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'windows.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await expect(page.locator('#windows')).toContainText('windows.zip');
+
+      /* The floppy in A: as the program is dropped: kept with it. */
+      await page.locator('#picker').setInputFiles(probeImage('imgflop.img'));
+      await expect(page.locator('#status')).toHaveText('A: imgflop.img.');
+      await page.locator('#picker').setInputFiles({
+        name: 'flopgame.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'IMGFLOP.EXE', data: new Uint8Array(readFileSync(IMGFLOP)) }]),
+      });
+      await expect(page.getByRole('button', { name: 'Close flopgame' })).toBeVisible();
+
+      /* Run, it writes to the floppy: what it wrote is kept as the floppy's
+       * overlay (the owner's decision of 2026-11-14), the image dropped
+       * never written. */
+      await page.getByRole('button', { name: 'Run C:\\FLOPGAME\\IMGFLOP.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The program asked Windows to end the session, and has finished.',
+        { timeout: 60000 }
+      );
+
+      const written = await floppy();
+
+      expect(written).not.toBe(Array.from(probeImage('imgflop.img').buffer).join());
+      await expect.poll(overlays).toBe(1);
+
+      /* On the next visit, the floppy chosen again: as the program wrote it. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered windows.zip.', {
+        timeout: 30000,
+      });
+      await page.getByRole('button', { name: 'Open flopgame' }).click();
+      await page.getByLabel('Choose imgflop.img again').setInputFiles(probeImage('imgflop.img'));
+      await expect(page.locator('#status')).toHaveText('Every image is had.');
+      await expect(drives).toHaveAccessibleName('A: floppy drive, imgflop.img');
+      await expect.poll(floppy).toBe(written);
+
+      /* Forgotten, with what was written to its floppy. */
+      await confirmed(page, 'Forget flopgame', 'Forget program');
+      await expect.poll(overlays).toBe(0);
+      expect(errors).toEqual([]);
+    });
+
     test('mounts a cue sheet with the files it names, asking for those not dropped with it', async ({
       page,
     }) => {

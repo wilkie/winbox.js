@@ -1,0 +1,144 @@
+{
+  "probe": "imgroot",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "get",
+      "args": "A:\\",
+      "result": "0002 0b0b 0c0c 0010 1"
+    },
+    {
+      "function": "get",
+      "args": "A:",
+      "result": "0002 0b0b 0c0c 0014 1"
+    },
+    {
+      "function": "get",
+      "args": "A:\\.",
+      "result": "0002 0b0b 0c0c 0017 1"
+    },
+    {
+      "function": "get",
+      "args": "A:\\SUBDIR",
+      "result": "0010 0b0b 0010 001c 0"
+    },
+    {
+      "function": "get",
+      "args": "A:\\SUBDIR\\..",
+      "result": "0002 0b0b 0c0c 0026 1"
+    },
+    {
+      "function": "get",
+      "args": "A:\\README.TXT",
+      "result": "0020 0b0b 0020 0033 0"
+    },
+    {
+      "function": "get",
+      "args": "D:\\",
+      "result": "0002 0b0b 0c0c 0041 1"
+    },
+    {
+      "function": "get",
+      "args": "D:",
+      "result": "0002 0b0b 0c0c 0045 1"
+    },
+    {
+      "function": "get",
+      "args": "D:\\.",
+      "result": "0002 0b0b 0c0c 0048 1"
+    },
+    {
+      "function": "get",
+      "args": "E:\\",
+      "result": "0031 0b0b 0031 004d 0"
+    },
+    {
+      "function": "get",
+      "args": "E:",
+      "result": "0031 0b0b 0031 0051 0"
+    },
+    {
+      "function": "get",
+      "args": "E:\\.",
+      "result": "0031 0b0b 0031 0054 0"
+    },
+    {
+      "function": "get",
+      "args": "E:\\SUBDIR",
+      "result": "0031 0b0b 0031 0059 0"
+    },
+    {
+      "function": "set",
+      "args": "A:\\",
+      "result": "0012 0b0b 0000 0010 1"
+    },
+    {
+      "function": "set",
+      "args": "A:",
+      "result": "0012 0b0b 0000 0014 1"
+    },
+    {
+      "function": "set",
+      "args": "A:\\.",
+      "result": "0012 0b0b 0000 0017 1"
+    },
+    {
+      "function": "set",
+      "args": "A:\\SUBDIR",
+      "result": "0202 0b0b 0000 001c 0"
+    },
+    {
+      "function": "set",
+      "args": "A:\\SUBDIR\\..",
+      "result": "0012 0b0b 0000 0026 1"
+    },
+    {
+      "function": "set",
+      "args": "A:\\README.TXT",
+      "result": "0202 0b0b 0000 0033 0"
+    },
+    {
+      "function": "set",
+      "args": "D:\\",
+      "result": "0012 0b0b 0000 0041 1"
+    },
+    {
+      "function": "set",
+      "args": "D:",
+      "result": "0012 0b0b 0000 0045 1"
+    },
+    {
+      "function": "set",
+      "args": "D:\\.",
+      "result": "0012 0b0b 0000 0048 1"
+    },
+    {
+      "function": "set",
+      "args": "E:\\",
+      "result": "0005 0b0b 0000 004d 1"
+    },
+    {
+      "function": "set",
+      "args": "E:",
+      "result": "0005 0b0b 0000 0051 1"
+    },
+    {
+      "function": "set",
+      "args": "E:\\.",
+      "result": "0005 0b0b 0000 0054 1"
+    },
+    {
+      "function": "set",
+      "args": "E:\\SUBDIR",
+      "result": "0005 0b0b 0000 0059 1"
+    }
+  ]
+}

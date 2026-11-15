@@ -75,6 +75,39 @@
   },
   "gaps": {}
  },
+ "abssect": {
+  "probe": "abssect",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "big": {
+    "total": 4,
+    "agreed": 1,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 4,
+    "agreed": 1,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "read": "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here",
+   "big": "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here"
+  }
+ },
  "accinit": {
   "probe": "accinit",
   "display": "vga",
@@ -739,6 +772,154 @@
    "rects": {
     "total": 13,
     "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "biosequ": {
+  "probe": "biosequ",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "biosequ2": {
+  "probe": "biosequ2",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "biosequa": {
+  "probe": "biosequa",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "biosequd": {
+  "probe": "biosequd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -5279,15 +5460,15 @@
   "functions": {
    "allocation": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 3,
-    "agreed": 2,
-    "disagreed": 1,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5300,17 +5481,13 @@
    },
    "space": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "space": "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
-   "allocation": "there is no Z: here, DOSBox's own drive, 512,127,16513",
-   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
-  }
+  "gaps": {}
  },
  "diskmed": {
   "probe": "diskmed",
@@ -5320,15 +5497,15 @@
   "functions": {
    "call": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5341,17 +5518,13 @@
    },
    "table": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "call": "there is no Z: here, DOSBox's own drive, 512,127,16513",
-   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-   "table": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
-  }
+  "gaps": {}
  },
  "diskmeta": {
   "probe": "diskmeta",
@@ -6591,6 +6764,43 @@
   },
   "gaps": {}
  },
+ "drvdpb": {
+  "probe": "drvdpb",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "block": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dpb": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mediawrite": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "drvioctl": {
   "probe": "drvioctl",
   "display": "vga",
@@ -7379,6 +7589,29 @@
   },
   "gaps": {}
  },
+ "emptya": {
+  "probe": "emptya",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 13,
+  "functions": {
+   "call": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "emscopy": {
   "probe": "emscopy",
   "display": "vga",
@@ -7535,6 +7768,187 @@
   },
   "gaps": {}
  },
+ "enhanced/abssect": {
+  "probe": "abssect",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "big": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "read": "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here",
+   "big": "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here"
+  }
+ },
+ "enhanced/biosequ": {
+  "probe": "biosequ",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/biosequ2": {
+  "probe": "biosequ2",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/biosequa": {
+  "probe": "biosequa",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/biosequd": {
+  "probe": "biosequd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "cmos": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int11": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "select": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "type": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enhanced/diskmed": {
   "probe": "diskmed",
   "display": "vga",
@@ -7543,15 +7957,15 @@
   "functions": {
    "call": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "media": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7564,17 +7978,13 @@
    },
    "table": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "call": "there is no Z: here, DOSBox's own drive, 512,127,16513",
-   "media": "there is no Z: here, DOSBox's own drive, whose media byte is nought",
-   "table": "there is no Z: here, DOSBox's own drive, whose media byte is nought"
-  }
+  "gaps": {}
  },
  "enhanced/diskser": {
   "probe": "diskser",
@@ -8017,6 +8427,43 @@
   },
   "gaps": {}
  },
+ "enhanced/drvdpb": {
+  "probe": "drvdpb",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 27,
+  "functions": {
+   "block": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dpb": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mediawrite": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enhanced/enhmode": {
   "probe": "enhmode",
   "display": "vga",
@@ -8097,6 +8544,117 @@
    "free": "GetFreeSpace is 1K under Windows', galimit's figure less freemem's segments"
   }
  },
+ "enhanced/hostattr": {
+  "probe": "hostattr",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 20,
+  "functions": {
+   "find": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "get": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "make": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "missing": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/imgroot": {
+  "probe": "imgroot",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "get": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/ioctlall": {
+  "probe": "ioctlall",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 48,
+  "functions": {
+   "drive": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "function": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "generic": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "handle": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enhanced/mcibang": {
   "probe": "mcibang",
   "display": "vga",
@@ -8129,6 +8687,29 @@
    "wave": "WinBox's waveaudio driver opens a file that is no waveform (a MIDI file), where MCIWAVE answers 128h",
    "unopened": "mciSendString does not open a device a command names that the task has not open (109h here)"
   }
+ },
+ "enhanced/mscdbuf": {
+  "probe": "mscdbuf",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "alloc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "enhanced/pgbig": {
   "probe": "pgbig",
@@ -13329,6 +13910,57 @@
   },
   "gaps": {}
  },
+ "hostattr": {
+  "probe": "hostattr",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 20,
+  "functions": {
+   "find": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "get": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "make": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "missing": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "hotkey": {
   "probe": "hotkey",
   "display": "vga",
@@ -14391,6 +15023,29 @@
   },
   "gaps": {}
  },
+ "imgroot": {
+  "probe": "imgroot",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "get": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "imgswap": {
   "probe": "imgswap",
   "display": "vga",
@@ -15162,6 +15817,43 @@
    "update": {
     "total": 75,
     "agreed": 75,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "ioctlall": {
+  "probe": "ioctlall",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 48,
+  "functions": {
+   "drive": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "function": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "generic": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "handle": {
+    "total": 22,
+    "agreed": 22,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -20353,6 +21045,29 @@
    "types": {
     "total": 1,
     "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mscdbuf": {
+  "probe": "mscdbuf",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "alloc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 3,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -29159,6 +29874,36 @@
    "self": {
     "total": 1,
     "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "rootstmp": {
+  "probe": "rootstmp",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "deleted": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "made": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "start": {
+    "total": 2,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

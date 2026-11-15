@@ -93,6 +93,53 @@ pub struct Medium {
     pub size: u64,
     /// The file, its full path on the host.
     pub path: String,
+    /// What programs wrote to it, a floppy's or hard disk's overlay: the
+    /// sectors written, by their number in the image, each as last written,
+    /// its bytes in hexadecimal. Put back over the image as it is mounted
+    /// again, so the next run sees what was written, the image itself never
+    /// written (the owner's decision of 2026-11-14). Left out where nothing
+    /// was.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub written: Vec<WrittenSector>,
+}
+
+/// A sector of an image as a program wrote it (`Medium::written`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WrittenSector {
+    pub sector: u64,
+    pub bytes: String,
+}
+
+impl WrittenSector {
+    /// A sector written, its bytes made hexadecimal.
+    pub fn of(sector: u64, bytes: &[u8]) -> Self {
+        Self {
+            sector,
+            bytes: bytes.iter().fold(String::new(), |mut text, byte| {
+                use std::fmt::Write as _;
+
+                let _ = write!(text, "{byte:02x}");
+                text
+            }),
+        }
+    }
+
+    /// The sector's number and bytes; none where its text is not whole
+    /// hexadecimal.
+    pub fn sector(&self) -> Option<(u64, Vec<u8>)> {
+        let text = self.bytes.as_bytes();
+
+        if !text.len().is_multiple_of(2) {
+            return None;
+        }
+
+        let bytes = text
+            .chunks(2)
+            .map(|pair| u8::from_str_radix(std::str::from_utf8(pair).ok()?, 16).ok())
+            .collect::<Option<Vec<u8>>>()?;
+
+        Some((self.sector, bytes))
+    }
 }
 
 impl Program {

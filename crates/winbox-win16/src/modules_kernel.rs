@@ -175,8 +175,14 @@ pub fn drive_inquiry(system: &System, drive: i32) -> (u16, u16) {
     let floppies_less_one = u16::from(floppies >= 2);
 
     // No drive here; DOSBox's B: with nothing in it, which it selects, is
-    // the one floppy drive's other letter all the same.
+    // the one floppy drive's other letter all the same. With two floppy
+    // images mounted, B: not among them, it is selected, 4408h refuses it,
+    // and the count makes it removable, 2 (`biosequd`).
     if !system.files.mounted(letter) {
+        if drive == 1 && floppies_less_one == 1 {
+            return (2, 0);
+        }
+
         return (0, u16::from(drive == 1 && floppies_less_one == 0));
     }
 

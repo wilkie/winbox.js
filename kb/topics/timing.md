@@ -356,6 +356,12 @@ A machine whose programs wait for messages costs next to nothing: the Rust engin
 
 The block is more than is free, so WIN386 pages to its swap file as the passes go; the figures are the passes' whole time over the pages, the probe's own loop and 0007h's calls in them. With DOSBox as fast as the host allowed the same passes took 1,428, 1,593 and 1,154 ms. In standard mode DOSX has no pager: 24 MiB is refused, and the 14,544 KiB given are written and read in under a tick. WinBox does not page, and charges nothing for it ([[guide:paging]]).
 
+## A compatibility run
+
+[[measured]] 2026-11-14, the compatibility database's prototype ([[guide:compatibility]]): a program run by `trace` for ten seconds of the survey's clock, from its own folder on the installation's VGA, not held to a report. Ten games of archive.org's collection: 117 ms to 1.6 s of the host's time each, 555 ms on average over the nine that ran. The corpus's 36 programs run without steps or a disc, the same way: 34 s together, 944 ms each on average, `bubgirl` alone 18 s. A program waiting for messages takes some 100 to 300 ms, as idle time passes without instructions; a busy one, its 20 to 30 million instructions, about 1.5 s. Reading the metadata of archive.org's 2,284 Windows 3.x items, half a second between requests: 48 minutes.
+
+[[measured]] 2026-11-14, the catalog's titles ([[guide:compatibility]], "Titles"): 534 items fetched (521 of them new, 77.6 MB, half a second after each request), read, and run five virtual seconds each by `trace --captions`, four at a time: 834 s in all, some 1.6 s an item, the downloads most of it. Reading the 567 items fetched so far again, without a run, the last runs' windows kept: under a second.
+
 ## Not yet done
 
 - SimTower on the faithful clock: 13% more steps than DOSBox, some 18,500 instructions a step not charged ("What moves SimTower's calendar"): a new pen's and brush's selection into a WinG device context, WinG's device realizing each, charged 217 where DOSBox takes some 1,300 and 4,700 a step; and some 8,500 a step of WinG's colour search under no call the sampled stack tells. Why the Rust engine was a quarter further ahead than the TypeScript engine was is not looked into: the TypeScript engine is retired.

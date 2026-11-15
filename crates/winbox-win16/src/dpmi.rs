@@ -211,7 +211,7 @@ fn first_megabyte_index(index: usize) -> bool {
 }
 
 impl System {
-    fn dpmi_enhanced(&self) -> bool {
+    pub(crate) fn dpmi_enhanced(&self) -> bool {
         self.mode == Mode::Enhanced
     }
 

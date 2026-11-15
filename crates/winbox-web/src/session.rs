@@ -468,7 +468,13 @@ impl Session {
 
     /// Each set's disk put in its drive as a program first starts: an
     /// empty drive where it was taken out.
+    /// A:, where no set is, is an empty floppy drive, as DOSBox's BIOS and
+    /// a PC always have one (the owner's decision of 2026-11-14).
     fn mount_disks(disks: &mut BTreeMap<char, DiskSet>, system: &mut System) {
+        if !disks.contains_key(&'A') && !system.files.mounted('A') {
+            system.files.mount('A', EmptyDrive::default());
+        }
+
         for (&letter, set) in disks {
             if set.ejected {
                 let empty = set.disks[set.current]
@@ -554,7 +560,14 @@ impl Session {
         }
 
         if self.run.is_some() {
-            self.engine.system().files.unmount(letter);
+            let mut system = self.engine.system();
+
+            system.files.unmount(letter);
+
+            // A: stays, empty, as a floppy drive does.
+            if letter == 'A' {
+                system.files.mount('A', EmptyDrive::default());
+            }
         }
 
         true

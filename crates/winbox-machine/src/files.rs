@@ -67,6 +67,16 @@ impl Allocation {
         bytes_per_sector: 512,
         clusters: 2880,
     };
+
+    /// DOSBox's own drive, Z:, made by DOSBox itself: "512,127,16513,0"
+    /// (`drive_virtual.cpp`), none of it free. **Recorded** by `diskfree`:
+    /// Z: answers 007Fh, 0000h, 0200h and 4081h.
+    pub const VIRTUAL: Self = Self {
+        sectors_per_cluster: 127,
+        free_clusters: 0,
+        bytes_per_sector: 512,
+        clusters: 16513,
+    };
 }
 
 /// The first handle a file is given: 0 to 4 are DOS's own devices, so a
@@ -211,6 +221,20 @@ pub trait Volume: Debug {
     /// Whether programs have written to a disk image anything it did not
     /// hold (`FatVolume::changed`); false for another drive.
     fn changed(&self) -> bool {
+        false
+    }
+
+    /// The sectors programs have written to a disk image, by their number
+    /// in it, each as last written: its overlay, to be kept from one run or
+    /// visit to the next; none for another drive.
+    fn written(&self) -> Vec<(u64, Vec<u8>)> {
+        Vec::new()
+    }
+
+    /// Sectors kept from an earlier run or visit put back over a disk
+    /// image, as though written again; whether they were. Nothing for
+    /// another drive.
+    fn put_written(&mut self, _written: &[(u64, Vec<u8>)]) -> bool {
         false
     }
 
@@ -473,14 +497,17 @@ pub struct Files {
     pwd: HashMap<char, String>,
     pub drive: char,
     open: HashMap<usize, OpenFile>,
-    /// Attributes set on files, which no drive keeps of its own, by path.
-    attributes: HashMap<String, u8>,
     /// Folders' stamps by path, from DOS's clock, as an entry was made in
     /// one, deleted from it or renamed: DOSBox's C: is a folder of the
     /// host's, whose stamp moves so and not when a file in it is written
     /// (**recorded** by `dirorder`). A host's folder keeps the host's
     /// clock's, not DOS's.
     folders: HashMap<String, i64>,
+    /// Each drive's root's stamp as the drive was mounted: what its root's
+    /// `..` carries (the owner's decision of 2026-11-14). Under DOSBox it
+    /// is the stamp of the host's folder above, which a program's changes
+    /// on the drive never move (**recorded** by `rootstmp`).
+    made: HashMap<char, [u16; 6]>,
     /// DOS's clock, seconds since 1970, as the system last set it: what a
     /// file written is stamped with. None leaves each drive its own.
     pub now: Option<i64>,
@@ -503,8 +530,8 @@ impl Files {
             pwd: HashMap::from([('C', "C:\\".to_string())]),
             drive: 'C',
             open: HashMap::new(),
-            attributes: HashMap::new(),
             folders: HashMap::new(),
+            made: HashMap::new(),
             now: None,
             activity: Cell::new(0),
         }
@@ -528,6 +555,10 @@ impl Files {
     /// volume, or a folder.
     pub fn mount_boxed(&mut self, letter: char, drive: Box<dyn Volume>) {
         let letter = letter.to_ascii_uppercase();
+
+        if let Some(root) = drive.entry(&[]) {
+            self.made.insert(letter, root.modified);
+        }
 
         self.drives.insert(letter, drive);
         self.pwd
@@ -629,20 +660,6 @@ impl Files {
             .is_some_and(|drive| drive.is_directory(parts))
     }
 
-    /// The key a file's attributes are kept by.
-    fn key(letter: char, parts: &[String], name: &str) -> String {
-        let mut key = format!("{letter}:");
-
-        for part in parts.iter().filter(|part| !part.is_empty()) {
-            key.push('\\');
-            key.push_str(&part.to_ascii_uppercase());
-        }
-
-        key.push('\\');
-        key.push_str(&name.to_ascii_uppercase());
-        key
-    }
-
     /// What a folder holds, as DOSBox lists a folder of the host's: `.`
     /// and `..` in every folder, the root's too, `.` with the folder's own
     /// stamp and `..` with the one above's; folders first, then files, each
@@ -653,8 +670,11 @@ impl Files {
     ///
     /// A disk image's folder (`Listing::AsStored`) is listed as the image
     /// keeps it, `.` and `..` only where it has them, each entry's
-    /// attributes and stamps its own: neither the attributes set nor the
-    /// folders' stamps kept beside a folder's drive are its.
+    /// attributes and stamps its own: the folders' stamps kept beside a
+    /// folder's drive are not its. A folder's drive's entries are 10h a
+    /// folder and 20h a file, as DOSBox's search answers the host's `stat`
+    /// (`localDrive::FindNext`, `drive_local.cpp` 255-266), whatever 4301h
+    /// was asked (`hostattr`).
     pub fn list(&self, letter: char, parts: &[String]) -> Option<Vec<Entry>> {
         self.touch();
         let drive = self.drives.get(&letter)?;
@@ -670,20 +690,15 @@ impl Files {
         let mut entries: Vec<Entry> = drive
             .children(parts)?
             .into_iter()
-            .map(|mut entry| {
-                if let Some(&attributes) =
-                    self.attributes.get(&Self::key(letter, parts, &entry.name))
-                {
-                    entry.attributes = attributes;
-                }
-
-                self.stamped(letter, &Self::joined(parts, &entry.name), entry)
-            })
+            .map(|entry| self.stamped(letter, &Self::joined(parts, &entry.name), entry))
             .collect();
         let own = self.stamped(letter, &names, drive.entry(&names)?);
         let above = match names.split_last() {
             Some((_, above)) => self.stamped(letter, above, drive.entry(above)?),
-            None => own.clone(),
+            None => Entry {
+                modified: self.made.get(&letter).copied().unwrap_or(own.modified),
+                ..own.clone()
+            },
         };
 
         for (name, entry) in [(".", own), ("..", above)] {
@@ -879,26 +894,6 @@ impl Files {
         }
 
         moved
-    }
-
-    /// A file's attributes set, as no folder's drive keeps them: whether
-    /// they were. A disk image's are its entries', which DOSBox leaves as
-    /// they are: its `DOS_SetFileAttr` only looks for the file
-    /// (`dos_files.cpp` 643-656), and it is found.
-    pub fn set_attributes(
-        &mut self,
-        letter: char,
-        parts: &[String],
-        name: &str,
-        attributes: u8,
-    ) -> bool {
-        if self.listing(letter) == Listing::AsStored {
-            return true;
-        }
-
-        self.attributes
-            .insert(Self::key(letter, parts, name), attributes);
-        true
     }
 
     /// A file's bytes, from a folder named by its path, the file found by
@@ -1141,6 +1136,15 @@ impl Files {
     /// natively); none for a drive that is no image.
     pub fn image(&self, letter: char) -> Option<Vec<u8>> {
         self.drives.get(&letter.to_ascii_uppercase())?.image()
+    }
+
+    /// The sectors programs have written to a drive's disk
+    /// (`Volume::written`).
+    pub fn written(&self, letter: char) -> Vec<(u64, Vec<u8>)> {
+        self.drives
+            .get(&letter.to_ascii_uppercase())
+            .map(|drive| drive.written())
+            .unwrap_or_default()
     }
 
     /// A drive's disk changed for another, as DOSBox's drive manager swaps

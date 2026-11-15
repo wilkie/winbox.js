@@ -1,0 +1,114 @@
+{
+  "probe": "hostattr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "make",
+      "args": "F.TXT 0",
+      "result": "0006 0b0b 0000 0109 0"
+    },
+    {
+      "function": "make",
+      "args": "RO.TXT 1",
+      "result": "0006 0b0b 0001 011c 0"
+    },
+    {
+      "function": "make",
+      "args": "SUB",
+      "result": "3900 0b0b 0000 0130 0"
+    },
+    {
+      "function": "get",
+      "args": "RO.TXT",
+      "result": "0020 0b0b 0020 011c 0"
+    },
+    {
+      "function": "find",
+      "args": "00",
+      "result": "F.TXT=20 RO.TXT=20"
+    },
+    {
+      "function": "set",
+      "args": "F.TXT 07",
+      "result": "0202 0b0b 0007 0109 0"
+    },
+    {
+      "function": "get",
+      "args": "F.TXT",
+      "result": "0020 0b0b 0020 0109 0"
+    },
+    {
+      "function": "set",
+      "args": "SUB 02",
+      "result": "0202 0b0b 0002 0130 0"
+    },
+    {
+      "function": "get",
+      "args": "SUB",
+      "result": "0030 0b0b 0030 0130 0"
+    },
+    {
+      "function": "set",
+      "args": "F.TXT 08",
+      "result": "0202 0b0b 0008 0109 0"
+    },
+    {
+      "function": "set",
+      "args": "F.TXT 10",
+      "result": "0202 0b0b 0010 0109 0"
+    },
+    {
+      "function": "set",
+      "args": "F.TXT 40",
+      "result": "0202 0b0b 0040 0109 0"
+    },
+    {
+      "function": "find",
+      "args": "00",
+      "result": "F.TXT=20 RO.TXT=20"
+    },
+    {
+      "function": "find",
+      "args": "16",
+      "result": ".=10 ..=10 SUB=10 F.TXT=20 RO.TXT=20"
+    },
+    {
+      "function": "open",
+      "args": "F.TXT",
+      "result": "0006 0b0b 0000 0109 0"
+    },
+    {
+      "function": "missing",
+      "args": "2 NONE.TXT",
+      "result": "0002 0b0b 0000 0152 1"
+    },
+    {
+      "function": "missing",
+      "args": "2 NOSUCH\\X.TXT",
+      "result": "0002 0b0b 0000 0168 1"
+    },
+    {
+      "function": "missing",
+      "args": "3b",
+      "result": "0003 0b0b 0000 017f 1"
+    },
+    {
+      "function": "missing",
+      "args": "3 NONE.TXT",
+      "result": "0003 0b0b 0000 0152 1"
+    },
+    {
+      "function": "get",
+      "args": "NONE.TXT",
+      "result": "0002 0b0b 0c0c 0152 1"
+    }
+  ]
+}
