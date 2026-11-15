@@ -628,13 +628,21 @@ export function rejected(text, names = [], source = 'archiveOrg') {
 }
 
 /**
- * The title an item takes: the first candidate, in the sources' order,
- * that is not rejected; archive.org's, its prefix stripped, where none is.
- * A correction of `catalog/titles.json` comes last, and wins.
+ * The title an item takes. archive.org's, its prefix stripped, where it is
+ * already a name (not refused by `rejected`): the owner's decision of
+ * 2026-11-14. Else the first candidate from the program, in the sources'
+ * order, that is not refused; else archive.org's all the same. A
+ * correction of `catalog/titles.json` comes last, and wins.
  */
 export function chooseTitle(candidates, names, correction) {
   if (correction?.title) {
     return { title: correction.title, titleSource: 'correction' };
+  }
+
+  const archive = stripPrefix(candidates.archiveOrg);
+
+  if (archive && !rejected(archive, names, 'archiveOrg')) {
+    return { title: archive, titleSource: 'archiveOrg' };
   }
 
   for (const source of SOURCES) {

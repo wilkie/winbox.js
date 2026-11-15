@@ -62,7 +62,7 @@ The module references are read without running anything: the New Executable head
 
 archive.org's titles are poor. [[measured]] Of the 2,284, 1,311 carry the collection's prefix ("Windows 3.1 Shareware: ", 983; "Windows 3.1: ", 328), and 532 are, once it is stripped, exactly the name of the program the item runs: `win3__dare` is "Windows 3.1 Shareware: \_dare", and runs `DARE2DRM.EXE`, which is "Dare To Dream". The owner decided (2026-11-14) that a title comes from the program itself, and that MobyGames and Wikipedia are used later, only to confirm a title and link to it.
 
-`scripts/catalog/titles.mjs` finds the candidates. Each source is tried in this order, and the first that gives a name is taken; the entry keeps every candidate in `titles`, and names the one taken in `titleSource`:
+`scripts/catalog/titles.mjs` finds the candidates. archive.org's title, its prefix stripped, is kept where it is already a name, that is where the rules below do not refuse it (the owner's decision, below). Where it is a file name or empty, each source of the program's is tried in this order, and the first that gives a name is taken; the entry keeps every candidate in `titles`, and names the one taken in `titleSource`:
 
 | Source            | What is read                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -72,7 +72,7 @@ archive.org's titles are poor. [[measured]] Of the 2,284, 1,311 carry the collec
 | `fileIdDiz`       | `FILE_ID.DIZ`'s first line with words in it, read in DOS's code page 437, its frame and decoration taken off, and the part before a dash, a colon, a comma or a full stop.                                                                                                                                                                                                                                   |
 | `description`     | The module description: the first entry of the non-resident names table (its file offset at 2Ch in the header, its length at 20h), the part before a dash, a colon or a comma.                                                                                                                                                                                                                               |
 | `setupInf`        | A setup's `.INF` (Microsoft's setup toolkit's `[progman.groups]`): the Program Manager item that starts the program; the group's name only where the program is the setup itself, as another program's folder may hold an `.INF` not its own (one item's is Windows' own `SETUP.INF`, whose group is Main).                                                                                                  |
-| `archiveOrg`      | archive.org's title, its prefix stripped. The fallback.                                                                                                                                                                                                                                                                                                                                                      |
+| `archiveOrg`      | archive.org's title, its prefix stripped. Taken first where it is a name; else the fallback.                                                                                                                                                                                                                                                                                                                 |
 
 Then `catalog/titles.json`: corrections by hand, keyed by identifier, each a title and its reason, applied last (`titleSource` is then `correction`).
 
@@ -85,7 +85,7 @@ Then `catalog/titles.json`: corrections by hand, keyed by identifier, each a tit
 - not a name: a shareware notice's caption ("Please Register", "Shareware Notice", "Unregistered ..."), a setup's ("... Installation"); a compiler sample's description ("Sample Microsoft Windows Application", "My First C++ Windows program"); Visual C++ AppWizard's defaults, the project's name in capitals and "Application" or "MFC Application" ("HANOI MFC Application"); the Klik & Play runtime's own strings, which every game it made carries ("Klik & Play Stand Alone Game"); a program's state in its caption, a time ("Next Break: 01:59") or its keys ("HELP = H ...");
 - a sentence, from the program's text: most of its words of four letters or more begin in small letters ("Concentration game with flags of the world"). archive.org's titles are never refused as sentences.
 
-Where every source is refused, the title is archive.org's, stripped.
+Where every source is refused, the title is archive.org's, stripped, file name or not.
 
 **Code pages.** Text from a program is data: decoded in the code page its version table names, else Windows-1252, and its control characters made spaces. A text holding a byte Windows-1252 leaves undefined (81h, 8Dh, 8Fh, 90h, 9Dh), or one of the punctuation marks it puts at 80h-9Fh between two letters, was written in a DOS editor, and is read in code page 437 instead: `cmm.exe`'s module description is ",Cin‚tic Mail Manager" in Windows-1252, "Cinétic" in DOS's page. A caption is printed by `trace` a character a byte, and decoded the same way.
 
@@ -93,16 +93,16 @@ Where every source is refused, the title is archive.org's, stripped.
 
 | Title from                      | Items |
 | ------------------------------- | ----: |
-| `caption`                       |   335 |
-| `description`                   |    74 |
+| `caption`                       |   332 |
+| `description`                   |    73 |
 | `fileIdDiz`                     |    43 |
 | `productName`                   |     8 |
 | `fileDescription`               |     1 |
 | `correction`                    |     2 |
-| `archiveOrg`, a name            |     2 |
+| `archiveOrg`, a name            |     6 |
 | `archiveOrg`, still a file name |    69 |
 
-Of the 71 left with archive.org's title: 44 ran, and their task ended before they showed a window with a caption (why, program by program, is the first pass's to classify), 4 ran their five seconds without one, 3 stopped at an interrupt WinBox does not answer yet, 2 were not read (above), and in 18 every candidate was refused (an all-capitals caption such as "ATMOIDS", a description "OWLCHESS.EXE"). The candidates found in all: 395 captions, 523 module descriptions, 158 `FILE_ID.DIZ` lines, 11 `ProductName`s, 12 `FileDescription`s, 1 `.INF` item.
+The six names archive.org gives are the program's own name in mixed case ("Pinwheel", "Quadriga", "Cups", "Beasties", "Risk", "RollOver"), kept by the decision below; three of them are the same text as the caption. Of the 69 still a file name: 44 ran, and their task ended before they showed a window with a caption (why, program by program, is the first pass's to classify), 4 ran their five seconds without one, 3 stopped at an interrupt WinBox does not answer yet, 1 was not read (`joinware`, which names a `.bat`), and in 17 every candidate was refused (an all-capitals caption such as "ATMOIDS", a description "OWLCHESS.EXE"). The candidates found in all: 395 captions, 523 module descriptions, 158 `FILE_ID.DIZ` lines, 11 `ProductName`s, 12 `FileDescription`s, 1 `.INF` item.
 
 A sample, the first 24 by the SHA-1 of the identifier and `win3__dare`:
 
@@ -134,9 +134,9 @@ A sample, the first 24 by the SHA-1 of the identifier and `win3__dare`:
 | `win3_WCDBRK2`  | Windows 3.1 Shareware: WCDBRK2  | Code Breaker II                                        | `caption`     |
 | `win3_dsize`    | Windows 3.1: dsize              | DSize                                                  | `caption`     |
 
-The same reading, without a run, of the 33 other items already fetched (the corpus's and the sample's) gave 26 a title from the program; the rest of the catalog, some 1,750 items, has archive.org's title with its prefix stripped until the first pass fetches it. Over the whole catalog: [[measured]] 489 titles from the programs (335 captions, 89 module descriptions, 53 `FILE_ID.DIZ` lines, 9 `ProductName`s, 1 `FileDescription`), 2 corrections, 1,795 archive.org's.
+The same reading, without a run, of the 33 other items already fetched (the corpus's and the sample's) gave 16 a title from the program, all of them items archive.org titles by a file name ("Windows 3.1 Shareware: CAN241" is "Canasta for Windows"); the rest of the catalog, some 1,750 items, has archive.org's title with its prefix stripped until the first pass fetches it. Over the whole catalog: [[measured]] 473 titles from the programs (332 captions, 81 module descriptions, 50 `FILE_ID.DIZ` lines, 9 `ProductName`s, 1 `FileDescription`), 2 corrections, 1,809 archive.org's.
 
-**Where the order is questionable.** The order puts a program's text before archive.org's title even where archive.org's was already a name: "Tut's Tomb" becomes "Tuts Tomb" (the module description), "Hearts for Windows" "Hearts Card Playing Game For Windows", "Missile Attack!" "Missile Attack". A rule that kept archive.org's title where it is not a file name, and used the program's only to replace a file name, would avoid that; it is the owner's to choose. A module description is often a description, not a name ("Prairie Dog Hunt for Win", "Windows BOGGLE"), and a caption may be a version of the name ("Abstraction" for `ABSTRACT`); MobyGames and Wikipedia are to confirm these.
+**The owner's decision (2026-11-14): archive.org's title is kept where it is already a name.** The program's text replaces it only where it is a file name or empty, as the rules above judge it; every candidate is kept in `titles` either way. Taking the program's text first had made "Tut's Tomb" "Tuts Tomb" (the module description), "Hearts for Windows" "Hearts Card Playing Game For Windows", "Missile Attack!" "Missile Attack" and "Get the Girl!" "Get The Girl for Windows 3.1"; under the decision they keep archive.org's titles. A module description is often a description, not a name ("Prairie Dog Hunt for Win", "Windows BOGGLE"), and a caption may be a version of the name ("Abstraction" for `ABSTRACT`); MobyGames and Wikipedia are to confirm these.
 
 ## Sources
 
@@ -306,6 +306,6 @@ All ten fetched, matched archive.org's SHA-1 and unpacked; none was a Win32 or a
 
 ## Not yet done
 
-Titles for the some 1,750 items not yet fetched: they have archive.org's title with its prefix stripped until the first pass fetches and runs them, when `titles.mjs` is to read each as it does the 534. The 69 titles still a file name, and the order's question ("Where the order is questionable"). MobyGames and Wikipedia to confirm titles and link to them. `.INF` files of other setup programs than Microsoft's toolkit are not read.
+Titles for the some 1,750 items not yet fetched: they have archive.org's title with its prefix stripped until the first pass fetches and runs them, when `titles.mjs` is to read each as it does the 534. The 69 titles still a file name. MobyGames and Wikipedia to confirm titles and link to them. `.INF` files of other setup programs than Microsoft's toolkit are not read.
 
 Everything after phase 1. `needs` is not filled in the catalog: the sample reads module references (`importsOf`) and the Win386 supervisor's string, and nothing reads `.INF` files or imports by ordinal yet. The sample does not install, and takes only loose games in one zip. A box's text is not in the trace (the call is printed without its arguments), so the `box` signature is its last calls; the text is on its screen. CAN241's box and Disgruntled Warthog's wait are not followed. The classifier's `idle` rule (a message call among the last thousand, or under a tenth of the seconds' instructions) was checked against the sample's ten screens and the corpus's 36 programs; a program that is busy after showing its window, as `starmerc` is, is `running`, and whether that is right for a given program takes a person.
