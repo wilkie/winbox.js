@@ -1,0 +1,13 @@
+{
+  "about": "Corrections to the catalog's titles, by hand, keyed by archive.org identifier: each a title and the reason for it. Applied last, over the title chosen from the program (scripts/catalog/titles.mjs); its titleSource is then \"correction\". The design is kb/guides/compatibility.md, \"Titles\".",
+  "corrections": {
+    "win3_PATUMAN": {
+      "title": "The Patuman",
+      "reason": "Its caption, the only candidate, runs on into the game's state: \"The Patuman (v.) inertial moment is 4. Press SPACE to play\". The name is its first two words."
+    },
+    "win3_stat": {
+      "title": "Statline",
+      "reason": "Its caption is a message, \"From Statline... It's 9 am\"; its module description is \"Statline\", the name the message gives."
+    }
+  }
+}

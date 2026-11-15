@@ -8,6 +8,7 @@
  *   node scripts/corpus/fetch.mjs            # everything
  *   node scripts/corpus/fetch.mjs skifree hearts # just these
  *   node scripts/corpus/fetch.mjs --hash     # print each download's SHA-256, for a new entry
+ *   node scripts/corpus/fetch.mjs --manifest FILE ids  # another manifest's entries (the catalog's sample)
  *
  * A disc's image is kept whole, as `corpus/cache/<id>/<id>.iso`, and not
  * unpacked: it is mounted as a drive (`cachedPath`).
@@ -41,7 +42,7 @@ export function sourceUrl(entry) {
  * members here, anything older (PKZIP 1's shrink and implode) through the
  * system's `unzip`, which knows them.
  */
-function unpack(archive, into) {
+export function unpack(archive, into) {
   const bytes = readFileSync(archive);
   let end = bytes.length - 22;
 
@@ -87,7 +88,14 @@ function unpack(archive, into) {
       bytes.readUInt16LE(member.local + 26) +
       bytes.readUInt16LE(member.local + 28);
     const data = bytes.subarray(start, start + member.compressed);
-    const out = join(into, ...member.name.split(/[\\/]/));
+    const parts = member.name.split(/[\\/]/);
+
+    /* A download is untrusted: nothing of it is written outside its folder. */
+    if (parts.some((part) => part === '..') || /^([\\/]|[A-Za-z]:)/.test(member.name)) {
+      throw new Error(`${archive}: ${member.name} is outside the archive's folder`);
+    }
+
+    const out = join(into, ...parts);
 
     mkdirSync(dirname(out), { recursive: true });
     writeFileSync(out, member.method === 8 ? inflateRawSync(data) : data);
@@ -154,8 +162,10 @@ async function fetchEntry(entry, { hashOnly }) {
 async function main() {
   const args = process.argv.slice(2);
   const hashOnly = args.includes('--hash');
+  const at = args.indexOf('--manifest');
+  const file = at >= 0 ? args.splice(at, 2)[1] : join(CORPUS, 'manifest.json');
   const wanted = args.filter((argument) => !argument.startsWith('--'));
-  const manifest = JSON.parse(readFileSync(join(CORPUS, 'manifest.json'), 'utf8'));
+  const manifest = JSON.parse(readFileSync(file, 'utf8'));
   const entries = manifest.programs.filter((entry) => !wanted.length || wanted.includes(entry.id));
   let failed = 0;
 
@@ -173,4 +183,6 @@ async function main() {
   }
 }
 
-main();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main();
+}
