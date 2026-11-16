@@ -2198,6 +2198,16 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "irqtick:realmode",
         "a program's real-mode code is never run: its real-mode vector is never called",
     ),
+    // `stdcur`: the standard cursors USER keeps are its blocks, as Windows
+    // makes them; the standard icons are blocks of WinBox's own layout.
+    (
+        "stdcur:icon",
+        "a standard icon's block is laid out from WinBox's picture of it, not by USER's DIB conversion: its bits differ; IDI_APPLICATION is found discarded under Windows",
+    ),
+    (
+        "stdcur:flags",
+        "IDI_APPLICATION is a discarded resource under Windows (4100h), a block of WinBox's own here",
+    ),
 ];
 
 /// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the

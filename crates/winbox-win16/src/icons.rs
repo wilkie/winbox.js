@@ -37,6 +37,21 @@ const OIC_WINLOGO: u16 = 32647;
 /// The arrow, the cursor before any is set.
 const IDC_ARROW: u16 = 32512;
 
+/// The standard cursors USER holds as blocks of memory, made from the
+/// display driver's resources as it makes a module's (`LoadDIBCursorHandler`):
+/// the arrow, the I-beam, the hourglass, the up-arrow, the icon's and the
+/// four sizing cursors. **Read out** of `USER.EXE`: its start (seg3
+/// `12d3`-`13db`) loads the arrow, the I-beam, the up-arrow and the four
+/// sizing cursors into its own data. **Recorded** by `stdcur`, both modes:
+/// `LoadCursor(NULL, id)` of each of these answers a block of 288 bytes
+/// (`GlobalSize`), its header the hotspot, 32 by 32, four bytes a row, one
+/// plane and one bit, not discardable (`GlobalFlags` nought); the cross and
+/// `IDC_SIZE` answer a handle with no memory (`GlobalSize` nought, not
+/// locked), as WinBox's own handles do.
+const KEPT_CURSORS: [u16; 9] = [
+    32512, 32513, 32514, 32516, 32641, 32642, 32643, 32644, 32645,
+];
+
 /// What USER draws with that is the display driver's, or its own: the
 /// standard icons and cursors, read from the installation.
 #[derive(Debug, Clone, Default)]
@@ -50,6 +65,9 @@ pub struct DriverResources {
     pub cursors: HashSet<u16>,
     /// Their pictures: the first cursor of each group.
     pub cursor_images: HashMap<u16, CursorImage>,
+    /// That cursor's resource as the file holds it, which USER makes a
+    /// block of for the cursors it keeps (`KEPT_CURSORS`).
+    pub cursor_resources: HashMap<u16, Vec<u8>>,
     /// USER's Windows flag, which a minimized window whose class's icon is
     /// `IDI_APPLICATION` shows in its place.
     pub application_icon: Option<IconData>,
@@ -99,12 +117,11 @@ fn icon_of(
     Some(scale_icon(decode_icon(&bytes, palette), ICON_SIZE))
 }
 
-/// A cursor group's first cursor: an entry's last word is its id.
-fn cursor_from_group(
-    cursors: &[(Option<u16>, Option<String>, Vec<u8>)],
+/// A cursor group's first cursor's resource: an entry's last word is its id.
+fn cursor_resource<'a>(
+    cursors: &'a [(Option<u16>, Option<String>, Vec<u8>)],
     group: &[u8],
-    palette: &mut DevicePalette,
-) -> Option<CursorImage> {
+) -> Option<&'a [u8]> {
     if group.len() < 6 + 14 {
         return None;
     }
@@ -112,7 +129,16 @@ fn cursor_from_group(
     let id = u16::from_le_bytes([group[6 + 12], group[6 + 13]]);
     let (_, _, bytes) = cursors.iter().find(|(found, _, _)| *found == Some(id))?;
 
-    (bytes.len() > 4).then(|| decode_cursor(bytes, palette))
+    (bytes.len() > 4).then_some(bytes.as_slice())
+}
+
+/// A cursor group's first cursor.
+fn cursor_from_group(
+    cursors: &[(Option<u16>, Option<String>, Vec<u8>)],
+    group: &[u8],
+    palette: &mut DevicePalette,
+) -> Option<CursorImage> {
+    cursor_resource(cursors, group).map(|bytes| decode_cursor(bytes, palette))
 }
 
 /// The bitmaps USER lays side by side in its strip before the grayed arrows
@@ -281,6 +307,10 @@ impl DriverResources {
                     && let Some(image) = cursor_from_group(&cursors, &group, palette)
                 {
                     resources.cursor_images.insert(id, image);
+
+                    if let Some(bytes) = cursor_resource(&cursors, &group) {
+                        resources.cursor_resources.insert(id, bytes.to_vec());
+                    }
                 }
             }
         }
@@ -503,6 +533,23 @@ impl System {
     /// A standard cursor's handle, made the first time it is asked for.
     fn standard_cursor(&mut self, id: u16) -> u16 {
         if let Some(&handle) = self.standard_cursors.get(&id) {
+            return handle;
+        }
+
+        // One USER keeps is the block it made of the driver's resource.
+        let kept = KEPT_CURSORS
+            .contains(&id)
+            .then(|| {
+                self.driver
+                    .as_ref()
+                    .and_then(|driver| driver.cursor_resources.get(&id).cloned())
+            })
+            .flatten()
+            .map(|bytes| crate::icon_handlers::cursor_block_of(self, &bytes))
+            .filter(|&handle| handle != 0);
+
+        if let Some(handle) = kept {
+            self.standard_cursors.insert(id, handle);
             return handle;
         }
 

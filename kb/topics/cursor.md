@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: The cursor a window sets
-summary: How Windows 3.1 asks the window under the mouse for its cursor with WM_SETCURSOR as each mouse message is taken, what it sends for a disabled window and as a menu starts, and what DefWindowProc answers — the class's cursor, a border's sizing cursor, the arrow, and a disabled window's owned pop-up brought up — as USER.EXE has it and the setcur, titledis and curerr probes recorded it.
-probes: [setcur, titledis, curerr]
+summary: How Windows 3.1 asks the window under the mouse for its cursor with WM_SETCURSOR as each mouse message is taken, what it sends for a disabled window and as a menu starts, and what DefWindowProc answers — the class's cursor, a border's sizing cursor, the arrow, and a disabled window's owned pop-up brought up — and the standard cursors USER keeps as blocks of memory, as USER.EXE has it and the setcur, titledis, curerr and stdcur probes recorded it.
+probes: [setcur, titledis, curerr, stdcur]
 ---
 
 The cursor is one for the whole screen. Windows does not keep a cursor for each window. It asks the window under the mouse for one each time the mouse does something there.
@@ -52,8 +52,20 @@ The cursor is one for the whole screen. Windows does not keep a cursor for each 
 
 `DefWindowProc` answered nought every time, a child's border and a child's client area alike.
 
+## The standard cursors as memory
+
+A standard cursor, `LoadCursor(NULL, IDC_ARROW)` and the rest, is a block of global memory, as a module's cursor is: the twelve bytes of `CURSORICONINFO` (the hotspot, the width and height, the bytes of a row, the planes and the bits), then the mask and the picture. A program may read it. ArrowSmith, a cursor editor, asks `GlobalSize` of the arrow and goes on only if it is 120h; otherwise it says "Sorry, your system's cursor size is non-standard, and ArrowSmith cannot manipulate it." (`ASMITH.EXE` seg1 `10b8`-`10d9`: `LoadCursor(0, 7F00h)`, `GlobalSize`, `cmp ax,120h`, DX nought).
+
+- [[read out]] USER's start (`USER.EXE` seg3 `12d3`-`13db`) loads, through its own `LoadCursor` (seg12 `0842`), the arrow, the I-beam and the up-arrow, and the four sizing cursors 7F82h to 7F85h, keeping each handle in its data; and through `LoadIcon` (`085e`) the application icon, the hand, the question mark, the exclamation mark and the asterisk. A cursor with no instance is the display driver's resource, made USER's block by `LoadDIBCursorHandler` ([[fn:USER.LoadDIBCursorHandler]]).
+- [[measured]] [[probe:stdcur]], in both modes alike: the arrow, the I-beam, the hourglass, the up-arrow, `IDC_ICON` and the four sizing cursors each answer a block of 288 bytes (`GlobalSize`; 268 rounded up as the global heap rounds), its header the hotspot, 32 by 32, four bytes a row, one plane and one bit; `GlobalFlags` of the arrow is nought, not discardable; a second `LoadCursor` answers the same handle. The cross and `IDC_SIZE` answer a handle whose `GlobalSize` is nought and that `GlobalLock` does not lock. `SM_CXCURSOR` and `SM_CYCURSOR` are 32. The application icon is a discarded resource (`GlobalFlags` 4100h, `GlobalSize` nought); the hand, the question mark, the exclamation mark and the asterisk are blocks of 672 bytes in four planes.
+- WinBox makes each of those nine cursors the block USER makes, from the driver's resource, the first time it is asked for, through the conversion a module's cursor goes through (`KEPT_CURSORS` and `standard_cursor` in `crates/winbox-win16/src/icons.rs`, `cursor_block_of` in `crates/winbox-win16/src/icon_handlers.rs`): their sizes, headers and the sums of their bits agree with the recording. Without the installation's driver to read, and for the cross and `IDC_SIZE`, a cursor is a handle of WinBox's own with no memory, as before. ArrowSmith goes on past its check (`MEDLEY_SEC10053`).
+
 ## In winbox.js
 
 `crates/winbox-win16/src/mouse_scan.rs` and `crates/winbox-win16/src/def_window.rs`. The mouse is put in the queue as the mouse made it, and each look hit-tests it as USER's scan does ([[topic:hit-testing]]): a disabled top-level window's input is thrown away as the look comes to it, `PM_NOREMOVE` or not, the window told; any other mouse message asks for the cursor as it is taken. `MessageBeep` makes no sound. The menu's own `WM_SETCURSOR` is sent as winbox.js's menu loop takes the mouse; it never has it taken back.
 
 The page's own pointer stands in for the cursor, so nothing draws it on the screen. The corpus survey draws the cursor into its picture of the screen, as the display driver would draw it, to compare with Windows' screenshots: `withCursor`. With that done, the cursor that Champ's edit field sets matches, and its screen matches Windows' pixel for pixel.
+
+## Not yet done
+
+- The standard icons are blocks of WinBox's own layout, of the right size, but their bits are not those USER's DIB conversion makes ([[probe:stdcur]]'s `icon` records, a known gap), and the application icon is no discarded resource. The cross and `IDC_SIZE` are handles with no memory, as recorded, but are not resources loaded when asked for.

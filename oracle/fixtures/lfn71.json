@@ -1,0 +1,84 @@
+{
+  "probe": "lfn71",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "7139",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "713a",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "713b",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "7141",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "7143",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "7147",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "714e",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "714f",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "7156",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "7160",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "716c",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "71a0",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "71a1",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    },
+    {
+      "function": "71a6",
+      "args": "",
+      "result": "7100 1234 0000 006c 1"
+    }
+  ]
+}
