@@ -18,6 +18,7 @@ topics: [kernel-queries]
 - [[read out]] Once the task is made it gives the processor up once, by `Yield` (seg2 `13a8`, seg1 `7d21`), where the flag 10h at `[326h]` is set. [[measured]] [[probe:execpk]]: `WinExec` answers the first time the new program gives the processor up -- by `PeekMessage` with nothing there, or by `Yield` -- not when it waits for a message; one that never gives it up has ended by then ([[topic:several-programs]]).
 - [[measured]] [[probe:segfree]]: a program is given its selectors in this order -- its module's database, the task's database, its program segment prefix, a second selector, its message queue, then its segments -- each the one freed last first. Its instance is its data segment's handle, whether or not the program has ended by the time the call answers ([[topic:global-and-local-memory]]).
 - [[measured]] [[probe:mmtaskc]]: a program started answers an instance, and DX is a task whose module is the program's; a file that is nowhere answers 2, DX nought. [[probe:tasks2]] and [[probe:loadenv]] record the block's command tail, its showing and its environment.
+- [[measured]] [[probe:ldmod]], alike in both modes: a library's file given with a program's parameter block is loaded as [[fn:KERNEL.LoadLibrary]] loads it -- no task made, the answer its instance, its `LibMain` run once on the caller's own stack, its usage 1; `LoadLibrary` of it after answers the same instance, usage 2, `LibMain` not run again, and two `FreeLibrary` take it away. Math Blaster loads its four libraries so (`MB4.EXE` at `177:1512`-`161d`), and Compose its language's (`COMPOSE.EXE` at `197:79`, `CMPS_USA.DLL`).
 
 ## Nuances
 
@@ -26,4 +27,4 @@ topics: [kernel-queries]
 
 ## Implementation
 
-`crates/winbox-win16/src/tasks.rs` (`load_module`, `start_named`).
+`crates/winbox-win16/src/tasks.rs` (`load_module`, `start_named`). A file whose header says it is a library goes to `load_library_named`, whatever the block.
