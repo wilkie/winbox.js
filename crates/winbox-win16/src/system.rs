@@ -571,6 +571,11 @@ pub struct System {
     pub fm: crate::fm::Fm,
     /// The machine's CMOS, its register chosen (`cmos.rs`).
     pub cmos: crate::cmos::Cmos,
+    /// The VGA's palette registers and DAC, as the video BIOS reads and
+    /// writes them (`bios.rs`).
+    pub video_bios: crate::bios::VideoBios,
+    /// The disk BIOS's last status (`bios.rs`).
+    pub disk_bios: crate::bios::DiskBios,
     /// SYSTEM.DRV's timers' tick (`system_driver.rs`).
     pub system_driver: crate::system_driver::State,
     /// The timer's hardware interrupt, given to a program's handler.
@@ -781,6 +786,8 @@ impl System {
             mapper_applet: crate::wbmapper::applet::Applet::default(),
             fm: crate::fm::Fm::new(),
             cmos: crate::cmos::Cmos::default(),
+            video_bios: crate::bios::VideoBios::default(),
+            disk_bios: crate::bios::DiskBios::default(),
             system_driver: crate::system_driver::State::default(),
             timer: crate::hardware_interrupts::Timer::default(),
             system_control: 0,

@@ -235,6 +235,12 @@ impl System {
                             self.instructions += 1;
                         }
                         0x11 => self.equipment_interrupt(),
+                        // The BIOS's video and disk interrupts and the
+                        // Virtual DMA Services', as Windows passes them on
+                        // to DOSBox's BIOS (`bios.rs`).
+                        0x10 if self.video_interrupt() => {}
+                        0x13 if self.disk_interrupt() => {}
+                        0x4b if self.vds_interrupt() => {}
                         0x12 => self.memory_size_interrupt(),
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }

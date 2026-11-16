@@ -7,6 +7,7 @@ pub mod app_exit;
 pub mod assets;
 pub mod atoms;
 pub mod audio;
+pub mod bios;
 pub mod broadcast;
 pub mod button;
 pub mod call;

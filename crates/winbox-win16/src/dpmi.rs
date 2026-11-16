@@ -42,7 +42,7 @@ const HOST_LINEAR: u32 = FIRST_MEGABYTE + (HOST_SEGMENT as u32) * 16;
 /// The segment DOSX gives DOS in DS and ES for the buffers it copies
 /// (`[cs:2]` of its protected-mode code), and WIN386's, as `diskmed` found
 /// them where a DOS function left DS as it was.
-const DOSX_DOS_SEGMENT: u16 = 0x05de;
+pub(crate) const DOSX_DOS_SEGMENT: u16 = 0x05de;
 const WIN386_DOS_SEGMENT: u16 = 0x9eb0;
 
 /// The global table's descriptors of the host's code, its stack, and the
@@ -734,7 +734,7 @@ impl System {
     /// the host's own for it, if it has one (`DOSX.EXE` 20D6h), else one
     /// made so (219Dh), data of 64 KiB not yet accessed (`F2h`); none where
     /// no descriptor is left.
-    fn dpmi_segment_selector(&mut self, paragraph: u16) -> Option<u16> {
+    pub(crate) fn dpmi_segment_selector(&mut self, paragraph: u16) -> Option<u16> {
         let base = FIRST_MEGABYTE.wrapping_add(u32::from(paragraph) * 16);
         let mut candidates: Vec<usize> = FIRST_MEGABYTE_SELECTORS
             .iter()
