@@ -326,26 +326,6 @@ impl System {
         }
     }
 
-    /// `DefWindowProc` asked to make a child of a window of the `MDIClient`
-    /// class, as a program's own procedure on a client may ask it. That is
-    /// not followed: it stops rather than answer nought.
-    pub(crate) fn refuse_mdi_create_default(&self, index: usize, message: u16) -> Result<(), Stop> {
-        if message != WM_MDICREATE {
-            return Ok(());
-        }
-
-        let client = self.windows[index].as_ref().is_some_and(|window| {
-            self.class_named(&window.class)
-                .is_some_and(|class| self.classes[class].name.eq_ignore_ascii_case(MDI_CLIENT))
-        });
-
-        if client {
-            return Err(Stop::Unsupported("DefWindowProc making an MDI child"));
-        }
-
-        Ok(())
-    }
-
     /// `WM_MDISETMENU` (seg20 `02f9`): the frame's menu and the Window menu
     /// set, the list of children written into the Window menu again after
     /// its last separator. Answers the old menus.
@@ -1862,31 +1842,5 @@ mod tests {
         system.windows[child].as_mut().unwrap().parent = Some(other);
         system.check_item(hwnd, children[1], true);
         assert_eq!(system.menus[menu].items[3].flags, MF_CHECKED);
-    }
-
-    #[test]
-    fn def_window_proc_makes_no_mdi_child() {
-        let mut system = System::new();
-
-        system.mdi_client_class();
-
-        let (client, _) = add(&mut system, None, "");
-        let (plain, _) = add(&mut system, None, "");
-
-        system.windows[client].as_mut().unwrap().class = "mdiclient".to_string();
-        system.windows[plain].as_mut().unwrap().class = "Plain".to_string();
-
-        assert_eq!(
-            system.refuse_mdi_create_default(client, WM_MDICREATE),
-            Err(Stop::Unsupported("DefWindowProc making an MDI child"))
-        );
-        assert_eq!(
-            system.refuse_mdi_create_default(client, WM_MDIACTIVATE),
-            Ok(())
-        );
-        assert_eq!(
-            system.refuse_mdi_create_default(plain, WM_MDICREATE),
-            Ok(())
-        );
     }
 }

@@ -121,34 +121,36 @@ fn own_style(name: &str) -> u16 {
 }
 
 /// What `GetClassInfo` answers of USER's classes: their style, their
-/// windows' extra bytes, and their cursor.
-const USER_CLASSES: [(&str, u16, i16, u16); 7] = [
-    ("BUTTON", 0x8b, 3, 32512),
-    ("EDIT", 0x88, 6, 32513),
-    ("STATIC", 0x80, 6, 32512),
-    ("LISTBOX", 0x88, 2, 32512),
-    ("SCROLLBAR", 0x8b, 10, 32512),
-    ("COMBOBOX", 0x88, 2, 32512),
-    (DIALOG_CLASS, 0x2808, 30, 32512),
+/// windows' extra bytes, their cursor and their background brush
+/// (`classinf`; the MDI client's and the combo box's list's `mdiclsi`).
+/// The MDI client's is registered with the arrow and `COLOR_APPWORKSPACE`
+/// and one (`USER.EXE` seg3 `1595`-`15f5`).
+const USER_CLASSES: [(&str, u16, i16, u16, u16); 9] = [
+    ("BUTTON", 0x8b, 3, 32512, 0),
+    ("EDIT", 0x88, 6, 32513, 0),
+    ("STATIC", 0x80, 6, 32512, 0),
+    ("LISTBOX", 0x88, 2, 32512, 0),
+    ("SCROLLBAR", 0x8b, 10, 32512, 0),
+    ("COMBOBOX", 0x88, 2, 32512, 0),
+    ("COMBOLBOX", 0x808, 2, 32512, 0),
+    (DIALOG_CLASS, 0x2808, 30, 32512, 0),
+    ("MDICLIENT", 0, 16, 32512, 13),
 ];
 
 /// The cursor one of USER's own classes is registered with, as a standard
 /// cursor's number -- its arrow, and the I-beam for an edit control
-/// (`USER.EXE` seg3 `162f`, `16f1`; a combo box's list's `183e`) -- where
+/// (`USER.EXE` seg3 `162f`, `16f1`; a combo box's list's `183e`, the MDI
+/// client's `15cf`) -- where
 /// the class is USER's: no other has its procedures and no instance.
 pub fn own_cursor(class: &WindowClass) -> Option<u16> {
     if class.instance != 0 || !matches!(class.proc, WndProc::Host(_)) {
         return None;
     }
 
-    if class.name.eq_ignore_ascii_case("COMBOLBOX") {
-        return Some(32512);
-    }
-
     USER_CLASSES
         .iter()
         .find(|(own, ..)| own.eq_ignore_ascii_case(&class.name))
-        .map(|&(.., cursor)| cursor)
+        .map(|&(.., cursor, _)| cursor)
 }
 
 /// How far apart USER's procedures' thunks are.
@@ -429,12 +431,19 @@ pub fn get_class_info(system: &mut System, args: &mut Args) -> Result<Answer, St
         MenuName::Text(text) => text.to_ascii_uppercase(),
     };
     let fields: [u32; 9] = if instance == 0 {
-        let Some(&(_, style, extra, cursor)) = USER_CLASSES.iter().find(|(own, ..)| *own == name)
+        let Some(&(_, style, extra, cursor, brush)) =
+            USER_CLASSES.iter().find(|(own, ..)| *own == name)
         else {
             return Ok(Answer::Word(0));
         };
         let class = if name == DIALOG_CLASS {
             Some(system.dialog_class())
+        } else if name == "MDICLIENT" {
+            // Asked for before any client is made, as Borland's
+            // ObjectWindows asks before it registers a class of its own by
+            // the name (`mdiclsi`): the procedure is the client's.
+            system.mdi_client_class();
+            system.class_named(&name)
         } else {
             system.system_class(&name)
         };
@@ -454,7 +463,7 @@ pub fn get_class_info(system: &mut System, args: &mut Args) -> Result<Answer, St
             u32::from(user),
             0,
             u32::from(cursor),
-            0,
+            u32::from(brush),
             0,
         ]
     } else {

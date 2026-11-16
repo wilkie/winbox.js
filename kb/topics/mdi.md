@@ -2,19 +2,22 @@
 kind: topic
 name: Multiple document interface
 summary: How Windows 3.1's MDI works — the MDIClient window, WM_MDICREATE and the other client messages, the Window menu, tiling and cascading, the client's scroll bars, DefFrameProc and DefMDIChildProc — read out of USER.EXE, and the scroll bars measured.
-probes: [mdiscrl, mdisys]
+probes: [mdiscrl, mdisys, mdiclsi]
 ---
 
 Program Manager and File Manager are MDI programs. Each has a frame window with a menu, an `MDIClient` window filling the frame's client area, and document windows inside that client. The code is USER's segment 15, and segment 20 for the Window menu. Only the client's scroll bars are measured. For the rest, the two programs opening as they do on Windows is the only check.
 
 ## The client
 
-- [[read out]] `MDIClient` is USER's own class (seg3 `1595`). It has an application-workspace background and 10h bytes of window extra. It keeps:
+- [[read out]] `MDIClient` is USER's own class (seg3 `1595`-`15f5`). It has no style, an application-workspace background (`COLOR_APPWORKSPACE` and one, 0Dh), the arrow cursor USER's dialog class has, and 10h bytes of window extra. It keeps:
   - its children and their number;
   - the active child and the maximized one;
   - the Window menu, and the first child's identifier, both from the `CLIENTCREATESTRUCT` its creation parameters point at (seg15 `10ff`).
 - [[read out]] Scroll bars asked for in the client's style start hidden, and show only when the children reach past its edges.
 - [[read out]] A press on a child that is not the active one activates it. The client learns of it through `WM_PARENTNOTIFY`, which USER sends up from the window pressed to each window it is in ([[topic:hit-testing]]).
+
+- [[measured]] [[probe:mdiclsi]]: `GetClassInfo` with no instance answers the class, by any case of its name, as USER registered it: its procedure is the one `GetWindowLong(GWL_WNDPROC)` gives of a client, its instance USER's. Asked with a program's instance it answers nought. The procedure it answers makes a child when `WM_MDICREATE` is sent through it to a client. `DefWindowProc` answers that message nought, and makes no child.
+- [[inferred]] Borland's ObjectWindows asks `GetClassInfo` for each class it is to make a window of, with no instance and then its own, and registers a class of its own by that name only where neither answers. It then subclasses each window, keeping the procedure it replaced to pass messages on to. Where it finds no `MDIClient`, as WinBox once answered, the client it makes is of its own class, the procedure it passes messages on to is `DefWindowProc`, and the children it asks for with `WM_MDICREATE` are never made.
 
 ## The client's scroll bars
 

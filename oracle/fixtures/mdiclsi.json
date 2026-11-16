@@ -1,0 +1,44 @@
+{
+  "probe": "mdiclsi",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "info",
+      "args": "MDIClient",
+      "result": "string atom style=0 client cls=0 wnd=16 inst=other icon=none cursor=yes brush=13 menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "MDICLIENT",
+      "result": "string atom style=0 client cls=0 wnd=16 inst=other icon=none cursor=yes brush=13 menu=#0 name=passed"
+    },
+    {
+      "function": "info",
+      "args": "MDIClient, by my instance",
+      "result": "0"
+    },
+    {
+      "function": "info",
+      "args": "ComboLBox",
+      "result": "string atom style=808 other cls=0 wnd=2 inst=other icon=none cursor=yes brush=none menu=#0 name=passed"
+    },
+    {
+      "function": "create",
+      "args": "proc",
+      "result": "window, children=1"
+    },
+    {
+      "function": "create",
+      "args": "default",
+      "result": "0, children=1"
+    }
+  ]
+}
