@@ -411,17 +411,16 @@ pub(crate) fn lcreat(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         path = system.placed_path(&path);
     }
 
-    let handle = system
-        .files
-        .create(&path)
-        .map_or(HFILE_ERROR, |handle| handle as u16);
+    // Not made, DOS's 3Ch's error is DOS's last (**recorded** by `exterr`:
+    // 3 for a folder not there).
+    let Some(handle) = system.files.create(&path) else {
+        system.dos_error = system.create_error(&path);
+        return Ok(Answer::Word(HFILE_ERROR));
+    };
 
     // Told to `FileCdr`'s procedure as DOS's create, 3C00h.
-    if handle != HFILE_ERROR {
-        system.note_file_change(0x3c00, &given, None);
-    }
-
-    Ok(Answer::Word(handle))
+    system.note_file_change(0x3c00, &given, None);
+    Ok(Answer::Word(handle as u16))
 }
 
 /// Bytes written to a file: how many, or `HFILE_ERROR`.

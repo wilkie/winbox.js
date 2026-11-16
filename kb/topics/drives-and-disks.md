@@ -81,6 +81,28 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 
 - [[measured]] Function 47h, the current directory, fails on a removable drive with no disk in it: COMMDLG's Open box, changed to an empty `a:`, says it cannot read the drive ([[probe:ofnopen]]). [[inferred]] The engines answer error 0Fh, invalid drive, as for a drive that is not there; the box says the same for any error.
 
+### The extended error, 59h
+
+The Visual Basic setup kit's `SETUP1.EXE` asks 59h after a folder call fails, and takes the folder as one to make only from its answer; unanswered, every folder was "Not a valid path." ([[guide:compatibility]], "Installs").
+
+- [[read out]] KERNEL's own `INT 21h` routine passes 59h on to DOS: its table at `KRNL386.EXE` seg1 `1a5a`, indexed by AH from 0Eh to 6Ch (`1b98`-`1ba8`), gives 59h `1bc7`, which calls the vector KERNEL kept at `[cs:3Ch]` with the caller's registers (`1bd3`-`1bdf`, `1d2a`) and hands back the flags DOS left (`1be5`-`1be6`). KERNEL keeps no error of its own for it. A task's first call after a switch at or above 30h, 59h among them, is preceded by KERNEL's own 1Ah and, where the task's folder differs, 0Eh and 3Bh (`1c16`-`1cf2`), which succeed and so change nothing below.
+- [[read out]] DOSBox's DOS answers 59h with AX `dos.errorcode`, BH 8 (not found) where that is 2 or 3 and nought otherwise, BL 1 and CH nought; CL, DX and the flags are left as they were (`dos.cpp` 843-852). `dos.errorcode` is set only by `DOS_SetError` (41-43), which a call that fails calls and one that succeeds does not.
+- [[measured]] [[probe:exterr]], in both modes alike, asks 59h with BX nought, CX CCCCh and DX DDDDh after each call:
+
+  | Call before 59h                                                    | AX  | BX    | CX    |
+  | ------------------------------------------------------------------ | --- | ----- | ----- |
+  | 3Dh of a file not there; 59h again; 4300h of a file there after it | 2   | 0801h | 00CCh |
+  | 39h of a folder there                                              | 5   | 0001h | 00CCh |
+  | 3Bh, 3Ah of a folder not there                                     | 3   | 0801h | 00CCh |
+  | 4300h of a folder not there; 41h of a file not there               | 2   | 0801h | 00CCh |
+  | 3Dh, 39h of a name in a folder not there                           | 3   | 0801h | 00CCh |
+  | 3Eh of a handle not open                                           | 6   | 0001h | 00CCh |
+  | 4Eh finding nothing                                                | 12h | 0001h | 00CCh |
+
+  DX stays DDDDh and the carry as it was. KERNEL's own calls set DOS's error as a program's do, each after a 3Eh that left 6: `_lopen` of a file not there 2, of one in a folder not there 3; `_lcreat` in a folder not there 3; `OpenFile` of a file not there 2 (with `OF_EXIST` too, and searching the path for a bare name), of one in a folder not there 3, and with `OF_CREATE` there 3, its `nErrCode` the same each time. `_lopen` of a file there leaves 6.
+
+- WinBox keeps DOS's last error in `dos_error`, set by each DOS function that fails, and answers 59h from it as DOSBox does (`dos_function` in `crates/winbox-win16/src/dos.rs`). KERNEL's `_lopen`, `_lcreat` and `OpenFile`, which WinBox answers without DOS, set it as DOS's 3Dh and 3Ch would (`files_kernel.rs`, `kernel.rs`). 3Dh of a name in a folder not there on a folder's drive now answers 3, as DOSBox's `PathExists` makes it on any drive (`dos_files.cpp` 563-564); WinBox answered 2 there before.
+
 ## MSCDEX
 
 [[measured]] [[probe:mscdex]] makes MSCDEX's register calls through `INT 2Fh` with no disc mounted, BX 0B0Bh, CX 0C0Ch and DX 0D0Dh before; [[probe:imgcd]] makes them with a CD-ROM image as D:.
@@ -337,7 +359,7 @@ The owner's decisions (2026-10-22):
 - What Windows' own programs make of a disk swapped under them -- File Manager's window of the drive, an installer's prompt for its next disk -- with no probe of their own: a probe cannot drive File Manager, and DOSBox swaps no floppy, so an installer's prompt is not recordable there; and MSCDEX's media-changed answer, a 1510h device request (below).
 - 440Dh with CL 40h and 41h, setting a device's parameters and writing a track, under Windows: DOSBox stopped at each ([[probe:ioctlall]]), so what Windows' DOS extender makes of them is not measured. The Rust engine answers them error 1, as DOSBox's own `DOS_IOCTL` would. KERNEL's table at `286h` (The equipment word, above) is followed for 0Eh alone: the drives it marks have no disk, so 32h, 36h and 47h of them fail here as DOS fails F0h, with the error of a drive not there.
 - An overlay put back over an image whose boot sector it rewrote: the FAT volume's geometry is read as the image is mounted, before the overlay goes over it, so a floppy formatted again by a program is read with its old geometry on the next run or visit. Native and page alike.
-- DOS's last error (`dos_error`) is the last a program's own call answered: Windows' own calls to DOS, which the Rust engine answers without DOS, set none, so an error of KERNEL's between two calls of a program's is not seen.
+- DOS's last error (`dos_error`) is set by a program's own DOS calls and by KERNEL's `_lopen`, `_lcreat` and `OpenFile` ([[probe:exterr]]); Windows' other calls to DOS, which the Rust engine answers without DOS (`_lread` of a handle not open, the profile functions, `GetTempFileName` and the rest), set none, unmeasured.
 - KERNEL's table of marked drives is made once as Windows starts; the Rust engine works it out at each call, so a floppy image mounted on the page while a program runs counts at once.
 - 6901h as anything but 6900h's refusal: DOSBox stops the machine at it, which WinBox does not do, so a serial number set is unmeasured; and 6900h as a real DOS answers it, from a FAT image's boot sector (offset 27h) -- DOSBox never does.
 - MSCDEX's other calls with a buffer -- 1502h-1505h, 1508h, 150Fh and 1510h, the device driver's requests among them -- and the driver's header 1501h points at, which is not laid out: a device driver of DOSBox's own in DOS memory, its own design. And 1100h's word on the caller's stack, which through Windows is the extender's.
