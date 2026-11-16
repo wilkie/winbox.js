@@ -54,11 +54,22 @@ const SCRATCH_INDICES: [u16; 4] = [0x10, 0x11, 0x12, 0x13];
 /// Where in the host's code each stub is.
 const EXCEPTION_DEFAULTS: u16 = 0x1133;
 const EXCEPTION_RETURN: u16 = 0x140c;
-const VECTOR_DEFAULTS: u16 = 0x2000;
+pub(crate) const VECTOR_DEFAULTS: u16 = 0x2000;
+
+/// The timer's interrupt, IRQ 0, at the vector the master controller's
+/// base gives it (0400h's DH).
+pub(crate) const TIMER_VECTOR: u8 = 0x08;
+/// Where TIMER.DRV's handler of it is in its code segment, and
+/// SYSTEM.DRV's in its.
+const TIMER_HANDLER: u16 = 0x0276;
+const SYSTEM_TIMER_HANDLER: u16 = 0x0238;
 const CALLBACK_RETURN: u16 = 0x2ee3;
 const REAL_CALL: u16 = 0x3100;
 const STATE_SAVE: u16 = 0x3200;
 const RAW_SWITCH: u16 = 0x3204;
+/// Where a hardware interrupt's handler returns to in 386 enhanced mode,
+/// which called it on the host's stack (`hardware_interrupts.rs`).
+const INTERRUPT_RETURN: u16 = 0x3208;
 
 const HOST_STACK_OFFSET: u32 = 0x4000;
 const HOST_STACK_TOP: u16 = 0x2000;
@@ -196,6 +207,11 @@ impl Host {
     pub fn claims(&self, vector: u8) -> bool {
         self.vectors.contains_key(&vector)
             || (vector < 0x20 && self.exceptions.contains_key(&vector))
+    }
+
+    /// A program's own handler of a vector, where it set one.
+    pub fn vector(&self, vector: u8) -> Option<(u16, u16)> {
+        self.vectors.get(&vector).copied()
     }
 
     /// Whether a program's exception handler is set for a fault.
@@ -381,6 +397,7 @@ impl System {
         code(self, CALLBACK_RETURN, &[0xcd, 0x31]);
         code(self, STATE_SAVE, &[0xcb]);
         code(self, RAW_SWITCH, &[0xcd, 0x31]);
+        code(self, INTERRUPT_RETURN, &[0xcd, 0x31]);
 
         for vector in ANSWERED {
             let value = self.cpu.bus.read32(FIRST_MEGABYTE + u32::from(vector) * 4);
@@ -960,11 +977,81 @@ impl System {
         ))
     }
 
-    fn dpmi_vector_handler(&self, vector: u8) -> (u16, u16) {
-        self.dpmi.vectors.get(&vector).copied().unwrap_or((
+    fn dpmi_vector_handler(&mut self, vector: u8) -> (u16, u16) {
+        match self.dpmi.vectors.get(&vector) {
+            Some(&handler) => handler,
+            None => self.dpmi_vector_default(vector),
+        }
+    }
+
+    /// A vector's handler as Windows leaves it: for the timer's, 08h, in
+    /// standard mode TIMER.DRV's, which hooks it as MMSYSTEM enables it
+    /// (`TIMER.DRV` seg1 `0151`-`016f`, its handler seg3 `0276`), and in
+    /// enhanced mode SYSTEM.DRV's (`SYSTEM.DRV` seg1 `02e2`-`0309`, its
+    /// handler `0238`); **recorded** by `irqtick`: offset 0276h owned by
+    /// TIMER, 0238h owned by SYSTEM. For any other, the host's own stub.
+    fn dpmi_vector_default(&mut self, vector: u8) -> (u16, u16) {
+        self.dpmi_host();
+
+        let host = (
             self.dpmi_host_code(),
             VECTOR_DEFAULTS + 4 * u16::from(vector),
-        ))
+        );
+
+        let (module, offset) = if self.dpmi_enhanced() {
+            ("SYSTEM", SYSTEM_TIMER_HANDLER)
+        } else {
+            ("TIMER", TIMER_HANDLER)
+        };
+
+        if vector == TIMER_VECTOR
+            && let Some(handler) = self.timer_driver_handler(module, offset, host)
+        {
+            return handler;
+        }
+
+        host
+    }
+
+    /// A driver's handler of the timer's interrupt, at its offset in the
+    /// code of WinBox's module of that name: a far jump on to the host's
+    /// stub, the interrupt's work, which here is WinBox's own
+    /// (`hardware_interrupts.rs`). Its place is the stub of an ordinal the
+    /// module never exports.
+    fn timer_driver_handler(
+        &mut self,
+        module: &str,
+        offset: u16,
+        host: (u16, u16),
+    ) -> Option<(u16, u16)> {
+        let kept = self.kept_named(module)?;
+        let index = self.stubs(kept);
+        let selector = winbox_machine::segment_selector(index);
+        let at = self.base_of(selector) + u32::from(offset);
+        let [off_low, off_high] = host.1.to_le_bytes();
+        let [sel_low, sel_high] = host.0.to_le_bytes();
+
+        self.cpu
+            .bus
+            .write(at, &[0xea, off_low, off_high, sel_low, sel_high]);
+        Some((selector, offset))
+    }
+
+    /// A protected-mode vector, as 0204h answers it.
+    pub(crate) fn protected_vector(&mut self, vector: u8) -> (u16, u16) {
+        self.dpmi_vector_handler(vector)
+    }
+
+    /// A protected-mode vector set, as 0205h sets it: Windows' own
+    /// handler given back takes the program's out.
+    pub(crate) fn set_protected_vector(&mut self, vector: u8, selector: u16, offset: u16) {
+        if (selector, offset) == self.dpmi_vector_default(vector)
+            || (Self::is_host_code(selector) && offset == VECTOR_DEFAULTS + 4 * u16::from(vector))
+        {
+            self.dpmi.vectors.remove(&vector);
+        } else {
+            self.dpmi.vectors.insert(vector, (selector, offset));
+        }
     }
 
     fn dpmi_set_exception(&mut self, get: bool, number: u8, most: u8) -> Option<Event> {
@@ -994,10 +1081,8 @@ impl System {
 
         if get {
             (self.cpu.regs[CX], self.cpu.regs[DX]) = self.dpmi_vector_handler(vector);
-        } else if Self::is_host_code(cx) && dx == VECTOR_DEFAULTS + 4 * u16::from(vector) {
-            self.dpmi.vectors.remove(&vector);
         } else {
-            self.dpmi.vectors.insert(vector, (cx, dx));
+            self.set_protected_vector(vector, cx, dx);
         }
 
         self.dpmi_ok()
@@ -1063,9 +1148,74 @@ impl System {
         self.cpu.ip = u32::from(ip);
     }
 
+    /// A hardware interrupt given to a program's handler, between two of
+    /// the instructions it interrupts, its interrupt and trap flags then
+    /// cleared, as an interrupt gate clears them. In standard mode on the
+    /// stack it interrupted, three words below: DOSX copies the frame there
+    /// and returns into the handler (`DOSX.EXE` 186Bh:`11f3`-`125f`; the
+    /// frame's CS the code interrupted). In enhanced mode on the host's
+    /// stack, the frame returning to the host's code, which then goes back
+    /// to the code interrupted. **Recorded** by `irqtick` in both.
+    pub(crate) fn dpmi_hardware_interrupt(&mut self, (cs, ip): (u16, u16)) {
+        self.dpmi_host();
+
+        let flags = self.cpu.flags;
+
+        if self.dpmi_enhanced() {
+            let top = self
+                .dpmi
+                .stack_tops
+                .last()
+                .copied()
+                .unwrap_or(HOST_STACK_TOP);
+            let frame = [
+                self.cpu.segments[SS].selector,
+                self.cpu.regs[SP],
+                flags,
+                self.cpu.segments[CS].selector,
+                self.cpu.ip as u16,
+                flags,
+                self.dpmi_host_code(),
+                INTERRUPT_RETURN,
+            ];
+
+            self.dpmi_load(SS, Self::dpmi_host_stack());
+            self.cpu.regs[SP] = top;
+
+            for word in frame {
+                self.dpmi_push16(word);
+            }
+
+            self.dpmi.stack_tops.push(self.cpu.regs[SP]);
+        } else {
+            let frame = [flags, self.cpu.segments[CS].selector, self.cpu.ip as u16];
+
+            for word in frame {
+                self.dpmi_push16(word);
+            }
+        }
+
+        self.cpu.flags &= !(INTERRUPT | TRAP);
+        self.dpmi_load(CS, cs);
+        self.cpu.ip = u32::from(ip);
+    }
+
     // --- the host's stubs ---
 
     fn dpmi_host_returned(&mut self, at: u16) -> Option<Event> {
+        if at == INTERRUPT_RETURN {
+            let frame: [u16; 5] = std::array::from_fn(|_| 0);
+            let frame = frame.map(|_| self.dpmi_pop16());
+
+            self.dpmi.stack_tops.pop();
+            self.cpu.flags = frame[2];
+            self.dpmi_load(SS, frame[4]);
+            self.cpu.regs[SP] = frame[3];
+            self.dpmi_load(CS, frame[1]);
+            self.cpu.ip = u32::from(frame[0]);
+            return None;
+        }
+
         if at == EXCEPTION_RETURN {
             let frame: [u16; 6] = std::array::from_fn(|_| 0);
             let frame = frame.map(|_| self.dpmi_pop16());

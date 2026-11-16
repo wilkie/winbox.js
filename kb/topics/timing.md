@@ -21,6 +21,7 @@ probes:
     wingsel,
     towrtick,
     cpu486,
+    irqtick,
   ]
 ---
 
@@ -47,6 +48,8 @@ Each function's page carries its own: how long each way it was recorded took, an
 ## How `GetTickCount` steps
 
 [[measured]] [[probe:tickstep]] polls `GetTickCount` as fast as a program can for a second. Its answers step 55 milliseconds at a time, and 54 every thirteenth or fourteenth: whole ticks of the timer, the 8253's 1,193,180 Hz divided by 65,536, 54.9254 ms each, rounded down. A program sees nineteen different answers a second. `timeGetTime` steps a millisecond at a time ([[probe:mmtime]]).
+
+[[measured]] The timer's interrupt itself comes at the same rate: 20 ticks to a program's own handler of vector 08h take 1,099 ms by `GetTickCount`, in both modes ([[probe:irqtick]], [[topic:hardware-interrupts]]). `GetTickCount` moves only as the interrupt reaches SYSTEM.DRV's handler, so a program's handler that never goes on to it stops it.
 
 ## The time-stamp counter
 

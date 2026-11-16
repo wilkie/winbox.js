@@ -39,6 +39,13 @@ pub struct Interrupts {
     inside: bool,
 }
 
+impl Interrupts {
+    /// Whether a procedure is being called.
+    pub(crate) fn inside(&self) -> bool {
+        self.inside
+    }
+}
+
 impl System {
     /// A procedure to be called as at interrupt time; the task named woken
     /// to it, where it waits for a message.
@@ -107,11 +114,18 @@ impl Engine {
                 .unwrap_or((stack, stack));
 
             system.interrupts.inside = true;
-            [
-                Register::Word(AX, ax),
-                Register::Segment(DS, ds),
-                Register::Segment(ES, stack),
-            ]
+
+            // The timer's interrupt comes with the registers as they were
+            // (`hardware_interrupts.rs`).
+            if interrupt.key == Some(crate::hardware_interrupts::TIMER_KEY) {
+                Vec::new()
+            } else {
+                vec![
+                    Register::Word(AX, ax),
+                    Register::Segment(DS, ds),
+                    Register::Segment(ES, stack),
+                ]
+            }
         };
         let called = Box::pin(self.call_with(interrupt.proc, &interrupt.args, &registers)).await;
 

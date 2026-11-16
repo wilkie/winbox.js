@@ -204,7 +204,7 @@ Decided on 2026-11-07:
 
 ## Not yet done
 
-Phase 2 after its first answers, and phase 4's Win32s; what phase 4's Win386 leaves is in [[topic:win386]], "Not yet done". What phase 3 leaves is in [[topic:dpmi-functions]], "Not yet done": real-mode code of a program's, the interrupt flag and DOS's version (which are not DPMI's), 000Dh's descriptors, and where the hosts keep blocks.
+Phase 2 after its first answers, and phase 4's Win32s; what phase 4's Win386 leaves is in [[topic:win386]], "Not yet done". What phase 3 leaves is in [[topic:dpmi-functions]], "Not yet done": real-mode code of a program's, the virtual interrupt flag and DOS's version (which are not DPMI's), 000Dh's descriptors, and where the hosts keep blocks.
 
 - Phase 2's other differing probes: [[probe:kintrnl]]'s WinOldAp hooks (nought and no list in enhanced mode), [[probe:selalias]]'s `AllocSelector(0)`, [[probe:mmtime]], [[probe:sysdrv]] and [[probe:thtask]]'s TIMER, USER's SHELL device, COMM's ports. Each is read further and recorded before it is followed.
 - KERNEL's descriptor table growing in enhanced mode (seg1 `1ed4`-`1f0d`), the 1000h [[probe:galimit]] shows, and the first megabyte's selectors in enhanced mode's order ([[probe:kconst]]). Both wait on WinBox's selectors being KERNEL's, or on a program that depends on them; `enhanced/galimit` and `enhanced/kconst` are replayed once the knowledge base tells the modes' records apart.

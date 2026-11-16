@@ -677,6 +677,7 @@ impl Engine {
         // ports' transmitters; and the sound card's interrupts.
         system.poll_time_events();
         system.poll_system_timers();
+        system.raise_timer_waiting();
         system.poll_comm();
         system.poll_sound();
 

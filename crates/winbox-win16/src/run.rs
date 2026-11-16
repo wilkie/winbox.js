@@ -74,6 +74,10 @@ impl System {
                 return Event::Stop(Stop::Closed);
             }
 
+            // The timer's interrupt, where the program has a handler of
+            // its own, raised between two slices (`hardware_interrupts.rs`).
+            self.raise_timer();
+
             // A procedure due at interrupt time comes between two slices
             // of the task's own instructions.
             if let Some(interrupt) = self.interrupt_due() {
@@ -173,6 +177,14 @@ impl System {
                             if let Some(event) = self.dpmi_interrupt() {
                                 return event;
                             }
+                        }
+                        // The timer's interrupt come to Windows' own
+                        // handler, the host's stub, which TIMER's and
+                        // SYSTEM's places go on to (`hardware_interrupts.rs`).
+                        0x08 if Self::is_host_code(self.cpu.segments[CS].selector) => {
+                            self.timer_reached_windows();
+                            self.cpu.ip += 2;
+                            self.instructions += 1;
                         }
                         0x1a => {
                             self.clock_interrupt();

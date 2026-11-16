@@ -24,6 +24,15 @@ use crate::system::System;
 const CMOS_INDEX: u16 = 0x70;
 const CMOS_DATA: u16 = 0x71;
 
+/// The system control port: the speaker's gate and data, and bits that
+/// turn over as it is read. `DOVOICE.DLL` drives the speaker through it
+/// (`hardware_interrupts.rs`).
+const SYSTEM_CONTROL: u16 = 0x61;
+
+/// The master interrupt controller's command port, where a program ends
+/// the timer's interrupt (`hardware_interrupts.rs`).
+const PIC_COMMAND: u16 = 0x20;
+
 impl System {
     /// A port's byte, where the machine answers it.
     fn port_read(&mut self, port: u16) -> Option<u8> {
@@ -31,6 +40,12 @@ impl System {
             Some(self.fm_read(port))
         } else if port == CMOS_DATA {
             self.cmos.read(self.equipment())
+        } else if port == SYSTEM_CONTROL {
+            // DOSBox's read turns the refresh bit (4) and the timer's
+            // second output (5) over each time, and answers the byte last
+            // written with them (`hardware/keyboard.cpp` 175-179).
+            self.system_control ^= 0x30;
+            Some(self.system_control)
         } else {
             None
         }
@@ -85,6 +100,12 @@ impl System {
                     self.fm_write(each, (value >> (8 * at)) as u8);
                 } else if each == CMOS_INDEX {
                     self.cmos.select((value >> (8 * at)) as u8);
+                } else if each == SYSTEM_CONTROL {
+                    // Kept as DOSBox keeps it (`keyboard.cpp` 182-188); the
+                    // speaker it gates is not sounded.
+                    self.system_control = (value >> (8 * at)) as u8;
+                } else if each == PIC_COMMAND {
+                    self.interrupt_controller_write((value >> (8 * at)) as u8);
                 }
             }
         } else {

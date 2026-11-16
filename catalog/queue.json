@@ -180,7 +180,6 @@
   {"signature":"running: last USER.DefWindowProc, USER.DefHookProc, USER.DefWindowProc","status":"running","count":1,"games":1,"items":["win3_STELLAR2"]},
   {"signature":"running: last USER.DefWindowProc, USER.GetProp, USER.DefWindowProc","status":"running","count":1,"games":0,"items":["MEDLEY_SE120010"]},
   {"signature":"running: last USER.DefWindowProc, USER.GetWindowLong, USER.DefWindowProc","status":"running","count":1,"games":1,"items":["win3_MasqueCa"]},
-  {"signature":"running: last USER.EnableHardwareInput, KERNEL.LocalAlloc, KERNEL.LocalLock","status":"running","count":1,"games":0,"items":["win3_act123_a"]},
   {"signature":"running: last USER.FindWindow, KERNEL.Yield, USER.FindWindow","status":"running","count":1,"games":0,"items":["win3_winben31"]},
   {"signature":"running: last USER.GetFocus, USER.EnableWindow, USER.DefHookProc","status":"running","count":1,"games":1,"items":["win3_CONCENTR"]},
   {"signature":"running: last USER.GetTickCount, KERNEL.Yield, USER.GetTickCount","status":"running","count":1,"games":0,"items":["win3_etc"]},

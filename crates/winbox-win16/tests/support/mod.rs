@@ -1238,7 +1238,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
     "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
     "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot", "abssect",
-    "mscdbuf", "cpu486",
+    "mscdbuf", "cpu486", "irqtick",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1642,8 +1642,8 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "where DOSX's arena puts a block, and WIN386's handles",
     ),
     (
-        "dpmimem:interrupts",
-        "the interrupt flag, which WinBox's processor keeps clear for a task",
+        "enhanced/dpmimem:interrupts",
+        "after CLI the flags still show the interrupt flag, WIN386 keeping it virtually; WinBox's processor clears it",
     ),
     (
         "enhanced/dpmimem:page",
@@ -1660,14 +1660,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "enhanced/dpmirm:vector",
         "the real-mode vectors' values, DOS's and the BIOS's",
-    ),
-    (
-        "dpmiexc:divide",
-        "the faulting code's interrupt flag, which WinBox's processor keeps clear",
-    ),
-    (
-        "dpmiexc:protection",
-        "the faulting code's interrupt flag, which WinBox's processor keeps clear",
     ),
     (
         "dpmiexc:vector",
@@ -2188,6 +2180,16 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "keptdb:flags",
         "a library loaded from its file lacks 4000h in its flags: where KERNEL sets it is not read out",
+    ),
+    // `irqtick`: the timer's interrupt reaches a program's protected-mode
+    // handler as on Windows; what is short is around it.
+    (
+        "irqtick:vector",
+        "a kept module's code is no block in TOOLHELP's walk, and the real-mode vectors are nought",
+    ),
+    (
+        "irqtick:realmode",
+        "a program's real-mode code is never run: its real-mode vector is never called",
     ),
 ];
 

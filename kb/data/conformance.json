@@ -6267,8 +6267,8 @@
   "functions": {
    "divide": {
     "total": 7,
-    "agreed": 6,
-    "disagreed": 1,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6281,8 +6281,8 @@
    },
    "protection": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6295,8 +6295,6 @@
    }
   },
   "gaps": {
-   "divide": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
-   "protection": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
    "vector": "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox"
   }
  },
@@ -6463,8 +6461,8 @@
    },
    "interrupts": {
     "total": 19,
-    "agreed": 8,
-    "disagreed": 11,
+    "agreed": 19,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6484,8 +6482,7 @@
    }
   },
   "gaps": {
-   "block": "where DOSX's arena puts a block, and WIN386's handles",
-   "interrupts": "the interrupt flag, which WinBox's processor keeps clear for a task"
+   "block": "where DOSX's arena puts a block, and WIN386's handles"
   }
  },
  "dpminul": {
@@ -8239,8 +8236,8 @@
   "functions": {
    "divide": {
     "total": 7,
-    "agreed": 6,
-    "disagreed": 1,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8253,8 +8250,8 @@
    },
    "protection": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8267,8 +8264,6 @@
    }
   },
   "gaps": {
-   "divide": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
-   "protection": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
    "vector": "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox"
   }
  },
@@ -8443,8 +8438,8 @@
    },
    "interrupts": {
     "total": 19,
-    "agreed": 7,
-    "disagreed": 12,
+    "agreed": 18,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8466,7 +8461,7 @@
   "gaps": {
    "block": "where DOSX's arena puts a block, and WIN386's handles",
    "page": "where WIN386 maps a physical address",
-   "interrupts": "the interrupt flag, which WinBox's processor keeps clear for a task"
+   "interrupts": "after CLI the flags still show the interrupt flag, WIN386 keeping it virtually; WinBox's processor clears it"
   }
  },
  "enhanced/dpminul": {
@@ -8638,8 +8633,8 @@
   "functions": {
    "dpmi": {
     "total": 56,
-    "agreed": 52,
-    "disagreed": 4,
+    "agreed": 53,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8820,6 +8815,81 @@
    }
   },
   "gaps": {}
+ },
+ "enhanced/irqtick": {
+  "probe": "irqtick",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 20,
+  "functions": {
+   "entry": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hook": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int1c": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nochain": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "port61": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rate0205": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realmode": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vector": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "vector": "a kept module's code is no block in TOOLHELP's walk, and the real-mode vectors are nought",
+   "realmode": "a program's real-mode code is never run: its real-mode vector is never called"
+  }
  },
  "enhanced/mcibang": {
   "probe": "mcibang",
@@ -9610,8 +9680,8 @@
   "functions": {
    "dpmi": {
     "total": 49,
-    "agreed": 45,
-    "disagreed": 4,
+    "agreed": 46,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -16056,6 +16126,81 @@
    }
   },
   "gaps": {}
+ },
+ "irqtick": {
+  "probe": "irqtick",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 20,
+  "functions": {
+   "entry": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hook": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int1c": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nochain": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "port61": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rate0205": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realmode": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vector": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "vector": "a kept module's code is no block in TOOLHELP's walk, and the real-mode vectors are nought",
+   "realmode": "a program's real-mode code is never run: its real-mode vector is never called"
+  }
  },
  "jrnlplay": {
   "probe": "jrnlplay",

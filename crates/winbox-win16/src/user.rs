@@ -310,11 +310,14 @@ fn get_tick_count(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Dword(tick_count(system)))
 }
 
-/// `GetTickCount`'s answer now.
+/// `GetTickCount`'s answer now: the ticks SYSTEM.DRV's handler has
+/// counted, less those a program's handler of the timer's interrupt kept
+/// from it (`hardware_interrupts.rs`; **recorded** by `irqtick`).
 pub(crate) fn tick_count(system: &System) -> u32 {
     let ms = system.clock.now(system.instructions);
+    let ticks = (ms / TICK).floor() - f64::from(system.ticks_behind());
 
-    ((ms / TICK).floor() * TICK).floor() as u64 as u32
+    (ticks.max(0.0) * TICK).floor() as u64 as u32
 }
 
 /// A string of a module's string tables, sixteen to a table: as much as
