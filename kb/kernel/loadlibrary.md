@@ -6,7 +6,7 @@ ordinal: 95
 summary: Loads a library, or finds one already loaded by its module's name — the file's name before the dot, whatever follows it.
 versions:
   '3.1': exact
-probes: [loadname, freelib, loadpath, search]
+probes: [loadname, freelib, loadpath, search, libmiss, aliasdl]
 source: crates/winbox-win16/src/modules_kernel.rs
 topics: [dynamic-link-libraries, finding-files]
 ---
@@ -19,6 +19,10 @@ topics: [dynamic-link-libraries, finding-files]
 - [[fn:KERNEL.GetModuleHandle]] is stricter. `GDI`, `GDI.EXE`, `gdi.exe` and the full path find GDI, but `GDI.`, `gdi.` and `GDI.DLL` find nothing. A name with a dot is taken as a file, and matched against the module's file.
 
 A library that is not loaded is found as [[probe:loadpath]] and [[probe:freelib]] record. [[measured]] A name alone is looked for in the current directory, then Windows' directory, the system directory, the asking program's directory, and PATH's directories ([[probe:search]], [[topic:finding-files]]).
+
+- [[read out]] A library is loaded only where every module it references is. KERNEL loads each in turn (`KRNL386.EXE` seg2 `1923`-`19b6`), keeps the first error one answered (`1996`-`199b`), and where there was one fails the load with it (`19d1`-`19db`). The same holds for a program.
+- [[measured]] [[probe:libmiss]] loads a library that imports from `NOSUCHMD`, a module that is nowhere. `LoadLibrary` answers 2, no module of the library's name is left, and a second `LoadLibrary` answers 2 again. The same in both modes. winbox.js loaded it, and bound the import to `UndefDynlink` ([[fn:KERNEL.UndefDynlink]]); wntriv12 of the catalog, a Visual Basic program, loads `GRAPH.VBX`, which imports `GSWDLL`, which its download leaves out.
+- [[measured]] A library already loaded from a file is answered for that file's name though its module's name is another ([[probe:aliasdl]]: `LoadLibrary("ALIASDLD.DLL")` answers the module `ALIASDLX` loaded from `ALIASDLD.DLL`, counted once more).
 
 ## Why it matters
 

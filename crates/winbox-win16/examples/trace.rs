@@ -183,7 +183,12 @@ fn print_captions(system: &winbox_win16::System) {
 
     // Each of USER's system error boxes brought up, answered or not: its
     // caption and text, a character a byte.
-    let chars = |bytes: &[u8]| bytes.iter().map(|&byte| char::from(byte)).collect::<String>();
+    let chars = |bytes: &[u8]| {
+        bytes
+            .iter()
+            .map(|&byte| char::from(byte))
+            .collect::<String>()
+    };
 
     for (caption, text) in &system.sys_error_boxes {
         println!(

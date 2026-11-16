@@ -491,23 +491,63 @@ impl System {
         names
     }
 
-    /// The first library a program imports that is neither loaded nor kept
+    /// The first library a module imports that is neither loaded nor kept
     /// by winbox.js -- not even as stubs, as `COMMDLG` is -- and is found
-    /// nowhere KERNEL looks, if any: such a program is not started, and
-    /// `WinExec` answers 2 (**recorded** by `search`). Only the program's
-    /// own imports are looked at; a library's that is missing is not
-    /// recorded. As `missingLibrary`.
+    /// nowhere KERNEL looks, if any, or that a library it would load from
+    /// its file imports, in turn: such a module is not loaded. KERNEL
+    /// loads each module a module references, keeps the first error any
+    /// answered (`KRNL386.EXE` seg2 `1996`-`199b`), and fails the load
+    /// with it (seg2 `19d1`-`19db`): `WinExec` answers 2 (**recorded** by
+    /// `search`), and `LoadLibrary` of a library importing from a module
+    /// that is nowhere 2 (**recorded** by `libmiss`). As `missingLibrary`.
     pub(crate) fn missing_library(
         &self,
         executable: &Executable,
         beside: Option<&str>,
     ) -> Option<String> {
-        Self::import_names(executable).into_iter().find(|name| {
-            self.module_named(name).is_none()
-                && self.kept_named(name).is_none()
-                && !crate::own_modules::kept_on_load(name)
-                && self.find_library(name, beside).is_none()
-        })
+        let mut seen = Vec::new();
+
+        self.missing_beneath(executable, beside, &mut seen)
+    }
+
+    fn missing_beneath(
+        &self,
+        executable: &Executable,
+        beside: Option<&str>,
+        seen: &mut Vec<String>,
+    ) -> Option<String> {
+        for name in Self::import_names(executable) {
+            if seen.contains(&name)
+                || self.module_named(&name).is_some()
+                || self.kept_named(&name).is_some()
+                || crate::own_modules::kept_on_load(&name)
+            {
+                continue;
+            }
+
+            seen.push(name.clone());
+
+            let Some((path, bytes)) = self.find_library(&name, beside) else {
+                return Some(name);
+            };
+
+            // One already loaded from the file is loaded (`import_one`).
+            if self
+                .modules
+                .iter()
+                .any(|module| module.path.eq_ignore_ascii_case(&path))
+            {
+                continue;
+            }
+
+            if let Ok(library) = Executable::parse(bytes)
+                && let Some(missing) = self.missing_beneath(&library, beside, seen)
+            {
+                return Some(missing);
+            }
+        }
+
+        None
     }
 
     /// A library read from its file: placed, numbered, registered, its own

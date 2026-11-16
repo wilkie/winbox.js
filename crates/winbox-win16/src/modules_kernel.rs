@@ -712,6 +712,16 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         let Ok(executable) = Executable::parse(bytes) else {
             return Ok(20);
         };
+
+        // A module it imports that is nowhere, or one of those's: not
+        // loaded, 2 (`System::missing_library`; `libmiss`).
+        if system
+            .missing_library(&executable, beside.as_deref())
+            .is_some()
+        {
+            return Ok(2);
+        }
+
         let mut order = Vec::new();
         let library = system.load_found(executable, &base, &path, beside.as_deref(), &mut order);
 
