@@ -1394,13 +1394,6 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "badptr:fault",
         "12 checks answer 1 where a real processor faults on the null selector, a limit or a write to code; DOSBox raises no fault and answered 0",
     ),
-    // What RegisterClass answers: 1 for the probe, a program made for Windows
-    // 3.0. Windows 3.1 is documented to answer the class's atom, which may be
-    // what a program made for 3.1 gets; not changed until that is measured.
-    (
-        "classinf:register",
-        "RegisterClass answers 1 for a program made for 3.0, which is not followed yet",
-    ),
     // CreatePolyPolygonRgn of three polygons: GDI hands its builder the count of
     // polygons where the count of points goes (`GDI.EXE` seg24 `02e5`), and
     // what it makes of that is not read out; winbox.js makes their union. One
