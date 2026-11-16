@@ -316,7 +316,10 @@ export function programOf(run, files) {
       const tokens = line
         .trim()
         .split(/\s+/)
+        .map((token) => token.replace(/^"|"$/g, ''))
         .filter((token) => token && !token.startsWith('/'));
+      /* The words after the program: its command line (`tbook.exe C:\artshow\art91.ctb`). */
+      const after = (index) => tokens.slice(index + 1).join(' ');
 
       for (const [index, token] of tokens.entries()) {
         const base = token
@@ -325,14 +328,14 @@ export function programOf(run, files) {
           .replace(/^[A-Za-z]:/, '');
 
         if (/^win(\.com)?$/i.test(base) && tokens[index + 1]) {
-          candidates.push(tokens[index + 1]);
+          candidates.push({ name: tokens[index + 1], args: after(index + 1) });
         } else if (/\.exe$/i.test(base) && !/^win\.com$/i.test(base)) {
-          candidates.push(token);
+          candidates.push({ name: token, args: after(index) });
         }
       }
     }
 
-    for (const candidate of candidates.reverse()) {
+    for (const { name: candidate, args } of candidates.reverse()) {
       const base = candidate
         .split(/[\\/]/)
         .pop()
@@ -340,20 +343,263 @@ export function programOf(run, files) {
       const found = findFile(files, /\./.test(base) ? base : `${base}.exe`);
 
       if (found && headerOf(readFileSync(found)) !== 'DOS') {
-        return { program: found, batch: relative(dirname(batch), batch) };
+        return { program: found, batch: relative(dirname(batch), batch), args };
       }
     }
 
     return {
       error: `${basename(batch)} names no Windows program in the download`,
       batch: basename(batch),
-      named: candidates.reverse(),
+      named: candidates.reverse().map((each) => each.name),
     };
   }
 
   const program = findFile(files, name);
 
   return program ? { program } : { error: `${name} not in the download` };
+}
+
+/**
+ * The items of Program Manager's group files (`.GRP`, "PMCC"): the header's
+ * item count at 20h and their offsets from 22h; each item's name at 12h and
+ * command line at 14h, offsets into the file of strings ending in nought.
+ * The format is Windows 3.1's `PROGMAN.EXE`'s, as WinBox's
+ * `progman/loaded.rs` writes it.
+ */
+export function groupItems(bytes) {
+  if (bytes.toString('latin1', 0, 4) !== 'PMCC') {
+    return [];
+  }
+
+  const string = (at) => {
+    const end = bytes.indexOf(0, at);
+
+    return bytes.toString('latin1', at, end < 0 ? bytes.length : end);
+  };
+  const count = bytes.readUInt16LE(0x20);
+  const items = [];
+
+  for (let index = 0; index < count; index++) {
+    const at = bytes.readUInt16LE(0x22 + index * 2);
+
+    if (!at || at + 0x18 > bytes.length) {
+      continue;
+    }
+
+    items.push({
+      name: string(bytes.readUInt16LE(at + 0x12)),
+      command: string(bytes.readUInt16LE(at + 0x14)),
+    });
+  }
+
+  return { group: string(bytes.readUInt16LE(0x16)), items };
+}
+
+/**
+ * How many resources a New Executable has: its resource table (at 24h in
+ * the header, up to the resident names at 26h) is a shift, then for each
+ * type its id, its count and four bytes, and twelve bytes a resource.
+ */
+function resourceCount(bytes) {
+  try {
+    const ne = bytes.readUInt32LE(0x3c);
+    const end = ne + bytes.readUInt16LE(ne + 0x26);
+    let at = ne + bytes.readUInt16LE(ne + 0x24) + 2;
+    let count = 0;
+
+    while (at + 8 <= end && bytes.readUInt16LE(at)) {
+      const each = bytes.readUInt16LE(at + 2);
+
+      count += each;
+      at += 8 + each * 12;
+    }
+
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Windows' own installation in a download, where one is: the folder that
+ * holds `WIN.COM` with `SYSTEM` beneath it (`C:\WINDOWS`, `WIN92`,
+ * `WINDOWS3`).
+ */
+export function installationIn(files) {
+  const win = files.find(
+    (file) =>
+      /^win\.com$/i.test(basename(file)) &&
+      files.some(
+        (other) =>
+          dirname(dirname(other)) === dirname(file) && /^system$/i.test(basename(dirname(other)))
+      )
+  );
+
+  return win ? dirname(win) : null;
+}
+
+/** A word of an item's id or title, for finding its program by its name. */
+const NAME_WORDS = /[a-z0-9]{4,}/gi;
+/** Words that name no program of their own. */
+const COMMON_WORDS =
+  /^(windows|win31|game|games|version|demo|shareware|browser|playable|via|edition|test|software|collection)$/i;
+
+/**
+ * The Windows program of a download whose `run` names none -- a DOS
+ * program, `WIN.COM` or a batch file that starts Windows -- as a person
+ * would find it: none where the download is a copy of Windows itself (its
+ * installation, and the item's title naming Windows: `windows`); else of
+ * the New Executable applications outside Windows' installation and
+ * MS-DOS's `DOS` folder (Windows' own programs, a runtime's and MS-DOS's
+ * tools), the one Windows starts (`WIN.INI`'s `load=` or `run=`,
+ * `SYSTEM.INI`'s `shell=`, the StartUp group's); else one a batch file
+ * starts with `win`; else one whose path or group has a word of the item's
+ * id or title; else, in an installation, none (`windows` again: Windows
+ * with programs of its own for its person to choose from); else one a
+ * Program Manager group names; else the one with the most resources, a
+ * setup last.
+ * `from` says which, `args` is the command line its group or batch file
+ * gives it, `root` that the download is a drive's root (its programs at
+ * `C:\` as its groups name them). Null where it holds none.
+ */
+export function windowsProgramOf(item, folder, files) {
+  const installation = installationIn(files);
+  const inside = (file, at) => at && (file === at || file.startsWith(`${at}/`));
+  const dosFolder = files
+    .map((file) => dirname(file))
+    .find((dir) => dirname(dir) === folder && /^dos$/i.test(basename(dir)));
+
+  if (installation && /\bwindows\b/i.test(item.title ?? '')) {
+    return { windows: `a copy of Windows: ${relative(folder, installation) || '.'}\\WIN.COM` };
+  }
+
+  const candidates = files
+    .filter(
+      (file) => /\.exe$/i.test(file) && !inside(file, installation) && !inside(file, dosFolder)
+    )
+    .filter((file) => statSync(file).size < 64 * 2 ** 20)
+    .map((file) => ({ file, bytes: readFileSync(file) }))
+    .filter(
+      ({ bytes }) =>
+        headerOf(bytes) === 'NE' && !(bytes.readUInt16LE(bytes.readUInt32LE(0x3c) + 0x0c) & 0x8000)
+    )
+    .map(({ file, bytes }) => ({ file, resources: resourceCount(bytes) }));
+
+  if (!candidates.length) {
+    return null;
+  }
+
+  const byName = (name) => {
+    const wanted = name.replace(/^"|"$/g, '').split(/[\\/]/).pop().toUpperCase();
+
+    return candidates.find((each) => basename(each.file).toUpperCase() === wanted) ?? null;
+  };
+  const pick = (each, from, args = '') => ({
+    program: each.file,
+    from,
+    args: args.trim(),
+    root: Boolean(installation),
+  });
+
+  /* The groups' items, each with its command line. */
+  const grouped = files
+    .filter((file) => /\.grp$/i.test(file))
+    .flatMap((file) => {
+      const group = groupItems(readFileSync(file));
+
+      return (group.items ?? []).map((each) => ({ ...each, group: group.group }));
+    })
+    .map((each) => {
+      const [command, ...rest] = each.command.trim().split(/\s+/);
+
+      return { ...each, found: byName(command ?? ''), args: rest.join(' ') };
+    })
+    .filter((each) => each.found);
+
+  /*
+   * What Windows itself starts: `WIN.INI`'s `load=` and `run=`, a shell
+   * of `SYSTEM.INI`'s not Program Manager, and the items of the group
+   * Program Manager starts (`PROGMAN.INI`'s `Startup=`, else StartUp).
+   */
+  if (installation) {
+    const startup =
+      files
+        .filter((file) => /^progman\.ini$/i.test(basename(file)))
+        .map((file) => /^\s*startup\s*=\s*(.+?)\s*$/im.exec(readFileSync(file, 'latin1'))?.[1])
+        .find(Boolean) ?? 'StartUp';
+    const started = grouped.find((each) => each.group.toLowerCase() === startup.toLowerCase());
+
+    if (started) {
+      return pick(started.found, `group "${started.group}"`, started.args);
+    }
+
+    for (const file of files.filter((each) => /^(win|system)\.ini$/i.test(basename(each)))) {
+      for (const line of readFileSync(file, 'latin1').split(/\r?\n/)) {
+        const started = /^\s*(load|run|shell)\s*=\s*(.*)$/i.exec(line);
+
+        for (const word of started ? started[2].split(/[\s,]+/).filter(Boolean) : []) {
+          const found = !/^progman(\.exe)?$/i.test(basename(word)) && byName(word);
+
+          if (found) {
+            return pick(found, basename(file).toUpperCase());
+          }
+        }
+      }
+    }
+  }
+
+  /* What a batch file starts Windows with: `win \FMEDIA\MTB30RUN \FMEDIA\FM.TBK`. */
+  for (const batch of files.filter((file) => /\.bat$/i.test(file))) {
+    for (const line of readFileSync(batch, 'latin1').split(/\r?\n/)) {
+      const words = line.trim().split(/\s+/);
+      const at = words.findIndex((word) => /^(.*[\\/])?win(\.com)?$/i.test(word));
+      const found =
+        at >= 0 &&
+        words[at + 1] &&
+        byName(/\./.test(words[at + 1]) ? words[at + 1] : `${words[at + 1]}.exe`);
+
+      if (found) {
+        return { ...pick(found, basename(batch), words.slice(at + 2).join(' ')), root: true };
+      }
+    }
+  }
+
+  const words = [...`${item.id} ${item.title ?? ''}`.matchAll(NAME_WORDS)]
+    .map(([word]) => word.toLowerCase())
+    .filter((word) => !COMMON_WORDS.test(word) && !/^\d+$/.test(word));
+  const named = (text) => words.some((word) => text.toLowerCase().includes(word));
+  const setupLast = (a, b) =>
+    Number(SETUP.test(basename(a.file))) - Number(SETUP.test(basename(b.file))) ||
+    b.resources - a.resources;
+
+  const byWord =
+    grouped.find((each) => named(each.group) || named(relative(folder, each.found.file))) ??
+    [...candidates].sort(setupLast).find((each) => named(relative(folder, each.file)));
+
+  if (byWord) {
+    return byWord.found
+      ? pick(byWord.found, `group "${byWord.group}"`, byWord.args)
+      : pick(byWord, 'its name');
+  }
+
+  /*
+   * An installation that starts none of its programs, none of them named
+   * as the item is: Windows, with programs of its own beside it, for its
+   * person to choose from (a collection's games, a sound card's tools).
+   */
+  if (installation) {
+    return {
+      windows: `a copy of Windows with programs of its own, none started with it: ${relative(folder, installation) || '.'}\\WIN.COM`,
+    };
+  }
+
+  if (grouped.length) {
+    const first = [...grouped].sort((a, b) => setupLast(a.found, b.found))[0];
+
+    return pick(first.found, `group "${first.group}"`, first.args);
+  }
+
+  return pick([...candidates].sort(setupLast)[0], 'most resources');
 }
 
 /** The modules a folder's libraries are, by their names. */
@@ -422,7 +668,32 @@ export function needsOf(item, folder, images = []) {
   const names = files.map((file) => basename(file).toUpperCase());
   const has = (pattern) => names.some((name) => pattern.test(name));
   const needs = {};
-  const located = programOf(item.run, files);
+  let located = programOf(item.run, files);
+  const header = located.program ? headerOf(readFileSync(located.program)) : null;
+
+  /*
+   * The program `run` names is not a Windows one: the Windows program the
+   * download holds (`windowsProgramOf`), or that it is Windows itself.
+   */
+  if (!['NE', 'PE'].includes(header)) {
+    const found = windowsProgramOf(item, folder, files);
+
+    if (found?.windows) {
+      needs.windows = found.windows;
+    } else if (found) {
+      located = { program: found.program };
+      needs.chosen = found.from;
+
+      if (found.args) {
+        needs.args = found.args;
+      }
+
+      if (found.root) {
+        needs.root = true;
+      }
+    }
+  }
+
   const discs = [
     ...images,
     ...files.filter((file) => /\.(iso|cue|bin|img|ima|mdf|nrg|ccd)$/i.test(file)),
@@ -434,8 +705,34 @@ export function needsOf(item, folder, images = []) {
     needs.error = located.error;
   }
 
+  /*
+   * A download with a `WINDOWS` folder of its own at its top is a drive's
+   * root, as archive.org's DOSBox mounts it: its batch file copies that
+   * folder over Windows' (a runtime's libraries and drivers, the `.INI`
+   * files naming them), and its programs are at `C:\` (`pass.mjs`'s
+   * `rootDrive`).
+   */
+  if (
+    existsSync(folder) &&
+    readdirSync(folder).some(
+      (name) => /^windows$/i.test(name) && statSync(join(folder, name)).isDirectory()
+    )
+  ) {
+    needs.root = true;
+  }
+
   if (located.batch) {
     needs.batch = located.batch;
+  }
+
+  /*
+   * A command line a batch file gives its program names its files where
+   * archive.org's DOSBox has them, the download as `C:\`: the program is
+   * run so (`root`).
+   */
+  if (located.args) {
+    needs.args = located.args;
+    needs.root = true;
   }
 
   const program = located.program;
