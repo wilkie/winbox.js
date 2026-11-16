@@ -293,20 +293,29 @@ node scripts/catalog/pass.mjs --results     # catalog/results.json, catalog/queu
 
 | Status        | Games | Applications |   All |
 | ------------- | ----: | -----------: | ----: |
-| `idle`        | 1,157 |          677 | 1,834 |
+| `idle`        | 1,296 |          713 | 2,009 |
 | `box`         |    18 |            7 |    25 |
-| `running`     |    61 |           19 |    80 |
-| `unsupported` |    27 |           10 |    37 |
-| `fault`       |    93 |           37 |   130 |
-| `ended`       |    14 |           11 |    25 |
+| `running`     |    18 |            5 |    23 |
+| `playing`     |     1 |            4 |     5 |
+| `unsupported` |     5 |            1 |     6 |
+| `fault`       |    21 |           20 |    41 |
+| `ended`       |    15 |           11 |    26 |
 | `win32s`      |     1 |            2 |     3 |
 | `library`     |     7 |            0 |     7 |
-| `installer`   |    39 |            3 |    42 |
+| `installer`   |    35 |            3 |    38 |
 | `fetch`       |    25 |           19 |    44 |
-| `not-windows` |    44 |           13 |    57 |
-| all           | 1,486 |          798 | 2,284 |
+| `not-windows` |     7 |           11 |    18 |
+| all           | 1,449 |          796 | 2,245 |
 
-`idle` is 1,834 of 2,284, 80%: 78% of the games and 85% of the applications (before the runtimes, 1,358, 59%). The largest group left is self-loading applications (74, below); 7 programs still lack a library the pass has no runtime of. 25 programs are in a box of their own, mostly shareware notices waiting to be answered ("Please register by sending $15 ..."), which a person would answer and go on.
+[[measured]] The table is `catalog/results.json` as it stands on 2026-11-17: after the runtimes, the self-loading programs ([[topic:self-loading]]) and the later fixes below, and with the 39 items of "Left out" counted in none of it. `idle` is 2,009 of 2,245, 89%: 89% of the games and 90% of the applications (on 2026-11-14, before the runtimes, 1,358 of the 2,284 then listed, 59%; after them 1,834, 80%). The largest group left is self-loading applications (74, below); 7 programs still lack a library the pass has no runtime of. 25 programs are in a box of their own, mostly shareware notices waiting to be answered ("Please register by sending $15 ..."), which a person would answer and go on. The 18 `not-windows` are kept on purpose (below): downloads of Windows itself and the like, whose program the pass could not pick.
+
+### Left out
+
+The owner decided on 2026-11-17 that the programs that are not Windows' are not on the list. 57 items had the status `not-windows`. The downloads of all 57 were read (every executable's header, and the disk images and archives of the few with no executable of their own), and 39 are left out, in `catalog/excluded.json` (the id, the title, the reason, the date): 19 DOS programs and files, 2 `LE` executables (DOS extenders'), and 18 that archive.org runs in an emulator of another machine: 8 Flash movies (Ruffle), 3 Commodore 64 programs, 2 Amiga disks, and one each for the Amstrad CPC, the Sega Master System, the Super NES, the TRS-80 Color Computer and the Tatung Einstein. 37 were games and 2 applications. None of the 39 holds a New Executable for Windows.
+
+18 are kept, each with a Windows 3.x program in the download. 14 are a Windows install, or a disc or archive of Windows software, whose program the pass picked as `WIN.COM` or `SMARTDRV.EXE`, a DOS or `LE` file, which is why it classed them `not-windows`: `win3-1`, `win311_test`, `Win31esSys`, `windows-3-1-ita_202207`, `win3_stock`, `win3_globalview_21`, `win32c`, `win92r2_202507`, `win-amp-311`, `dos-box-osamu-sato-games-v-1.2`, `vidprev_202303`, `future_media_cd_magazine1`, `stop-the-rock-live2` (a disc with `ROCK31.EXE`) and `ODELL_201905` (`ODELL.EXE`, a Windows 3.x program that archive.org runs in DOSBox). 4 hold a Windows program beside a DOS one, or in a disk image: `admiral_TGX` (a Windows `SETUP.EXE` beside `TGX.EXE`), `doompc_dos` (Gravis UltraSound's Windows utilities beside DOOM), `as-easy-as-for-windows-version-1.60ac` (`c.img`, a hard disk with Program Manager's groups and AS-EASY-AS installed at `C:\ASAWIN`, beside two Windows 95 programs) and `abbie-win-en-v-200-shareware` (a RAR holding `abbieset.exe`, "Win EN"; not unpacked here, kept for its name, so that a Windows 3.x program in it is not confirmed). They stay `not-windows` for now: starting the Windows in the 14, or the program in the 4, is a job for the queue, not for the pass.
+
+Every tool leaves the 39 out: `catalog.mjs` does not write them into `catalog/catalog.json` (so archive.org's listing does not bring them back; it prints how many it left out), `pass.mjs --results` and `fetch.mjs` skip them, `catalog/results.json` and `catalog/queue.json` do not hold them, and the table on the kb site leaves them out of its rows and counts, with a note linking `catalog/excluded.json`. A program is added to the list by adding its line there.
 
 ### With the runtimes
 
@@ -366,7 +375,7 @@ The 7 still `library` need libraries no runtime of the pass's is: `CTL3D` (`twai
 
 ### The work queue
 
-The 30 largest of 196 groups (`catalog/queue.json`; a program lacking two libraries is in both of theirs):
+The 30 largest of 196 groups on 2026-11-14 (`catalog/queue.json` has 151 since the 39 items were left out, its five `not-windows` groups holding only the 18 kept; the table is as it was; a program lacking two libraries is in both of theirs):
 
 |   # | Signature                                                                          | Programs | Games | The first three                                                                                 |
 | --: | ---------------------------------------------------------------------------------- | -------: | ----: | ----------------------------------------------------------------------------------------------- |
@@ -407,7 +416,7 @@ What the larger groups are, as far as the pass reads them:
 - **Processor** (`Unimplemented(236)`, `228`, `237`): the core stopped at an opcode it does not run, ECh, E4h and EDh, `IN` from a port (18 programs together). `Unimplemented(99)` and `(15)` are one setup each.
 - **Interrupts**: `Interrupt(16)` is INT 10h, the video BIOS (11, 2 of them Visual Basic programs run with their runtime); `Interrupt(19)` INT 13h, the disk BIOS (5); `Interrupt(75)` INT 4Bh (6). Microsoft Kids' programs, installed in enhanced mode, stop at INT 10h.
 - **`fetch`**: 22 items run a batch file that names no Windows program in the download (DOS menus, or a program on a disc's image the batch file mounts); 9 have no download with a program (the collections' own items, screen savers kept as `.scr` alone); 6 name no program at all and 6 a program their download does not hold; TROLL_WIN's 6.4 GB was not finished.
-- **`not-windows`**: 21 DOS programs, 7 `LE` (a VxD or a DOS extender's), 9 not `MZ` (a batch file or a `.COM`), 20 that archive.org runs in Ruffle or another machine's emulator.
+- **`not-windows`**: 57 on 2026-11-14: 21 DOS programs, 7 `LE` (a VxD or a DOS extender's), 9 not `MZ` (a batch file or a `.COM`), 20 that archive.org runs in Ruffle or another machine's emulator. 39 are left out since 2026-11-17 ("Left out" above); the 18 kept (Windows installs among them, their program a DOS or `LE` file) are 7 not `MZ`, 5 `LE`, 4 DOS and 2 that archive.org runs in DOSBox.
 
 ### Needs
 
@@ -504,7 +513,7 @@ The owner decided (2026-11-14) that the table is public on the kb site from the 
 
 Its columns: the title; the year and publisher (archive.org's, else Wikipedia's, marked so); the kind; the needs; the first pass's status, with its signature and the commit and date it ran on; the latest rating, with its commit, date and rater; and links. The links are the archive.org item, where the program is published (never a copy of it); MobyGames' page and Wikipedia's article, where matched confidently; and "why", the kb page or probe that explains a failure: the one the work queue names for its group, else the function's own page for `missing` and [[topic:win32s]] for `win32s`.
 
-It is one plain table, sorted by title, that reads without a script. A short script of the page's own sorts it by any column's heading (a button, its order in `aria-sort`), and narrows it by words, kind, status and rating; a line read out to screen readers says how many rows are shown. Each link names its program for a screen reader ("Solus on archive.org"). At 2,284 rows the page is about 1 MB.
+It is one plain table, sorted by title, that reads without a script. A short script of the page's own sorts it by any column's heading (a button, its order in `aria-sort`), and narrows it by words, kind, status and rating; a line read out to screen readers says how many rows are shown. Each link names its program for a screen reader ("Solus on archive.org"). At 2,245 rows the page is about 1 MB.
 
 The work queue is to be a second page, the signatures sorted by how many programs each holds.
 
@@ -512,7 +521,7 @@ The work queue is to be a second page, the signatures sorted by how many program
 
 Counted by the prototype on 2026-11-14 (`node scripts/catalog/catalog.mjs --counts`):
 
-[[measured]] 2,284 items: 1,486 games and 798 applications. The collections overlap, so their counts add up to more:
+[[measured]] 2,284 items on 2026-11-14 (2,245 since 39 not-Windows items were left out; the counts below are of the 2,284): 1,486 games and 798 applications. The collections overlap, so their counts add up to more:
 
 | Collection (`softwarelibrary_win3_...`) | Items |
 | --------------------------------------- | ----: |
@@ -594,6 +603,8 @@ All ten fetched, matched archive.org's SHA-1 and unpacked; none was a Win32 or a
 7. **Enhanced mode and 256 colours**: programs that need them run again in that mode or display, as each becomes ready ([[guide:enhanced-mode]]).
 
 ## The owner's decisions (2026-11-14)
+
+**2026-11-17: the programs that are not Windows' are left out of the list.** DOS programs, Flash movies and programs of other machines (39 items, `catalog/excluded.json`, each with the reason it is out) are out of the catalog, the results, the queue and the table, and the counts are of the Windows programs alone. A download that holds a Windows 3.x program beside a DOS one, or a Windows install, stays.
 
 Games and applications both; the table public on the kb site from the start; everything downloaded; ratings as files in the repository; MobyGames used, with the owner's key.
 

@@ -82,6 +82,8 @@ export interface Compatibility {
   >;
   wikipediaSource: { url: string; revision: number } | null;
   mobygamesAsked: string | null;
+  /** How many items `catalog/excluded.json` leaves out of the list (not Windows 3.x programs). */
+  excluded: number;
 }
 
 const readJson = (file: string) => JSON.parse(readFileSync(file, 'utf8'));
@@ -266,13 +268,26 @@ export function readCompatibility(root: string): Compatibility | null {
     return null;
   }
 
-  const entries = (readJson(catalogFile).items as CatalogEntry[]).slice();
+  /* The items left out (`catalog/excluded.json`): not rows, not counted, whatever else lists them. */
+  const excludedFile = join(dir, 'excluded.json');
+  const left = new Set<string>(
+    existsSync(excludedFile)
+      ? (readJson(excludedFile).items as { id: string }[]).map((item) => item.id)
+      : []
+  );
+  const entries = (readJson(catalogFile).items as CatalogEntry[]).filter(
+    (entry) => !left.has(entry.id)
+  );
   const ids = new Set(entries.map((entry) => entry.id));
 
   const resultsFile = join(dir, 'results.json');
   const results = existsSync(resultsFile)
     ? resultsOf(readFileSync(resultsFile, 'utf8'))
     : new Map<string, Result>();
+
+  for (const id of left) {
+    results.delete(id);
+  }
 
   const queueFile = join(dir, 'queue.json');
 
@@ -329,6 +344,7 @@ export function readCompatibility(root: string): Compatibility | null {
     ratings,
     mobygames: new Map(Object.entries(moby?.items ?? {})),
     mobygamesAsked: moby?.asked ?? null,
+    excluded: left.size,
     wikipedia: new Map(Object.entries(wiki?.items ?? {})),
     wikipediaSource: wiki?.source ?? null,
   };

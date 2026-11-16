@@ -54,6 +54,7 @@ import { basename, dirname, join, relative } from 'node:path';
 import { StringDecoder } from 'node:string_decoder';
 import { fileURLToPath } from 'node:url';
 
+import { withoutExcluded } from './excluded.mjs';
 import { PROGRAMS, catalogItems, downloadPath, keep, stateOf } from './fetch.mjs';
 import { filesOf, headerOf, needsOf } from './needs.mjs';
 import { runtimeBytes } from './runtimes.mjs';
@@ -1088,7 +1089,7 @@ export function resultOf(item) {
 }
 
 function writeResults(items) {
-  const results = items.map(resultOf).filter(Boolean);
+  const results = withoutExcluded(items.map(resultOf).filter(Boolean));
 
   const lines = results.map((result) => `  ${JSON.stringify(result)}`);
 

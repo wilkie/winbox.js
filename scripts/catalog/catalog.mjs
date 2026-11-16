@@ -20,6 +20,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { withoutExcluded } from './excluded.mjs';
 import { corrections, withTitle } from './titles.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -264,8 +265,14 @@ function print(summary) {
   console.log(`titles by source: ${JSON.stringify(summary.byTitleSource)}`);
 }
 
-/** The catalog written: an entry a line, sorted by identifier. */
-export function write(catalog) {
+/**
+ * The catalog written: an entry a line, sorted by identifier. The items of
+ * `catalog/excluded.json` are left out, so archive.org's listing does not
+ * bring them back.
+ */
+export function write(listed) {
+  const catalog = withoutExcluded(listed);
+
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(
     OUT,
@@ -316,8 +323,11 @@ async function main() {
     }
   }
 
-  write(catalog);
-  print(counts(catalog));
+  const listed = withoutExcluded(catalog);
+
+  write(listed);
+  print(counts(listed));
+  console.error(`${catalog.length - listed.length} items left out (catalog/excluded.json)`);
 
   if (failed) {
     console.error(`${failed} items not read`);

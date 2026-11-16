@@ -50,6 +50,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { unpack } from '../corpus/fetch.mjs';
+import { withoutExcluded } from './excluded.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'corpus', 'cache', 'catalog');
@@ -262,9 +263,11 @@ export async function fetchItem(item) {
   }
 }
 
-/** The catalog's items. */
+/** The catalog's items, those of `catalog/excluded.json` left out. */
 export function catalogItems() {
-  return JSON.parse(readFileSync(join(ROOT, 'catalog', 'catalog.json'), 'utf8')).items;
+  return withoutExcluded(
+    JSON.parse(readFileSync(join(ROOT, 'catalog', 'catalog.json'), 'utf8')).items
+  );
 }
 
 function status(items) {
