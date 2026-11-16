@@ -1,0 +1,187 @@
+{
+ "about": "Items archive.org publishes for the systems beyond Windows 3.1, metadata only: counts and bytes (the sum of item_size, derived files included) by a search of subjects and titles, for sizing the audience (kb/guides/beyond-windows-31.md). Made by scripts/catalog/other-systems.mjs; no identifier is kept. catalog counts the Windows 3.x catalog's items that need Win32s, from catalog/results.json.",
+ "date": "2026-11-16",
+ "catalog": {
+  "items": 2284,
+  "statusWin32s": 3,
+  "needsWin32s": 19,
+  "byKind": {
+   "game": 11,
+   "application": 8
+  },
+  "byStatus": {
+   "not-windows": 6,
+   "idle": 4,
+   "win32s": 3,
+   "installer": 3,
+   "fault": 2,
+   "fetch": 1
+  }
+ },
+ "groups": [
+  {
+   "group": "windows-3x-library",
+   "about": "archive.org's Software Library: Windows 3.x, every item, the WinHelp collection included: the catalog's source, for comparison.",
+   "query": "collection:softwarelibrary_win3",
+   "items": 2706,
+   "bytes": 48081441990,
+   "emulator": {
+    "dosbox": 2672,
+    "ruffle-swf": 8,
+    "vice-resid": 3,
+    "sae-a500p": 2,
+    "coco3disk": 1,
+    "einstein": 1,
+    "snes": 1,
+    "dosbox-sync": 1,
+    "smsj": 1,
+    "cpc6128": 1
+   },
+   "collections": {
+    "softwarelibrary_win3": 2706,
+    "softwarelibrary": 2706,
+    "emulation": 2676,
+    "softwarelibrary_win3_games": 1486,
+    "softwarelibrary_win3_productivity": 525,
+    "softwarelibrary_win3_winhelp": 422,
+    "softwarelibrary_win3_desktoptoys": 97,
+    "softwarelibrary_win3_shareware": 85,
+    "softwarelibrary_win3_showcase": 57,
+    "softwarelibrary_win_education": 22,
+    "computerchessclub": 8,
+    "software": 6
+   }
+  },
+  {
+   "group": "windows-95",
+   "about": "Software items whose subject or title names Windows 95.",
+   "query": "mediatype:software AND (subject:\"Windows 95\" OR title:\"Windows 95\" OR subject:\"Win95\" OR title:\"Win95\")",
+   "items": 7656,
+   "bytes": 10865783779727,
+   "emulator": {
+    "dosbox": 48,
+    "ruffle-swf": 6,
+    "genesis": 1,
+    "dosbox-sync": 1,
+    "v86": 1
+   },
+   "collections": {
+    "vintagesoftware": 3056,
+    "open_source_software": 2347,
+    "cd-roms": 2118,
+    "cdromsoftware": 1529,
+    "cdrom_contributions": 911,
+    "clearancebin": 621,
+    "community": 570,
+    "clearancebin_unsorted": 507,
+    "cdromimages": 479,
+    "operatingsystemsoftware": 333,
+    "operatingsystemcds": 283,
+    "DEMU_Collection": 234
+   }
+  },
+  {
+   "group": "windows-98",
+   "about": "Software items whose subject or title names Windows 98.",
+   "query": "mediatype:software AND (subject:\"Windows 98\" OR title:\"Windows 98\" OR subject:\"Win98\" OR title:\"Win98\")",
+   "items": 4378,
+   "bytes": 8826115661671,
+   "emulator": {
+    "dosbox": 4,
+    "v86": 1,
+    "nes": 1
+   },
+   "collections": {
+    "open_source_software": 1639,
+    "vintagesoftware": 1288,
+    "cd-roms": 860,
+    "cdrom_contributions": 586,
+    "cdromsoftware": 451,
+    "operatingsystemsoftware": 363,
+    "community": 361,
+    "operatingsystemcds": 360,
+    "cdromimages": 349,
+    "cdinstall": 224,
+    "clearancebin": 213,
+    "coverdiscs": 154
+   }
+  },
+  {
+   "group": "windows-9x",
+   "about": "The two above and \"Windows 9x\", each item once.",
+   "query": "mediatype:software AND (subject:\"Windows 95\" OR title:\"Windows 95\" OR subject:\"Win95\" OR title:\"Win95\" OR subject:\"Windows 98\" OR title:\"Windows 98\" OR subject:\"Win98\" OR title:\"Win98\" OR subject:\"Windows 9x\" OR title:\"Windows 9x\" OR subject:\"Win9x\" OR title:\"Win9x\")",
+   "items": 11427,
+   "bytes": 13743929132087,
+   "emulator": {
+    "dosbox": 56,
+    "ruffle-swf": 6,
+    "v86": 2,
+    "nes": 1,
+    "genesis": 1,
+    "dosbox-sync": 1
+   },
+   "collections": {
+    "vintagesoftware": 4201,
+    "open_source_software": 3777,
+    "cd-roms": 2841,
+    "cdromsoftware": 1910,
+    "cdrom_contributions": 1442,
+    "community": 888,
+    "cdromimages": 811,
+    "clearancebin": 759,
+    "operatingsystemsoftware": 680,
+    "operatingsystemcds": 630,
+    "clearancebin_unsorted": 609,
+    "cdinstall": 385
+   }
+  },
+  {
+   "group": "win32s",
+   "about": "Software items whose subject or title names Win32s.",
+   "query": "mediatype:software AND (subject:\"Win32s\" OR title:\"Win32s\")",
+   "items": 34,
+   "bytes": 6307937573,
+   "emulator": {
+    "dosbox": 1
+   },
+   "collections": {
+    "vintagesoftware": 12,
+    "open_source_software": 11,
+    "cd-roms": 9,
+    "cdromsoftware": 6,
+    "community": 4,
+    "DEMU_Collection": 3,
+    "cdinstall": 3,
+    "cdrom_contributions": 3,
+    "operatingsystemcds": 2,
+    "operatingsystemsoftware": 2,
+    "clearancebin_unsorted": 2,
+    "clearancebin": 2
+   }
+  },
+  {
+   "group": "os2",
+   "about": "Software items whose subject or title names OS/2 (or its successors eComStation and ArcaOS); archive.org has no OS/2 collection.",
+   "query": "mediatype:software AND (subject:\"OS/2\" OR title:\"OS/2\" OR subject:\"OS2\" OR title:\"OS2\" OR subject:\"OS/2 Warp\" OR title:\"OS/2 Warp\" OR subject:\"eComStation\" OR title:\"eComStation\" OR subject:\"ArcaOS\" OR title:\"ArcaOS\")",
+   "items": 1342,
+   "bytes": 1038396980392,
+   "emulator": {
+    "dosbox": 9
+   },
+   "collections": {
+    "vintagesoftware": 661,
+    "open_source_software": 431,
+    "cd-roms": 313,
+    "DEMU_Collection": 210,
+    "cdromsoftware": 125,
+    "cdrom_contributions": 120,
+    "cdbbsarchive": 89,
+    "community": 78,
+    "operatingsystemsoftware": 51,
+    "coverdiscs": 43,
+    "cdromimages": 43,
+    "bithistory_software": 42
+   }
+  }
+ ]
+}
