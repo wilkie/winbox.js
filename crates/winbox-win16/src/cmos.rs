@@ -186,7 +186,7 @@ impl Cmos {
             let value = value as u8;
 
             if self.bcd {
-                (value / 10) << 4 | value % 10
+                ((value / 10) << 4) | (value % 10)
             } else {
                 value
             }
@@ -227,9 +227,9 @@ impl Cmos {
                 value
             }
             FLOPPIES if at.floppies > 0 => return None,
-            FLOPPIES => 0,
-            // The hard disks' and 39h-3Ah: nought, no image mounted.
-            0x12 | 0x19..=0x2c | 0x39 | 0x3a => 0,
+            // The floppy drives', the hard disks' and 39h-3Ah: nought, no
+            // image mounted.
+            FLOPPIES | 0x12 | 0x19..=0x2c | 0x39 | 0x3a => 0,
             0x14 => at.equipment as u8,
             // 0Bh, 0Dh, 0Fh, the memory's, and every other register: as
             // last written, or as DOSBox's start left it.

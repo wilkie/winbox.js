@@ -32,6 +32,8 @@ const TICK_RATE: f64 = 1_193_182.0;
 
 /// One counter, as DOSBox's `PIT_Block`.
 #[derive(Debug, Clone)]
+// Each yes or no is one of DOSBox's own, kept as it keeps it.
+#[allow(clippy::struct_excessive_bools)]
 struct Counter {
     count: u32,
     delay: f32,
@@ -84,7 +86,8 @@ impl Counter {
 }
 
 /// The milliseconds a count of `count` takes, in single precision as
-/// DOSBox works it out.
+/// DOSBox works it out. A count is at most 10000h, which a float holds.
+#[allow(clippy::cast_precision_loss)]
 fn delay_of(count: u32) -> f32 {
     1000.0f32 / (TICK_RATE as f32 / count as f32)
 }
@@ -95,7 +98,10 @@ fn truncated(value: f64) -> u16 {
 }
 
 fn to_bcd(value: u16) -> u16 {
-    value % 10 + ((value / 10) % 10 << 4) + ((value / 100) % 10 << 8) + ((value / 1000) % 10 << 12)
+    value % 10
+        + (((value / 10) % 10) << 4)
+        + (((value / 100) % 10) << 8)
+        + (((value / 1000) % 10) << 12)
 }
 
 fn from_bcd(value: u16) -> u16 {
@@ -369,10 +375,10 @@ impl Pit {
                 }
             }
 
-            if value & 0x10 == 0 {
-                if let Some((_, counter)) = named.into_iter().find(|&(bit, _)| value & bit != 0) {
-                    self.latch_status(counter, now);
-                }
+            if value & 0x10 == 0
+                && let Some((_, counter)) = named.into_iter().find(|&(bit, _)| value & bit != 0)
+            {
+                self.latch_status(counter, now);
             }
 
             return;
@@ -419,7 +425,7 @@ impl Pit {
         }
 
         match self.counters[2].mode {
-            0 if on => self.counters[2].start = now,
+            0 | 2 | 3 if on => self.counters[2].start = now,
             0 => {
                 self.latch_count(2, now);
                 self.counters[2].count = u32::from(self.counters[2].read_latch);
@@ -428,7 +434,6 @@ impl Pit {
                 self.counters[2].counting = true;
                 self.counters[2].start = now;
             }
-            2 | 3 if on => self.counters[2].start = now,
             2 | 3 => self.latch_count(2, now),
             _ => {}
         }
