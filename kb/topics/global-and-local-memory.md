@@ -32,6 +32,7 @@ probes:
     grround,
     dpmiver,
     dslimit,
+    gbigsel,
   ]
 ---
 
@@ -54,7 +55,7 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] A block from [[fn:KERNEL.GlobalAlloc]] has access rights F3h: present, privilege 3, read/write data, already accessed. Moveable, fixed and discardable are alike. USER's code has FBh: code, readable, not writable. The probe's own code and data showed the same in a first recording, which does not keep them, since they are the program's.
 - [[measured]] A block's limit is its rounded size less one: 7Fh for 100 bytes, 3FFh for 1000. A block of 70,000 bytes is 70,016 rounded, and its first selector's limit reaches all of it, 1117Fh, of which `LSL`'s 16 bits show 117Fh.
 - [[measured]] A freed block's selector, the null selector and the null selector with RPL 3 are refused by all four.
-- [[documented]] Each later selector of a block past 64 KiB reaches from its own start to the block's end. winbox.js does this; it is not recorded.
+- [[measured]] Each later selector of a block past 64 KiB reaches from its own start to the block's end, its base 64 KiB on from the one before ([[probe:gbigsel]], below, "Past a megabyte").
 
 ## The low bits of a handle
 
@@ -256,6 +257,21 @@ What USER does as it is told -- the task's hooks taken out, its windows given US
 - [[measured]] [[probe:grow]]: [[fn:KERNEL.GlobalReAlloc]] grows a block past what its selectors reach — 32 KiB to 84 KiB — by moving it. The answer is a new handle, for a moveable block and a fixed one alike, and even for one that is locked. The contents are kept, the size is exactly what was asked, and `GMEM_ZEROINIT` makes the new part nought.
 - [[measured]] The first selector's limit reaches the whole block, 14FFFh, and the next one, a huge step on, reaches what is left, 4FFFh, as [[fn:KERNEL.GetSelectorLimit]] reads them. Shrunk back under 64 KiB, the handle is kept, and the second selector reads nought.
 - winbox.js did not grow a block past its selectors. Bubble Girl's engine grows its buffers so, and ended on "Not enough memory".
+
+## Past a megabyte
+
+A descriptor's limit has twenty bits. A selector that reaches more than 1 MiB counts its limit in 4 KiB pages, with its granularity bit set.
+
+- [[read out]] KERNEL sizes a block's selectors in one routine (`KRNL386.EXE` seg1 `22ea`-`2391`), given the selector and the size:
+  - from 100000h bytes on (`cmp ecx,100000h` at `232f`), it rounds the size up to a page, takes the limit in pages and sets the bit (`2338`-`234a`);
+  - under it, the limit is in bytes and the bit cleared (`2323`);
+  - a block of more than one selector has each after the first set by `2223`, its base 64 KiB on and its limit 64 KiB less: 10h pages less where the bit is set (`223f`), one in the limit's top four bits where it is not (`224b`). Every selector of a block has the first's granularity.
+- [[measured]] [[probe:gbigsel]], in both modes, grows one moveable block with [[fn:KERNEL.GlobalReAlloc]] from 40h to 8000h, 10000h, 10001h, 18000h, FFFE0h, 100000h, 100001h, 14E000h and 200000h, then shrinks it to 123456h and 80000h. After each step it reads the selector with a 32-bit `LSL` and `LAR`, and each selector after it:
+  - FFFE0h: `LSL` FFFDFh, the bit clear. 100000h: FFFFFh, the bit set. 14E000h: 14DFFFh, the bit set. Shrunk to 80000h: 7FFFFh, the bit clear again.
+  - Every selector after the first has its base 64 KiB on from the one before, its limit 64 KiB less, and the first's granularity.
+  - A 32-bit `rep stosw` across the block's old end, through the first selector, writes and reads back on both sides of it, at every size. What it wrote at one size is still there after the block has grown, or moved, to the next.
+  - The handle moves, as [[probe:galimit]] found, where the block needs more selectors: 10001h, FFFE0h, 100001h, 14E000h and 200000h are a new handle; the others keep theirs.
+- WinBox gives a block's selectors their limits as KERNEL does (`Descriptors::set_block_limit`). Before, it held every limit to twenty bits of bytes, so a block past 1 MiB was reached through its first selector only to FFFFFh. Klik & Play's `KNPS.DLL` clears a block it has grown to 14E000h with `rep a32 stosw` (seg1 `4ad1`), and three games stopped with a General Protection Fault at 100000h (`pfe1v3`, `pokeballgo`, and `gtrwx_BTMATSTR` with its own runtime, at seg1 `4b1d` of it). Before the change, the probe's own `rep stosw` faulted the same way at 100001h. All 66 records now agree.
 
 ## What a fresh block holds
 
