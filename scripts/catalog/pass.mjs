@@ -88,6 +88,31 @@ const PARALLEL = Number(process.env.PASS_PARALLEL ?? 12);
 /** A image mounted as a drive: a disc's (as the corpus mounts one), a floppy's. */
 const DISC = /\.(iso|cue)$/i;
 const FLOPPY = /\.(img|ima|dsk|vfd)$/i;
+/**
+ * A floppy image's least and greatest sizes: DOSBox's smallest geometry,
+ * 160 KB, and its largest, 2,880 KB (`DiskGeometryList`, `bios_disk.cpp`
+ * 32-44). A file of the name outside them is no disk: an installer's own
+ * `DISK1.DSK` holds the five bytes `DISK1`.
+ */
+const FLOPPY_SIZES = [160 * 1024, 2_949_120];
+
+/**
+ * Whether a file of a floppy image's name and size is one: its first
+ * sector ends in 55h AAh, which DOSBox's FAT drive takes for a FAT file
+ * system (`fatDrive::fatDrive`, `drive_fat.cpp` 681-685). A program's own
+ * pictures named `.IMG` (`BM` bitmaps) are not.
+ */
+function isFloppyImage(file) {
+  const size = FLOPPY.test(file) ? statSync(file).size : 0;
+
+  if (size < FLOPPY_SIZES[0] || size > FLOPPY_SIZES[1]) {
+    return false;
+  }
+
+  const sector = readFileSync(file).subarray(0, 512);
+
+  return sector[510] === 0x55 && sector[511] === 0xaa;
+}
 
 /** The Windows installation beneath the run's drive, for a display. */
 function windowsFor(display) {
@@ -258,18 +283,29 @@ function outcome(run, seconds = SECONDS) {
 
   if (result.status === 'no-output') {
     const panic = /panicked at [^\n]*\n([^\n]*)/.exec(run.err);
+    /* The program the item's run names is not where it says: on no
+     * image mounted, the download's fault and not WinBox's. */
+    const missing = / is not on its drive$/.test(panic?.[1]?.trim() ?? '');
 
     result = run.killed
       ? { status: 'running', signature: 'the host stopped it' }
-      : panic
+      : missing
         ? {
-            status: 'fault',
-            signature: `WinBox: ${panic[1]
-              .trim()
-              .replace(/\/\S*\//g, '')
-              .slice(0, 160)}`,
+            status: 'fetch',
+            signature: panic[1].trim().replace(/ is not on its drive$/, ' is not on its image'),
           }
-        : { status: 'fault', signature: `WinBox: no output (${run.err.trim().split('\n').pop()})` };
+        : panic
+          ? {
+              status: 'fault',
+              signature: `WinBox: ${panic[1]
+                .trim()
+                .replace(/\/\S*\//g, '')
+                .slice(0, 160)}`,
+            }
+          : {
+              status: 'fault',
+              signature: `WinBox: no output (${run.err.trim().split('\n').pop()})`,
+            };
   }
 
   if (result.status === 'box' && box) {
@@ -404,7 +440,7 @@ function mountsOf(item, folder, floppies = false) {
   ].filter((file) => existsSync(file));
   const disc =
     images.find((file) => /\.cue$/i.test(file)) ?? images.find((file) => DISC.test(file));
-  const floppy = images.find((file) => FLOPPY.test(file) && statSync(file).size <= 2_949_120);
+  const floppy = images.find(isFloppyImage);
   const mounts = [];
 
   if (disc) {
