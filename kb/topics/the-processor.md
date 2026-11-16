@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: The processor
-summary: What winbox.js's 386 is tested against — the SingleStepTests suites captured from a real 80286 and 80386EX, every opcode under every prefix — and what the 386's own tests showed about operand and address sizes, faults and the instructions programs for Windows 3.1 use.
-probes: [seglim]
+summary: What winbox.js's 386 is tested against — the SingleStepTests suites captured from a real 80286 and 80386EX, every opcode under every prefix — what the 386's own tests showed about operand and address sizes, faults and the instructions programs for Windows 3.1 use, and the oracle's processor beyond it — DOSBox's 486 with a Pentium's RDTSC, its flags, CPUID and how programs tell processors apart.
+probes: [seglim, cpu486]
 ---
 
 Windows 3.1 runs on a 386 in enhanced mode, and programs made for it use the 386's instructions: 32-bit registers under the operand-size prefix, 32-bit addresses under the address-size prefix, and the instructions after 0Fh. winbox.js's processor is a 386, and it is held to two suites of tests captured from real parts by Daniel Balsom's ArduinoX86 board:
@@ -67,6 +67,42 @@ The suites are of real mode, where every segment is 64 KiB from its selector tim
 
 The core keeps a segment that expands down as its limit and a flag beside it, not as a second bound: a cached segment of 24 bytes rather than 16 made the benchmark 10 to 25% slower. An access through such a segment, or past an ordinary limit, is checked both ways off the common path, in a function of its own the compiler keeps cold (`outside`). [[measured]] So made, the benchmark ran no slower than before on 2026-11-09: in four interleaved rounds its medians were 6 to 19% faster, which is more likely the code's layout than the check. A fault in the fetch of the instruction's own bytes is noted (`fetched_past_limit`), and `fault_vector.rs` names it #GP(0) before looking at what the instruction reaches.
 
+## The oracle's processor: the 486's instructions and CPUID
+
+[[read out]] The recorder gives DOSBox 0.74-3 no `cputype` (`record.mjs` writes `core=auto` and `cycles` alone), so it runs at its default, `auto` (`src/dosbox.cpp` 483-485), which `src/cpu/cpu.cpp` makes `CPU_ARCHTYPE_MIXED`, FFh (2352-2355). Each of the normal core's checks of an instruction against the processor is `CPU_ArchitectureType < ...` (`core_normal/prefix_0f.h`, `prefix_66_0f.h`), and FFh is above them all: the 486's `BSWAP`, `XADD`, `CMPXCHG`, `INVD`, `WBINVD` and `INVLPG` and the Pentium's `RDTSC` run, `CPUID` answers as a 486DX (`CPU_CPUID`, 2010-2044), and `POPF` lets the ID bit through (`CPU_flag_id_toggle`, 2390-2391). Protected mode runs on the recompiling core, `core_dynrec` ([[topic:timing]]), which translates none of these but `INVLPG` and gives each to the normal core (`core_dynrec/decoder.h` 172-250, `core_dynrec.cpp` 273-279): what the normal core does is what a program sees.
+
+So WinBox's core is two processors (`Model`, `crates/winbox-cpu/src/lib.rs`): `I386`, the 80386 of the hardware vectors, which stops at these instructions as it always has, and `Mixed`, DOSBox's, which the machine runs every program on (`i486.rs`).
+
+[[measured]] [[probe:cpu486]] runs each at a program's privilege, 3, with the arithmetic flags all clear and then all set. Standard and 386 enhanced mode answer alike:
+
+| Instruction                   | What it does                                                                                          | The flags              |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------- |
+| `BSWAP` of a double word      | its bytes reversed: `12345678h` is `78563412h`                                                        | as they were           |
+| `BSWAP` of a word             | the word cleared, the high word kept: EAX `12345678h` is `12340000h`                                  | as they were           |
+| `XADD`                        | the destination the sum, the source the destination as it was                                         | as they were           |
+| `CMPXCHG`                     | equal: the source to the destination; unequal: the destination to AL, AX or EAX, and to memory again  | ZF alone, set if equal |
+| `INVD`, `WBINVD`              | a general protection fault, error code nought, at the instruction                                     |                        |
+| `CPUID`, EAX 0                | EAX 1, the highest leaf; EBX, EDX, ECX `GenuineIntel`                                                 |                        |
+| `CPUID`, EAX 1                | EAX `0402h`, family 4, model 0, stepping 2; EBX and ECX nought; EDX 1, a coprocessor and nothing else |                        |
+| `CPUID`, EAX 2 or `80000000h` | all four nought                                                                                       |                        |
+| `RDTSC`                       | runs, and counts on between two reads                                                                 |                        |
+
+- **The flags are DOSBox's, not a 486's.** [[documented]] A 486 sets all six as `ADD` after `XADD` and as `CMP` after `CMPXCHG`. [[read out]] DOSBox's `XADD` touches no flag, and its `CMPXCHG` sets ZF alone over the flags as they were (`prefix_0f.h` 359-411 and 575-590, `prefix_66_0f.h` 238-263 and 434-440). `BSWAP` of a word is undefined on a 486; DOSBox clears it (`BSWAPW`, `cpu/instructions.h` 959-960). WinBox does as the oracle does.
+- **EFLAGS' AC and ID.** [[measured]] Both can be set and cleared with `POPFD`, and `PUSHFD` shows nothing else above bit 15 (DOSBox pushes EFLAGS less VM and RF, `cpu.cpp` 225). A word's `PUSHF` and `POPF` keeps AC and clears ID: DOSBox's `CPU_SetFlags` loads the ID bit whatever the mask, and a word popped has it clear (172-176, 211-213). [[read out]] `IRET` of a word in protected mode loads EFLAGS under its whole mask, AC and ID cleared (919, 968); WinBox does so, not measured.
+- **INVLPG.** [[read out]] The normal core raises a general protection fault for it above ring 0 and an undefined opcode for its register form (`prefix_0f.h` 91-94, 110-112). The recompiling core translates it, and above ring 0 stops the emulator ("DynrecCore: illegal option in invlpg nonpriviledged", `core_dynrec/decoder_opcodes.h` 990-994; its register form `dyn_grp7_2`, 1021). [[measured]] A probe's `INVLPG` ended DOSBox in both modes, nothing after it recorded, so no recording can hold it. WinBox raises the normal core's faults, which the 80486 manual has too.
+
+### Telling processors apart
+
+[[documented]] A program learns which processor it has from EFLAGS: a 386 cannot set AC; a 486 that cannot set ID has no `CPUID`; else `CPUID` names it. [[measured]] Under the oracle a program finds a 486DX with `CPUID`, Intel's, family 4, with a coprocessor, and `RDTSC` runs on it though `CPUID` sets no time-stamp bit (EDX bit 4). WinBox answers the same.
+
+### RDTSC
+
+[[read out]] DOSBox's counter is its time in milliseconds since it started, with their fraction, times its cycles a millisecond (`PIC_FullIndex()*CPU_CycleMax`, `prefix_0f.h` 228-234). With `cycles=max` that rate is the host's: [[measured]] [[probe:cpu486]] saw 10^4 to 10^5 a millisecond of `GetTickCount` from one recording to the next, so its record says only that it is a thousand or more ([[topic:timing]]). WinBox's is its clock's (`Clock::time_stamp`, `crates/winbox-machine`): the milliseconds times the clock's rate -- on a virtual clock the instructions run, those charged for calls and the milliseconds skipped at the rate, 3,000 a millisecond on the survey's clock -- and on the host's own time its milliseconds times 3,000. Within a slice of the run it counts on by one an instruction (`Cpu::time_stamp`).
+
+### No hardware vectors
+
+SingleStepTests has suites of the 8088, 8086, V20, 80186, 80286 and 80386 and none of the 486 (the organisation's repositories, 2026-11-15), and the 80386's suite has no test of these opcodes, which the part does not have. The `Mixed` model is held to the probe's records and to the unit tests that carry them (`tests/units.rs`, `the_oracles_486`); the vectors run on `I386` as before.
+
 ## Running them
 
 ```sh
@@ -84,3 +120,10 @@ pnpm test:conformance                            # both, against their baselines
 - Protected mode, with every access checked against its segment's limit, runs as fast as real mode, within the benchmark's noise. The checks cost nothing measurable.
 - The time goes into decoding and dispatching each instruction, not into reaching memory. Building a debugging string for every instruction, logged or not, cost 10 to 15% of the speed; it is now built only when instructions are logged.
 - That is slower than a 16 MHz 386SX. What would make it faster is the decoder, not memory access; that is not started.
+- [[measured]] The 486's instructions, the `Model` and EFLAGS' high word cost nothing measurable (2026-11-15): in five interleaved rounds against the core before them, every workload's median was 0.2 to 5.5% faster, within the benchmark's noise. They sit off the common path, in arms of the two-byte decode taken only for their opcodes.
+
+## Not yet done
+
+- `CMPXCHG8B`, the Pentium's (`0F C7`), and MMX: DOSBox 0.74 has neither, so the oracle answers an undefined opcode, which is not recorded.
+- `IRET`'s clearing of AC and ID is read out of DOSBox, not recorded; nor is whether Windows' task switches keep a program's AC and ID (WinBox keeps one EFLAGS high word for the machine).
+- `INVLPG` at a program's privilege cannot be recorded (above).
