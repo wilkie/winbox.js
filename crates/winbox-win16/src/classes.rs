@@ -365,10 +365,18 @@ fn read_wndclass(system: &System, far: u32) -> WindowClass {
     }
 }
 
-/// A class registered, its menu loaded where it names one: its atom.
+/// A class registered, its menu loaded where it names one: its atom; for
+/// a module made for Windows 3.00 or before, 1. USER asks `GetExpWinVer`
+/// of the class's instance (`USER.EXE` seg8 `0152`-`015b`) and answers 1
+/// where it is 300h or less, else the class's atom (seg8 `0280`-`028f`).
+/// **Recorded** by `classinf` (a probe made for 3.00: 1) and `regcls31`
+/// (made for 3.10: an atom). Turbo Pascal for Windows' programs, made for
+/// 3.00, take the answer for a `Boolean` and stop at a range check where
+/// it is not 0 or 1 (Glider 4.0's runtime error 201).
 pub fn register_class(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let mut class = read_wndclass(system, far);
+    let made_for = system.expected_windows_version(class.instance).unwrap_or(0);
 
     // A name of no text is no menu.
     if let Some(name) = class
@@ -379,7 +387,19 @@ pub fn register_class(system: &mut System, args: &mut Args) -> Result<Answer, St
         class.menu = system.load_menu(class.instance, &name);
     }
 
-    Ok(Answer::Word(system.register_class(class)))
+    let name = class.name.clone();
+
+    if system.register_class(class) == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    // The class's atom as `GetClassInfo` answers it, by its name in
+    // capitals.
+    Ok(Answer::Word(if made_for <= 0x300 {
+        1
+    } else {
+        system.class_atom(&name.to_ascii_uppercase())
+    }))
 }
 
 /// A class of the instance's let go, if no window of it is left.
