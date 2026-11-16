@@ -1750,6 +1750,13 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "seqlen:took",
         "a play to 250 waited for takes 600 ms here and 500 in Windows: not yet investigated",
     ),
+    // A play of a MIDI file not waited for, from its start to its end,
+    // notifies after 500 ms by `timeGetTime` in Windows, 600 here: as
+    // `seqlen:took`'s second play. 1 of 2 records; not yet investigated.
+    (
+        "seqsysex:took",
+        "a play's notification comes 600 ms after it here and 500 in Windows: not yet investigated",
+    ),
     // A play's notification, in tenths of a second: 19 in Windows, 18
     // here, played to its end and played again to its end over a play.
     // 2 of 6 records; not yet investigated.

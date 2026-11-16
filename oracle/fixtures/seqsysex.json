@@ -1,0 +1,90 @@
+{
+  "probe": "seqsysex",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mci",
+      "args": "open C:\\ORACLE\\SYSEX.MID type sequencer alias song",
+      "result": "0 [1]"
+    },
+    {
+      "function": "mci",
+      "args": "set song time format milliseconds",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "status song length",
+      "result": "0 [500]"
+    },
+    {
+      "function": "mci",
+      "args": "play song wait",
+      "result": "0 []"
+    },
+    {
+      "function": "took",
+      "args": "play song wait",
+      "result": "600"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [500]"
+    },
+    {
+      "function": "mci",
+      "args": "status song mode",
+      "result": "0 [stopped]"
+    },
+    {
+      "function": "mci",
+      "args": "seek song to start",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "play song notify",
+      "result": "0 []"
+    },
+    {
+      "function": "notify",
+      "args": "play",
+      "result": "1"
+    },
+    {
+      "function": "took",
+      "args": "play song notify",
+      "result": "500"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [500]"
+    },
+    {
+      "function": "mci",
+      "args": "play song from 250 to 400 wait",
+      "result": "0 []"
+    },
+    {
+      "function": "mci",
+      "args": "status song position",
+      "result": "0 [401]"
+    },
+    {
+      "function": "mci",
+      "args": "close song",
+      "result": "0 []"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "probe": "maplong",
+  "display": "vgasound",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, a Sound Blaster 1.5 at 220h, IRQ 7, DMA 1",
+    "cycles": 3000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "mapper",
+      "result": "0"
+    },
+    {
+      "function": "prepare",
+      "args": "reset",
+      "result": "0 2"
+    },
+    {
+      "function": "done",
+      "args": "1",
+      "result": "mapper 0"
+    },
+    {
+      "function": "long",
+      "args": "reset",
+      "result": "0 3 0 1"
+    },
+    {
+      "function": "prepare",
+      "args": "first part",
+      "result": "0 2"
+    },
+    {
+      "function": "done",
+      "args": "2",
+      "result": "mapper 1"
+    },
+    {
+      "function": "long",
+      "args": "first part",
+      "result": "0 3 0 1"
+    },
+    {
+      "function": "prepare",
+      "args": "second part",
+      "result": "0 2"
+    },
+    {
+      "function": "done",
+      "args": "3",
+      "result": "mapper 2"
+    },
+    {
+      "function": "long",
+      "args": "second part",
+      "result": "0 3 0 1"
+    },
+    {
+      "function": "prepare",
+      "args": "clock",
+      "result": "0 2"
+    },
+    {
+      "function": "done",
+      "args": "4",
+      "result": "mapper 3"
+    },
+    {
+      "function": "long",
+      "args": "clock",
+      "result": "0 3 0 1"
+    },
+    {
+      "function": "prepare",
+      "args": "end",
+      "result": "0 2"
+    },
+    {
+      "function": "done",
+      "args": "5",
+      "result": "mapper 4"
+    },
+    {
+      "function": "long",
+      "args": "end",
+      "result": "0 3 0 1"
+    },
+    {
+      "function": "unprepare",
+      "args": "reset",
+      "result": "0 1"
+    },
+    {
+      "function": "unprepare",
+      "args": "first part",
+      "result": "0 1"
+    },
+    {
+      "function": "unprepare",
+      "args": "second part",
+      "result": "0 1"
+    },
+    {
+      "function": "unprepare",
+      "args": "clock",
+      "result": "0 1"
+    },
+    {
+      "function": "unprepare",
+      "args": "end",
+      "result": "0 1"
+    },
+    {
+      "function": "close",
+      "args": "mapper",
+      "result": "0"
+    }
+  ]
+}

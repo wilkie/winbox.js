@@ -81,9 +81,15 @@
 //!   frame it never set, and caching patches likewise (seg3 `1127`): there
 //!   is no saying what, and the run stops.
 //!
-//! Not followed: long messages (seg2 `169`, `4ab`), which `MIDIMAP` breaks
-//! up into short messages and system-exclusive ones in a buffer of its own,
-//! and which stop the run.
+//! * A long message (seg2 `169`): its bytes parsed into the mapper's own
+//!   buffer and each message sent on from it as a long message, a
+//!   system-exclusive one to every device (`long`); then the program's
+//!   header marked done and the program called back `MM_MOM_DONE`, before
+//!   the call returns. It answers nought. **Recorded** by `maplong`.
+//!
+//! Not followed: channel messages in a long message (`long`), which stop
+//! the run; the time the mapper's own code takes over a long message is not
+//! charged.
 //!
 //! **Control Panel's MIDI Mapper** is Windows' own: WinBox's mapper exports
 //! `CPlApplet`, as `MIDIMAP` does (seg1 `11f`), and passes it on to the
@@ -107,6 +113,7 @@ use crate::modules::{Export, Kept};
 use crate::system::System;
 
 pub mod applet;
+mod long;
 pub mod setups;
 
 #[cfg(test)]
@@ -180,6 +187,10 @@ const MODM_CACHEDRUMPATCHES: u16 = 13;
 
 const MM_MOM_OPEN: u16 = 0x3c7;
 const MM_MOM_CLOSE: u16 = 0x3c8;
+const MM_MOM_DONE: u16 = 0x3c9;
+
+/// A header's flag that its message is played (`MHDR_DONE`).
+const DONE: u32 = 1;
 
 const MMSYSERR_BADDEVICEID: u32 = 2;
 const MMSYSERR_ALLOCATED: u32 = 4;
@@ -238,8 +249,10 @@ struct State {
     /// The channels the setup sends somewhere, as the last open found them
     /// (`[272h]`): its capabilities' channels.
     mask: u16,
-    /// Its running status (`[286h]`).
+    /// Its running status (`[286h]`), and the rest of what its parse of
+    /// long messages keeps (`long`).
     running: u8,
+    long: long::Parse,
     /// Who it called back last, kept past a close as `MIDIMAP` keeps it.
     last: Option<(u32, u32, u32, u16)>,
     /// The program last asked for on each channel through a patch map
@@ -364,7 +377,10 @@ impl OwnDriver for WbMapper {
                     self.data(engine, message.first).await?;
                     Ok(0)
                 }
-                MODM_LONGDATA => Err(Stop::Unsupported("the MIDI Mapper's long messages")),
+                MODM_LONGDATA => {
+                    self.long_data(engine, message.first).await?;
+                    Ok(0)
+                }
                 MODM_CACHEPATCHES | MODM_CACHEDRUMPATCHES => self.cache(engine, &message).await,
                 MODM_RESET => {
                     engine.system().clock.charge(costs::RESET);
@@ -594,10 +610,11 @@ impl WbMapper {
 
             state.opened = Some(opened);
             state.running = 0;
+            state.long = long::Parse::default();
             state.last = Some((callback, user, flags, handle));
         }
 
-        self.call_back(engine, MM_MOM_OPEN).await?;
+        self.call_back(engine, MM_MOM_OPEN, 0).await?;
         Ok(0)
     }
 
@@ -607,8 +624,9 @@ impl WbMapper {
         }
     }
 
-    /// The program called back, as it asked at the open (seg2 `0`).
-    async fn call_back(&self, engine: &Engine, message: u16) -> Result<(), Stop> {
+    /// The program called back, as it asked at the open (seg2 `0`), with
+    /// the message's first doubleword.
+    async fn call_back(&self, engine: &Engine, message: u16, first: u32) -> Result<(), Stop> {
         let Some((callback, user, flags, handle)) = self.state.borrow().last else {
             return Ok(());
         };
@@ -620,7 +638,7 @@ impl WbMapper {
             handle,
             message,
             user,
-            0,
+            first,
             0,
         )
         .await?;
@@ -655,8 +673,92 @@ impl WbMapper {
     /// Closed (seg3 `ee8`): its devices let go, the program called back.
     async fn close(&self, engine: &Engine) -> Result<u32, Stop> {
         self.release(engine).await?;
-        self.call_back(engine, MM_MOM_CLOSE).await?;
+        self.call_back(engine, MM_MOM_CLOSE, 0).await?;
         Ok(0)
+    }
+
+    /// A long message (seg2 `169`-`198`): its bytes parsed (`4ab`), each
+    /// message sent on as it is whole, then the header marked done and the
+    /// program called back `MM_MOM_DONE` with it.
+    async fn long_data(&self, engine: &Engine, header: u32) -> Result<(), Stop> {
+        let bytes = {
+            let system = engine.system();
+            let data = checks::dword_at(&system, header);
+            let length = checks::dword_at(&system, far_on(header, 4));
+
+            system.read_far(data, length as usize)
+        };
+        let sent = {
+            let mut state = self.state.borrow_mut();
+            let State { long, running, .. } = &mut *state;
+
+            long.running = *running;
+            let sent = long.bytes(&bytes);
+
+            *running = long.running;
+            sent?
+        };
+
+        for message in sent {
+            self.long_to_every_device(engine, &message).await?;
+        }
+
+        {
+            let mut system = engine.system();
+            let flags = checks::header_flags(&system, header);
+
+            checks::set_header_flags(&mut system, header, flags | DONE);
+        }
+
+        self.call_back(engine, MM_MOM_DONE, header).await
+    }
+
+    /// A message of the mapper's buffer sent to every device it opened, as
+    /// a long message on its own header (seg2 `1c7`-`210`): the header's
+    /// length set, its done flag cleared, `midiOutLongMsg`, and the device
+    /// waited for until it marks it done (`1b5`).
+    async fn long_to_every_device(&self, engine: &Engine, message: &[u8]) -> Result<(), Stop> {
+        let handles: Vec<u16> = self
+            .state
+            .borrow()
+            .opened
+            .as_ref()
+            .map(|opened| {
+                opened
+                    .ports
+                    .iter()
+                    .map(|port| port.handle)
+                    .take_while(|&handle| handle != 0)
+                    .collect()
+            })
+            .unwrap_or_default();
+        let header = {
+            let mut system = engine.system();
+            let header = data_segment(&system) | u32::from(HEADER);
+
+            system.write_far(header + u32::from(HEADER_SIZE), message);
+            system.write_far(far_on(header, 4), &(message.len() as u32).to_le_bytes());
+            header
+        };
+
+        for handle in handles {
+            {
+                let mut system = engine.system();
+                let flags = checks::header_flags(&system, header);
+
+                checks::set_header_flags(&mut system, header, flags & !DONE);
+            }
+
+            long_message(engine, handle, header).await?;
+
+            if checks::header_flags(&engine.system(), header) & DONE == 0 {
+                return Err(Stop::Unsupported(
+                    "the MIDI Mapper waiting for a device to play its long message",
+                ));
+            }
+        }
+
+        Ok(())
     }
 
     /// A short message (seg2 `3c2`), sent on as the setup has it.
@@ -664,6 +766,7 @@ impl WbMapper {
         let status = message as u8;
 
         engine.system().clock.charge(costs::DATA);
+        self.state.borrow_mut().long.short(status);
         let to = {
             let mut state = self.state.borrow_mut();
             let State {
@@ -944,7 +1047,7 @@ async fn open_device(engine: &Engine, id: u16, flags: u32) -> Result<(u16, Optio
 /// A header prepared on a device as `midiOutPrepareHeader` prepares it: one
 /// prepared already answers nought; the driver asked, and MMSYSTEM marking
 /// it prepared itself where the driver does not.
-async fn prepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
+pub(crate) async fn prepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
     {
         let mut system = engine.system();
 
@@ -977,8 +1080,31 @@ async fn prepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop>
     Ok(answer)
 }
 
+/// A long message sent on a device as `midiOutLongMsg` sends it: a header
+/// prepared and not queued, given the driver.
+async fn long_message(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
+    {
+        let flags = checks::header_flags(&engine.system(), header);
+
+        if flags & PREPARED == 0 || flags & MIDI_INQUEUE != 0 {
+            return Ok(0);
+        }
+    }
+
+    Ok(devices::send_by_handle(
+        engine,
+        handle,
+        Kind::MidiOut,
+        MODM_LONGDATA,
+        header,
+        u32::from(HEADER_SIZE),
+    )
+    .await?
+    .unwrap_or(0) as u16)
+}
+
 /// A header unprepared as `midiOutUnprepareHeader` unprepares it.
-async fn unprepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
+pub(crate) async fn unprepare(engine: &Engine, handle: u16, header: u32) -> Result<u16, Stop> {
     {
         let flags = checks::header_flags(&engine.system(), header);
 

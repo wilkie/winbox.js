@@ -57,17 +57,25 @@
 //! * **The mode**: playing, paused, or stopped; **the position**, where the
 //!   play is.
 //!
+//! * **System-exclusive messages** (seg3 `205a`-`2151`): sent as long
+//!   messages on two headers of 100h bytes prepared on the port as it
+//!   opens, after its patches are cached, and unprepared as it closes
+//!   (seg3 `11f4`-`121a`, `1220`-`1249`); a part on each header that is
+//!   done, `F0h` first where the message began with it; nothing after it
+//!   sent until it is all sent (seg3 `1d49`). **Recorded** by `seqsysex`.
+//!
 //! Not followed: a port other than the mapper (`MCI_SEQ_SET_PORT`), which
-//! `mci_drivers.rs` does not take; a file timed in SMPTE frames, and one
-//! with system-exclusive messages, which `MCISEQ` sends as long messages,
-//! both of which stop the run as they are played; the program changes and
-//! controllers a seek chases; synchronisation and the tempo set by
-//! command; the sequencer's own task and timer, whose period is not read
-//! out -- each message is sent at its own time. `MCISEQ` opens its port
-//! asking to be called back at a function of its own and prepares two
-//! headers on it for its long messages (seg3 `11b0`-`121c`), unprepared as
-//! it closes it (seg3 `1220`-`1249`); winbox.js's sends no long message,
-//! and does neither.
+//! `mci_drivers.rs` does not take; a file timed in SMPTE frames, which
+//! stops the run as it is played; the program changes and controllers a
+//! seek chases; synchronisation and the tempo set by command; the
+//! sequencer's own task and timer, whose period is not read out -- each
+//! message is sent at its own time. `MCISEQ` opens its port asking to be
+//! called back at a function of its own (seg3 `26bc`), which goes on with
+//! a system-exclusive message waiting for a header; winbox.js's port has
+//! no callback, and a message waiting is looked at again as soon as the
+//! calls made of it are made. Its headers are in a block of its own from
+//! the port's first open until the file is closed, where `MCISEQ`'s are in
+//! its instance's data.
 
 // Each has the signature every function that answers a call has.
 #![allow(clippy::unnecessary_wraps)]
@@ -152,8 +160,8 @@ const MIDI_CACHE_BESTFIT: u32 = 2;
 enum Event {
     /// A channel message, as `midiOutShortMsg` takes it.
     Short(u32),
-    /// A system-exclusive message.
-    Exclusive,
+    /// A system-exclusive message: which of the song's.
+    Exclusive(usize),
     /// A meta event, a track's end among them: nothing sent, but a play
     /// runs on to it (`Song::length`).
     Meta,
@@ -180,6 +188,10 @@ pub struct Song {
     /// a bit for each channel (seg3 `1a46`-`1aa8`).
     patches: Vec<u16>,
     keys: Vec<u16>,
+    /// Its system-exclusive messages' bytes, as the file has them after
+    /// their length: whether each began `F0h`, which is sent before them,
+    /// or `F7h`, which is not (seg3 `209c`-`20b7`).
+    exclusives: Vec<(bool, Vec<u8>)>,
 }
 
 impl Song {
@@ -283,8 +295,13 @@ impl Song {
                 }
                 0xf0 | 0xf7 => {
                     let size = number(&mut at) as usize;
+                    let data = track
+                        .get(at..)
+                        .map_or(&[][..], |rest| &rest[..rest.len().min(size)]);
 
-                    self.events.push((tick, Event::Exclusive));
+                    self.events
+                        .push((tick, Event::Exclusive(self.exclusives.len())));
+                    self.exclusives.push((status == 0xf0, data.to_vec()));
                     at += size;
                 }
                 0x80..=0xef => {
@@ -525,6 +542,9 @@ struct Playing {
     whole: bool,
     next: usize,
     timer: Option<TimerId>,
+    /// A system-exclusive message being sent, and how many of its bytes
+    /// are sent (`[5C7h]`): the play holds at it until it is all sent.
+    exclusive: Option<(usize, usize)>,
 }
 
 /// A notification waiting: the window, the command, and where a play is
@@ -557,6 +577,26 @@ struct Player {
     notes: [u128; 16],
     /// The task that plays it, woken to send its messages.
     task: u16,
+    /// The block of the two headers it sends system-exclusive messages on
+    /// (`Headers`), and whether they are prepared on the port.
+    headers: u16,
+    prepared: bool,
+}
+
+/// The two headers `MCISEQ` sends system-exclusive messages on, in its
+/// instance's data (`[38Eh]`, seg3 `11f4`-`121a`, `2182`): each a
+/// `MIDIHDR` of 1Ch bytes and a buffer of 100h after it.
+mod headers {
+    pub const COUNT: u32 = 2;
+    pub const HEADER: u32 = 0x1c;
+    pub const BUFFER: u32 = 0x100;
+    /// One header and its buffer (`11Ch`).
+    pub const EACH: u32 = HEADER + BUFFER;
+    /// A header's flags, and that it is done (`MHDR_DONE`).
+    pub const FLAGS: u32 = 0x10;
+    pub const DONE: u8 = 1;
+    /// The block's flags: fixed and shared, at interrupt time.
+    pub const GMEM: u16 = 0x2002;
 }
 
 /// The sequencer's devices with a file open, by their device's ID.
@@ -651,6 +691,8 @@ pub async fn driver_proc(
                             pending: None,
                             notes: [0; 16],
                             task,
+                            headers: 0,
+                            prepared: false,
                         },
                     );
                 }
@@ -919,14 +961,6 @@ async fn play(
             ));
         }
 
-        if player.song.events.iter().any(|&(tick, event)| {
-            event == Event::Exclusive && tick >= start && (tick < end || whole)
-        }) {
-            return Err(Stop::Unsupported(
-                "the sequencer playing a system-exclusive message",
-            ));
-        }
-
         if let Some(timer) = player.playing.take().and_then(|playing| playing.timer) {
             system.clock.cancel(timer);
         }
@@ -950,6 +984,7 @@ async fn play(
             whole,
             next,
             timer: None,
+            exclusive: None,
         });
         system.poll_sequencer();
     }
@@ -1154,7 +1189,77 @@ async fn open_port(engine: &Engine, device: u16) -> Result<Result<(), u32>, Stop
         }));
     }
 
+    prepare_headers(engine, device, handle).await?;
     Ok(Ok(()))
+}
+
+/// The two headers for system-exclusive messages prepared on the port
+/// (seg3 `11f4`-`121a`), each marked done as it is prepared, free to send
+/// on: their block made the first time.
+async fn prepare_headers(engine: &Engine, device: u16, port: u16) -> Result<(), Stop> {
+    let block = {
+        let mut system = engine.system();
+        let Some(block) = system
+            .mmsystem
+            .sequencer
+            .players
+            .get(&device)
+            .map(|player| player.headers)
+        else {
+            return Ok(());
+        };
+
+        if block != 0 {
+            block
+        } else {
+            let block =
+                super::sound::alloc(&mut system, headers::GMEM, headers::COUNT * headers::EACH);
+
+            if let Some(player) = system.mmsystem.sequencer.players.get_mut(&device) {
+                player.headers = block;
+            }
+
+            block
+        }
+    };
+    let Some(selector) = super::sound::lock(&engine.system(), block) else {
+        return Ok(());
+    };
+
+    for which in 0..headers::COUNT {
+        let header = u32::from(selector) << 16 | which * headers::EACH;
+
+        {
+            let mut system = engine.system();
+            let mut fields = vec![0u8; headers::HEADER as usize];
+
+            fields[..4].copy_from_slice(&(header + headers::HEADER).to_le_bytes());
+            fields[4..8].copy_from_slice(&headers::BUFFER.to_le_bytes());
+            system.write_far(header, &fields);
+        }
+
+        crate::wbmapper::prepare(engine, port, header).await?;
+
+        let mut system = engine.system();
+        let flags = system.read_far(header + headers::FLAGS, 1)[0];
+
+        system.write_far(header + headers::FLAGS, &[flags | headers::DONE]);
+    }
+
+    if let Some(player) = engine.system().mmsystem.sequencer.players.get_mut(&device) {
+        player.prepared = true;
+    }
+
+    Ok(())
+}
+
+/// The far pointers of a player's two headers.
+fn header_places(system: &System, block: u16) -> Vec<u32> {
+    super::sound::lock(system, block).map_or_else(Vec::new, |selector| {
+        (0..headers::COUNT)
+            .map(|which| u32::from(selector) << 16 | which * headers::EACH)
+            .collect()
+    })
 }
 
 /// The port opened as `midiOutOpen` opens it: `MCISEQ` asks to be called
@@ -1364,6 +1469,23 @@ async fn close_port(engine: &Engine, device: u16, let_go_first: bool) -> Result<
     };
 
     if port != 0 {
+        // The two headers unprepared first (seg3 `1220`-`1249`).
+        let places = {
+            let mut system = engine.system();
+            let block = system
+                .mmsystem
+                .sequencer
+                .players
+                .get_mut(&device)
+                .and_then(|player| std::mem::take(&mut player.prepared).then_some(player.headers));
+
+            block.map(|block| header_places(&system, block))
+        };
+
+        for header in places.unwrap_or_default() {
+            crate::wbmapper::unprepare(engine, port, header).await?;
+        }
+
         devices::close(engine, port, Kind::MidiOut, MODM_CLOSE).await?;
     }
 
@@ -1386,7 +1508,17 @@ async fn close(engine: &Engine, device: u16, flags: u32) -> Result<(), Stop> {
 
     let mut system = engine.system();
 
-    if let Some(player) = system.mmsystem.sequencer.players.remove(&device)
+    let removed = system.mmsystem.sequencer.players.remove(&device);
+
+    if let Some(block) = removed
+        .as_ref()
+        .map(|player| player.headers)
+        .filter(|&block| block != 0)
+    {
+        super::sound::free(&mut system, block);
+    }
+
+    if let Some(player) = removed
         && let Some(pending) = player.pending
     {
         let status = if flags == MCI_NOTIFY {
@@ -1464,8 +1596,11 @@ impl System {
         };
         let short = self.mmsystem_proc("midiOutShortMsg");
         let start = f64::from(player.song.ms(playing.from));
+        // A system-exclusive message under way first: nothing after it is
+        // sent until it is all sent (seg3 `1d49`, `26d9`-`270f`).
+        let mut held = !self.send_exclusive(&player, &mut playing);
 
-        while let Some(&(tick, event)) = player.song.events.get(playing.next) {
+        while !held && let Some(&(tick, event)) = player.song.events.get(playing.next) {
             let within = tick < playing.to || (playing.whole && tick <= playing.to);
 
             if !within || playing.began + f64::from(player.song.ms(tick)) - start > now {
@@ -1473,6 +1608,12 @@ impl System {
             }
 
             playing.next += 1;
+
+            if let Event::Exclusive(index) = event {
+                playing.exclusive = Some((index, 0));
+                held = !self.send_exclusive(&player, &mut playing);
+                continue;
+            }
 
             // Nothing is sent, nor any note kept, with the port closed
             // (seg3 `dfd`).
@@ -1505,7 +1646,13 @@ impl System {
             .get(playing.next)
             .is_some_and(|&(tick, _)| tick < playing.to || (playing.whole && tick <= playing.to));
 
-        if more || due > now {
+        if held {
+            // Looked at again as soon as the calls made of it are made and
+            // a header is done, as `MCISEQ`'s callback goes on (seg3
+            // `26bc`).
+            playing.timer = Some(self.clock.after(self.instructions, 0.0));
+            player.playing = Some(playing);
+        } else if more || due > now {
             playing.timer = Some(self.clock.after(self.instructions, (due - now).max(0.0)));
             player.playing = Some(playing);
         } else {
@@ -1545,6 +1692,25 @@ impl System {
                 }
             }
 
+            if player.port != 0 && std::mem::take(&mut player.prepared) {
+                let unprepare = self.mmsystem_proc("midiOutUnprepareHeader");
+
+                for header in header_places(self, player.headers) {
+                    self.at_interrupt(
+                        Interrupt {
+                            proc: unprepare,
+                            args: vec![
+                                GuestArg::Word(player.port),
+                                GuestArg::Long(header),
+                                GuestArg::Word(headers::HEADER as u16),
+                            ],
+                            key: None,
+                        },
+                        Some(player.task),
+                    );
+                }
+            }
+
             if player.port != 0 {
                 let close = self.mmsystem_proc("midiOutClose");
 
@@ -1570,6 +1736,75 @@ impl System {
         }
 
         self.mmsystem.sequencer.players.insert(device, player);
+    }
+
+    /// What is left of the system-exclusive message under way sent (seg3
+    /// `205a`-`2151`): each part on a header that is done, as much as it
+    /// holds -- `F0h` first where the message began with it -- and given
+    /// the port with `midiOutLongMsg`; with the port closed, nothing is
+    /// sent. Whether it is all sent; where no header is done, the rest
+    /// waits (`[5C6h]`). A header is held from its part's call being made
+    /// until the driver marks it done again: WinBox makes the call at
+    /// interrupt time after this look, where `MCISEQ` makes it here.
+    fn send_exclusive(&mut self, player: &Player, playing: &mut Playing) -> bool {
+        let long = self.mmsystem_proc("midiOutLongMsg");
+
+        while let Some((index, sent)) = playing.exclusive {
+            let (begun, data) = &player.song.exclusives[index];
+            let total = if data.is_empty() {
+                0
+            } else {
+                data.len() + usize::from(*begun)
+            };
+
+            if sent >= total {
+                playing.exclusive = None;
+                break;
+            }
+
+            if player.port == 0 || !player.prepared {
+                playing.exclusive = None;
+                break;
+            }
+
+            let free = header_places(self, player.headers)
+                .into_iter()
+                .find(|&header| self.read_far(header + headers::FLAGS, 1)[0] & headers::DONE != 0);
+            let Some(header) = free else {
+                return false;
+            };
+            let part = (total - sent).min(headers::BUFFER as usize);
+            let mut bytes = Vec::with_capacity(part);
+
+            if sent == 0 && *begun {
+                bytes.push(0xf0);
+            }
+
+            let from = (sent + bytes.len()).saturating_sub(usize::from(*begun));
+
+            bytes.extend_from_slice(&data[from..from + part - bytes.len()]);
+
+            let flags = self.read_far(header + headers::FLAGS, 1)[0];
+
+            self.write_far(header + headers::HEADER, &bytes);
+            self.write_far(header + 4, &(part as u32).to_le_bytes());
+            self.write_far(header + headers::FLAGS, &[flags & !headers::DONE]);
+            self.at_interrupt(
+                Interrupt {
+                    proc: long,
+                    args: vec![
+                        GuestArg::Word(player.port),
+                        GuestArg::Long(header),
+                        GuestArg::Word(headers::HEADER as u16),
+                    ],
+                    key: None,
+                },
+                Some(player.task),
+            );
+            playing.exclusive = Some((index, sent + part));
+        }
+
+        true
     }
 
     /// One of MMSYSTEM's exports, as a far pointer a program could call.
@@ -1732,6 +1967,8 @@ mod tests {
             pending: None,
             notes: [0; 16],
             task: 0,
+            headers: 0,
+            prepared: false,
         };
         let both = MCI_FROM | MCI_TO;
 
@@ -1932,6 +2169,8 @@ mod tests {
                     pending: None,
                     notes: [0; 16],
                     task,
+                    headers: 0,
+                    prepared: false,
                 },
             );
         }
@@ -2021,6 +2260,8 @@ mod tests {
                     pending: None,
                     notes: [0; 16],
                     task,
+                    headers: 0,
+                    prepared: false,
                 },
             );
         }

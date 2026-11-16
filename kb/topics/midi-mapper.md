@@ -2,7 +2,7 @@
 kind: topic
 name: The MIDI Mapper
 summary: How Windows 3.1's MIDI Mapper, MIDIMAP.DRV, keeps its setups, patch maps and key maps in MIDIMAP.CFG, which setup is current, how Control Panel's MIDI Mapper chooses one, and how it maps each short message on its way to a device -- read out of the driver and held write for write against DOSBox's OPL with the "Ad Lib general" setup current.
-probes: [mididev, adlibmap, adlibgm, mapcpl]
+probes: [mididev, adlibmap, adlibgm, mapcpl, maplong]
 ---
 
 A program that opens `MIDI_MAPPER` (`FFFFh`) is given Windows' MIDI Mapper, `MIDIMAP.DRV`, the driver `SYSTEM.INI` names as `[drivers]` `midimapper=`. It sends each channel to the device its current setup names, as another channel there, and through a patch map that changes programs, keys and volume. This page says how it keeps its setups and what it does with a message, so that a mapper of WinBox's own can do the same.
@@ -102,7 +102,17 @@ A program that opens `MIDI_MAPPER` (`FFFFh`) is given Windows' MIDI Mapper, `MID
 
 [[read out]] Nothing else is changed. A note's velocity is not scaled, and no controller but 7 is touched. The programs kept for the channels start at nought when the driver is loaded, and are kept past each close.
 
-[[read out]] A long message is broken into short messages and system-exclusive ones in a buffer of the mapper's own (seg2 `169`, `4ab`).
+## Long messages
+
+[[read out]] A long message (`MODM_LONGDATA`, seg2 `169`) is parsed byte by byte into a buffer of the mapper's own, 200h bytes (seg2 `4ab`-`719`). Each message is sent on from the buffer as a long message once it is whole:
+
+- The parse keeps, from one long message to the next, the last status it took, the bytes still to come of the message under way, and the running status, which the short messages share (seg2 `3c7`-`3fd`). Opening the mapper clears all three (seg3 `13cb`-`13d3`).
+- A system-exclusive message, from `F0h`, takes every byte until a status comes. `F7h`, `F0h` and a real-time byte are taken into it, a real-time byte leaving it under way (seg2 `4da`-`517`). Any other status ends it untaken, and starts the next message (`4f3`). It is sent when it ends, and whenever the buffer is full, the rest following in the next (`65f`-`66c`).
+- Any other system message takes as many bytes as its status gives: 1, 2, 3, 2, 1, 1, 1 and 1 for `F0h` to `F7h` (seg2 `723`). A status that comes before a message is whole sends what there is of it first (`51a`-`56b`). A real-time byte between messages is sent alone, at once (`5a0`-`5ad`).
+- What is sent with no running status goes to every device the mapper opened, in turn (`1c7`-`210`). For each, the header's done flag is cleared, the message sent with `midiOutLongMsg`, and the mapper waits, without yielding, until the device marks it done (`1b5`).
+- Then the program's header is marked done and the program is called back `MM_MOM_DONE` with it, before the call returns (`17e`-`195`). The call answers nought.
+
+[[measured]] [[probe:maplong]] sends a GS reset, the same split over two headers, a clock byte, and an end of exclusive alone, through the mapper with "Ad Lib" current. Each `midiOutLongMsg` answers nought, its header's flags `3` as it returns, and one `MM_MOM_DONE` for it reaches the window after. WinBox agrees with all 22 records. The Ad Lib drops system-exclusive bytes ([[topic:adlib]], "Parsing"), so nothing is heard of them.
 
 ## Through "Ad Lib general"
 
@@ -138,4 +148,4 @@ WinBox's mapper exports `CPlApplet`, as `MIDIMAP.DRV` does, and Control Panel fi
 
 [[measured]] On the page's machine, `adlibgm`'s first note, on channel 1, is heard 3,000 ms after the mapper's open sounds the chip. With "Ad Lib" current, nothing is heard until its note on channel 16, 7,980 ms after (`crates/winbox-web/tests/sound.rs`).
 
-Not followed: long messages, which stop the run.
+Not followed: channel messages in a long message, which the mapper sends through its channel maps (seg2 `24b`) and which stop the run; and the time the mapper's own code takes over a long message, which is not charged.

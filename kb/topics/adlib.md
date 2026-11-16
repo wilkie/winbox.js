@@ -2,7 +2,7 @@
 kind: topic
 name: The Ad Lib synthesizer
 summary: How Windows 3.1's Ad Lib driver, MSADLIB.DRV, turns MIDI into writes to an OPL2 — its instrument bank, its voices and percussion, its pitch and volume arithmetic, the order and timing of its writes, and its bugs — read out of the driver and held write for write against DOSBox's OPL as the driver played.
-probes: [adlibout, adlibmap, adlibseq, adlibgap, adlibgm, seqlen]
+probes: [adlibout, adlibmap, adlibseq, adlibgap, adlibgm, seqlen, seqsysex]
 ---
 
 Windows 3.1 plays MIDI on an Ad Lib, or the Ad Lib part of a Sound Blaster, through `MSADLIB.DRV`. The driver takes MIDI messages and writes the registers of a Yamaha YM3812 (OPL2). This page says what it writes, and when, so that a synthesizer of WinBox's own can write the same and sound the same.
@@ -184,6 +184,8 @@ The semitone is 106/100 rather than 2^(1/12), 1.0595, so the notes climb sharp t
 
 For `play ... from 0 to 1000`, `adlibseq`'s key 41 on channel 13 ends at 1,000 ms, `to`. Its note off is not sent: the sequencer lets the key go with the rest, so the Ad Lib is sent the same writes.
 
+- [[read out]] A system-exclusive message in the file (`F0h`, or `F7h` for one sent as it is) is sent as long messages on two headers MCISEQ prepares on the port as it opens it, after caching its patches, and unprepares as it closes it (seg3 `11f4`-`121a`, `1220`-`1249`). Each header holds 100h bytes. The message goes in as many parts as it needs, `F0h` first where it began with it, each on a header that is done (seg3 `205a`-`2151`, `2182`). Where neither is done, the rest waits for the port's callback that one is (seg3 `26bc`-`270f`), and nothing after the message in the file is sent until it is all sent (seg3 `1d49`). An empty one sends nothing.
+- [[measured]] [[probe:seqsysex]] plays a file with a GS reset and a General MIDI on through the mapper. Its plays answer nought and notify successful, at the file's end, 500 ms. WinBox agrees with 14 of its 15 records: the play not waited for notifies 600 ms after it here, as [[probe:seqlen]]'s second play takes 600 ms.
 - [[read out]] MCISEQ warns that a file "may not play correctly with the default MIDI setup" unless it begins with the sequencer-specific event `00 00 41` (`MCISEQ.DRV` seg3 `18de`-`191c`). `adlibseq`'s file has the event, and no box came up.
 
 ## What a reimplementation needs
