@@ -315,7 +315,7 @@ fn get_tick_count(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 /// from it (`hardware_interrupts.rs`; **recorded** by `irqtick`).
 pub(crate) fn tick_count(system: &System) -> u32 {
     let ms = system.clock.now(system.instructions);
-    let ticks = (ms / TICK).floor() - system.ticks_behind() as f64;
+    let ticks = (ms / TICK).floor() - f64::from(system.ticks_behind());
 
     (ticks.max(0.0) * TICK).floor() as u64 as u32
 }

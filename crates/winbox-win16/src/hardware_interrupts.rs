@@ -110,7 +110,8 @@ impl System {
                 self.clock.cancel(timer);
             }
 
-            let next = (tick + 1) as f64 * TICK - self.clock.now(self.instructions);
+            let now = self.clock.now(self.instructions);
+            let next = ((now / TICK).floor() + 1.0) * TICK - now;
             let timer = self.clock.after(self.instructions, next.max(0.0));
 
             self.timer.wake = Some((timer, tick + 1));
@@ -206,12 +207,12 @@ impl System {
     /// The ticks Windows' own handler has not counted, for `GetTickCount`:
     /// those behind, and those come since last looked at while a program's
     /// handler is set.
-    pub(crate) fn ticks_behind(&self) -> i64 {
+    pub(crate) fn ticks_behind(&self) -> u32 {
         let come = match (self.timer_handler(), self.timer.seen) {
             (Some(_), Some(seen)) => (self.clock_tick() - seen).max(0),
             _ => 0,
         };
 
-        self.timer.behind + come
+        u32::try_from(self.timer.behind + come).unwrap_or(u32::MAX)
     }
 }
