@@ -42,9 +42,9 @@ export default defineConfig({
   plugins: [engineModule()],
 });
 
-/** Whether a path is in cargo's `target/` and not where `pnpm build:web` writes the module. */
+/** Whether a path is in cargo's `target/` and not where `pnpm build:web` writes the module, or in the agents' worktrees under `.claude/`, which come and go. */
 function busy(path: string): boolean {
-  return /[\\/]target[\\/](?!winbox-web(?:[\\/]|$))/.test(path);
+  return /[\\/]target[\\/](?!winbox-web(?:[\\/]|$))/.test(path) || /[\\/]\.claude[\\/]/.test(path);
 }
 
 /**
