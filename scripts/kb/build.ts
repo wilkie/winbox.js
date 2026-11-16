@@ -911,7 +911,7 @@ table.compat .sig { font-family: ui-monospace, SFMono-Regular, Consolas, monospa
 table.compat td.links { white-space: nowrap; }
 table.compat td.links a + a { margin-left: 0.4rem; }
 .status, .rating { font-weight: 600; }
-.status.s-idle, .rating.r-0, .rating.r-1 { color: var(--exact); }
+.status.s-idle, .status.s-playing, .rating.r-0, .rating.r-1 { color: var(--exact); }
 .rating.r-2 { color: var(--partial); }
 .nowrap { white-space: nowrap; }
 abbr.from { font-size: 0.7rem; vertical-align: super; text-decoration: none; color: var(--muted); margin-left: 0.1rem; }
