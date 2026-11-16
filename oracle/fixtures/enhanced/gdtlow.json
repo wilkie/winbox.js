@@ -1,0 +1,170 @@
+{
+  "probe": "gdtlow",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "gdt",
+      "args": "limit",
+      "result": "covers 78h=1"
+    },
+    {
+      "function": "sel",
+      "args": "0008",
+      "result": "lar none lsl none load fault 0d code=0008"
+    },
+    {
+      "function": "sel",
+      "args": "0010",
+      "result": "lar none lsl none load fault 0d code=0010"
+    },
+    {
+      "function": "sel",
+      "args": "0018",
+      "result": "lar none lsl none load fault 0d code=0018"
+    },
+    {
+      "function": "sel",
+      "args": "0020",
+      "result": "lar none lsl none load fault 0d code=0020"
+    },
+    {
+      "function": "sel",
+      "args": "0028",
+      "result": "lar none lsl none load fault 0d code=0028"
+    },
+    {
+      "function": "sel",
+      "args": "0030",
+      "result": "lar none lsl none load fault 0d code=0030"
+    },
+    {
+      "function": "sel",
+      "args": "0038",
+      "result": "lar=fa00 lsl=000004c7 loads, 0006h refused 0006 [4]=cd [10]=cd 30"
+    },
+    {
+      "function": "sel",
+      "args": "0040",
+      "result": "lar=f200 lsl=000002ff loads, 0006h refused 0006 [4]=00 [10]=26 d4"
+    },
+    {
+      "function": "sel",
+      "args": "0048",
+      "result": "lar=f000 lsl=ffffffff loads, 0006h refused 0006 [4]=08 [10]=08 00"
+    },
+    {
+      "function": "sel",
+      "args": "0050",
+      "result": "lar=f200 lsl=00000fff loads, 0006h refused 0006 [4]=00 [10]=00 00"
+    },
+    {
+      "function": "sel",
+      "args": "0058",
+      "result": "lar none lsl none load fault 0d code=0058"
+    },
+    {
+      "function": "sel",
+      "args": "0060",
+      "result": "lar none lsl none load fault 0d code=0060"
+    },
+    {
+      "function": "sel",
+      "args": "0068",
+      "result": "lar=f200 lsl=00000100 loads, 0006h refused 0006 [4]=cf [10]=00 00"
+    },
+    {
+      "function": "sel",
+      "args": "0070",
+      "result": "lar none lsl none load fault 0d code=0070"
+    },
+    {
+      "function": "sel",
+      "args": "0078",
+      "result": "lar none lsl none load fault 0d code=0078"
+    },
+    {
+      "function": "rpl3",
+      "args": "000b",
+      "result": "fault 0d code=0008"
+    },
+    {
+      "function": "rpl3",
+      "args": "0013",
+      "result": "fault 0d code=0010"
+    },
+    {
+      "function": "rpl3",
+      "args": "001b",
+      "result": "fault 0d code=0018"
+    },
+    {
+      "function": "rpl3",
+      "args": "0023",
+      "result": "fault 0d code=0020"
+    },
+    {
+      "function": "rpl3",
+      "args": "002b",
+      "result": "fault 0d code=0028"
+    },
+    {
+      "function": "rpl3",
+      "args": "0033",
+      "result": "fault 0d code=0030"
+    },
+    {
+      "function": "rpl3",
+      "args": "003b",
+      "result": "loads"
+    },
+    {
+      "function": "rpl3",
+      "args": "0043",
+      "result": "loads"
+    },
+    {
+      "function": "rpl3",
+      "args": "004b",
+      "result": "loads"
+    },
+    {
+      "function": "rpl3",
+      "args": "0053",
+      "result": "loads"
+    },
+    {
+      "function": "rpl3",
+      "args": "005b",
+      "result": "fault 0d code=0058"
+    },
+    {
+      "function": "rpl3",
+      "args": "0063",
+      "result": "fault 0d code=0060"
+    },
+    {
+      "function": "rpl3",
+      "args": "006b",
+      "result": "loads"
+    },
+    {
+      "function": "rpl3",
+      "args": "0073",
+      "result": "fault 0d code=0070"
+    },
+    {
+      "function": "rpl3",
+      "args": "007b",
+      "result": "fault 0d code=0078"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 kind: topic
 name: KERNEL's constants
 summary: The exports of KERNEL that are numbers rather than functions — __AHSHIFT, __AHINCR, __WINFLAGS and the selectors for the first megabyte's fixed places — what they are, how the loader writes them and how GetProcAddress answers them, as the kconst probe recorded them.
-probes: [kconst, winflags]
+probes: [kconst, winflags, gdtlow]
 ---
 
 Thirteen of KERNEL's exports are not functions. Each is an entry of segment FEh in `KRNL386.EXE`'s entry table, its offset the number: a program imports one as it imports a function, and the loader writes the number where the program reads it.
@@ -50,3 +50,4 @@ KERNEL's ordinal 342, `__GP`, is not a constant. It is a table in KERNEL's own c
 
 - What the first megabyte holds: the BIOS's data area, the ROM BIOS's machine and date bytes at F000:FFF5h-FFFEh, and video memory. All of it reads as never-written memory.
 - `__GP` and `HasGPHandler`.
+- The global table's other selectors below 80h, which a program that takes them for real-mode segments loads: Lucky's Investments reads the equipment word through 40h and, with one floppy drive or none, DOS's byte at 0050h:0004h through 50h (`LI.EXE` seg11 `167d`-`16cf`), and stops at the load in WinBox. [[measured]] [[probe:gdtlow]]: in standard mode 08h-30h and 40h-58h load at privilege 3, data but 30h, 50h and 58h, readable code (50h's limit 4330h, its byte 4 80h), 38h is DPL 2 and faults, 60h-78h are not there; in 386 enhanced mode 38h-50h and 68h load, 50h data with a limit of FFFh and its byte 4 nought, 40h's limit 2FFh; DPMI 0006h gives no base for them (nought in standard mode, refused in enhanced). Through 40h the equipment word at 10h reads D426h in both modes. WinBox's table has 40h alone, `LAR` F300h and its limit FFFFh, and nought at 10h; the rest fault. They are DOSX's and WIN386's own, not read out.

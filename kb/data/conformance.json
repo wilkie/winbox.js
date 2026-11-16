@@ -13791,6 +13791,40 @@
   },
   "gaps": {}
  },
+ "gdtlow": {
+  "probe": "gdtlow",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 31,
+  "functions": {
+   "gdt": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rpl3": {
+    "total": 15,
+    "agreed": 6,
+    "disagreed": 9,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 15,
+    "agreed": 4,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "gdt": "WinBox's global table ends below 78h",
+   "sel": "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone",
+   "rpl3": "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone"
+  }
+ },
  "getdcex": {
   "probe": "getdcex",
   "display": "vga",
