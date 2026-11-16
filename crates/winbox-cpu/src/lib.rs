@@ -350,6 +350,12 @@ pub struct Cpu<B: Bus> {
     /// opcode, for the host to run it. Off, `OUT` is passed over and
     /// `IN` stops the run.
     pub ports: bool,
+    /// In protected mode, an `IN` or `OUT` at a privilege above FLAGS'
+    /// IOPL: whether a supervisor's permission bitmap takes it and runs it
+    /// (386 enhanced mode's WIN386, which passes each it does not
+    /// virtualise to the machine), as it is run at IOPL; off, a general
+    /// protection fault, as on a 286 or a 386 with no bitmap.
+    pub io_bitmap: bool,
     /// Where the interrupt table is, where the host lets this core take
     /// interrupts itself: in real mode a fault, `INT`, `INT 3` and `INTO`
     /// then push FLAGS, CS and IP and go through the table's entry, for a
@@ -444,6 +450,7 @@ impl<B: Bus> Cpu<B> {
             msw: None,
             fpu: None,
             ports: false,
+            io_bitmap: false,
             interrupt_table: None,
             retired: 0,
             bus,
@@ -2535,6 +2542,9 @@ impl<B: Bus> Cpu<B> {
 
                 self.regs[reg] = self.get16(place)?;
             }
+            // IN and OUT at a privilege IOPL does not allow and no bitmap
+            // lets through: a general protection fault.
+            0xe4..=0xe7 | 0xec..=0xef if self.io_refused() => return self.fault(13),
             // OUT, to a port in the instruction or to DX, where the host
             // answers the ports.
             0xe6 | 0xe7 | 0xee | 0xef if self.ports => return Err(Exit::Unimplemented(opcode)),
@@ -3603,6 +3613,26 @@ mod tests {
         cpu.ports = true;
         assert_eq!(cpu.run(100), (1, Exit::Unimplemented(0xee)));
         assert_eq!(cpu.ip, 1);
+
+        // At a program's privilege in protected mode: a general
+        // protection fault where IOPL is below it and no bitmap takes it;
+        // the host's at IOPL 3, as DOSX runs a program, or through 386
+        // enhanced mode's bitmap at IOPL 0.
+        for (iopl, bitmap, exit) in [
+            (0, false, Exit::Fault(13)),
+            (3, false, Exit::Unimplemented(0xec)),
+            (0, true, Exit::Unimplemented(0xec)),
+        ] {
+            let mut cpu = machine(&[0x90, 0xec]);
+
+            cpu.ports = true;
+            cpu.protected = true;
+            cpu.segments[CS].selector |= 3;
+            cpu.flags |= iopl << 12;
+            cpu.io_bitmap = bitmap;
+            assert_eq!(cpu.run(100), (1, exit));
+            assert_eq!(cpu.ip, 1);
+        }
 
         // int 3, without the table: the host's
         let mut cpu = machine(&[0x90, 0xcc]);

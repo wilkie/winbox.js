@@ -1,0 +1,419 @@
+{
+  "probe": "ioports",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cpl",
+      "args": "CS",
+      "result": "3"
+    },
+    {
+      "function": "flags",
+      "args": "PUSHF",
+      "result": "iopl=3 if=1"
+    },
+    {
+      "function": "flags",
+      "args": "after POPF of 0202h",
+      "result": "iopl=3 if=1"
+    },
+    {
+      "function": "flags",
+      "args": "after 0300h INT 12h, its flags nought",
+      "result": "iopl=3 if=1"
+    },
+    {
+      "function": "in",
+      "args": "0000 first",
+      "result": "00"
+    },
+    {
+      "function": "in",
+      "args": "0000 second",
+      "result": "00"
+    },
+    {
+      "function": "in",
+      "args": "0001 first",
+      "result": "00"
+    },
+    {
+      "function": "in",
+      "args": "0001 second",
+      "result": "00"
+    },
+    {
+      "function": "in",
+      "args": "0201 ",
+      "result": "ff"
+    },
+    {
+      "function": "out",
+      "args": "343a",
+      "result": "no fault"
+    },
+    {
+      "function": "cmos",
+      "args": "00",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "01",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "02",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "03",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "04",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "05",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "06",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "07",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "08",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "09",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "0a",
+      "result": "26 (bit 7 masked)"
+    },
+    {
+      "function": "cmos",
+      "args": "0b",
+      "result": "02"
+    },
+    {
+      "function": "cmos",
+      "args": "0c",
+      "result": "00 (bits 6, 4 masked)"
+    },
+    {
+      "function": "cmos",
+      "args": "0d",
+      "result": "80"
+    },
+    {
+      "function": "cmos",
+      "args": "0e",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "0f",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "10",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "11",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "12",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "13",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "14",
+      "result": "26"
+    },
+    {
+      "function": "cmos",
+      "args": "15",
+      "result": "80"
+    },
+    {
+      "function": "cmos",
+      "args": "16",
+      "result": "02"
+    },
+    {
+      "function": "cmos",
+      "args": "17",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "18",
+      "result": "3c"
+    },
+    {
+      "function": "cmos",
+      "args": "19",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "1a",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "1b",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "1c",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "1d",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "1e",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "1f",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "20",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "21",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "22",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "23",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "24",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "25",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "26",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "27",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "28",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "29",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "2a",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "2b",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "2c",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "2d",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "2e",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "2f",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "30",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "31",
+      "result": "3c"
+    },
+    {
+      "function": "cmos",
+      "args": "32",
+      "result": "bcd=1"
+    },
+    {
+      "function": "cmos",
+      "args": "33",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "34",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "35",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "36",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "37",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "38",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "39",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "3a",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "3b",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "3c",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "3d",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "3e",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "3f",
+      "result": "00"
+    },
+    {
+      "function": "retrace",
+      "args": "bit 3",
+      "result": "set=1 clear=1"
+    },
+    {
+      "function": "retrace",
+      "args": "bit 0",
+      "result": "set=1 clear=1"
+    },
+    {
+      "function": "retrace",
+      "args": "other bits",
+      "result": "00"
+    },
+    {
+      "function": "counter2",
+      "args": "mode 4 from 0000h, two reads",
+      "result": "started=1 moved=1"
+    },
+    {
+      "function": "counter2",
+      "args": "status",
+      "result": "b8"
+    },
+    {
+      "function": "counter0",
+      "args": "mode 2 from 0000h, two latched reads",
+      "result": "started=1 moved=1"
+    },
+    {
+      "function": "counter0",
+      "args": "status",
+      "result": "b4"
+    }
+  ]
+}
