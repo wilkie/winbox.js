@@ -441,6 +441,26 @@ impl System {
                 self.cpu.regs[BX] = offset;
                 None
             }
+            // The extended error: AX the error the last call that failed
+            // set, BH its class, 8 (not found) for 2 and 3 and nought for
+            // another, BL its action 1 and CH its locus nought; CL, DX
+            // and the flags as they were. KERNEL passes
+            // 59h on to DOS (`KRNL386.EXE` seg1 `1a5a`, 59h's entry
+            // `1bc7`); DOSBox's DOS answers it so (`dos.cpp` 843-852).
+            // **Recorded** by `exterr`, in both modes.
+            0x59 => {
+                let error = self.dos_error;
+                let class = match error {
+                    ERROR_FILE_NOT_FOUND | ERROR_PATH_NOT_FOUND => 8,
+                    _ => 0,
+                };
+
+                self.cpu.regs[AX] = error;
+                self.set_high(BX, class);
+                self.set_low(BX, 1);
+                self.set_high(CX, 0);
+                None
+            }
             // DOS 6.0.
             0x30 => {
                 self.cpu.regs[AX] = 0x0006;
@@ -1211,16 +1231,26 @@ impl System {
         }
 
         let path = format!("{drive}:\\{}", [parts, vec![name]].concat().join("\\"));
+        let refused = self.create_error(&path);
 
-        let refused = if self.files.listing(drive) == Listing::AsStored {
-            // As DOSBox's `DOS_CreateFile` answers a `FileCreate` that
-            // fails, its folder there (`dos_files.cpp` 501-504).
+        self.files.create_with(&path, attributes).ok_or(refused)
+    }
+
+    /// Why a file was not created, as 3Ch answers: "path not found" for a
+    /// folder not there (or no name); on a disk or disc image "file not
+    /// found", as DOSBox's `DOS_CreateFile` answers a `FileCreate` that
+    /// fails with its folder there (`dos_files.cpp` 501-504); on another
+    /// drive, access denied.
+    pub(crate) fn create_error(&self, path: &str) -> u16 {
+        let (drive, parts, name) = resolve_file(&self.files, path);
+
+        if name.is_empty() || !self.files.is_directory(drive, &parts) {
+            ERROR_PATH_NOT_FOUND
+        } else if self.files.listing(drive) == Listing::AsStored {
             ERROR_FILE_NOT_FOUND
         } else {
             ERROR_ACCESS_DENIED
-        };
-
-        self.files.create_with(&path, attributes).ok_or(refused)
+        }
     }
 
     /// DOSBox's `DOS_MakeName`'s refusal of a path (`make_name_error`), on
@@ -1277,18 +1307,16 @@ impl System {
     }
 
     /// Why a file was not opened, as DOSBox's `DOS_OpenFile` tells it
-    /// (`dos_files.cpp` 560-568), on a disk or disc image: a file there
+    /// (`dos_files.cpp` 560-568): on a disk or disc image, a file there
     /// opened other than to read alone, access denied; else "path not
     /// found" where its folder is not there either (`PathExists`, 447-459),
-    /// "file not found" where it is. Another drive's, file not found.
-    fn open_error(&self, path: &str, mode: u8) -> u16 {
+    /// "file not found" where it is, on any drive (**recorded** by
+    /// `exterr`: 3 for a file in a folder not there on the host's C:).
+    pub(crate) fn open_error(&self, path: &str, mode: u8) -> u16 {
         let (drive, parts, name) = resolve_file(&self.files, path);
 
-        if self.files.listing(drive) != Listing::AsStored {
-            return ERROR_FILE_NOT_FOUND;
-        }
-
-        if mode & 3 != 0
+        if self.files.listing(drive) == Listing::AsStored
+            && mode & 3 != 0
             && self
                 .files
                 .image_attributes(drive, &parts, &name)

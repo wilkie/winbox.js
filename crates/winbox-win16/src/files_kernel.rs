@@ -146,6 +146,12 @@ pub fn open_file(system: &mut System, args: &mut Args) -> Result<(Answer, Option
     // Save As box finds the path of a file not there yet so; Terminal,
     // handed the name as given, `.\TEST.TRM`, saved its settings as `.TRM`.
     if handle == HFILE_ERROR {
+        // The error is DOS's, as KERNEL asks it with 59h: DOS's last
+        // error too (**recorded** by `exterr`).
+        if error != 0 {
+            system.dos_error = error;
+        }
+
         let whole = made_whole(system, &name);
         let prompt = (mode & OF_PROMPT != 0 && error != 0)
             .then(|| whole[whole.rfind('\\').map_or(0, |at| at + 1)..].to_string())
@@ -232,6 +238,8 @@ fn closed_as_asked(system: &mut System, handle: u16, mode: u16, buffer: u32, nam
         match deleted {
             Ok(()) => system.note_file_change(0x4100, &latin1_bytes(name), None),
             Err(code) => {
+                system.dos_error = code;
+
                 if buffer != 0 {
                     system.write_far(buffer.wrapping_add(2), &code.to_le_bytes());
                 }
@@ -280,6 +288,7 @@ fn reopen(system: &mut System, buffer: u32, mode: u16) -> u16 {
             not_there(system, &path)
         };
 
+        system.dos_error = error;
         system.write_far(buffer.wrapping_add(2), &error.to_le_bytes());
         return HFILE_ERROR;
     };
@@ -384,23 +393,25 @@ fn not_there(system: &System, path: &str) -> u16 {
     }
 }
 
-/// A file opened from its start: its handle, or `HFILE_ERROR`.
+/// A file opened from its start: its handle, or `HFILE_ERROR`. KERNEL
+/// opens it with DOS's 3Dh, so a failure is DOS's last error, as 59h
+/// answers it after (**recorded** by `exterr`: 2 for a file not there, 3
+/// for its folder not there).
 pub fn lopen(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let name = args.dword(system);
-    let _mode = args.word(system);
+    let mode = args.word(system);
 
     if name == 0 {
         return Ok(Answer::Word(HFILE_ERROR));
     }
 
     let path = text(system, name);
+    let Some(handle) = system.files.open(&path) else {
+        system.dos_error = system.open_error(&path, mode as u8);
+        return Ok(Answer::Word(HFILE_ERROR));
+    };
 
-    Ok(Answer::Word(
-        system
-            .files
-            .open(&path)
-            .map_or(HFILE_ERROR, |handle| handle as u16),
-    ))
+    Ok(Answer::Word(handle as u16))
 }
 
 /// Bytes read from a file to a buffer: how many, or `HFILE_ERROR`.
