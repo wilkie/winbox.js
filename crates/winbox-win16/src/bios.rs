@@ -80,14 +80,74 @@ const OVERSCAN: u8 = 0;
 const DARK_GREY: (u8, [u8; 3]) = (0x07, [0x21, 0x22, 0x23]);
 const LIGHT_GREY: (u8, [u8; 3]) = (0x0f, [0x30, 0x31, 0x32]);
 
-/// The VGA's palette registers and DAC as the video BIOS reads and writes
-/// them: as `VGA.DRV` leaves them on DOSBox's VGA, then as programs write
-/// them. Only what the BIOS answers: the screen is not shown through them.
+/// The VGA's attribute controller and DAC: as `VGA.DRV` leaves them on
+/// DOSBox's VGA, then as programs write them, through the video BIOS
+/// (`INT 10h` 10h) or the ports themselves (3C0h, 3C1h, 3C6h-3C9h,
+/// `ports.rs`). Only what is read back: the screen is not shown through
+/// them. **Recorded** by `biosint` and `vgaregs`, both modes.
 #[derive(Debug, Clone)]
 pub struct VideoBios {
     pub palette: [u8; 16],
     pub overscan: u8,
     pub dac: [[u8; 3]; 256],
+    /// The attribute controller's other registers, 10h, 12h, 13h and 14h,
+    /// as DOSBox's BIOS sets them for mode 12h (`int10_modes.cpp`).
+    /// **Recorded** by `vgaregs`: 01h, 0Fh, 00h, 00h.
+    mode_control: u8,
+    plane_enable: u8,
+    panning: u8,
+    colour_select: u8,
+    /// The register 3C0h names, whether its next write is the register's
+    /// byte (the flip-flop; a read of 3DAh makes it the index's again), and
+    /// whether the index was written with bit 5 clear, the palette open to
+    /// writes and the screen off (`write_p3c0`, `vga_attr.cpp` 53-63).
+    attr_index: u8,
+    attr_data_next: bool,
+    attr_open: bool,
+    /// The DAC's mask, 3C6h, FFh as DOSBox starts it (`VGA_SetupDAC`,
+    /// `vga_dac.cpp` 198-205); **recorded** FFh.
+    pel_mask: u8,
+    /// The DAC's indices, as Windows left them until the first use.
+    dac_ports: Option<DacPorts>,
+}
+
+/// The DAC's state: whether it was last given a register to read (3C7h)
+/// or to write (3C8h), each register's number, and which of a register's
+/// three bytes 3C9h is at (`vga_dac.cpp` 83-172).
+#[derive(Debug, Clone, Copy)]
+struct DacPorts {
+    reading: bool,
+    read: u8,
+    write: u8,
+    component: u8,
+}
+
+impl DacPorts {
+    /// The DAC as a program first finds it, by mode. **Recorded** by
+    /// `vgaregs`: in standard mode writing, its write index 10h, as
+    /// `VGA.DRV`'s `Enable` left it with its last `INT 10h` 1010h, of
+    /// register 0Fh (seg4 `0106`-`0112`; DOSBox's BIOS writes 3C8h and three
+    /// bytes, `int10_pal.cpp` 154-159); in 386 enhanced mode reading, its
+    /// write index nought, as 3C7h written FFh leaves it (`write_p3c7`,
+    /// `vga_dac.cpp` 83-88): WIN386's own, not read out. The read index and
+    /// the byte 3C9h is at are not measured: nought.
+    fn as_windows_left(enhanced: bool) -> Self {
+        if enhanced {
+            Self {
+                reading: true,
+                read: 0,
+                write: 0,
+                component: 0,
+            }
+        } else {
+            Self {
+                reading: false,
+                read: 0,
+                write: LIGHT_GREY.0 + 1,
+                component: 0,
+            }
+        }
+    }
 }
 
 impl Default for VideoBios {
@@ -108,7 +168,159 @@ impl Default for VideoBios {
             palette: PALETTE_REGISTERS,
             overscan: OVERSCAN,
             dac,
+            mode_control: 0x01,
+            plane_enable: 0x0f,
+            panning: 0,
+            colour_select: 0,
+            // DOSBox's BIOS ends `INT 10h` 1002h, which `VGA.DRV`'s
+            // `Enable` makes, writing 20h to 3C0h as an index: the palette
+            // closed, the screen on, the flip-flop at the register's byte
+            // (`int10_pal.cpp` 93).
+            attr_index: 0,
+            attr_data_next: true,
+            attr_open: false,
+            pel_mask: 0xff,
+            dac_ports: None,
         }
+    }
+}
+
+impl VideoBios {
+    /// A read of 3DAh: the attribute controller's flip-flop back at the
+    /// index (`vga_read_p3da`, `vga_misc.cpp` 37).
+    pub(crate) fn attr_reset(&mut self) {
+        self.attr_data_next = false;
+    }
+
+    /// A byte written to 3C0h: an index, bit 5 closing the palette, or the
+    /// register's byte, by the flip-flop. A palette register is written
+    /// only while the palette is open; 13h keeps four bits; the indices
+    /// past 14h are passed over, as DOSBox's S3 has nothing there
+    /// (`write_p3c0`, `vga_attr.cpp` 53-188; `vga_s3.cpp` 524).
+    pub(crate) fn attr_write(&mut self, value: u8) {
+        if !self.attr_data_next {
+            self.attr_index = value & 0x1f;
+            self.attr_data_next = true;
+            self.attr_open = value & 0x20 == 0;
+            return;
+        }
+
+        self.attr_data_next = false;
+
+        match self.attr_index {
+            index @ 0x00..=0x0f if self.attr_open => self.palette[usize::from(index)] = value,
+            0x10 => self.mode_control = value,
+            0x11 => self.overscan = value,
+            0x12 => self.plane_enable = value,
+            0x13 => self.panning = value & 0x0f,
+            0x14 => self.colour_select = value,
+            _ => {}
+        }
+    }
+
+    /// 3C0h read: the index, and bit 5 while the palette is closed
+    /// (`read_p3c0`, `vga_attr.cpp` 46-51). **Recorded** by `vgaregs`.
+    pub(crate) fn attr_index_read(&self) -> u8 {
+        self.attr_index | if self.attr_open { 0 } else { 0x20 }
+    }
+
+    /// 3C1h: the register 3C0h names, nought past 14h (`read_p3c1`,
+    /// `vga_attr.cpp` 193-218). **Recorded** by `vgaregs`, 00h-14h.
+    pub(crate) fn attr_read(&self) -> u8 {
+        match self.attr_index {
+            index @ 0x00..=0x0f => self.palette[usize::from(index)],
+            0x10 => self.mode_control,
+            0x11 => self.overscan,
+            0x12 => self.plane_enable,
+            0x13 => self.panning,
+            0x14 => self.colour_select,
+            _ => 0,
+        }
+    }
+
+    fn dac_ports(&mut self, enhanced: bool) -> &mut DacPorts {
+        self.dac_ports
+            .get_or_insert_with(|| DacPorts::as_windows_left(enhanced))
+    }
+
+    /// 3C6h written and read: the mask, kept.
+    pub(crate) fn pel_mask_write(&mut self, value: u8) {
+        self.pel_mask = value;
+    }
+
+    pub(crate) fn pel_mask_read(&self) -> u8 {
+        self.pel_mask
+    }
+
+    /// 3C7h written: the register to read, the write index one past it
+    /// (`write_p3c7`, `vga_dac.cpp` 83-88). **Recorded** by `vgaregs`.
+    pub(crate) fn dac_read_address(&mut self, enhanced: bool, value: u8) {
+        *self.dac_ports(enhanced) = DacPorts {
+            reading: true,
+            read: value,
+            write: value.wrapping_add(1),
+            component: 0,
+        };
+    }
+
+    /// 3C7h read: 3 while reading, nought while writing (`read_p3c7`, 90-93).
+    pub(crate) fn dac_state_read(&mut self, enhanced: bool) -> u8 {
+        if self.dac_ports(enhanced).reading {
+            3
+        } else {
+            0
+        }
+    }
+
+    /// 3C8h written: the register to write (`write_p3c8`, 95-99).
+    pub(crate) fn dac_write_address(&mut self, enhanced: bool, value: u8) {
+        let ports = self.dac_ports(enhanced);
+
+        ports.write = value;
+        ports.component = 0;
+        ports.reading = false;
+    }
+
+    /// 3C8h read: the write index (`read_p3c8`, 101-103).
+    pub(crate) fn dac_write_index(&mut self, enhanced: bool) -> u8 {
+        self.dac_ports(enhanced).write
+    }
+
+    /// 3C9h written: red, green, then blue of the register being written,
+    /// six bits each, the write index on after blue (`write_p3c9`, 105-147).
+    pub(crate) fn dac_data_write(&mut self, enhanced: bool, value: u8) {
+        let ports = *self.dac_ports(enhanced);
+        let component = usize::from(ports.component.min(2));
+
+        self.dac[usize::from(ports.write)][component] = value & 0x3f;
+
+        let ports = self.dac_ports(enhanced);
+
+        if component == 2 {
+            ports.write = ports.write.wrapping_add(1);
+            ports.component = 0;
+        } else {
+            ports.component += 1;
+        }
+    }
+
+    /// 3C9h read: red, green, then blue of the register being read, the
+    /// read index on after blue (`read_p3c9`, 149-172). **Recorded** by
+    /// `vgaregs`: every register, and the index stepping on.
+    pub(crate) fn dac_data_read(&mut self, enhanced: bool) -> u8 {
+        let ports = *self.dac_ports(enhanced);
+        let component = usize::from(ports.component.min(2));
+        let value = self.dac[usize::from(ports.read)][component];
+        let ports = self.dac_ports(enhanced);
+
+        if component == 2 {
+            ports.read = ports.read.wrapping_add(1);
+            ports.component = 0;
+        } else {
+            ports.component += 1;
+        }
+
+        value
     }
 }
 
@@ -212,6 +424,22 @@ impl System {
             .write8(winbox_machine::FIRST_MEGABYTE + 0x47b, flags);
     }
 
+    /// An attribute controller register read as DOSBox's BIOS reads one
+    /// (`int10_pal.cpp` 26-28, 123-137): 3DAh read for the flip-flop, the
+    /// index written with bit 5 set, the register read, and its byte
+    /// written back, which with the palette closed changes nothing.
+    fn attribute_through_ports(&mut self, index: u8) -> u8 {
+        let video = &mut self.video_bios;
+
+        video.attr_reset();
+        video.attr_write(index | 0x20);
+
+        let value = video.attr_read();
+
+        video.attr_write(value);
+        value
+    }
+
     /// `INT 10h` from a program: false where it is a function no recording
     /// has, or the display is not the VGA's, nothing done.
     pub(crate) fn video_interrupt(&mut self) -> bool {
@@ -247,37 +475,54 @@ impl System {
                 self.cpu.regs[BX] = 0x0003;
                 self.cpu.regs[CX] = 0x0009;
             }
-            // A palette register (`INT10_GetSinglePaletteRegister`,
-            // `int10_pal.cpp` 123-130), and the overscan register.
-            (0x10, 0x07) if bl < 16 => {
-                self.cpu.regs[BX] =
-                    u16::from(self.video_bios.palette[usize::from(bl)]) << 8 | u16::from(bl);
+            // A palette register, or another of the attribute controller's
+            // to 14h, as `INT10_GetSinglePaletteRegister` reads it through
+            // the ports (`int10_pal.cpp` 123-130): 3DAh read, the index
+            // written with bit 5 set, the register read and written back.
+            (0x10, 0x07) if bl <= 0x14 => {
+                let value = self.attribute_through_ports(bl);
+
+                self.cpu.regs[BX] = u16::from(value) << 8 | u16::from(bl);
             }
-            (0x10, 0x07) if bl == 0x11 => {
-                self.cpu.regs[BX] = u16::from(self.video_bios.overscan) << 8 | u16::from(bl);
-            }
-            (0x10, 0x07) if bl > 0x14 => {}
+            (0x10, 0x07) => {}
+            // The overscan register, the same way (132-137).
             (0x10, 0x08) => {
-                self.cpu.regs[BX] = u16::from(self.video_bios.overscan) << 8 | u16::from(bl);
+                let value = self.attribute_through_ports(0x11);
+
+                self.cpu.regs[BX] = u16::from(value) << 8 | u16::from(bl);
             }
-            // A DAC register written, six bits of each (`write_p3c9`,
+            // A DAC register written: 3C8h, then three bytes at 3C9h, six
+            // bits each (`INT10_SetSingleDacRegister`, 154-159; `write_p3c9`,
             // `vga_dac.cpp` 105-106).
             (0x10, 0x10) => {
                 let [blue, green] = self.cpu.regs[CX].to_le_bytes();
-                let red = self.cpu.regs[DX] >> 8;
+                let red = (self.cpu.regs[DX] >> 8) as u8;
+                let enhanced = self.dpmi_enhanced();
+                let video = &mut self.video_bios;
 
-                self.video_bios.dac[usize::from(bl)] =
-                    [red as u8 & 0x3f, green & 0x3f, blue & 0x3f];
+                video.dac_write_address(enhanced, bl);
+
+                for component in [red, green, blue] {
+                    video.dac_data_write(enhanced, component);
+                }
             }
-            // A DAC register read: DH red, CH green, CL blue. In standard
-            // mode DOSX gives every 10h back with DX as the program gave it
-            // (`16fd`-`176c`), so DH keeps what it held.
+            // A DAC register read: 3C7h, then three bytes at 3C9h (161-166);
+            // DH red, CH green, CL blue. In standard mode DOSX gives every
+            // 10h back with DX as the program gave it (`16fd`-`176c`), so DH
+            // keeps what it held.
             (0x10, 0x15) => {
-                let [red, green, blue] = self.video_bios.dac[usize::from(bl)];
+                let enhanced = self.dpmi_enhanced();
+                let video = &mut self.video_bios;
+
+                video.dac_read_address(enhanced, bl);
+
+                let red = video.dac_data_read(enhanced);
+                let green = video.dac_data_read(enhanced);
+                let blue = video.dac_data_read(enhanced);
 
                 self.cpu.regs[CX] = u16::from(green) << 8 | u16::from(blue);
 
-                if self.dpmi_enhanced() {
+                if enhanced {
                     self.cpu.regs[DX] = u16::from(red) << 8 | (self.cpu.regs[DX] & 0x00ff);
                 }
             }
@@ -514,6 +759,68 @@ mod tests {
                 0x1b, 0x3f
             ]
         );
+    }
+
+    /// The attribute controller as `vgaregs` read it: the flip-flop at the
+    /// index after 3DAh, the index read back with bit 5, a palette register
+    /// written only while the palette is open.
+    #[test]
+    fn the_attribute_controller_is_dosboxs() {
+        let mut video = VideoBios::default();
+
+        video.attr_reset();
+        video.attr_write(0x21);
+        assert_eq!(video.attr_index_read(), 0x21);
+        assert_eq!(video.attr_read(), 0x0c);
+        video.attr_write(0x3f);
+        assert_eq!(video.palette[1], 0x0c);
+
+        video.attr_reset();
+        video.attr_write(0x01);
+        assert_eq!(video.attr_index_read(), 0x01);
+        video.attr_write(0x3f);
+        assert_eq!(video.palette[1], 0x3f);
+
+        for (index, value) in [
+            (0x10, 0x01),
+            (0x11, 0x00),
+            (0x12, 0x0f),
+            (0x13, 0),
+            (0x14, 0),
+        ] {
+            video.attr_reset();
+            video.attr_write(index | 0x20);
+            assert_eq!(video.attr_read(), value);
+        }
+    }
+
+    /// The DAC as `vgaregs` read it, by mode, and its indices stepping on.
+    #[test]
+    fn the_dacs_ports_are_dosboxs() {
+        let mut video = VideoBios::default();
+
+        assert_eq!(video.dac_state_read(false), 0);
+        assert_eq!(video.dac_write_index(false), 0x10);
+        assert_eq!(VideoBios::default().dac_state_read(true), 3);
+        assert_eq!(VideoBios::default().dac_write_index(true), 0);
+
+        video.dac_read_address(false, 0x05);
+        assert_eq!(video.dac_data_read(false), 0x2a);
+        assert_eq!(video.dac_data_read(false), 0x00);
+        assert_eq!(video.dac_write_index(false), 0x06);
+        assert_eq!(video.dac_data_read(false), 0x2a);
+        // On to 06h, dark yellow.
+        assert_eq!(video.dac_data_read(false), 0x2a);
+
+        video.dac_write_address(false, 0x07);
+
+        for component in [0x41, 0x02, 0x03] {
+            video.dac_data_write(false, component);
+        }
+
+        assert_eq!(video.dac[7], [0x01, 0x02, 0x03]);
+        assert_eq!(video.dac_write_index(false), 0x08);
+        assert_eq!(video.dac_state_read(false), 0);
     }
 
     /// The floppy image of `biosintm`, 1.44 MB, and its hard disk image,

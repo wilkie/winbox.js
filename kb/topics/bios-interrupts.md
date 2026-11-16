@@ -35,7 +35,7 @@ None of these is an API call: each is an `INT` in the program's code, which Wind
 
 WinBox answers the three interrupts as Windows and DOSBox's BIOS answer them in each mode (`crates/winbox-win16/src/bios.rs`), from the program's own `INT`:
 
-- `INT 10h` on the VGA display alone: 0Fh, 1A00h, 12h with BL 10h, 1007h, 1008h, 1010h and 1015h, from the palette registers and DAC as `VGA.DRV` leaves them (`VideoBios`), laid out from DOSBox's rule for its 64 colours and the driver's table by colour; 1015h's DH given in enhanced mode alone. Another function, or another display, still stops the run.
+- `INT 10h` on the VGA display alone: 0Fh, 1A00h, 12h with BL 10h, 1007h (the attribute controller's registers to 14h), 1008h, 1010h and 1015h, from the palette registers and DAC as `VGA.DRV` leaves them (`VideoBios`), each through the ports' own state as DOSBox's BIOS goes through the ports ([[topic:io-ports]]), laid out from DOSBox's rule for its 64 colours and the driver's table by colour; 1015h's DH given in enhanced mode alone. Another function, or another display, still stops the run.
 - `INT 13h`: the BIOS's disks found among the drives' images (`Files::disk_images`, a disk image's size `Volume::image_size`) as `IMGMOUNT` makes them; 00h, 01h, 04h, 08h, 11h and 17h as DOSBox answers them, anything else AH FFh and the carry, the last status kept (`DiskBios`); ES after 08h as each mode leaves it; in enhanced mode a hard disk's call refused. 02h and 03h, reading and writing sectors, still stop the run.
 - `INT 4Bh`: 8102h as DOSX's and WIN386's own services answer, DOSX's errors for a number out of its range; another AH passes in standard mode. The data area's byte 7Bh is set for the mode as the first task starts.
 
@@ -43,7 +43,7 @@ WinBox answers the three interrupts as Windows and DOSBox's BIOS answer them in 
 
 ## Not yet done
 
-- The DAC a program writes through 1010h is kept and read back, but the screen is not shown through the palette registers and DAC: WinBox shows the 16-colour screen in the driver's colours, so a screen saver's colour cycling (`DANGHEAD_WIN`) is not seen. The ports themselves, 3C0h-3C9h, are not answered here.
+- The DAC a program writes through 1010h is kept and read back, but the screen is not shown through the palette registers and DAC: WinBox shows the 16-colour screen in the driver's colours, so a screen saver's colour cycling (`DANGHEAD_WIN`) is not seen. The same holds for the ports themselves, 3C0h-3C9h ([[topic:io-ports]]).
 - A full-screen program that sets a video mode itself -- `XPDLL.DLL` of `win3_hbcc` asks 0013h, mode 13h, after [[fn:GDI.Death]] -- stops the run: WinBox has no VGA of its own to set.
 - Other video functions (1002h, 1009h, 1012h, 1017h, 11h, 1Bh, text output), the video BIOS on displays other than the VGA, and `INT 13h` 02h and 03h through DOSX's buffer.
 - The Virtual DMA Services' calls past the version (03h-0Ch: locking and unlocking regions, buffers) in either mode, and another AH in enhanced mode.
