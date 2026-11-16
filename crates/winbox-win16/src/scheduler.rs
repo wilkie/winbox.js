@@ -311,6 +311,8 @@ impl System {
         self.scheduler.current = Some(self.scheduler.slots.len() - 1);
         // In KERNEL's list of tasks, with no parent.
         self.task_made(handle, 0);
+        // The BIOS's data as Windows left it as it started (`bios.rs`).
+        self.bios_data_for_windows();
     }
 
     /// The running task's state taken out of the system.

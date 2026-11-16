@@ -11,6 +11,15 @@
  *   node scripts/catalog/pass.mjs win3_nails     # these, again
  *   node scripts/catalog/pass.mjs --results      # catalog/results.json, catalog/queue.json, the needs in catalog/catalog.json
  *
+ * A program still `running` at its ten seconds is run on, from the start
+ * again, for each of `STAGES` (20, 40, 80, 120 virtual seconds) until it is
+ * not `running`; its record's `seconds` is the first length at which its
+ * state was found, and `stages` the states at each length. A program that
+ * polls its input and draws, with no message call among its last thousand,
+ * is `playing` (`outcome`). `--stages 20,40` names other lengths;
+ * `resultOf(item)` is an item's line of `catalog/results.json`, for
+ * splicing a few items' lines in without writing the rest.
+ *
  * Each program runs inside WinBox alone, on a drive made for the run with a
  * copy of its item's folder as `C:\CORPUS\<ID>\`, over the oracle's
  * installation (read, never written), on the VGA's 16 colours in standard
@@ -60,6 +69,12 @@ const TITLES = join(CACHE, 'titles');
 
 const SECONDS = 10;
 const RATE = 3000;
+/**
+ * A program still `running` at its ten seconds is run on, from the start
+ * again (the clock is instructions, so the same run), for each of these
+ * lengths in turn until it is not `running`; the last is the cap.
+ */
+let STAGES = [20, 40, 80, 120];
 /** Virtual seconds a setup is run alone first, to find where it first waits. */
 const FIRST_WAIT = 30;
 /** Virtual seconds a setup is given. */
@@ -121,6 +136,13 @@ function enterMarks() {
   writeFileSync(file, JSON.stringify({ stepMarks }));
   return file;
 }
+
+/** The calls of a program that polls its input instead of waiting for a message. */
+const POLLS =
+  /^USER\.(GetAsyncKeyState|GetKeyState|GetKeyboardState|GetInputState|PeekMessage)[ (]/;
+/** The calls that put something on the screen. */
+const DRAWS =
+  /^(GDI\.(BitBlt|StretchBlt|PatBlt|StretchDIBits|SetDIBitsToDevice|SetDIBits|LineTo|Polygon|Polyline|Rectangle|Ellipse|TextOut|ExtTextOut|SetPixel|FloodFill)|USER\.(DrawText|FillRect|DrawIcon|InvalidateRect|UpdateWindow)|WING\.\w+)[ (]/;
 
 /** The lines of a run's calls kept whole: the last so many. */
 const KEPT = 2000;
@@ -226,12 +248,12 @@ function boxOf(windows) {
  * signature of `box`, a panic of the engine's a fault of WinBox's own, and
  * a run the host stopped `running`.
  */
-function outcome(run) {
+function outcome(run, seconds = SECONDS) {
   const windows = windowsOf(run.out);
   const box = boxOf(windows);
   const { calls } = run;
   const instructions = Number(/after (\d+) instructions/.exec(run.out)?.[1] ?? 0);
-  let result = classify(run.out);
+  let result = classify(run.out, seconds);
 
   if (result.status === 'no-output') {
     const panic = /panicked at [^\n]*\n([^\n]*)/.exec(run.err);
@@ -268,9 +290,37 @@ function outcome(run) {
 
     if (
       recent.some((line) => /^USER\.(GetMessage|WaitMessage|PeekMessage)[ (]/.test(line)) ||
-      instructions < SECONDS * RATE * 1000 * 0.1
+      instructions < seconds * RATE * 1000 * 0.1
     ) {
       result = { status: 'idle', signature: '' };
+    }
+  }
+
+  /*
+   * `playing`: the program is polling its input, with something up on the
+   * screen, instead of waiting for a message: among its last thousand
+   * calls a poll (`GetAsyncKeyState`, `GetKeyState`, `GetKeyboardState`,
+   * `GetInputState`, `PeekMessage`) and either a call that draws or a
+   * window of its own shown. A program that draws to the screen's own DC
+   * has no window of its own to show. A dialog of `DialogBox` up means the
+   * program is waiting for its user there, not playing, and a program
+   * still loading polls nothing: both stay as they were.
+   */
+  if (
+    result.status === 'running' &&
+    !windows.some((window) => window.visible && window.class === '#32770')
+  ) {
+    const recent = run.out
+      .split('\n')
+      .filter((line) => CALL.test(line))
+      .slice(-1000);
+
+    if (
+      recent.some((line) => POLLS.test(line)) &&
+      (recent.some((line) => DRAWS.test(line)) ||
+        windows.some((window) => window.visible && !window.box))
+    ) {
+      result = { status: 'playing', signature: '' };
     }
   }
 
@@ -815,6 +865,49 @@ async function pass(item, commit) {
     }
   }
 
+  /*
+   * Still `running` at its ten seconds: run on, from the start again, for
+   * each of the `STAGES` until it is not. The seconds are those of the
+   * first stage it was found in (`seconds`), so a state is reached at or
+   * before them and after the stage before; the history is kept (`stages`).
+   */
+  let seconds = SECONDS;
+  let ms = result.ms;
+  const stages = [];
+
+  /* A run the host had to stop is not run longer: its ten seconds were not reached. */
+  if (result.status === 'running' && result.signature !== 'the host stopped it') {
+    for (const length of STAGES) {
+      const run = await trace(
+        runArgs({
+          exe: program.file,
+          path: program.path,
+          drive,
+          mounts,
+          mode,
+          display,
+          sound: wantsSound(needs),
+          seconds: length,
+          screen: join(CACHE, 'screens', `${item.id}.png`),
+        }),
+        3 * 60_000 + length * 5000
+      );
+
+      result = outcome(run, length);
+      seconds = length;
+      ms += run.ms;
+      stages.push({ seconds: length, status: result.status, signature: result.signature });
+      writeFileSync(
+        join(CACHE, 'traces', `${item.id}.txt`),
+        run.out.split('\n').slice(-300).join('\n')
+      );
+
+      if (result.status !== 'running' || run.killed) {
+        break;
+      }
+    }
+  }
+
   if (!installed) {
     rmSync(drive, { recursive: true, force: true });
   }
@@ -852,7 +945,8 @@ async function pass(item, commit) {
       display,
       calls: result.calls,
       instructions: result.instructions,
-      ms: result.ms,
+      ms,
+      ...(seconds !== SECONDS ? { seconds, stages } : {}),
       ...(result.box ? { box: result.box } : {}),
       ...(result.dos ? { dos: result.dos } : {}),
       ...(tries.length > 1 ? { tries } : {}),
@@ -904,6 +998,7 @@ export function groupsOf(result) {
 
   switch (status) {
     case 'idle':
+    case 'playing':
       return [];
     case 'missing':
       return [`missing ${signature}`];
@@ -936,62 +1031,64 @@ export function groupsOf(result) {
   }
 }
 
-function writeResults(items) {
-  const results = [];
+/** An item's line of `catalog/results.json`, from its state; null where it has not been run. */
+export function resultOf(item) {
+  const state = stateOf(item.id);
 
-  for (const item of items) {
-    const state = stateOf(item.id);
-
-    if (!state.result) {
-      continue;
-    }
-
-    const { needs } = state;
-
-    results.push({
-      id: item.id,
-      kind: item.kind,
-      title: item.title,
-      titleSource: item.titleSource,
-      status: state.result.status,
-      signature: state.result.signature ?? '',
-      ...(state.result.runtimes ? { runtimes: state.result.runtimes } : {}),
-      ...(state.result.box ? { box: state.result.box } : {}),
-      ...((state.result.dos ?? state.result.install?.dos)
-        ? { dos: state.result.dos ?? state.result.install.dos }
-        : {}),
-      needs: needs
-        ? {
-            program: needs.program ?? null,
-            header: needs.header ?? null,
-            mode: needs.mode ?? null,
-            display: needs.display ?? null,
-            flags: needs.flags ?? [],
-            imports: needs.imports ?? [],
-            libraries: needs.libraries ?? [],
-            runtimes: needs.runtimes ?? [],
-            setup: needs.setup ?? null,
-            installer: needs.installer ?? null,
-            images: needs.images ?? [],
-          }
-        : null,
-      ...(state.result.install
-        ? {
-            /* The setup's run: what it left, never the host's paths. */
-            install: {
-              status: state.result.install.status,
-              ...(state.result.install.program ? { program: state.result.install.program } : {}),
-              ...(state.result.install.from ? { from: state.result.install.from } : {}),
-              ...(state.result.install.groups
-                ? { groups: state.result.install.groups.map((group) => group.group) }
-                : {}),
-            },
-          }
-        : {}),
-      commit: state.result.commit,
-      date: state.result.date,
-    });
+  if (!state.result) {
+    return null;
   }
+
+  const { needs } = state;
+
+  return {
+    id: item.id,
+    kind: item.kind,
+    title: item.title,
+    titleSource: item.titleSource,
+    status: state.result.status,
+    signature: state.result.signature ?? '',
+    ...(state.result.seconds ? { seconds: state.result.seconds } : {}),
+    ...(state.result.runtimes ? { runtimes: state.result.runtimes } : {}),
+    ...(state.result.box ? { box: state.result.box } : {}),
+    ...((state.result.dos ?? state.result.install?.dos)
+      ? { dos: state.result.dos ?? state.result.install.dos }
+      : {}),
+    needs: needs
+      ? {
+          program: needs.program ?? null,
+          header: needs.header ?? null,
+          mode: needs.mode ?? null,
+          display: needs.display ?? null,
+          flags: needs.flags ?? [],
+          imports: needs.imports ?? [],
+          libraries: needs.libraries ?? [],
+          runtimes: needs.runtimes ?? [],
+          setup: needs.setup ?? null,
+          installer: needs.installer ?? null,
+          images: needs.images ?? [],
+        }
+      : null,
+    ...(state.result.install
+      ? {
+          /* The setup's run: what it left, never the host's paths. */
+          install: {
+            status: state.result.install.status,
+            ...(state.result.install.program ? { program: state.result.install.program } : {}),
+            ...(state.result.install.from ? { from: state.result.install.from } : {}),
+            ...(state.result.install.groups
+              ? { groups: state.result.install.groups.map((group) => group.group) }
+              : {}),
+          },
+        }
+      : {}),
+    commit: state.result.commit,
+    date: state.result.date,
+  };
+}
+
+function writeResults(items) {
+  const results = items.map(resultOf).filter(Boolean);
 
   const lines = results.map((result) => `  ${JSON.stringify(result)}`);
 
@@ -1141,6 +1238,12 @@ async function main() {
     }
   ).trim();
   /* `--status running`: the items whose last run had that status, run again. */
+  const stagesAt = args.indexOf('--stages');
+
+  if (stagesAt >= 0) {
+    STAGES = args.splice(stagesAt, 2)[1].split(',').map(Number);
+  }
+
   const statusAt = args.indexOf('--status');
   const status = statusAt >= 0 ? args.splice(statusAt, 2)[1] : null;
   const ids = args.filter((arg) => !arg.startsWith('--'));

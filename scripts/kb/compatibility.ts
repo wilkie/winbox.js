@@ -347,6 +347,7 @@ export function latestRating(list: RatingRecord[] | undefined) {
 /** A status's words, for a person: the first pass's statuses (`kb/guides/compatibility.md`). */
 export const STATUS_LABEL: Record<string, string> = {
   idle: 'starts',
+  playing: 'plays',
   box: 'its own box',
   running: 'running',
   missing: 'missing function',

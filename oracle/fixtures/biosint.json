@@ -1,0 +1,359 @@
+{
+  "probe": "biosint",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "int10",
+      "args": "ax=0f00 bx=1234 cx=5678 dx=9abc",
+      "result": "ax=5012 bx=0034 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1a00 bx=1234 cx=5678 dx=9abc",
+      "result": "ax=001a bx=0008 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1200 bx=1210 cx=5678 dx=9abc",
+      "result": "ax=1200 bx=0003 cx=0009 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1200 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0000 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1201 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0c01 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1202 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0a02 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1203 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0e03 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1204 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0104 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1205 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=1505 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1206 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=2306 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1207 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0707 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1208 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=0f08 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=1209 cx=5678 dx=9abc",
+      "result": "ax=1007 bx=2409 cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=120a cx=5678 dx=9abc",
+      "result": "ax=1007 bx=120a cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=120b cx=5678 dx=9abc",
+      "result": "ax=1007 bx=360b cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=120c cx=5678 dx=9abc",
+      "result": "ax=1007 bx=090c cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=120d cx=5678 dx=9abc",
+      "result": "ax=1007 bx=2d0d cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=120e cx=5678 dx=9abc",
+      "result": "ax=1007 bx=1b0e cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1007 bx=120f cx=5678 dx=9abc",
+      "result": "ax=1007 bx=3f0f cx=5678 dx=9abc si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0000 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0000 cx=0000 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=000c cx=5678 dx=1234",
+      "result": "ax=1015 bx=000c cx=0015 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=000a cx=5678 dx=1234",
+      "result": "ax=1015 bx=000a cx=2a15 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=000e cx=5678 dx=1234",
+      "result": "ax=1015 bx=000e cx=2a15 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0001 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0001 cx=002a dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0015 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0015 cx=152a dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0023 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0023 cx=2a2a dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0007 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0007 cx=2223 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=000f cx=5678 dx=1234",
+      "result": "ax=1015 bx=000f cx=3132 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0024 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0024 cx=0000 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0012 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0012 cx=3f00 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0036 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0036 cx=3f00 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0009 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0009 cx=003f dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=002d cx=5678 dx=1234",
+      "result": "ax=1015 bx=002d cx=003f dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=001b cx=5678 dx=1234",
+      "result": "ax=1015 bx=001b cx=3f3f dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=003f cx=5678 dx=1234",
+      "result": "ax=1015 bx=003f cx=3f3f dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=0040 cx=5678 dx=1234",
+      "result": "ax=1015 bx=0040 cx=0000 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int10",
+      "args": "ax=1015 bx=00ff cx=5678 dx=1234",
+      "result": "ax=1015 bx=00ff cx=0000 dx=1234 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "dac",
+      "args": "0c 3f 15 2a",
+      "result": "12 15 2a"
+    },
+    {
+      "function": "dac",
+      "args": "0c 12 00 15",
+      "result": "12 00 15"
+    },
+    {
+      "function": "bda",
+      "args": "7b",
+      "result": "20"
+    },
+    {
+      "function": "int4b",
+      "args": "ax=8102 bx=1234 cx=5678 dx=0000",
+      "result": "ax=0100 bx=0002 cx=0001 dx=0008 si=0000 di=0000 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0800 bx=1234 cx=5678 dx=1200",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1200",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1000 bx=1234 cx=5678 dx=1200",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1200",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1500 bx=1234 cx=5678 dx=1200",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0000 bx=1234 cx=5678 dx=1200",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1200",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1200 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0800 bx=1234 cx=5678 dx=1201",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1201",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1000 bx=1234 cx=5678 dx=1201",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1201",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1500 bx=1234 cx=5678 dx=1201",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0000 bx=1234 cx=5678 dx=1201",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1201",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1201 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0800 bx=1234 cx=5678 dx=1280",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1280",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1000 bx=1234 cx=5678 dx=1280",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1280",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1500 bx=1234 cx=5678 dx=1280",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0000 bx=1234 cx=5678 dx=1280",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1280",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1280 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0800 bx=1234 cx=5678 dx=1281",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1281",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1000 bx=1234 cx=5678 dx=1281",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1281",
+      "result": "ax=0700 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=1500 bx=1234 cx=5678 dx=1281",
+      "result": "ax=ff00 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=1"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0000 bx=1234 cx=5678 dx=1281",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=0"
+    },
+    {
+      "function": "int13",
+      "args": "ax=0100 bx=1234 cx=5678 dx=1281",
+      "result": "ax=0000 bx=1234 cx=5678 dx=1281 si=9abc di=def0 es=kept carry=0"
+    }
+  ]
+}

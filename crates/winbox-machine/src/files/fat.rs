@@ -971,6 +971,10 @@ impl Volume for FatVolume {
         self.floppy
     }
 
+    fn image_size(&self) -> Option<u64> {
+        Some(self.drive.borrow().disk.size())
+    }
+
     /// DOSBox's `TestDir`: the path's folders each found as a search for
     /// folders finds it.
     fn is_directory(&self, parts: &[String]) -> bool {

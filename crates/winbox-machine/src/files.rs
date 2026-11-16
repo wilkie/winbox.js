@@ -218,6 +218,13 @@ pub trait Volume: Debug {
         None
     }
 
+    /// How many bytes a disk image holds, as the BIOS's disk interrupt
+    /// counts it among its disks; none for another drive, which DOSBox's
+    /// BIOS has no disk for (`bios_disk.cpp`, `imageDiskList`).
+    fn image_size(&self) -> Option<u64> {
+        None
+    }
+
     /// Whether programs have written to a disk image anything it did not
     /// hold (`FatVolume::changed`); false for another drive.
     fn changed(&self) -> bool {
@@ -651,6 +658,19 @@ impl Files {
                 drive.removable() && !drive.remote() && self.has_disk(letter)
             })
             .count()
+    }
+
+    /// The sizes of the disk images mounted, by their drives' letters from
+    /// A:, as DOSBox's BIOS finds its disks among them
+    /// (`Volume::image_size`).
+    pub fn disk_images(&self) -> Vec<u64> {
+        let mut letters: Vec<char> = self.drives.keys().copied().collect();
+
+        letters.sort_unstable();
+        letters
+            .into_iter()
+            .filter_map(|letter| self.drives[&letter].image_size())
+            .collect()
     }
 
     /// Whether a folder is there.

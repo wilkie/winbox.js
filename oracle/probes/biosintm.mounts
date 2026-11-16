@@ -1,0 +1,3 @@
+# A: a floppy image, D: a hard disk image: see biosint.c.
+a: imgflop.img floppy
+d: imghdd.img hdd
