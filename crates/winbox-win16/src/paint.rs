@@ -932,10 +932,31 @@ pub fn update_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let hwnd = args.word(&engine.system());
 
-        engine.update_window(hwnd).await?;
-        Ok(Answer::Nothing)
+        // What is left in DX:AX: nought for no window, as the check of the
+        // handle fails (`USER.EXE` seg1 `a963`-`a966`); else CDEFh in AX
+        // (seg1 `4415`) and, where nothing was painted, the offset of the
+        // export's own return in DX (`a960`, `a969`). Where a window was
+        // painted DX is what the painting left, not followed (`updax`).
+        if engine.system().window_named(hwnd).is_none() {
+            return Ok(Answer::Dword(0));
+        }
+
+        let painted = engine.update_now(hwnd, true).await?;
+
+        Ok(if painted {
+            Answer::Word(UPDATE_WINDOW_AX)
+        } else {
+            Answer::Dword(UPDATE_WINDOW_DX << 16 | u32::from(UPDATE_WINDOW_AX))
+        })
     })
 }
+
+/// What `UpdateWindow` leaves in AX (`USER.EXE` seg1 `4415`), and in DX
+/// where it painted nothing: the offset of its export's return, `retf 2`
+/// at seg1 `a96e`, pushed at `a960` and popped at `a969` (**recorded** by
+/// `updax`).
+const UPDATE_WINDOW_AX: u16 = 0xcdef;
+const UPDATE_WINDOW_DX: u32 = 0xa96e;
 
 const WS_EX_TRANSPARENT: u32 = 0x0000_0020;
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
@@ -1006,24 +1027,25 @@ impl Engine {
     /// `44d8`-`4503`). Before a window with an update region is painted,
     /// each window it is in that is due, up to one with `WS_CLIPCHILDREN`,
     /// is validated where the window is (`4515`).
-    pub async fn update_window(&self, hwnd: u16) -> Result<(), Stop> {
+    pub async fn update_window(&self, hwnd: u16) -> Result<bool, Stop> {
         self.update_now(hwnd, true).await
     }
 
-    /// A window painted now, and with `children` the windows in it
+    /// Whether a paint was sent. A window painted now, and with `children` the windows in it
     /// (`USER.EXE` seg1 `441d`): `UpdateWindow`, and `RedrawWindow`'s
     /// `RDW_UPDATENOW` without `RDW_NOCHILDREN` or with it (`3f93`-`3fad`).
     /// A window is due where it has an update region or a paint of its own
     /// (`4453`-`445d`).
-    pub async fn update_now(&self, hwnd: u16, children: bool) -> Result<(), Stop> {
+    pub async fn update_now(&self, hwnd: u16, children: bool) -> Result<bool, Stop> {
+        let mut painted = false;
         let root = {
             let system = self.system();
             let Some(index) = system.window_named(hwnd) else {
-                return Ok(());
+                return Ok(false);
             };
 
             if system.painted(index).ex_style & WS_EX_TRANSPARENT != 0 && system.behind_due(index) {
-                return Ok(());
+                return Ok(false);
             }
 
             index
@@ -1069,6 +1091,7 @@ impl Engine {
                 // Noted as sent, until `BeginPaint` takes the note off (seg1
                 // `447f`, `764c`).
                 self.system().painted_mut(index).paint_sent = true;
+                painted = true;
                 self.send_message(handle, message, wparam, &mut Param::Value(0))
                     .await?;
 
@@ -1107,6 +1130,6 @@ impl Engine {
             }
         }
 
-        Ok(())
+        Ok(painted)
     }
 }

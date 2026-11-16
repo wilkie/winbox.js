@@ -2191,6 +2191,17 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "irqtick:realmode",
         "a program's real-mode code is never run: its real-mode vector is never called",
     ),
+    // What UpdateWindow leaves in DX where it painted: a selector the
+    // painting left (06D7h in standard mode, 047Fh in enhanced), which
+    // WinBox's painting, done by the host, does not leave.
+    (
+        "updax:dx",
+        "DX after UpdateWindow painted is what USER's painting left, a selector, not followed",
+    ),
+    (
+        "enhanced/updax:dx",
+        "DX after UpdateWindow painted is what USER's painting left, a selector, not followed",
+    ),
 ];
 
 /// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the
