@@ -224,8 +224,8 @@ impl Descriptors {
     /// less (`223f`); a smaller block its limit in bytes, the bit cleared
     /// (`2323`). `limit` is the last byte the selector reaches. **Recorded**
     /// by `gbigsel`, in both modes: `LSL` 14DFFFh with the bit set for a
-    /// block of 14E000h, FFFFFh with it for one of 100000h, FFFDFh without
-    /// it for one of FFFE0h, and the bit cleared again for a block shrunk
+    /// block of 14E000h, `FFFFFh` with it for one of 100000h, `FFFDFh` without
+    /// it for one of `FFFE0h`, and the bit cleared again for a block shrunk
     /// to 80000h.
     pub fn set_block_limit(memory: &mut Memory, index: usize, limit: u32, granular: bool) {
         let at = entry(index);
