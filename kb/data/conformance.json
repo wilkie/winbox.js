@@ -2537,8 +2537,8 @@
    },
    "cmpxchg": {
     "total": 24,
-    "agreed": 24,
-    "disagreed": 0,
+    "agreed": 0,
+    "disagreed": 24,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -2572,13 +2572,16 @@
    },
    "xadd": {
     "total": 14,
-    "agreed": 14,
-    "disagreed": 0,
+    "agreed": 0,
+    "disagreed": 14,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "xadd": "DOSBox's XADD sets no flags (core_normal/prefix_0f.h 575-590, prefix_66_0f.h 434-440), where the 80486 sets them as ADD",
+   "cmpxchg": "DOSBox's CMPXCHG sets ZF alone (core_normal/prefix_0f.h 359-411, prefix_66_0f.h 238-263), where the 80486 sets the flags as CMP"
+  }
  },
  "ctlcolor": {
   "probe": "ctlcolor",
@@ -8066,8 +8069,8 @@
    },
    "cmpxchg": {
     "total": 24,
-    "agreed": 24,
-    "disagreed": 0,
+    "agreed": 0,
+    "disagreed": 24,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8101,13 +8104,16 @@
    },
    "xadd": {
     "total": 14,
-    "agreed": 14,
-    "disagreed": 0,
+    "agreed": 0,
+    "disagreed": 14,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "xadd": "DOSBox's XADD sets no flags (core_normal/prefix_0f.h 575-590, prefix_66_0f.h 434-440), where the 80486 sets them as ADD",
+   "cmpxchg": "DOSBox's CMPXCHG sets ZF alone (core_normal/prefix_0f.h 359-411, prefix_66_0f.h 238-263), where the 80486 sets the flags as CMP"
+  }
  },
  "enhanced/diskmed": {
   "probe": "diskmed",

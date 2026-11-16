@@ -59,7 +59,8 @@ pub enum Model {
     /// leaves it at, `CPU_ARCHTYPE_MIXED` (`cpu/cpu.cpp` 2352-2355): the
     /// 486's instructions, CPUID as a 486DX answers it, RDTSC as a
     /// Pentium's, and EFLAGS' AC and ID bits (`i486.rs`, **recorded** by
-    /// `cpu486` in both modes).
+    /// `cpu486` in both modes); the flags after `XADD` and `CMPXCHG` as the
+    /// 80486 sets them, not as DOSBox does.
     Mixed,
 }
 

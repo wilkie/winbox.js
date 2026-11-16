@@ -809,7 +809,8 @@ mod protected_mode {
 mod the_oracles_486 {
     //! The instructions after the 386's under `Model::Mixed`, DOSBox
     //! 0.74-3's `cputype=auto`, as the `cpu486` probe recorded them in both
-    //! modes (`i486.rs`): the cases here are its records'.
+    //! modes (`i486.rs`): the cases here are its records', but for the
+    //! flags after `XADD` and `CMPXCHG`, which are the 80486 manual's.
 
     use super::*;
     use winbox_cpu::{DX, Model};
@@ -838,8 +839,8 @@ mod the_oracles_486 {
     }
 
     #[test]
-    fn xadd_leaves_the_flags() {
-        // xadd al, cl; xadd [bx], ecx
+    fn xadd_sets_the_flags_as_add() {
+        // xadd al, cl; xadd [bx], ecx: 80h + 80h, CF, PF, ZF and OF set
         let mut cpu = mixed(&[0x0f, 0xc0, 0xc8, 0x66, 0x0f, 0xc1, 0x0f]);
 
         set_reg32(&mut cpu, AX, 0x1234_5680);
@@ -849,7 +850,7 @@ mod the_oracles_486 {
             (reg32(&cpu, AX), reg32(&cpu, CX)),
             (0x1234_5600, 0xabcd_ef80)
         );
-        assert_eq!(cpu.flags & ARITH, 0);
+        assert_eq!(cpu.flags & ARITH, 0x0845);
 
         cpu.regs[BX] = 0x100;
         cpu.bus.0[0x10100..0x10104].copy_from_slice(&0x8000_0000u32.to_le_bytes());
@@ -858,12 +859,13 @@ mod the_oracles_486 {
         step(&mut cpu);
         assert_eq!(cpu.bus.0[0x10100..0x10104], [0, 0, 0, 0]);
         assert_eq!(reg32(&cpu, CX), 0x8000_0000);
-        assert_eq!(cpu.flags & ARITH, ARITH);
+        assert_eq!(cpu.flags & ARITH, 0x0845);
     }
 
     #[test]
-    fn cmpxchg_sets_zf_alone() {
-        // cmpxchg cx, dx; cmpxchg [bx], edx
+    fn cmpxchg_sets_the_flags_as_cmp() {
+        // cmpxchg cx, dx (1000h against 2000h: CF, PF and SF); cmpxchg
+        // [bx], edx (equal: PF and ZF)
         let mut cpu = mixed(&[0x0f, 0xb1, 0xd1, 0x66, 0x0f, 0xb1, 0x17]);
 
         set_reg32(&mut cpu, AX, 0x1122_1000);
@@ -872,7 +874,7 @@ mod the_oracles_486 {
         cpu.flags |= ARITH;
         step(&mut cpu);
         assert_eq!(reg32(&cpu, AX), 0x1122_2000);
-        assert_eq!(cpu.flags & ARITH, ARITH & !ZF);
+        assert_eq!(cpu.flags & ARITH, 0x0085);
 
         cpu.regs[BX] = 0x100;
         cpu.bus.0[0x10100..0x10104].copy_from_slice(&0x1122_3344u32.to_le_bytes());
@@ -880,7 +882,7 @@ mod the_oracles_486 {
         cpu.flags &= !ARITH;
         step(&mut cpu);
         assert_eq!(cpu.bus.0[0x10100..0x10104], 0x99aa_bbccu32.to_le_bytes());
-        assert_eq!(cpu.flags & ARITH, ZF);
+        assert_eq!(cpu.flags & ARITH, 0x0044);
     }
 
     #[test]

@@ -6,23 +6,28 @@
 //! illegal_opcode`). The recorder's DOSBox translates protected-mode code
 //! with its dynamic core, `core_dynrec`, which translates none of these and
 //! gives each to the normal core (`core_dynrec/decoder.h` 172-250,
-//! `core_dynrec.cpp` 273-279): the normal core's are the oracle's, flags and
-//! all. **Recorded** by `cpu486`, in standard and in 386 enhanced mode
-//! alike, at a program's privilege, 3.
+//! `core_dynrec.cpp` 273-279): the normal core's are the oracle's.
+//! **Recorded** by `cpu486`, in standard and in 386 enhanced mode alike, at
+//! a program's privilege, 3; where DOSBox's answer is a quirk of its own
+//! and not the processor's -- the flags after `XADD` and `CMPXCHG` --
+//! WinBox follows the 80486's manual.
 //!
 //! - `BSWAP` of a double word reverses its bytes; of a word, it clears it
 //!   (`prefix_0f.h` 591-614, `prefix_66_0f.h` 442-465; `BSWAPW`,
 //!   `cpu/instructions.h` 959-960), the word above kept.
 //! - `XADD` writes the sum to the destination and the destination as it
-//!   was to the source, and leaves the flags as they were
-//!   (`prefix_0f.h` 575-590, `prefix_66_0f.h` 434-440): no flags at all,
-//!   where the 486 sets them as `ADD`.
-//! - `CMPXCHG` compares AL, AX or EAX with the destination: equal, it
-//!   writes the source to the destination; unequal, it loads the
-//!   accumulator from the destination, and writes the destination back to
-//!   memory as it was. ZF says which; no other flag changes
-//!   (`prefix_0f.h` 359-411, `prefix_66_0f.h` 238-263), where the 486 sets
-//!   them as `CMP`.
+//!   was to the source, and sets the flags as `ADD` does; `CMPXCHG`
+//!   compares AL, AX or EAX with the destination and sets the flags as
+//!   `CMP` does: equal, it writes the source to the destination; unequal,
+//!   it loads the accumulator from the destination, and writes the
+//!   destination back to memory as it was. Those flags are the 80486's
+//!   (**documented**, its manual), not the oracle's: DOSBox's normal core
+//!   sets none after `XADD` (`prefix_0f.h` 575-590, `prefix_66_0f.h`
+//!   434-440) and ZF alone after `CMPXCHG` (`prefix_0f.h` 359-411,
+//!   `prefix_66_0f.h` 238-263), an emulator's quirk, which WinBox does not
+//!   follow (the owner's rule: the hardware over DOSBox's quirks, as for
+//!   the segment checks of 2026-11-09). `cpu486`'s records of their flags
+//!   are known gaps (`kb/topics/the-processor.md`).
 //! - `INVD`, `WBINVD` and `INVLPG` are a general protection fault, error
 //!   code nought, at any privilege but 0 in protected mode, and else do
 //!   nothing the core keeps (`prefix_0f.h` 145-149, 91-94). `INVLPG` of a
@@ -36,7 +41,7 @@
 //!   millisecond (`prefix_0f.h` 228-234): the host's counter
 //!   ([`crate::Cpu::time_stamp`]), on by one an instruction.
 
-use crate::{AC_HIGH, AX, BX, Bus, CS, CX, Cpu, DX, Exit, ID_HIGH, Model, Place};
+use crate::{AC_HIGH, AX, Alu, BX, Bus, CS, CX, Cpu, DX, Exit, ID_HIGH, Model, Place};
 
 /// What `CPUID` answers with EAX nought: the highest leaf, 1, and
 /// `GenuineIntel` in EBX, EDX and ECX.
@@ -117,71 +122,77 @@ impl<B: Bus> Cpu<B> {
                 self.set_reg32(CX, answer[2]);
                 self.set_reg32(DX, answer[3]);
             }
+            // CMPXCHG: the accumulator compared with the destination, the
+            // flags as `CMP` sets them.
             0xb0 => {
                 let (reg, place) = self.modrm()?;
                 let value = self.get8(place)?;
-                let equal = self.reg8(AX) == value;
+                let accumulator = self.reg8(AX);
 
-                if equal {
+                self.alu(Alu::Cmp, u32::from(accumulator), u32::from(value), 8);
+
+                if accumulator == value {
                     self.set8(place, self.reg8(reg))?;
                 } else {
                     self.set8(place, value)?;
                     self.set_reg8(AX, value);
                 }
-
-                self.set_zero(equal);
             }
             0xb1 if self.wide => {
                 let (reg, place) = self.modrm()?;
                 let value = self.get32(place)?;
-                let equal = self.reg32(AX) == value;
+                let accumulator = self.reg32(AX);
 
-                if equal {
+                self.alu(Alu::Cmp, accumulator, value, 32);
+
+                if accumulator == value {
                     self.set32(place, self.reg32(reg))?;
                 } else {
                     self.set32(place, value)?;
                     self.set_reg32(AX, value);
                 }
-
-                self.set_zero(equal);
             }
             0xb1 => {
                 let (reg, place) = self.modrm()?;
                 let value = self.get16(place)?;
-                let equal = self.regs[AX] == value;
+                let accumulator = self.regs[AX];
 
-                if equal {
+                self.alu(Alu::Cmp, u32::from(accumulator), u32::from(value), 16);
+
+                if accumulator == value {
                     self.set16(place, self.regs[reg])?;
                 } else {
                     self.set16(place, value)?;
                     self.regs[AX] = value;
                 }
-
-                self.set_zero(equal);
             }
+            // XADD: the sum to the destination, the flags as `ADD` sets them.
             0xc0 => {
                 let (reg, place) = self.modrm()?;
                 let source = self.reg8(reg);
                 let value = self.get8(place)?;
+                let sum = self.alu(Alu::Add, u32::from(value), u32::from(source), 8) as u8;
 
                 self.set_reg8(reg, value);
-                self.set8(place, value.wrapping_add(source))?;
+                self.set8(place, sum)?;
             }
             0xc1 if self.wide => {
                 let (reg, place) = self.modrm()?;
                 let source = self.reg32(reg);
                 let value = self.get32(place)?;
+                let sum = self.alu(Alu::Add, value, source, 32);
 
                 self.set_reg32(reg, value);
-                self.set32(place, value.wrapping_add(source))?;
+                self.set32(place, sum)?;
             }
             0xc1 => {
                 let (reg, place) = self.modrm()?;
                 let source = self.regs[reg];
                 let value = self.get16(place)?;
+                let sum = self.alu(Alu::Add, u32::from(value), u32::from(source), 16) as u16;
 
                 self.regs[reg] = value;
-                self.set16(place, value.wrapping_add(source))?;
+                self.set16(place, sum)?;
             }
             // BSWAP, the register in the opcode's low three bits.
             _ if self.wide => {
