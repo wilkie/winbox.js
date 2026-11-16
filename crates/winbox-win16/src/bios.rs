@@ -360,13 +360,15 @@ impl System {
                 Status::Ah(0, false)
             }
             0x01 if *status != 0 => Status::Ah(*status, true),
-            0x01 => Status::Ah(0, false),
             0x04 if al == 0 => Status::Ah(1, true),
             0x04 if inactive => {
                 *status = 1;
                 Status::Carry
             }
-            0x04 => Status::Ah(0, false),
+            // The last status nought; a verify, which reads nothing
+            // (377-405); recalibrating, and the type set for a format
+            // (439-447).
+            0x01 | 0x04 | 0x11 | 0x17 => Status::Ah(0, false),
             // A drive's parameters (406-438).
             0x08 if inactive => {
                 *status = 7;
@@ -393,8 +395,6 @@ impl System {
                 es_back = true;
                 Status::Ah(0, false)
             }
-            // Recalibrating, and the type set for a format (439-447).
-            0x11 | 0x17 => Status::Ah(0, false),
             _ => Status::Ah(0xff, true),
         };
 
