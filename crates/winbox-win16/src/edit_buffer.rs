@@ -1,8 +1,11 @@
 //! An edit control's memory in the program's own local heap.
 //!
 //! **Read out of `USER.EXE`**: the edit control runs with DS set to the
-//! instance handle it was made with, so what it allocates is in that
-//! instance's local heap -- a program's, or a library's (seg1 `27a7`). At
+//! window's instance as it is when the message comes (`WND` 1Eh, its
+//! lowest bit set, seg1 `27ad`, `27fc`), so what it allocates is in that
+//! instance's local heap -- a program's, a library's, or a block a
+//! superclass made a heap and set as the instance before it handed
+//! `WM_NCCREATE` on, as Visual Basic 1.0's text box does (probe `edinst`). At
 //! `WM_NCCREATE` it takes its own data, 62h bytes (`LMEM_ZEROINIT`); a
 //! multi-line one a table of widths, 200h bytes; and the text, a moveable
 //! block of 20h noughts (seg27 `0056`, `0114`). A multi-line one's line
@@ -50,7 +53,11 @@ pub struct EditBuffer {
 
 impl System {
     /// The data segment an instance handle stands for: a program's or a
-    /// library's; nought for none.
+    /// library's; else the segment of the handle itself, where it has a
+    /// local heap, as USER loads DS with the instance and its lowest bit
+    /// set, whatever it is (seg1 `27fc`-`27ff`): a Visual Basic 1.0 text
+    /// box's is a block of its own made a heap (`VBRUN100.DLL` seg58
+    /// `0321`-`036b`). Nought for none.
     pub(crate) fn instance_selector(&self, instance: u16) -> u16 {
         let module = match self.handles.resolve_module(instance) {
             Some(Object::Task(program)) => Some(program),
@@ -58,9 +65,13 @@ impl System {
             _ => None,
         };
 
-        module
-            .and_then(|module| self.modules[module].data())
-            .map_or(0, segment_selector)
+        match module {
+            Some(module) => self.modules[module].data().map_or(0, segment_selector),
+            None if instance != 0 && self.heaps.contains_key(&index_for(instance)) => {
+                segment_selector(index_for(instance))
+            }
+            None => 0,
+        }
     }
 
     /// Takes an edit control's memory in its instance's heap, where it has
@@ -226,5 +237,30 @@ impl System {
         self.follow_growth(segment);
         self.control_at(index).buffer = Some(buffer);
         Some(text)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use winbox_machine::{handle_for, index_for, segment_selector};
+
+    use crate::memory::global_alloc_handle;
+    use crate::system::System;
+
+    /// A block of `GlobalAlloc`'s made a local heap, as a Visual Basic 1.0
+    /// text box makes its instance (`VBRUN100.DLL` seg58 `0321`-`036b`;
+    /// probe `edinst`): the instance stands for the block's own segment,
+    /// once it has a heap.
+    #[test]
+    fn a_block_with_a_heap_is_an_instance_of_its_own() {
+        let mut system = System::new();
+        let handle = global_alloc_handle(&mut system, 0x0042, 0x100);
+        let index = index_for(handle);
+
+        assert_ne!(handle, 0);
+        assert_eq!(handle, handle_for(index));
+        assert_eq!(system.instance_selector(handle), 0, "no heap yet");
+        assert!(system.local_init(index, 0, 0xff));
+        assert_eq!(system.instance_selector(handle), segment_selector(index));
     }
 }

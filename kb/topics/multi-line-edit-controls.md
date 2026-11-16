@@ -2,7 +2,7 @@
 kind: topic
 name: Multi-line edit controls
 summary: How Windows 3.1's multi-line edit control, Notepad's, breaks and wraps its lines, moves between them, scrolls, paints and answers about its lines — read out of USER.EXE and measured on four displays.
-probes: [mledit, editdbl, editundo, mldlg]
+probes: [mledit, editdbl, editundo, mldlg, edinst]
 ---
 
 [[measured]] [[probe:mledit]] makes two multi-line edit controls in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -52,7 +52,14 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 
 ## The text in the program's memory
 
-- [[read out]] An edit control runs with DS set to the instance handle it was made with. What it allocates is therefore in that instance's local heap, a program's or a library's (`USER.EXE` seg1 `27a7`).
+- [[read out]] An edit control runs with DS set to the window's instance, the word USER keeps at 1Eh of the window, with its lowest bit set. USER puts it in AX for every call of the window's procedure, by `SendMessage` (`USER.EXE` seg1 `27ad`-`27b0`) and by `CallWindowProc` (`27fc`-`27ff`), and its own procedures take AX as DS (seg26 `0000`-`0006`). What the control allocates is therefore in that instance's local heap, a program's or a library's. It is the window's instance as it is when the message comes, not the `CREATESTRUCT`'s.
+- [[read out]] A Visual Basic 1.0 text box gives each multi-line control a heap of its own. At `WM_NCCREATE`, before it hands the message on to the edit control's procedure, it does the following (`VBRUN100.DLL` seg58 `0321`-`036b`):
+  - it takes a moveable block of 256 bytes (`GMEM_MOVEABLE | GMEM_ZEROINIT`), locks it, and makes it a local heap with `LocalInit`;
+  - it sets the window's instance to the block with `SetWindowWord(GWW_HINSTANCE)`, and the `CREATESTRUCT`'s too.
+
+  Later it asks for the text with `EM_GETHANDLE`, finds the block from the window's instance with `GlobalHandle`, and reads the handle's word in the block (seg58 `0162`-`0195`, seg78 `0036`).
+
+- [[measured]] [[probe:edinst]] makes such a superclass of `Edit` four ways. Where the window's instance is the block, with or without the `CREATESTRUCT`'s, the control's memory is in the block: `EM_GETHANDLE`'s handle is BAh there, its text is at the offset that handle holds, and the block has grown to 928 bytes. Where only the `CREATESTRUCT`'s is the block, or neither, the memory is in the probe's own heap, and the block keeps its 256 bytes. winbox.js agrees with all twelve records. It had taken the memory in the program's heap for every way. Four Visual Basic 1.0 programs then read the handle in the block and stopped with a general protection fault in `VBRUN100.DLL` at 004E:0042 (seg78 `0042`): `win3_eggcartn`, `MEDLEY_SE230240`, `MEDLEY_SEC10003` and `win3_quiknote`.
 - [[read out]] At `WM_NCCREATE` it takes the following blocks (seg27 `0056`, `0114`):
   - its own data, 62h bytes;
   - for a multi-line control, a table of widths, 200h bytes;

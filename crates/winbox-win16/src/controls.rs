@@ -514,8 +514,13 @@ impl System {
     /// the window's first message, `WM_NCCREATE`, as `CreateWindow` makes it
     /// for USER's own classes. An edit control draws its own border, inside
     /// its client area (`USER.EXE` seg27 `013e`), and takes its memory in
-    /// the heap of the instance its `CREATESTRUCT` names.
-    fn adopt(&mut self, kind: &str, index: usize, lparam: &Param) {
+    /// the heap of the window's instance as it is then: `CallWindowProc`
+    /// calls the procedure with the window's own (`WND` 1Eh) in AX, which
+    /// USER's procedures take as DS (seg1 `27f9`-`2814`), not the
+    /// `CREATESTRUCT`'s. A Visual Basic 1.0 text box sets both to a block
+    /// of its own before it hands `WM_NCCREATE` on (`VBRUN100.DLL` seg58
+    /// `035a`-`036b`).
+    fn adopt(&mut self, kind: &str, index: usize) {
         let window = self.windows[index].as_mut().expect("a window");
         let mut control = ControlState::new(kind, window.style, &window.title);
 
@@ -528,17 +533,9 @@ impl System {
         window.control = Some(control);
 
         if kind == "EDIT" {
-            let instance = match lparam {
-                Param::Value(0) => 0,
-                Param::Value(far) => {
-                    let at = (far & 0xffff_0000) | (far.wrapping_add(4) & 0xffff);
-
-                    self.read_word(at)
-                }
-                Param::Struct(bytes) => bytes
-                    .get(4..6)
-                    .map_or(0, |word| u16::from_le_bytes([word[0], word[1]])),
-            };
+            let instance = self.windows[index]
+                .as_ref()
+                .map_or(0, |window| window.instance);
             let multiline = self.control_at(index).style & ES_MULTILINE != 0;
 
             self.create_edit_buffer(index, instance, multiline);
@@ -619,7 +616,7 @@ impl Engine {
                 .as_ref()
                 .is_some_and(|window| window.control.is_none())
             {
-                system.adopt(kind, index, lparam);
+                system.adopt(kind, index);
             }
         }
 

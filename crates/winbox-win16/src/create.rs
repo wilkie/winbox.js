@@ -811,18 +811,27 @@ impl Engine {
             return Ok(0);
         }
 
-        // An edit control's memory, taken at its `WM_NCCREATE` in its
-        // instance's heap (`edit_buffer.rs`).
+        // An edit control's memory, taken at its `WM_NCCREATE` in the heap
+        // of the window's instance as it is then (`edit_buffer.rs`), where
+        // a superclass handing the message on has not had it taken already
+        // (`controls.rs`, `adopt`).
         {
             let mut system = self.system();
             let edit = system.windows[index]
                 .as_ref()
-                .and_then(|window| window.control.as_ref())
-                .filter(|control| control.class_name == "EDIT")
-                .map(|control| control.style & crate::edit::ES_MULTILINE != 0);
+                .and_then(|window| {
+                    window
+                        .control
+                        .as_ref()
+                        .map(|control| (control, window.instance))
+                })
+                .filter(|(control, _)| control.class_name == "EDIT" && control.buffer.is_none())
+                .map(|(control, instance)| {
+                    (control.style & crate::edit::ES_MULTILINE != 0, instance)
+                });
 
-            if let Some(multiline) = edit {
-                system.create_edit_buffer(index, made.instance, multiline);
+            if let Some((multiline, instance)) = edit {
+                system.create_edit_buffer(index, instance, multiline);
             }
         }
 
