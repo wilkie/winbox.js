@@ -19,7 +19,9 @@ pub fn segment_block_size(executable: &Executable, number: usize) -> u32 {
     let header = &executable.header;
     let segment = &executable.segments[number - 1];
     let extra = if number == usize::from(header.auto_data_segment) {
-        u32::from(header.initial_stack_size) + u32::from(header.initial_heap_size)
+        let (stack, heap) = crate::module_database::stack_and_heap(header);
+
+        u32::from(stack) + u32::from(heap)
     } else {
         0
     };
@@ -69,6 +71,14 @@ pub struct Module {
     pub usage: u32,
     /// The libraries it counted when it was loaded, to be let go with it.
     pub brought: Vec<Held>,
+    /// The modules its references name that were loaded under another
+    /// name -- a library whose file's module name is not the one it was
+    /// imported by, as a `CTL3D.DLL` that is `CTL3DV2` -- each by the name
+    /// imported and the module loaded for it. KERNEL keeps each
+    /// reference's module as the handle `LoadModule` answered for its
+    /// name and `.DLL` (`KRNL386.EXE` seg2 `1923`-`19b6`), and binds an
+    /// import by that handle, not by the name (seg1 `73af`-`73c6`).
+    pub imported_as: Vec<(String, usize)>,
     /// A library's instance, as `LoadLibrary` answers it and its entry
     /// point is given it, and its module's handle: another number, for the
     /// same library. Nought for a program.
@@ -160,6 +170,16 @@ pub enum Held {
 const STUBS_ONLY: [&str; 6] = crate::own_modules::OWN_WITH_FILE;
 
 impl System {
+    /// The module a module's reference of this name was loaded as, where
+    /// its file's module name is another (`Module::imported_as`).
+    pub(crate) fn imported_by(&self, module: usize, name: &str) -> Option<usize> {
+        self.modules[module]
+            .imported_as
+            .iter()
+            .find(|(imported, _)| imported.eq_ignore_ascii_case(name))
+            .map(|&(_, library)| library)
+    }
+
     /// The module loaded from its file under a name, without regard to case.
     pub fn module_named(&self, name: &str) -> Option<usize> {
         self.modules
@@ -357,6 +377,14 @@ impl System {
     ) {
         for name in Self::import_names(&self.modules[module].executable) {
             if let Some(held) = self.import_one(&name, Some(module), beside, order) {
+                if let Held::Library(library) = held
+                    && !self.modules[library].name.eq_ignore_ascii_case(&name)
+                {
+                    self.modules[module]
+                        .imported_as
+                        .push((name.clone(), library));
+                }
+
                 self.modules[module].brought.push(held);
             }
         }
@@ -391,6 +419,17 @@ impl System {
             // be (`own_modules::use_own`).
             return crate::own_modules::use_own(self, name, beside, order);
         };
+
+        // A library already loaded from that file under its own module
+        // name, counted once more: `LoadModule` looks among the modules
+        // for the file before it reads one (`KRNL386.EXE` seg2 `172d`-
+        // `1736`, seg1 `519d`-`51e3`), as `LoadLibrary` finds one.
+        if let Some(library) = self.modules.iter().position(|module| {
+            module.path.eq_ignore_ascii_case(&path) && module.executable.header.library()
+        }) {
+            self.modules[library].usage += 1;
+            return Some(Held::Library(library));
+        }
         let executable = Executable::parse(bytes).ok()?;
 
         Some(Held::Library(
@@ -568,7 +607,11 @@ impl System {
         let names = self.modules[module].executable.module_references.clone();
 
         for (at, name) in names.iter().enumerate() {
-            let handle = crate::kernel::module_handle_named(self, &name.to_ascii_uppercase());
+            let name = name.to_ascii_uppercase();
+            let handle = match self.imported_by(module, &name) {
+                Some(library) => self.modules[library].handle,
+                None => crate::kernel::module_handle_named(self, &name),
+            };
 
             self.cpu
                 .bus
@@ -665,6 +708,7 @@ impl System {
             started: false,
             usage: 1,
             brought: Vec::new(),
+            imported_as: Vec::new(),
             instance: 0,
             handle: 0,
             own: None,
