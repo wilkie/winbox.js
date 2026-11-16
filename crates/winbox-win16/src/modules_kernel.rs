@@ -601,6 +601,7 @@ pub fn load_library(engine: &Engine, mut args: Args) -> Later<'_> {
 /// the file's before the dot (`loadname`). A name alone is looked for where
 /// KERNEL looks (`search.rs`), the task's program's directory fourth
 /// (`search`). Its entry point runs at once.
+#[allow(clippy::too_many_lines)]
 pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u16, Stop> {
     let slash = [text.rfind('\\'), text.rfind('/'), text.rfind(':')]
         .into_iter()
@@ -712,6 +713,29 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         let Ok(executable) = Executable::parse(bytes) else {
             return Ok(20);
         };
+
+        // A program's file, not a library's (flag 8000h of its header
+        // clear), asked for with `LoadLibrary`'s parameter block of
+        // FFFF:FFFF: 5, before its imports are looked for, and nothing of
+        // it kept (`KRNL386.EXE` seg2 `17e5`-`1800`; `execlib`).
+        if !executable.header.library() {
+            return Ok(5);
+        }
+
+        // Another file of KERNEL's (KRNL286.EXE, or a copy of KRNL386.EXE
+        // under another name) answers nought, where a copy of another
+        // library loads as a module of its own (`krnlfile`). Windows
+        // answers nought where linking the new database into the list of
+        // modules fails (`KRNL386.EXE` seg2 `183a`-`1857`, `0ba3`), which
+        // sizes the reserve for discardable code by the largest such
+        // segment of any module (seg3 `044e`, seg1 `2cd8`).
+        if executable
+            .module_name()
+            .is_some_and(|module| module.eq_ignore_ascii_case("KERNEL"))
+        {
+            return Ok(0);
+        }
+
         let mut order = Vec::new();
         let library = system.load_found(executable, &base, &path, beside.as_deref(), &mut order);
 
@@ -1048,5 +1072,25 @@ mod kept_tests {
         assert_eq!(load("C:\\WINDOWS\\SYSTEM\\TIMER.DRV"), instance("TIMER"));
         assert!(instance("MCIWAVE") >= 32);
         assert!(load("MCICDA.DRV") < 32);
+    }
+
+    /// A program's file asked for as a library answers 5, and nothing of it
+    /// is kept: its module is not found after (`KRNL386.EXE` seg2
+    /// `17e5`-`1800`; `execlib`).
+    #[test]
+    fn a_programs_file_loaded_as_a_library_answers_5() {
+        let engine = crate::mmsystem::device_tests::machine();
+        let mut drive = winbox_machine::MemoryDrive::new();
+
+        assert!(drive.add_file("\\PROGRAM.EXE", crate::mmsystem::device_tests::program(), 0));
+        engine.system().files.mount('C', drive);
+
+        let modules = engine.system().modules.len();
+        let answer = engine
+            .run_now(load_library_named(&engine, "C:\\PROGRAM.EXE"))
+            .unwrap();
+
+        assert_eq!(answer, 5);
+        assert_eq!(engine.system().modules.len(), modules);
     }
 }

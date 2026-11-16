@@ -35,7 +35,7 @@ pub(crate) const PROGRAM_DATA: usize = 45;
 /// A program of two segments, as `first_call.rs` makes one: code, fixed,
 /// that far-calls `InitTask` and halts, with room past it for a callback;
 /// and 16 bytes of data.
-fn program() -> Vec<u8> {
+pub(crate) fn program() -> Vec<u8> {
     let mut file = vec![0u8; 0x1a0];
     let ne = 0x80;
     let put = |file: &mut Vec<u8>, at: usize, value: u16| {
