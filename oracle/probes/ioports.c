@@ -31,6 +31,10 @@
  *   4 from 0000h, gated on through port 61h's bit 0, read twice a while
  *   apart: whether the first read is not nought and the second below the
  *   first; then its status by the read-back command (E8h).
+ * * `counter0`: counter 0 as Windsock reads it, set to mode 2 from 0000h,
+ *   latched and read twice a while apart: whether the first is not nought
+ *   and the second another; its status by the read-back command (E2h);
+ *   then put back in mode 3 from 0000h.
  */
 
 #include "probe.h"
@@ -300,6 +304,68 @@ static void counter2(void)
     probe("counter2", "status", probeResult);
 }
 
+/* Counter 0 of the 8253 as Windsock reads it for a finer time than a
+ * tick: set to mode 2 from 0000h, then latched (control word 00h) and read
+ * twice a while apart; then its status by the read-back command; then put
+ * back in mode 3 from 0000h, as DOSBox starts it. */
+static void counter0(void)
+{
+    BYTE low1, high1, low2, high2, status;
+    WORD first, second;
+
+    excCalls = 0;
+    _asm {
+        cli
+        mov al, 34h
+        out 43h, al
+        xor al, al
+        out 40h, al
+        out 40h, al
+        mov cx, 200
+    wait1:
+        loop wait1
+        xor al, al
+        out 43h, al
+        in al, 40h
+        mov low1, al
+        in al, 40h
+        mov high1, al
+        mov cx, 200
+    wait2:
+        loop wait2
+        xor al, al
+        out 43h, al
+        in al, 40h
+        mov low2, al
+        in al, 40h
+        mov high2, al
+        mov al, 0E2h
+        out 43h, al
+        in al, 40h
+        mov status, al
+        mov al, 36h
+        out 43h, al
+        xor al, al
+        out 40h, al
+        out 40h, al
+        sti
+    }
+
+    if (excCalls) {
+        wsprintf(probeResult, "fault calls=%u vector=%02x code=%04x", excCalls, excVector,
+                 excCode);
+        probe("counter0", "mode 2", probeResult);
+        return;
+    }
+
+    first = (WORD)(low1 | (high1 << 8));
+    second = (WORD)(low2 | (high2 << 8));
+    wsprintf(probeResult, "started=%u moved=%u", first != 0, second != first);
+    probe("counter0", "mode 2 from 0000h, two latched reads", probeResult);
+    wsprintf(probeResult, "%02x", status);
+    probe("counter0", "status", probeResult);
+}
+
 static void retrace(void)
 {
     DWORD reads;
@@ -383,6 +449,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     cmos();
     retrace();
     counter2();
+    counter0();
 
     reachClose();
 

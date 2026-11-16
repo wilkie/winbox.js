@@ -8820,11 +8820,18 @@
   "probe": "ioports",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 79,
+  "records": 81,
   "functions": {
    "cmos": {
     "total": 64,
     "agreed": 64,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "counter0": {
+    "total": 2,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -16189,11 +16196,18 @@
   "probe": "ioports",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 79,
+  "records": 81,
   "functions": {
    "cmos": {
     "total": 64,
     "agreed": 64,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "counter0": {
+    "total": 2,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

@@ -38,7 +38,8 @@ const CMOS_DATA: u16 = 0x71;
 const DMA_CHANNEL_0_ADDRESS: u16 = 0x00;
 const DMA_CHANNEL_0_COUNT: u16 = 0x01;
 
-/// The 8253 timer's counter 2 and its control port (`pit.rs`).
+/// The 8253 timer's counters 0 to 2 and its control port (`pit.rs`).
+const COUNTER_0: u16 = 0x40;
 const COUNTER_2: u16 = 0x42;
 const TIMER_CONTROL: u16 = 0x43;
 
@@ -118,8 +119,10 @@ impl System {
             // of the two bytes the controller's flip-flop gives (221-241)
             // is nought. **Recorded** by `ioports`, both modes.
             Some(0)
-        } else if port == COUNTER_2 {
-            Some(self.counter2.read(self.clock.precise(self.instructions)))
+        } else if (COUNTER_0..=COUNTER_2).contains(&port) {
+            let now = self.clock.precise(self.instructions);
+
+            Some(self.pit.read(usize::from(port - COUNTER_0), now))
         } else if port == GAME_PORT {
             // No joystick: DOSBox's `read_p201` with neither stick enabled
             // answers every bit set (`hardware/joystick.cpp` 54-87).
@@ -196,30 +199,21 @@ impl System {
                     let byte = (value >> (8 * at)) as u8;
                     let now = self.clock.precise(self.instructions);
 
-                    self.counter2.set_gate(byte & 1 != 0, now);
+                    self.pit.set_gate2(byte & 1 != 0, now);
                     self.system_control = byte;
-                } else if each == COUNTER_2 {
+                } else if each == COUNTER_0 || each == COUNTER_2 {
+                    // 41h has no writer in DOSBox (`timer.cpp` 404).
                     let now = self.clock.precise(self.instructions);
 
-                    self.counter2.write((value >> (8 * at)) as u8, now);
+                    self.pit.write(
+                        usize::from(each - COUNTER_0),
+                        (value >> (8 * at)) as u8,
+                        now,
+                    );
                 } else if each == TIMER_CONTROL {
-                    let byte = (value >> (8 * at)) as u8;
                     let now = self.clock.precise(self.instructions);
 
-                    // Counter 2's control word, or the read-back command
-                    // where it names counter 2, whose status is latched
-                    // only where it names neither counter before it;
-                    // counters 0 and 1 are passed over (`timer.cpp`
-                    // 291-361).
-                    match byte >> 6 {
-                        2 => self.counter2.control(byte, now),
-                        3 if byte & 0x08 != 0 => {
-                            let earlier = if byte & 0x06 != 0 { 0x10 } else { 0 };
-
-                            self.counter2.read_back(byte | earlier, now);
-                        }
-                        _ => {}
-                    }
+                    self.pit.control((value >> (8 * at)) as u8, now);
                 } else if each == PIC_COMMAND {
                     self.interrupt_controller_write((value >> (8 * at)) as u8);
                 }
