@@ -223,7 +223,10 @@ impl System {
         let top = module.data_top();
         let place = |segment: u16| module.translate(segment).map_or(0, segment_selector);
         let (ss, cs) = (place(header.stack_ss), place(header.entry_cs));
-        let stack_size = u32::from(header.initial_stack_size);
+        // The stack and heap as KERNEL keeps them, a program's stack 1400h
+        // at least (`module_database::stack_and_heap`).
+        let (stack, heap) = crate::module_database::stack_and_heap(&header);
+        let stack_size = u32::from(stack);
 
         self.cpu
             .bus
@@ -239,8 +242,8 @@ impl System {
         // `dpmimem`, `dpmiexc` and `irqtick`): the timer's interrupt
         // reaches a handler of its own (`hardware_interrupts.rs`).
         self.cpu.flags |= 0x0200;
-        self.cpu.regs[BX] = header.initial_stack_size;
-        self.cpu.regs[CX] = header.initial_heap_size;
+        self.cpu.regs[BX] = stack;
+        self.cpu.regs[CX] = heap;
         // hModule.
         self.cpu.regs[DI] = 0x88;
         self.cpu.regs[SI] = 0;
