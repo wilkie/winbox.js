@@ -59,6 +59,7 @@ pub mod gdi;
 pub mod get_dc;
 pub mod groups;
 pub mod handles;
+pub mod hardware_interrupts;
 pub mod hooks;
 pub mod host;
 pub mod icon_convert;

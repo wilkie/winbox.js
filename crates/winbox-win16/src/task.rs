@@ -224,6 +224,10 @@ impl System {
             .load_segment(ES, segment_selector(program_segment))?;
         self.cpu.regs[SP] = (top + stack_size) as u16;
         self.cpu.ip = u32::from(header.entry_ip);
+        // Its interrupt flag set, as Windows runs a task (**recorded** by
+        // `dpmimem`, `dpmiexc` and `irqtick`): the timer's interrupt
+        // reaches a handler of its own (`hardware_interrupts.rs`).
+        self.cpu.flags |= 0x0200;
         self.cpu.regs[BX] = header.initial_stack_size;
         self.cpu.regs[CX] = header.initial_heap_size;
         // hModule.

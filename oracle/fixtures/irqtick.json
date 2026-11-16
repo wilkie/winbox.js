@@ -1,0 +1,114 @@
+{
+  "probe": "irqtick",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "vector",
+      "args": "3508h",
+      "result": "code offset=0276 system=0"
+    },
+    {
+      "function": "vector",
+      "args": "3508h owner",
+      "result": "TIMER"
+    },
+    {
+      "function": "vector",
+      "args": "0204h 08h",
+      "result": "cf=0 same=1"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h",
+      "result": "cf=0 nought=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 1Ch",
+      "result": "cf=0 nought=0"
+    },
+    {
+      "function": "hook",
+      "args": "2508h then 3508h",
+      "result": "ours=1"
+    },
+    {
+      "function": "rate",
+      "args": "20 ticks",
+      "result": "ms=about 1099"
+    },
+    {
+      "function": "entry",
+      "args": "stack",
+      "result": "task=1 below=6"
+    },
+    {
+      "function": "entry",
+      "args": "frame",
+      "result": "cs=1 if=1 rpl=3"
+    },
+    {
+      "function": "entry",
+      "args": "flags",
+      "result": "if=0 tf=0"
+    },
+    {
+      "function": "entry",
+      "args": "segments",
+      "result": "ds=1 es=1"
+    },
+    {
+      "function": "nochain",
+      "args": "window",
+      "result": "ticks=one tickcount-moved=0"
+    },
+    {
+      "function": "nochain",
+      "args": "20 ticks",
+      "result": "ms=about 1099"
+    },
+    {
+      "function": "hook",
+      "args": "2508h back then 3508h",
+      "result": "ours=0"
+    },
+    {
+      "function": "hook",
+      "args": "0205h 08h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rate0205",
+      "args": "20 ticks",
+      "result": "ms=about 1099"
+    },
+    {
+      "function": "int1c",
+      "args": "1099 ms",
+      "result": "ticks=none task=0"
+    },
+    {
+      "function": "realmode",
+      "args": "0201h 08h",
+      "result": "cf=0"
+    },
+    {
+      "function": "realmode",
+      "args": "window",
+      "result": "ticks=several tickcount-moved=1"
+    },
+    {
+      "function": "port61",
+      "args": "three reads",
+      "result": "30 00 30"
+    }
+  ]
+}

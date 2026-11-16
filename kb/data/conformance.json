@@ -6199,8 +6199,8 @@
   "functions": {
    "divide": {
     "total": 7,
-    "agreed": 6,
-    "disagreed": 1,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6213,8 +6213,8 @@
    },
    "protection": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6227,8 +6227,6 @@
    }
   },
   "gaps": {
-   "divide": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
-   "protection": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
    "vector": "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox"
   }
  },
@@ -6395,8 +6393,8 @@
    },
    "interrupts": {
     "total": 19,
-    "agreed": 8,
-    "disagreed": 11,
+    "agreed": 19,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6416,8 +6414,7 @@
    }
   },
   "gaps": {
-   "block": "where DOSX's arena puts a block, and WIN386's handles",
-   "interrupts": "the interrupt flag, which WinBox's processor keeps clear for a task"
+   "block": "where DOSX's arena puts a block, and WIN386's handles"
   }
  },
  "dpminul": {
@@ -8103,8 +8100,8 @@
   "functions": {
    "divide": {
     "total": 7,
-    "agreed": 6,
-    "disagreed": 1,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8117,8 +8114,8 @@
    },
    "protection": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8131,8 +8128,6 @@
    }
   },
   "gaps": {
-   "divide": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
-   "protection": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
    "vector": "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox"
   }
  },
@@ -8307,8 +8302,8 @@
    },
    "interrupts": {
     "total": 19,
-    "agreed": 7,
-    "disagreed": 12,
+    "agreed": 18,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8330,7 +8325,7 @@
   "gaps": {
    "block": "where DOSX's arena puts a block, and WIN386's handles",
    "page": "where WIN386 maps a physical address",
-   "interrupts": "the interrupt flag, which WinBox's processor keeps clear for a task"
+   "interrupts": "after CLI the flags still show the interrupt flag, WIN386 keeping it virtually; WinBox's processor clears it"
   }
  },
  "enhanced/dpminul": {
@@ -8502,8 +8497,8 @@
   "functions": {
    "dpmi": {
     "total": 56,
-    "agreed": 52,
-    "disagreed": 4,
+    "agreed": 53,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9474,8 +9469,8 @@
   "functions": {
    "dpmi": {
     "total": 49,
-    "agreed": 45,
-    "disagreed": 4,
+    "agreed": 46,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    },

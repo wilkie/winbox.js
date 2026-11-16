@@ -28,6 +28,16 @@ const ERROR_FILE_EXISTS: u16 = 0x50;
 /// Where the interrupt descriptor table is kept: see `task.rs`.
 const IDT: u32 = 0xffd << 16;
 
+/// The vectors KERNEL keeps in each task's database, which INT 21h 25h
+/// and 35h set and read there (`KRNL386.EXE` seg1 `181c`-`184b`).
+const TASK_VECTORS: [u8; 7] = [0x00, 0x02, 0x04, 0x06, 0x07, 0x3e, 0x75];
+
+/// The vectors KERNEL's INT 21h 25h passes over, setting nothing, once
+/// Windows has started with a shell (its bytes at 32Ch nought and 24Ch
+/// one; seg1 `17ab`-`17ce`). **Recorded** by `irqtick`: INT 1Ch set so
+/// is never called.
+const PASSED_OVER: [u8; 4] = [0x1b, 0x1c, 0x21, 0x24];
+
 /// Where DOS keeps each drive's media byte, a word to a drive from A:, as
 /// 1Bh and 1Ch point at it: DOSBox's table, `dos.tables.mediaid`, the
 /// second paragraph of its DOS's own memory, which starts at C800h
@@ -383,12 +393,24 @@ impl System {
                 self.parameter_block(ax >> 8 == 0x1f);
                 None
             }
+            // KERNEL keeps seven vectors for each task; it passes over
+            // 1Bh, 1Ch, 21h and 24h once Windows has started, run as its
+            // shell; any other goes on to the DPMI host, which makes it
+            // the protected-mode vector as 0205h does (`KRNL386.EXE` seg1
+            // `1791`-`17de`, `181c`; `DOSX.EXE` 186Bh:`039c`, `0cc6`).
             0x25 => {
-                let at = IDT + 4 * u32::from(self.low(AX));
+                let vector = self.low(AX);
                 let (segment, offset) = (self.cpu.segments[DS].selector, self.cpu.regs[DX]);
 
-                self.cpu.bus.write16(at, offset);
-                self.cpu.bus.write16(at + 2, segment);
+                if TASK_VECTORS.contains(&vector) {
+                    let at = IDT + 4 * u32::from(vector);
+
+                    self.cpu.bus.write16(at, offset);
+                    self.cpu.bus.write16(at + 2, segment);
+                } else if !PASSED_OVER.contains(&vector) {
+                    self.set_protected_vector(vector, segment, offset);
+                }
+
                 None
             }
             0x2a => {
@@ -426,9 +448,20 @@ impl System {
                 self.cpu.regs[CX] = 0;
                 None
             }
+            // As 25h: the task's own seven, or the DPMI host's vector
+            // (`KRNL386.EXE` seg1 `17f1`-`181b`; `DOSX.EXE` 186Bh:`03b1`,
+            // `0ca1`).
             0x35 => {
-                let at = IDT + 4 * u32::from(self.low(AX));
-                let (offset, segment) = (self.cpu.bus.read16(at), self.cpu.bus.read16(at + 2));
+                let vector = self.low(AX);
+                let (offset, segment) = if TASK_VECTORS.contains(&vector) {
+                    let at = IDT + 4 * u32::from(vector);
+
+                    (self.cpu.bus.read16(at), self.cpu.bus.read16(at + 2))
+                } else {
+                    let (segment, offset) = self.protected_vector(vector);
+
+                    (offset, segment)
+                };
 
                 self.cpu
                     .load_segment(ES, segment)
