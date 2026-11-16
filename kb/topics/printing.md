@@ -29,6 +29,7 @@ A Windows printer driver on the drive, such as the PostScript driver, is loaded 
 
 ## Not yet done
 
+- No default printer: the oracle's `WIN.INI` has `device=` empty, as WinBox's does. Programs built on Turbo Pascal's strings that split `[windows] device=` on its commas with `StrScan` stop at a nil pointer when it is empty (`YEAR.EXE` seg2 `0097`-`00c6`, seg10 `0137`-`0145`; `DISKMAN.EXE` the same): on Windows with no printer as well. Given `device=Generic / Text Only,TTY,LPT1:` both run on.
 - Print Manager, and the spooler's jobs through it.
 - Print Manager's side of [[fn:GDI.SpoolFile]] and of a job's pages. [[fn:GDI.QueryJob]], [[fn:GDI.DeleteSpoolPage]], `SpoolFile`, [[fn:GDI.Copy]] and GDI's priority queue ([[topic:gdi-priority-queue]]) are done; the map of GDI's internal exports is [[topic:gdi-internals]].
 - What a Windows driver's DC leaves to GDI's own drawing; see [[topic:printer-drivers]].
