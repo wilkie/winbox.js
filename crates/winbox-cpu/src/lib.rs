@@ -2665,6 +2665,27 @@ impl<B: Bus> Cpu<B> {
                 }
             }
             0x62 => self.bound()?,
+            // ARPL Ew, Gw: a selector's requested privilege raised to the
+            // register's, ZF set where it was below and cleared where not;
+            // of words whatever the operand size. Outside protected mode
+            // an undefined opcode, as the 80286 and 80386 have it.
+            0x63 => {
+                let (reg, place) = self.modrm()?;
+
+                if !self.protected {
+                    return self.fault(6);
+                }
+
+                let selector = self.get16(place)?;
+                let wanted = self.regs[reg] & 3;
+                let below = selector & 3 < wanted;
+
+                if below {
+                    self.set16(place, selector & !3 | wanted)?;
+                }
+
+                self.set_zero(below);
+            }
             0x68 => {
                 let value = self.fetch16()?;
 
@@ -3802,6 +3823,35 @@ mod tests {
         assert_eq!(cpu.run(100), (2, Exit::Halt));
         assert_eq!(cpu.segments[ES].base, 0x21000);
         assert_eq!(cpu.regs[AX], 0x1234);
+    }
+
+    #[test]
+    fn adjusts_a_selectors_requested_privilege() {
+        // arpl ax, cx; hlt -- and arpl [bx], cx; hlt -- in protected mode.
+        let mut cpu = machine(&[0x63, 0xc8, 0xf4]);
+
+        cpu.protected = true;
+        cpu.regs[AX] = 0x0115;
+        cpu.regs[CX] = 0x0007;
+        assert_eq!(cpu.run(100), (1, Exit::Halt));
+        assert_eq!(cpu.regs[AX], 0x0117);
+        assert_ne!(cpu.flags & ZF, 0);
+
+        let mut cpu = machine(&[0x63, 0x0f, 0xf4]);
+
+        cpu.protected = true;
+        cpu.bus.0[0x20010..0x20012].copy_from_slice(&[0x17, 0x01]);
+        cpu.regs[BX] = 0x0010;
+        cpu.regs[CX] = 0x0002;
+        cpu.flags |= ZF;
+        assert_eq!(cpu.run(100), (1, Exit::Halt));
+        assert_eq!(cpu.bus.0[0x20010..0x20012], [0x17, 0x01]);
+        assert_eq!(cpu.flags & ZF, 0);
+
+        // In real mode, an undefined opcode.
+        let mut cpu = machine(&[0x63, 0xc8, 0xf4]);
+
+        assert_eq!(cpu.run(100), (0, Exit::Fault(6)));
     }
 
     #[test]

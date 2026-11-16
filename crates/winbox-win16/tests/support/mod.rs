@@ -1238,7 +1238,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
     "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
     "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot", "abssect",
-    "mscdbuf", "cpu486", "irqtick", "biosint", "biosintm", "ioports",
+    "mscdbuf", "cpu486", "irqtick", "biosint", "biosintm", "ioports", "vgaregs", "arplsel",
 ];
 
 /// Functions a module declares but answers with a stub: their records are

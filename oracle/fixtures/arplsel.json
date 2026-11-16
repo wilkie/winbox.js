@@ -1,0 +1,104 @@
+{
+  "probe": "arplsel",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cpl",
+      "args": "CS",
+      "result": "3"
+    },
+    {
+      "function": "arpl",
+      "args": "1234, 0000",
+      "result": "1234 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1234, 0001",
+      "result": "1235 zf=1"
+    },
+    {
+      "function": "arpl",
+      "args": "1234, 0002",
+      "result": "1236 zf=1"
+    },
+    {
+      "function": "arpl",
+      "args": "1234, 0003",
+      "result": "1237 zf=1"
+    },
+    {
+      "function": "arpl",
+      "args": "1235, 0000",
+      "result": "1235 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1235, 0001",
+      "result": "1235 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1235, 0002",
+      "result": "1236 zf=1"
+    },
+    {
+      "function": "arpl",
+      "args": "1235, 0003",
+      "result": "1237 zf=1"
+    },
+    {
+      "function": "arpl",
+      "args": "1236, 0000",
+      "result": "1236 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1236, 0001",
+      "result": "1236 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1236, 0002",
+      "result": "1236 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1236, 0003",
+      "result": "1237 zf=1"
+    },
+    {
+      "function": "arpl",
+      "args": "1237, 0000",
+      "result": "1237 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1237, 0001",
+      "result": "1237 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1237, 0002",
+      "result": "1237 zf=0"
+    },
+    {
+      "function": "arpl",
+      "args": "1237, 0003",
+      "result": "1237 zf=0"
+    },
+    {
+      "function": "arpl-memory",
+      "args": "DS with RPL 0, CS",
+      "result": "rpl=3 same selector=1 zf=1"
+    }
+  ]
+}

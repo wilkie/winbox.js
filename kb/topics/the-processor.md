@@ -2,7 +2,7 @@
 kind: topic
 name: The processor
 summary: What winbox.js's 386 is tested against — the SingleStepTests suites captured from a real 80286 and 80386EX, every opcode under every prefix — what the 386's own tests showed about operand and address sizes, faults and the instructions programs for Windows 3.1 use, and the oracle's processor beyond it — DOSBox's 486 with a Pentium's RDTSC, its flags, CPUID and how programs tell processors apart.
-probes: [seglim, cpu486]
+probes: [seglim, cpu486, arplsel]
 ---
 
 Windows 3.1 runs on a 386 in enhanced mode, and programs made for it use the 386's instructions: 32-bit registers under the operand-size prefix, 32-bit addresses under the address-size prefix, and the instructions after 0Fh. winbox.js's processor is a 386, and it is held to two suites of tests captured from real parts by Daniel Balsom's ArduinoX86 board:
@@ -53,6 +53,7 @@ Before the tests, the processor had been fixed an instruction at a time, as prog
   - ENTER, which reads every display before it pushes;
   - IRETD and RETD, which check the EIP they return to against CS's limit before taking anything.
 - **The 286's own forms.** IMUL r16's carry and overflow were set, then cleared. BOUND and SALC were missing.
+- **ARPL**, which the suites leave out: in real mode it is an undefined opcode. [[documented]] In protected mode (Intel 80386 manual, ARPL) it raises a selector's requested privilege, its low two bits, to a register's, the zero flag set where it was below and cleared where not; a word whatever the operand size. [[measured]] [[probe:arplsel]], alike in both modes: each requested privilege 0-3 against each 0-3, the other bits kept, and a word in memory, the probe's DS with its RPL cleared raised to its CS's 3. Living Books' programs raise a selector's to their code's before loading it (`RACE.EXE` seg7 `3dec`: `arpl [bp-2], ax`, AX their CS; `SEUSS_ABC_WIN` the same).
 
 Where the 286's tests disagree with the 386 the core is — LOCK, the real-mode stack fault, and a byte shifted by 16 or 24 — its oracle sets those tests aside. No 286 opcode fails more than before.
 
