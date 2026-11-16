@@ -599,6 +599,9 @@ impl System {
         cpu.ldt_limit = ldt_limit;
         cpu.gdt_base = gdt_base;
         cpu.gdt_limit = gdt_limit;
+        // The oracle's processor: DOSBox's at `cputype=auto`, a 486 with a
+        // Pentium's RDTSC (`winbox-cpu`'s `i486.rs`; `cpu486`).
+        cpu.model = winbox_cpu::Model::Mixed;
 
         let mut system = Self {
             cpu,

@@ -217,6 +217,19 @@ impl Clock {
         }
     }
 
+    /// The processor's time-stamp counter, as DOSBox's `RDTSC` reads it:
+    /// its time in milliseconds, with their fraction, times its cycles a
+    /// millisecond (`PIC_FullIndex()*CPU_CycleMax`,
+    /// `cpu/core_normal/prefix_0f.h` 228-234). On a virtual clock that is
+    /// the clock's rate, so the count is the instructions run, those
+    /// charged, and the milliseconds skipped at the rate; on the host's own
+    /// time, the survey's rate ([`INSTRUCTIONS_PER_MS`]).
+    // A count of instructions, under 2^53, and never negative.
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    pub fn time_stamp(&self, instructions: u64) -> u64 {
+        (self.precise(instructions) * self.rate.unwrap_or(INSTRUCTIONS_PER_MS)) as u64
+    }
+
     /// Instructions run that the processor did not count, as a call's.
     pub fn charge(&mut self, instructions: f64) {
         if self.rate.is_some() {

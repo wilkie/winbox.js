@@ -1,0 +1,344 @@
+{
+  "probe": "cpu486",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cpl",
+      "args": "CS",
+      "result": "3"
+    },
+    {
+      "function": "eflags",
+      "args": "high",
+      "result": "00"
+    },
+    {
+      "function": "eflags",
+      "args": "AC",
+      "result": "turned=1 back=1"
+    },
+    {
+      "function": "eflags",
+      "args": "AC after pushf/popf",
+      "result": "kept=1"
+    },
+    {
+      "function": "eflags",
+      "args": "ID",
+      "result": "turned=1 back=1"
+    },
+    {
+      "function": "eflags",
+      "args": "ID after pushf/popf",
+      "result": "kept=0"
+    },
+    {
+      "function": "eflags",
+      "args": "high after",
+      "result": "00"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap eax / flags clear",
+      "result": "eax=78563412 ecx=00000000 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap eax / flags set",
+      "result": "eax=78563412 ecx=00000000 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap ecx / flags clear",
+      "result": "eax=00000000 ecx=efcdab89 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap ecx / flags set",
+      "result": "eax=00000000 ecx=efcdab89 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap edx / flags clear",
+      "result": "eax=00000000 ecx=00000000 edx=0180ff00 mem=00000000 flags=0000"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap edx / flags set",
+      "result": "eax=00000000 ecx=00000000 edx=0180ff00 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap ax / flags clear",
+      "result": "eax=12340000 ecx=00000000 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap ax / flags set",
+      "result": "eax=12340000 ecx=00000000 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap dx / flags clear",
+      "result": "eax=00000000 ecx=00000000 edx=89ab0000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "bswap",
+      "args": "bswap dx / flags set",
+      "result": "eax=00000000 ecx=00000000 edx=89ab0000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd al, cl / flags clear",
+      "result": "eax=12345600 ecx=abcdef80 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd al, cl / flags set",
+      "result": "eax=12345600 ecx=abcdef80 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd al, cl small / flags clear",
+      "result": "eax=12345633 ecx=abcdef11 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd al, cl small / flags set",
+      "result": "eax=12345633 ecx=abcdef11 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd ax, cx / flags clear",
+      "result": "eax=12340000 ecx=abcd8000 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd ax, cx / flags set",
+      "result": "eax=12340000 ecx=abcd8000 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd eax, ecx / flags clear",
+      "result": "eax=80000000 ecx=7fffffff edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd eax, ecx / flags set",
+      "result": "eax=80000000 ecx=7fffffff edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd [bx], cl / flags clear",
+      "result": "eax=00000000 ecx=abcdeff1 edx=00000000 mem=55aa5500 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd [bx], cl / flags set",
+      "result": "eax=00000000 ecx=abcdeff1 edx=00000000 mem=55aa5500 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd [bx], cx / flags clear",
+      "result": "eax=00000000 ecx=abcdffff edx=00000000 mem=55aa0000 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd [bx], cx / flags set",
+      "result": "eax=00000000 ecx=abcdffff edx=00000000 mem=55aa0000 flags=08d5"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd [bx], ecx / flags clear",
+      "result": "eax=00000000 ecx=80000000 edx=00000000 mem=00000000 flags=0000"
+    },
+    {
+      "function": "xadd",
+      "args": "xadd [bx], ecx / flags set",
+      "result": "eax=00000000 ecx=80000000 edx=00000000 mem=00000000 flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cl, dl equal / flags clear",
+      "result": "eax=11223344 ecx=556677cc edx=99aabbcc mem=00000000 flags=0040"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cl, dl equal / flags set",
+      "result": "eax=11223344 ecx=556677cc edx=99aabbcc mem=00000000 flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cl, dl unequal / flags clear",
+      "result": "eax=11223320 ecx=55667720 edx=99aabbcc mem=00000000 flags=0000"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cl, dl unequal / flags set",
+      "result": "eax=11223320 ecx=55667720 edx=99aabbcc mem=00000000 flags=0895"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cx, dx equal / flags clear",
+      "result": "eax=11223344 ecx=5566bbcc edx=99aabbcc mem=00000000 flags=0040"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cx, dx equal / flags set",
+      "result": "eax=11223344 ecx=5566bbcc edx=99aabbcc mem=00000000 flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cx, dx unequal / flags clear",
+      "result": "eax=11222000 ecx=55662000 edx=99aabbcc mem=00000000 flags=0000"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg cx, dx unequal / flags set",
+      "result": "eax=11222000 ecx=55662000 edx=99aabbcc mem=00000000 flags=0895"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg ecx, edx equal / flags clear",
+      "result": "eax=11223344 ecx=99aabbcc edx=99aabbcc mem=00000000 flags=0040"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg ecx, edx equal / flags set",
+      "result": "eax=11223344 ecx=99aabbcc edx=99aabbcc mem=00000000 flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg ecx, edx unequal / flags clear",
+      "result": "eax=20000000 ecx=20000000 edx=99aabbcc mem=00000000 flags=0000"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg ecx, edx unequal / flags set",
+      "result": "eax=20000000 ecx=20000000 edx=99aabbcc mem=00000000 flags=0895"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dl equal / flags clear",
+      "result": "eax=11223344 ecx=00000000 edx=99aabbcc mem=556677cc flags=0040"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dl equal / flags set",
+      "result": "eax=11223344 ecx=00000000 edx=99aabbcc mem=556677cc flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dl unequal / flags clear",
+      "result": "eax=11223320 ecx=00000000 edx=99aabbcc mem=55667720 flags=0000"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dl unequal / flags set",
+      "result": "eax=11223320 ecx=00000000 edx=99aabbcc mem=55667720 flags=0895"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dx equal / flags clear",
+      "result": "eax=11223344 ecx=00000000 edx=99aabbcc mem=5566bbcc flags=0040"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dx equal / flags set",
+      "result": "eax=11223344 ecx=00000000 edx=99aabbcc mem=5566bbcc flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dx unequal / flags clear",
+      "result": "eax=11222000 ecx=00000000 edx=99aabbcc mem=55662000 flags=0000"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], dx unequal / flags set",
+      "result": "eax=11222000 ecx=00000000 edx=99aabbcc mem=55662000 flags=0895"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], edx equal / flags clear",
+      "result": "eax=11223344 ecx=00000000 edx=99aabbcc mem=99aabbcc flags=0040"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], edx equal / flags set",
+      "result": "eax=11223344 ecx=00000000 edx=99aabbcc mem=99aabbcc flags=08d5"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], edx unequal / flags clear",
+      "result": "eax=20000000 ecx=00000000 edx=99aabbcc mem=20000000 flags=0000"
+    },
+    {
+      "function": "cmpxchg",
+      "args": "cmpxchg [bx], edx unequal / flags set",
+      "result": "eax=20000000 ecx=00000000 edx=99aabbcc mem=20000000 flags=0895"
+    },
+    {
+      "function": "cpuid",
+      "args": "eax=00000000",
+      "result": "eax=00000001 ebx=756e6547 ecx=6c65746e edx=49656e69"
+    },
+    {
+      "function": "cpuid",
+      "args": "eax=00000001",
+      "result": "eax=00000402 ebx=00000000 ecx=00000000 edx=00000001"
+    },
+    {
+      "function": "cpuid",
+      "args": "eax=00000002",
+      "result": "eax=00000000 ebx=00000000 ecx=00000000 edx=00000000"
+    },
+    {
+      "function": "cpuid",
+      "args": "eax=80000000",
+      "result": "eax=00000000 ebx=00000000 ecx=00000000 edx=00000000"
+    },
+    {
+      "function": "rdtsc",
+      "args": "run",
+      "result": "no fault"
+    },
+    {
+      "function": "rdtsc",
+      "args": "moved between two",
+      "result": "1"
+    },
+    {
+      "function": "rdtsc",
+      "args": "per millisecond",
+      "result": "at least 1000=1"
+    },
+    {
+      "function": "cache",
+      "args": "invd / flags clear",
+      "result": "fault calls=1 vector=0d code=0000 at-fault=1"
+    },
+    {
+      "function": "cache",
+      "args": "invd / flags set",
+      "result": "fault calls=1 vector=0d code=0000 at-fault=1"
+    },
+    {
+      "function": "cache",
+      "args": "wbinvd / flags clear",
+      "result": "fault calls=1 vector=0d code=0000 at-fault=1"
+    },
+    {
+      "function": "cache",
+      "args": "wbinvd / flags set",
+      "result": "fault calls=1 vector=0d code=0000 at-fault=1"
+    }
+  ]
+}

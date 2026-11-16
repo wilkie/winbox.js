@@ -20,6 +20,7 @@ probes:
     pgbig,
     wingsel,
     towrtick,
+    cpu486,
   ]
 ---
 
@@ -46,6 +47,10 @@ Each function's page carries its own: how long each way it was recorded took, an
 ## How `GetTickCount` steps
 
 [[measured]] [[probe:tickstep]] polls `GetTickCount` as fast as a program can for a second. Its answers step 55 milliseconds at a time, and 54 every thirteenth or fourteenth: whole ticks of the timer, the 8253's 1,193,180 Hz divided by 65,536, 54.9254 ms each, rounded down. A program sees nineteen different answers a second. `timeGetTime` steps a millisecond at a time ([[probe:mmtime]]).
+
+## The time-stamp counter
+
+[[measured]] [[probe:cpu486]] reads `RDTSC` before and after at least 110 milliseconds of `GetTickCount`: the counter moved 10^4 a millisecond in one recording and 10^5 in another, both at `cycles=max`. [[read out]] It is DOSBox's milliseconds times its cycles a millisecond (`PIC_FullIndex()*CPU_CycleMax`), which `cycles=max` sets from the host's speed as it runs. WinBox's counts the clock's rate a millisecond: 3,000 on the survey's clock, 80,000 on the faithful one ([[topic:the-processor]], "RDTSC").
 
 ## A journal playback's wait
 

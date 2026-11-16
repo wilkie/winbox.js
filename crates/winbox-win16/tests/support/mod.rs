@@ -1238,7 +1238,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
     "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
     "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot", "abssect",
-    "mscdbuf",
+    "mscdbuf", "cpu486",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -1959,6 +1959,22 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     (
         "seglim:stack",
         "DOSBox reads below an expand-down SS's limit, where the 80386 raises #SS",
+    ),
+    // `cpu486`: the flags after `XADD` and `CMPXCHG`. DOSBox's normal core,
+    // which runs both for its recompiling core, sets none after `XADD`
+    // (`core_normal/prefix_0f.h` 575-590, `prefix_66_0f.h` 434-440) and ZF
+    // alone after `CMPXCHG` (`prefix_0f.h` 359-411, `prefix_66_0f.h`
+    // 238-263); the 80486 sets them as `ADD` and `CMP` do, which WinBox
+    // follows, the hardware over DOSBox's quirks as for the segment checks
+    // of 2026-11-09 and the ROM of 2026-11-13 (`kb/topics/the-processor.md`,
+    // "The oracle's processor").
+    (
+        "cpu486:xadd",
+        "DOSBox's XADD sets no flags (core_normal/prefix_0f.h 575-590, prefix_66_0f.h 434-440), where the 80486 sets them as ADD",
+    ),
+    (
+        "cpu486:cmpxchg",
+        "DOSBox's CMPXCHG sets ZF alone (core_normal/prefix_0f.h 359-411, prefix_66_0f.h 238-263), where the 80486 sets the flags as CMP",
     ),
     // `pgtouch`: the linear pages a program can reach. WinBox has no pages
     // and lays memory out by descriptor index (`kb/guides/paging.md`).
