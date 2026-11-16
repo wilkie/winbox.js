@@ -28,7 +28,8 @@
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty. `--captions` prints, after the calls,
 //! the windows at the top as the run left them, with their captions, and
-//! a message box's or a window's text (its statics). `--sound` installs WinBox's own sound card on the
+//! a message box's or a window's text (its statics), and each of USER's
+//! system error boxes brought up, its caption and text (`answered:`). `--sound` installs WinBox's own sound card on the
 //! run's drive, as winbox-native's `--sound` does.
 //! `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
@@ -178,6 +179,17 @@ fn print_captions(system: &winbox_win16::System) {
         }
 
         println!("window: {line}");
+    }
+
+    // Each of USER's system error boxes brought up, answered or not: its
+    // caption and text, a character a byte.
+    let chars = |bytes: &[u8]| bytes.iter().map(|&byte| char::from(byte)).collect::<String>();
+
+    for (caption, text) in &system.sys_error_boxes {
+        println!(
+            "answered: {}",
+            serde_json::json!({ "title": chars(caption), "text": chars(text) })
+        );
     }
 }
 

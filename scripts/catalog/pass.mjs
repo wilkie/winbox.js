@@ -332,6 +332,7 @@ function outcome(run, seconds = SECONDS) {
     ...result,
     box,
     windows,
+    answered: answeredOf(run.out),
     calls,
     instructions,
     ms: run.ms,
@@ -339,12 +340,36 @@ function outcome(run, seconds = SECONDS) {
   };
 }
 
-/** What a run's box or windows say it needs: enhanced mode, or more colours. */
+/**
+ * USER's system error boxes a run brought up, answered or not (`trace`'s
+ * `answered:` lines): a box a program shows and then ends after.
+ */
+function answeredOf(out) {
+  return out
+    .split('\n')
+    .filter((line) => line.startsWith('answered: '))
+    .map((line) => {
+      try {
+        const box = JSON.parse(line.slice(10));
+
+        return {
+          title: clean(decode(Buffer.from(box.title ?? '', 'latin1'))),
+          text: clean(decode(Buffer.from(box.text ?? '', 'latin1'))),
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+/** What a run's boxes or windows say it needs: enhanced mode, or more colours. */
 function askedFor(result) {
   const said = [
     result.box?.text,
     result.box?.title,
     ...result.windows.flatMap((w) => [w.title, w.text]),
+    ...(result.answered ?? []).flatMap((box) => [box.title, box.text]),
   ]
     .filter(Boolean)
     .join(' \n ');

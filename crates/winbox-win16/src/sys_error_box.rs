@@ -608,6 +608,10 @@ impl Engine {
                 return Ok(0);
             };
 
+            system
+                .sys_error_boxes
+                .push((caption.to_vec(), text.to_vec()));
+
             system.draw_sys_error_box(&layout);
 
             let focus = layout
