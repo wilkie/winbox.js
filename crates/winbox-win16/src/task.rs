@@ -7,6 +7,9 @@ use winbox_machine::segment_selector;
 
 use crate::system::System;
 
+/// FLAGS' I/O privilege level, bits 12-13.
+const IOPL: u16 = 0x3000;
+
 /// Where the interrupt descriptor table is kept: one for all tasks
 /// (`dos.rs` reads and writes its vectors there).
 const IDT_SEGMENT: usize = 0xffd;
@@ -112,8 +115,16 @@ impl System {
         });
         // The first megabyte's ROM, which keeps no write a program makes.
         self.cpu.bus.set_rom(ROM_PAGES.into_iter().flatten());
-        // A program's own `IN` and `OUT` answered here (`ports.rs`).
+        // A program's own `IN` and `OUT` answered here (`ports.rs`), at
+        // the IOPL Windows gives it (**recorded** by `ioports`): 3 in
+        // standard mode, as DOSX enters protected mode (`DOSX.EXE` file
+        // offset 111Bh); 0 in enhanced mode, WIN386 taking each through
+        // its permission bitmap, none faulting.
         self.cpu.ports = true;
+        let enhanced = self.mode == crate::Mode::Enhanced;
+
+        self.cpu.io_bitmap = enhanced;
+        self.cpu.flags = (self.cpu.flags & !IOPL) | if enhanced { 0 } else { IOPL };
         // The installation's drivers' icons and cursors, where there is one.
         if self.driver.is_none() {
             self.read_drivers();

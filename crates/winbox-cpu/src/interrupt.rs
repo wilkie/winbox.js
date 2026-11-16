@@ -13,11 +13,24 @@
 
 use crate::{BP, Bus, CS, Cpu, Exit, FLAGS_KEPT, IF, Place, SP, SS, TF};
 
+/// FLAGS' I/O privilege level, bits 12-13.
+const IOPL: u16 = 0x3000;
+
 impl<B: Bus> Cpu<B> {
     /// Whether this core takes interrupts itself: in real mode, given the
     /// table.
     pub(crate) fn takes_interrupts(&self) -> bool {
         self.interrupt_table.is_some() && !self.protected
+    }
+
+    /// Whether an `IN` or `OUT` faults: in protected mode, at a privilege
+    /// (CS's low two bits) above IOPL (FLAGS' bits 12-13), with no
+    /// permission bitmap to take it (`Cpu::io_bitmap`).
+    pub(crate) fn io_refused(&self) -> bool {
+        let privilege = self.segments[CS].selector & 3;
+        let iopl = (self.flags >> 12) & 3;
+
+        self.protected && privilege > iopl && !self.io_bitmap
     }
 
     /// FLAGS as it is pushed and read: the bits the JavaScript core keeps,
@@ -29,12 +42,16 @@ impl<B: Bus> Cpu<B> {
     /// FLAGS loaded from a word popped, as `loadFlags` loads it at privilege
     /// nought: every flag in protected mode; IOPL, NT and bit 15 cleared in
     /// real mode, as the 80286 vectors have it. The trap flag is a flag like
-    /// any other: the JavaScript core does not single-step.
+    /// any other: the JavaScript core does not single-step. At a privilege
+    /// but nought in protected mode IOPL is kept as it was, as `POPF` and
+    /// `IRET` leave it there.
     pub(crate) fn load_flags(&mut self, value: u16) {
-        let value = if self.protected {
-            value
-        } else {
+        let value = if !self.protected {
             value & 0x0fff
+        } else if self.segments[CS].selector & 3 != 0 {
+            (value & !IOPL) | (self.flags & IOPL)
+        } else {
+            value
         };
 
         self.flags = (value & FLAGS_KEPT) | 0x0002;
@@ -146,8 +163,9 @@ impl<B: Bus> Cpu<B> {
 
         self.set_stack_top(self.stack_step(top, 3 * step));
         self.ip = ip;
-        self.set_segment(CS, segment);
+        // FLAGS first, at the privilege the `IRET` runs at.
         self.load_flags(flags as u16);
+        self.set_segment(CS, segment);
 
         // The bits above: `IRETD` loads AC and ID; `IRET` of a word, which
         // DOSBox loads under EFLAGS' whole mask in protected mode and its low

@@ -110,6 +110,8 @@ const ANSWERED: [u8; 4] = [0x12, 0x1a, 0x21, 0x2f];
 
 const INTERRUPT: u16 = 0x0200;
 const TRAP: u16 = 0x0100;
+/// FLAGS' I/O privilege level, which a program's calls leave as it was.
+const IOPL: u16 = 0x3000;
 
 /// The machine's registers, as a call into real mode returns to them.
 #[derive(Debug, Clone, Copy, Default)]
@@ -1380,7 +1382,12 @@ impl System {
         self.dpmi_set_reg32(SI, regs.esi);
         self.dpmi_set_reg32(DI, regs.edi);
         self.dpmi_set_reg32(BP, regs.ebp);
-        self.cpu.flags = (regs.flags & !(INTERRUPT | TRAP)) | (caller.flags & (INTERRUPT | TRAP));
+        // The caller's IOPL kept, as the arithmetic flags come back
+        // (**recorded** by `ioports`: IOPL 3 in standard mode, 0 in
+        // enhanced, after 0300h with the structure's flags nought).
+        let kept = INTERRUPT | TRAP | IOPL;
+
+        self.cpu.flags = (regs.flags & !kept) | (caller.flags & kept);
 
         for (at, register) in [ES, DS, FS, GS].into_iter().enumerate() {
             self.dpmi_load(register, (SCRATCH_INDICES[at] << 3) | 3);
@@ -1466,7 +1473,9 @@ impl System {
 
     fn dpmi_caller_on(&mut self, call: &RealCall, flags: u16) {
         self.dpmi_restore(&call.caller);
-        self.cpu.flags = (flags & 0xbffe) | (call.caller.flags & (INTERRUPT | TRAP));
+        let kept = INTERRUPT | TRAP | IOPL;
+
+        self.cpu.flags = (flags & 0xbffe & !kept) | (call.caller.flags & kept);
     }
 
     /// A callback called from real mode (as `#callCallback`).

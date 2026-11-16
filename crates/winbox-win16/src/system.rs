@@ -575,6 +575,8 @@ pub struct System {
     pub system_driver: crate::system_driver::State,
     /// The timer's hardware interrupt, given to a program's handler.
     pub timer: crate::hardware_interrupts::Timer,
+    /// The 8253 timer's counter 2, the speaker's (`pit.rs`).
+    pub(crate) counter2: crate::pit::Counter2,
     /// The system control port's byte, 61h (`ports.rs`).
     pub system_control: u8,
     /// KEYBOARD.DRV's segment of tables, once asked for (`keyboard.rs`).
@@ -783,6 +785,7 @@ impl System {
             cmos: crate::cmos::Cmos::default(),
             system_driver: crate::system_driver::State::default(),
             timer: crate::hardware_interrupts::Timer::default(),
+            counter2: crate::pit::Counter2::default(),
             system_control: 0,
             keyboard_tables: 0,
         };
