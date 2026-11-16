@@ -54,6 +54,14 @@ pub struct GlobalHeap {
     held: u64,
     /// What was held when a program first asked (see [`MOST`]).
     baseline: Option<u64>,
+    /// The blocks whose bytes are not counted as held: KERNEL's own that
+    /// Windows takes of DPMI apart from the heap (see [`GlobalHeap::hold_apart`]).
+    apart: Vec<usize>,
+    /// Counted up as anything a block's arena tells changes -- a block
+    /// made, freed, resized, discarded, its flags or lock count -- so a
+    /// copy of the blocks laid out elsewhere is made again only when it
+    /// must be (`kernel_calls/thhook.rs`).
+    generation: u64,
 }
 
 /// The largest size KERNEL lets through: 16 MiB less 64 KiB, the most 255
@@ -206,6 +214,7 @@ impl GlobalHeap {
             },
         );
         self.held += u64::from(size);
+        self.generation += 1;
 
         let mut left = size;
 
@@ -268,7 +277,13 @@ impl GlobalHeap {
         index: usize,
     ) -> bool {
         if let Some(block) = self.blocks.remove(&index) {
-            self.held -= u64::from(block.size);
+            if let Some(at) = self.apart.iter().position(|&each| each == index) {
+                self.apart.swap_remove(at);
+            } else {
+                self.held -= u64::from(block.size);
+            }
+
+            self.generation += 1;
             memory.free_own_pages((index as u32) << 16);
 
             for tile in 0..block.selectors {
@@ -309,6 +324,24 @@ impl GlobalHeap {
         (i64::from(figures.compact) - self.taken()).clamp(0, i64::from(MOST)) as u32
     }
 
+    /// A block kept out of what is held: its bytes taken from the count
+    /// as Windows takes such a block of DPMI apart from its heap, and
+    /// given back to none when it is freed. Nothing for an index that
+    /// names no block.
+    pub fn hold_apart(&mut self, index: usize) {
+        if let Some(block) = self.blocks.get(&index)
+            && !self.apart.contains(&index)
+        {
+            self.held -= u64::from(block.size);
+            self.apart.push(index);
+        }
+    }
+
+    /// How many times the blocks have changed (see the field).
+    pub fn generation(&self) -> u64 {
+        self.generation
+    }
+
     pub fn block(&self, index: usize) -> Option<&Block> {
         self.blocks.get(&index)
     }
@@ -340,6 +373,7 @@ impl GlobalHeap {
         size: u32,
     ) {
         self.segment_sizes.insert(index, size);
+        self.generation += 1;
         descriptors.set_limit(memory, index, segment_limit(size));
     }
 
@@ -347,6 +381,7 @@ impl GlobalHeap {
     /// forgotten.
     pub fn forget_segment(&mut self, index: usize) {
         self.segment_sizes.remove(&index);
+        self.generation += 1;
     }
 
     pub fn flags_of(&self, index: usize) -> u16 {
@@ -362,6 +397,7 @@ impl GlobalHeap {
         self.held -= u64::from(block.size);
         block.size = 0;
         block.discarded = true;
+        self.generation += 1;
         true
     }
 
@@ -377,6 +413,7 @@ impl GlobalHeap {
             block.flags &= !0x0100;
         }
 
+        self.generation += 1;
         true
     }
 
@@ -387,8 +424,11 @@ impl GlobalHeap {
 
     /// A block's lock count set; nothing for an index that names no block.
     pub fn set_locks(&mut self, index: usize, count: u8) {
-        if let Some(block) = self.blocks.get_mut(&index) {
+        if let Some(block) = self.blocks.get_mut(&index)
+            && block.locks != count
+        {
             block.locks = count;
+            self.generation += 1;
         }
     }
 
@@ -413,6 +453,7 @@ impl GlobalHeap {
                 }
 
                 *segment = block_size(size);
+                self.generation += 1;
                 descriptors.set_limit(memory, index, segment_limit(*segment));
                 return Some(index);
             }
@@ -426,6 +467,7 @@ impl GlobalHeap {
 
         block.discarded = false;
         set_present(memory, index, true);
+        self.generation += 1;
 
         if selectors > block.selectors {
             return self.relocate(memory, descriptors, index, size);

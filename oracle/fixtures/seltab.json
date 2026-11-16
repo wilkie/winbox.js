@@ -1,0 +1,109 @@
+{
+  "probe": "seltab",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "thhook",
+      "args": "22e length",
+      "result": "8000"
+    },
+    {
+      "function": "thhook",
+      "args": "230 start",
+      "result": "1d7c0"
+    },
+    {
+      "function": "thhook",
+      "args": "heap block limit",
+      "result": "257bf"
+    },
+    {
+      "function": "thhook",
+      "args": "table inside the heap block",
+      "result": "yes"
+    },
+    {
+      "function": "thhook",
+      "args": "bytes past the table",
+      "result": "0"
+    },
+    {
+      "function": "count",
+      "args": "range",
+      "result": "any=yes,below-7000=yes"
+    },
+    {
+      "function": "count",
+      "args": "moveable allocated",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "moveable freed",
+      "result": "-1"
+    },
+    {
+      "function": "count",
+      "args": "128k allocated",
+      "result": "1"
+    },
+    {
+      "function": "count",
+      "args": "128k freed",
+      "result": "-1"
+    },
+    {
+      "function": "count",
+      "args": "AllocSelector",
+      "result": "0"
+    },
+    {
+      "function": "count",
+      "args": "FreeSelector",
+      "result": "0"
+    },
+    {
+      "function": "entry",
+      "args": "ds",
+      "result": "place=heap-block-offset,aligned=20h,base=selector's,size=GlobalSize,handle=handle,owner=module,locks=0,pagelocks=0,flags=4"
+    },
+    {
+      "function": "entry",
+      "args": "cs",
+      "result": "place=heap-block-offset,aligned=20h,base=selector's,size=GlobalSize,handle=handle,owner=module,locks=0,pagelocks=0,flags=0"
+    },
+    {
+      "function": "entry",
+      "args": "moveable",
+      "result": "place=heap-block-offset,aligned=20h,base=selector's,size=GlobalSize,handle=handle,owner=pdb,locks=0,pagelocks=0,flags=0"
+    },
+    {
+      "function": "entry",
+      "args": "128k second selector",
+      "result": "nought"
+    },
+    {
+      "function": "entry",
+      "args": "freed",
+      "result": "nought"
+    },
+    {
+      "function": "entry",
+      "args": "AllocSelector",
+      "result": "nought"
+    },
+    {
+      "function": "entry",
+      "args": "heap block",
+      "result": "place=heap-block-offset,aligned=20h,base=selector's,size=-,handle=-,owner=fffd,locks=0,pagelocks=0,flags=0"
+    }
+  ]
+}

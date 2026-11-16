@@ -25,8 +25,8 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-**Implemented (a).** WinBox makes a fixed block of KERNEL's the first time it is asked for, 46h bytes, as far as the words KERNEL's own code touches in it run (seg1 `2bbe`-`2bcb`, `97fd`-`9802`), and answer its selector in AX and DX; `GlobalHandle` answers it as both handle and selector (`GlobalMasterHandle` in `crates/winbox-win16/src/kernel_calls/thhook.rs`). Its words read as noughts: WinBox keeps its blocks in itself and lays out no arenas for a walker. See [[topic:kernel-internals]].
+**Implemented (a).** WinBox makes a fixed block of KERNEL's the first time it is asked for, or `THHOOK`'s address handed out, and answers its selector in AX and DX; `GlobalHandle` answers it as both handle and selector (`GlobalMasterHandle` in `crates/winbox-win16/src/kernel_calls/thhook.rs`). Since 2026-11-15 the block runs to the end of the selector table, as Windows' does (its limit 257BFh in standard mode, [[probe:seltab]]), and holds an arena for each of WinBox's blocks and the table ([[fn:KERNEL.THHOOK]]); its bytes are not counted as held. See [[topic:kernel-internals]].
 
 ## Not yet done
 
-- The heap's header and arenas in the block, kept to agree with WinBox's own blocks, for a debugger that walks them. Recorded on Windows earlier: its first words 0, 0, the count of arenas, the first and last arenas' offsets and 4000h.
+- The heap's header in the block, for a debugger that walks it. Recorded on Windows earlier: its first words 0, 0, the count of arenas, the first and last arenas' offsets and 4000h. The arenas WinBox lays out have the words TOOLHELP reads, not the links back or the free blocks' and sentinels' ([[fn:KERNEL.THHOOK]]).
