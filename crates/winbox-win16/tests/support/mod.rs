@@ -1751,8 +1751,8 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "a play to 250 waited for takes 600 ms here and 500 in Windows: not yet investigated",
     ),
     // A play's notification, in tenths of a second: 19 in Windows, 18
-    // here, played to its end and resumed to its end. 2 of 6 records; not
-    // yet investigated.
+    // here, played to its end and played again to its end over a play.
+    // 2 of 6 records; not yet investigated.
     (
         "mciplay:wait",
         "a play's notification comes a tenth of a second early: not yet investigated",

@@ -158,6 +158,23 @@ fn later(engine: &Engine, ms: f64) {
     system.poll_sound();
 }
 
+/// The other tasks let run, as the program yields: `MCIWAVE`'s task given
+/// its turn (`mci_wave::task_turn`).
+fn turn(engine: &Engine) {
+    engine
+        .run_now(crate::mmsystem::mci_wave::task_turn(engine))
+        .unwrap();
+}
+
+/// The clock moved on by `ms` as a program polling for messages passes it,
+/// ten milliseconds at a time, the other tasks let run after each.
+fn polled(engine: &Engine, ms: f64) {
+    for _ in 0..(ms / 10.0) as usize {
+        later(engine, 10.0);
+        turn(engine);
+    }
+}
+
 /// With no waveform device, nothing plays and the answer is nought,
 /// whatever is asked (`sndplay`).
 #[test]
@@ -567,15 +584,16 @@ fn mci_waveaudio_finds_the_device_in_use() {
     assert_eq!(mci(&engine, "play q wait"), (0, String::new()));
 }
 
-/// The clock moved on, ten milliseconds at a time, until the device is
-/// stopped, for no more than three seconds.
+/// The clock moved on, ten milliseconds at a time, the other tasks let run
+/// after each, until the device is stopped, for no more than eight
+/// seconds.
 fn played_out(engine: &Engine) {
-    for _ in 0..300 {
+    for _ in 0..800 {
         if mci(engine, "status q mode").1 == "stopped" {
             return;
         }
 
-        later(engine, 10.0);
+        polled(engine, 10.0);
     }
 
     panic!("still playing");
@@ -600,7 +618,7 @@ fn mci_waveaudio_plays_in_the_background() {
     assert!(now(&engine) - before < 1.0);
     assert_eq!(mci(&engine, "status q mode"), (0, "playing".to_string()));
     assert_eq!(device_free(&engine), 4);
-    later(&engine, 300.0);
+    polled(&engine, 300.0);
     assert_ne!(mci(&engine, "status q position"), (0, "0".to_string()));
 
     played_out(&engine);
@@ -624,7 +642,7 @@ fn mci_waveaudio_pauses_resumes_and_stops() {
 
     assert_eq!(mci(&engine, "open C:\\TWO.WAV type waveaudio alias q").0, 0);
     assert_eq!(mci(&engine, "play q"), (0, String::new()));
-    later(&engine, 300.0);
+    polled(&engine, 300.0);
     assert_eq!(mci(&engine, "pause q"), (0, String::new()));
     assert_eq!(mci(&engine, "status q mode"), (0, "paused".to_string()));
 
@@ -634,7 +652,7 @@ fn mci_waveaudio_pauses_resumes_and_stops() {
     assert_eq!(mci(&engine, "status q position"), held);
     assert_eq!(mci(&engine, "resume q"), (0, String::new()));
     assert_eq!(mci(&engine, "status q mode"), (0, "playing".to_string()));
-    later(&engine, 400.0);
+    polled(&engine, 400.0);
     assert_eq!(mci(&engine, "stop q"), (0, String::new()));
     assert_eq!(mci(&engine, "status q mode"), (0, "stopped".to_string()));
 
@@ -658,33 +676,35 @@ fn mci_waveaudio_pauses_resumes_and_stops() {
     assert_eq!(mci(&engine, "close q"), (0, String::new()));
 }
 
-/// A play in the background longer than the driver's buffers hold stops
-/// the run: when Windows' task refills them was not recorded.
+/// A play in the background is filled and written by the driver's task,
+/// which runs only as the program lets other tasks run (`mcitask`): with
+/// the program keeping the processor nothing is played; polling, a play
+/// longer than the four buffers hold is filled again as they come back,
+/// and is played out.
 #[test]
-fn mci_waveaudio_stops_at_a_background_play_its_buffers_do_not_hold() {
+fn mci_waveaudio_plays_in_the_background_as_the_program_yields() {
     let ini = b"[mci]\r\nWaveAudio=mciwave.drv\r\n";
     let (engine, _) = card(
         "mci-long",
-        &[("LONG.WAV", &wave(11025 * 5)), ("WINDOWS/SYSTEM.INI", ini)],
+        &[("LONG.WAV", &wave(11025 * 6)), ("WINDOWS/SYSTEM.INI", ini)],
     );
 
     assert_eq!(
         mci(&engine, "open C:\\LONG.WAV type waveaudio alias q").0,
         0
     );
+    assert_eq!(mci(&engine, "play q"), (0, String::new()));
+    later(&engine, 2000.0);
+    assert_eq!(mci(&engine, "status q position"), (0, "0".to_string()));
+    assert_eq!(mci(&engine, "status q mode"), (0, "playing".to_string()));
 
-    let command = text(&engine, "play q");
-    let buffer = block(&engine);
-    let answer = crate::mmsystem::device_tests::try_invoke(
-        &engine,
-        "mciSendString",
-        &[Arg::D(command), Arg::D(buffer), Arg::W(128), Arg::W(0)],
-    );
+    let before = now(&engine);
 
-    assert!(
-        matches!(answer, Err(crate::call::Stop::Unsupported(why)) if why.contains("buffers hold")),
-        "{answer:?}"
-    );
+    played_out(&engine);
+    // Six seconds at 11,025, played at 11,111.
+    assert!(now(&engine) - before >= 5950.0);
+    assert_eq!(mci(&engine, "status q position"), (0, "6000".to_string()));
+    assert_eq!(mci(&engine, "close q"), (0, String::new()));
 }
 
 /// `Beep` with no value is off: USER's one character from

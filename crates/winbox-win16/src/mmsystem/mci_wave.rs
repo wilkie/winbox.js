@@ -100,10 +100,21 @@
 //! successful and is at 1000. Closed while playing, the play notifies
 //! aborted.
 //!
+//! **Recorded** by `mcitask`, of six seconds played with four buffers of a
+//! second: played out six seconds after the play while the program waits
+//! in `GetMessage` or polls with `PeekMessage`; with the program first busy
+//! for five seconds, letting no other task run, the device is still at
+//! nought after them -- nothing was written -- and the play is out at
+//! eleven.
+//!
 //! Not as Windows does it: winbox.js has no task for the driver. What the
-//! task does is done by the program's calls and the card's interrupts: the
-//! play's call makes the buffers and writes them, as the task does when the
-//! program next lets it run, and the device is opened with no callback.
+//! task does is done by the program's calls, by the card's interrupts, and
+//! at the times Windows would run the task (`task_turn`): the play's call
+//! makes the buffers, and the task's loop fills and writes them when the
+//! program next lets other tasks run -- yielding, or looking for a message
+//! and finding none -- the card's interrupt that finds a buffer done waking
+//! the program's task where it waits, as the device's callback wakes the
+//! driver's. The device is opened with no callback.
 //! The card's interrupt that finds the last buffer done posts the play's
 //! notification and leaves the device stopped at the play's end, as the
 //! task does as soon as it runs; the device itself is reset, its buffers
@@ -111,18 +122,16 @@
 //! driver's, by `waveOutOpen` or by `sndPlaySound` -- rather than then. A
 //! call that waits for the task -- stopping, seeking, closing, playing with
 //! `MCI_WAIT` -- does the task's part itself. A play waited for passes the
-//! time to each of the card's interrupts in turn; a play that is not
-//! waited for runs on the card's interrupts while the program runs, whether
-//! or not the program lets other tasks run, where Windows plays nothing
-//! until it does. The time the task's own work takes on Windows' processor
-//! -- its buffers made and filled from the file, its end -- is not counted
-//! on the machine's clock: `mciplay`'s plays to their end notify between 23
-//! and 75 milliseconds sooner here than they did on Windows, which two of
-//! its waits, in tenths of a second, round a tenth short.
+//! time to each of the card's interrupts in turn. The time the task's own
+//! work takes on Windows' processor -- its buffers made and filled from
+//! the file, its end -- is not counted on the machine's clock: `mciplay`'s
+//! plays to their end notify between 23 and 75 milliseconds sooner here
+//! than they did on Windows, which two of its waits, in tenths of a
+//! second, round a tenth short. A task waiting other than for a message --
+//! in `WaitEvent`, or for the answer to a message sent another task -- does
+//! not give the driver its turn.
 //!
-//! Not followed, and stopped at: a play in the background whose data its
-//! buffers do not hold, whose refilling waits on when Windows would run
-//! the task, which was not recorded; a play that waits over one under way;
+//! Not followed, and stopped at: a play that waits over one under way;
 //! the driver's own flags to play with; a time format other than
 //! milliseconds; a waveform file whose format or data chunk is not there;
 //! a file shorter than its data chunk says, and a write refused with
@@ -237,6 +246,9 @@ struct Playing {
     paused: bool,
     waited: bool,
     finished: bool,
+    /// The program's task that began it: woken where it waits for a
+    /// message as the device's callback wakes the driver's own task.
+    task: u16,
 }
 
 /// What the driver keeps of its files.
@@ -729,11 +741,13 @@ pub async fn play(engine: &Engine, id: u16, flags: u32, parms: u32) -> Result<u3
         }
 
         let mut system = engine.system();
+        let task = system.task_handle;
 
         if let Some(opened) = system.mmsystem.wave_files.opened.get_mut(&id) {
             opened.playing = Some(Playing {
                 device,
                 waited,
+                task,
                 ..Playing::default()
             });
         }
@@ -800,39 +814,70 @@ async fn play_waited(engine: &Engine, id: u16) -> Result<u32, Stop> {
     }
 }
 
-/// The task's loop for a play not waited for, as far as it goes before it
-/// waits for a buffer: the rest left to the card's interrupts. A play with
-/// nothing to play ends at once.
+/// A play not waited for: left to the task, which fills its buffers and
+/// writes them when it next runs -- when the program lets other tasks run
+/// (`task_turn`). A play with nothing to play ends at once.
 async fn play_on(engine: &Engine, id: u16) -> Result<u32, Stop> {
-    let error = fill(engine, id).await?;
-
-    if error != 0 {
-        end(engine, id, error).await?;
-        return Ok(0);
-    }
-
-    let (left, idle) = {
+    let idle = {
         let system = engine.system();
         let opened = &system.mmsystem.wave_files.opened[&id];
-        let idle = opened
-            .playing
-            .as_ref()
-            .is_none_or(|playing| playing.queued.is_empty());
 
-        (opened.read < opened.to, idle)
+        opened.read >= opened.to
+            && opened
+                .playing
+                .as_ref()
+                .is_none_or(|playing| playing.queued.is_empty())
     };
-
-    if left {
-        return Err(Stop::Unsupported(
-            "MCIWAVE playing in its task more than its buffers hold",
-        ));
-    }
 
     if idle {
         end(engine, id, 0).await?;
     }
 
     Ok(0)
+}
+
+/// The driver's task given its turn, as Windows gives it one when the
+/// program lets other tasks run -- yielding, or waiting for a message:
+/// each play not waited for has its buffers called done taken back and
+/// filled again from the file, and written (seg8 `213`-`2b1`); a write
+/// refused ends the play with its error (`e96`). **Recorded** by
+/// `mcitask`: a play of six seconds, four buffers of a second each, is
+/// played out six seconds after it began while the program waits in
+/// `GetMessage` or polls with `PeekMessage`; with the program busy for
+/// five seconds first, letting no other task run, the device is still at
+/// nought after them, and the play is out at eleven. Whether a play
+/// ended, its notification posted.
+pub async fn task_turn(engine: &Engine) -> Result<bool, Stop> {
+    let ids: Vec<u16> = {
+        let system = engine.system();
+
+        system
+            .mmsystem
+            .wave_files
+            .opened
+            .iter()
+            .filter(|(_, opened)| {
+                opened
+                    .playing
+                    .as_ref()
+                    .is_some_and(|playing| !playing.finished && !playing.waited)
+            })
+            .map(|(&id, _)| id)
+            .collect()
+    };
+
+    let mut ended = false;
+
+    for id in ids {
+        let error = fill(engine, id).await?;
+
+        if error != 0 {
+            end(engine, id, error).await?;
+            ended = true;
+        }
+    }
+
+    Ok(ended)
 }
 
 /// A play's range (`1220`): where it is to end kept, the device moved and
@@ -1416,12 +1461,26 @@ impl System {
                 && !playing.finished
                 && !playing.waited
             {
+                let mut done = false;
+
                 while let Some(&header) = playing.queued.front() {
                     if checks::header_flags(self, header) & DONE == 0 {
                         break;
                     }
 
                     playing.queued.pop_front();
+                    done = true;
+                }
+
+                // A buffer done with more of the file to play: the device's
+                // callback wakes the task (`CALLBACK_TASK`), which runs
+                // when the program lets it -- woken here where the program
+                // waits for a message (`task_turn`).
+                if done
+                    && opened.read < opened.to
+                    && let Some(slot) = self.slot_of(playing.task)
+                {
+                    self.signal_slot(slot);
                 }
 
                 if playing.queued.is_empty() && opened.read >= opened.to {

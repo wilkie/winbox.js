@@ -2,7 +2,7 @@
 kind: topic
 name: Sound devices
 summary: What MMSYSTEM answers on a Windows 3.1 installation with no sound driver — no waveform, MIDI or auxiliary devices, every open refused as a bad device, and its own error texts — measured.
-probes: [mmdevs, mmnodev, mcidevs, mcifile, sndplay, mplopen, mmmisc, mmcmd]
+probes: [mmdevs, mmnodev, mcidevs, mcifile, sndplay, mplopen, mmmisc, mmcmd, mcitask]
 ---
 
 A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` names drivers for. The installation winbox.js runs, and the oracle records, names only the timer and the MIDI mapper: there is no sound card driver. So there is nothing to play waveform sound on or record it from. Programs ask before they try, and must be told the truth.
@@ -119,6 +119,19 @@ card=WinBox
 Everything MMSYSTEM, `MCIWAVE` and `sndPlaySound` do over the device is as before on either card. Two things that held only for eight-bit mono were made general for the wider one: `MCIWAVE`'s buffers are a second each, 176,400 bytes of sixteen-bit stereo at 44,100, read in past their first segment through a huge pointer, as `mmioRead` reads; and its position, asked of the device as samples and made bytes by the bytes and samples a second, needs the device's samples to be samples, not bytes.
 
 What the card plays is handed to the host with its rate, channels and bits: winbox-native mixes it into the host's device by cpal, the page resamples each of its lanes to the context's rate as one unbroken stream and mixes them in an AudioWorklet of its own (`src/run/engines/mixer.ts`).
+
+## MCIWAVE's task
+
+`MCIWAVE.DRV` plays a waveform file in the background on a task of its own, made with `mmTaskCreate` as the file is opened.
+
+- [[read out]] The play's call (`MCIWAVE.DRV` seg2 `1374`) opens the device, to call the task back (`CALLBACK_TASK`, `954`), and sets the task's state to playing (3, `1400`). The device's open message wakes the task. The call fills no buffer itself; with `MCI_WAIT` it calls `mciDriverYield` until the task is done (`14f1`-`150c`).
+- [[read out]] The task's loop (seg8 `1fe`-`2f4`) keeps a count of the buffers it has written and not seen back. While the count is below the number of buffers (`[178h]`, four unless the `[mci]` line or `MCI_WAVE_OPEN_BUFFER` says otherwise) and the play has more to read, it fills the next buffer, a second of the file, and writes it (`waveOutWrite`, `29d`), calling `mmTaskYield` after each (`2e2`). With every buffer written, or nothing left to read, it waits in `mmTaskBlock` (`2ce`) for the device's callback that a buffer is done, takes one off the count and goes round again. With the count at nought and nothing left, the loop ends and the task ends the play (seg2 `e96`).
+- [[read out]] `mmTaskBlock` is `GetMessage` until a message for the task itself comes (`MMSYSTEM.DLL` seg4 `5be`). The task runs only when the program lets other tasks run, as any Windows 3.1 task does.
+- [[measured]] [[probe:mcitask]] plays six seconds of silence, six buffers' worth, with four buffers. Waiting in `GetMessage`, or polling with `PeekMessage`, the program is notified six seconds after the play began. Busy for five seconds first, letting no other task run, the device is still at nought after them: nothing was written. The play is then notified at eleven seconds, five and six.
+
+[[inferred]] So a program that plays a sound in the background and then keeps the processor hears nothing until it next looks for a message or yields.
+
+WinBox's `MCIWAVE` has no task. It does the task's work at the times Windows would run the task (`task_turn` in `crates/winbox-win16/src/mmsystem/mci_wave.rs`): when the program yields, and when it looks for a message and finds none, before it waits. The card's interrupt that finds a buffer done wakes the program's task where it waits, as the device's callback wakes the driver's task. A play waited for (`MCI_WAIT`) is still played out by the call itself.
 
 ## Not yet done
 

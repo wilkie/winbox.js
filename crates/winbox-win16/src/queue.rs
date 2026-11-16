@@ -959,6 +959,12 @@ impl Engine {
                 return Ok(Some(Some(message)));
             }
 
+            // Nothing for the task: the other tasks run before it waits,
+            // MCIWAVE's among them, and what they posted is looked at.
+            if wait && crate::mmsystem::mci_wave::task_turn(self).await? {
+                continue;
+            }
+
             let timeout = match self.system().look_further(remove, wait, filter)? {
                 Further::Found(message) => return Ok(Some(Some(message))),
                 Further::Nothing => return Ok(Some(None)),

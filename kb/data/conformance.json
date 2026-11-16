@@ -18657,6 +18657,66 @@
    "wait": "a play's notification comes a tenth of a second early: not yet investigated"
   }
  },
+ "mcitask": {
+  "probe": "mcitask",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 19,
+  "functions": {
+   "busy": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mci": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notify": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wait": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mdiclsi": {
+  "probe": "mdiclsi",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "create": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "info": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "mdiscrl": {
   "probe": "mdiscrl",
   "display": "vga",
@@ -35704,8 +35764,8 @@
   "functions": {
    "classproc": {
     "total": 14,
-    "agreed": 7,
-    "disagreed": 7,
+    "agreed": 9,
+    "disagreed": 5,
     "unimplemented": 0,
     "unsupported": 0
    },

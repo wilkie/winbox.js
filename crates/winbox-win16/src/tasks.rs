@@ -22,6 +22,9 @@ impl Engine {
     /// other task waiting, even once those with a window to paint are woken,
     /// the turn comes straight back.
     pub(crate) async fn yield_turn(&self, first: Option<u16>) -> Result<(), Stop> {
+        // MCIWAVE's task among the others (`mci_wave::task_turn`).
+        crate::mmsystem::mci_wave::task_turn(self).await?;
+
         let slot = {
             let mut system = self.system();
             let Some(slot) = system.current_slot() else {
