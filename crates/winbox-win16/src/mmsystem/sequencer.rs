@@ -1227,7 +1227,7 @@ async fn prepare_headers(engine: &Engine, device: u16, port: u16) -> Result<(), 
     };
 
     for which in 0..headers::COUNT {
-        let header = u32::from(selector) << 16 | which * headers::EACH;
+        let header = (u32::from(selector) << 16) | (which * headers::EACH);
 
         {
             let mut system = engine.system();
@@ -1257,7 +1257,7 @@ async fn prepare_headers(engine: &Engine, device: u16, port: u16) -> Result<(), 
 fn header_places(system: &System, block: u16) -> Vec<u32> {
     super::sound::lock(system, block).map_or_else(Vec::new, |selector| {
         (0..headers::COUNT)
-            .map(|which| u32::from(selector) << 16 | which * headers::EACH)
+            .map(|which| (u32::from(selector) << 16) | (which * headers::EACH))
             .collect()
     })
 }
@@ -1692,38 +1692,7 @@ impl System {
                 }
             }
 
-            if player.port != 0 && std::mem::take(&mut player.prepared) {
-                let unprepare = self.mmsystem_proc("midiOutUnprepareHeader");
-
-                for header in header_places(self, player.headers) {
-                    self.at_interrupt(
-                        Interrupt {
-                            proc: unprepare,
-                            args: vec![
-                                GuestArg::Word(player.port),
-                                GuestArg::Long(header),
-                                GuestArg::Word(headers::HEADER as u16),
-                            ],
-                            key: None,
-                        },
-                        Some(player.task),
-                    );
-                }
-            }
-
-            if player.port != 0 {
-                let close = self.mmsystem_proc("midiOutClose");
-
-                self.at_interrupt(
-                    Interrupt {
-                        proc: close,
-                        args: vec![GuestArg::Word(player.port)],
-                        key: None,
-                    },
-                    Some(player.task),
-                );
-                player.port = 0;
-            }
+            self.close_at_end(&mut player);
 
             if let Some(pending) = player.pending.take() {
                 self.post_message(
@@ -1736,6 +1705,43 @@ impl System {
         }
 
         self.mmsystem.sequencer.players.insert(device, player);
+    }
+
+    /// The port closed at a play's end by the sequencer's task (seg2
+    /// `cf0`-`d18`): its two headers unprepared first (seg3 `1220`-`1249`).
+    fn close_at_end(&mut self, player: &mut Player) {
+        if player.port != 0 && std::mem::take(&mut player.prepared) {
+            let unprepare = self.mmsystem_proc("midiOutUnprepareHeader");
+
+            for header in header_places(self, player.headers) {
+                self.at_interrupt(
+                    Interrupt {
+                        proc: unprepare,
+                        args: vec![
+                            GuestArg::Word(player.port),
+                            GuestArg::Long(header),
+                            GuestArg::Word(headers::HEADER as u16),
+                        ],
+                        key: None,
+                    },
+                    Some(player.task),
+                );
+            }
+        }
+
+        if player.port != 0 {
+            let close = self.mmsystem_proc("midiOutClose");
+
+            self.at_interrupt(
+                Interrupt {
+                    proc: close,
+                    args: vec![GuestArg::Word(player.port)],
+                    key: None,
+                },
+                Some(player.task),
+            );
+            player.port = 0;
+        }
     }
 
     /// What is left of the system-exclusive message under way sent (seg3
