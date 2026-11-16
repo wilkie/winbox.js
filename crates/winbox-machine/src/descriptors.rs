@@ -96,6 +96,10 @@ pub const CODE: u8 = 0xfb;
 /// accessed.
 pub const DATA: u8 = 0xf3;
 
+/// A descriptor's granularity bit, in its byte 6: its limit counted in
+/// 4 KiB pages.
+const GRANULAR: u8 = 0x80;
+
 fn entry(index: usize) -> u32 {
     LDT_BASE + 8 * index as u32
 }
@@ -209,6 +213,32 @@ impl Descriptors {
         memory.write8(
             at + 6,
             (memory.read8(at + 6) & 0xf0) | ((limit >> 16) & 0x0f) as u8,
+        );
+    }
+
+    /// A block's selector's limit, as KERNEL sets each selector of a block
+    /// it sizes (`KRNL386.EXE` seg1 `22ea`-`2391`, and `2223` for each
+    /// selector after the first): a block of 1 MiB or more given the
+    /// granularity bit and its limit in 4 KiB pages, its size rounded up to
+    /// a page (`232f`-`234a`), and each selector after the first 16 pages
+    /// less (`223f`); a smaller block its limit in bytes, the bit cleared
+    /// (`2323`). `limit` is the last byte the selector reaches. **Recorded**
+    /// by `gbigsel`, in both modes: `LSL` 14DFFFh with the bit set for a
+    /// block of 14E000h, FFFFFh with it for one of 100000h, FFFDFh without
+    /// it for one of FFFE0h, and the bit cleared again for a block shrunk
+    /// to 80000h.
+    pub fn set_block_limit(memory: &mut Memory, index: usize, limit: u32, granular: bool) {
+        let at = entry(index);
+        let (limit, flag) = if granular {
+            (limit >> 12, GRANULAR)
+        } else {
+            (limit.min(0xfffff), 0)
+        };
+
+        memory.write16(at, limit as u16);
+        memory.write8(
+            at + 6,
+            (memory.read8(at + 6) & 0x70) | flag | ((limit >> 16) & 0x0f) as u8,
         );
     }
 

@@ -1,0 +1,179 @@
+{
+  "probe": "gbigsel",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "grow",
+      "args": "8000",
+      "result": "same 8000 lsl=7fff,g=0,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "8000",
+      "result": "n=1"
+    },
+    {
+      "function": "fill",
+      "args": "8000",
+      "result": "5a00 5a00 5a00 kept=2"
+    },
+    {
+      "function": "grow",
+      "args": "10000",
+      "result": "same 10000 lsl=ffff,g=0,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "10000",
+      "result": "n=1"
+    },
+    {
+      "function": "fill",
+      "args": "10000",
+      "result": "5a01 5a01 5a01 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "10001",
+      "result": "other 10020 lsl=1001f,g=0,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "10001",
+      "result": "n=2,base=1,lsl=1,g=0/0"
+    },
+    {
+      "function": "fill",
+      "args": "10001",
+      "result": "5a02 5a02 5a02 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "18000",
+      "result": "same 18000 lsl=17fff,g=0,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "18000",
+      "result": "n=2,base=1,lsl=1,g=0/0"
+    },
+    {
+      "function": "fill",
+      "args": "18000",
+      "result": "5a03 5a03 5a03 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "fffe0",
+      "result": "other fffe0 lsl=fffdf,g=0,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "fffe0",
+      "result": "n=16,base=1,lsl=1,g=0/0"
+    },
+    {
+      "function": "fill",
+      "args": "fffe0",
+      "result": "5a04 5a04 5a04 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "100000",
+      "result": "same 100000 lsl=fffff,g=1,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "100000",
+      "result": "n=16,base=1,lsl=1,g=1/1"
+    },
+    {
+      "function": "fill",
+      "args": "100000",
+      "result": "5a05 5a05 5a05 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "100001",
+      "result": "other 101000 lsl=100fff,g=1,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "100001",
+      "result": "n=17,base=1,lsl=1,g=1/1"
+    },
+    {
+      "function": "fill",
+      "args": "100001",
+      "result": "5a06 5a06 5a06 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "14e000",
+      "result": "other 14e000 lsl=14dfff,g=1,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "14e000",
+      "result": "n=21,base=1,lsl=1,g=1/1"
+    },
+    {
+      "function": "fill",
+      "args": "14e000",
+      "result": "5a07 5a07 5a07 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "200000",
+      "result": "other 200000 lsl=1fffff,g=1,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "200000",
+      "result": "n=32,base=1,lsl=1,g=1/1"
+    },
+    {
+      "function": "fill",
+      "args": "200000",
+      "result": "5a08 5a08 5a08 kept=1"
+    },
+    {
+      "function": "grow",
+      "args": "123456",
+      "result": "same 124000 lsl=123fff,g=1,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "123456",
+      "result": "n=19,base=1,lsl=1,g=1/1"
+    },
+    {
+      "function": "fill",
+      "args": "123456",
+      "result": "none kept=2"
+    },
+    {
+      "function": "grow",
+      "args": "80000",
+      "result": "same 80000 lsl=7ffff,g=0,d=0"
+    },
+    {
+      "function": "tiles",
+      "args": "80000",
+      "result": "n=8,base=1,lsl=1,g=0/0"
+    },
+    {
+      "function": "fill",
+      "args": "80000",
+      "result": "none kept=2"
+    }
+  ]
+}

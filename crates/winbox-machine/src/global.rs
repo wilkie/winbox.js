@@ -8,6 +8,10 @@ use crate::{Descriptors, Memory, OWN_PAGES_ABOVE};
 /// The first descriptor index a block is given.
 pub const FIRST_SELECTOR: usize = 100;
 
+/// The size from which KERNEL gives a block's selectors the granularity
+/// bit (`KRNL386.EXE` seg1 `232f`: `cmp ecx,100000h`).
+const GRANULAR_FROM: u32 = 0x0010_0000;
+
 /// `GMEM_MOVEABLE`.
 const GMEM_MOVEABLE: u16 = 0x0002;
 /// A descriptor's present bit, in its access byte.
@@ -225,7 +229,7 @@ impl GlobalHeap {
             left -= amount;
         }
 
-        self.set_limits(memory, descriptors, index);
+        self.set_limits(memory, index);
 
         // A moveable block of nothing is a handle with no memory
         // (`KRNL386.EXE` seg1 `40ab`): discarded, its selector not present
@@ -250,9 +254,11 @@ impl GlobalHeap {
     }
 
     /// A block's selectors' limits: the first reaches the whole block, its
-    /// size less one (`selinfo`), each after it what is left from there. A
-    /// block of nothing keeps 64 KiB.
-    fn set_limits(&self, memory: &mut Memory, descriptors: &mut Descriptors, index: usize) {
+    /// size less one (`selinfo`), each after it what is left from there; a
+    /// block of 1 MiB or more counts them in pages, each of its selectors
+    /// with the granularity bit (`gbigsel`; [`Descriptors::set_block_limit`]).
+    /// A block of nothing keeps 64 KiB.
+    fn set_limits(&self, memory: &mut Memory, index: usize) {
         let Some(block) = self.blocks.get(&index) else {
             return;
         };
@@ -261,10 +267,12 @@ impl GlobalHeap {
             return;
         }
 
+        let granular = block.size >= GRANULAR_FROM;
+
         for tile in 0..block.selectors {
             let left = block.size.saturating_sub(tile as u32 * 0x10000);
 
-            descriptors.set_limit(memory, index + tile, left.saturating_sub(1));
+            Descriptors::set_block_limit(memory, index + tile, left.saturating_sub(1), granular);
         }
     }
 
@@ -482,7 +490,7 @@ impl GlobalHeap {
         self.held = self.held - u64::from(block.size) + u64::from(size);
         block.size = size;
         memory.resize_own_pages((index as u32) << 16, size);
-        self.set_limits(memory, descriptors, index);
+        self.set_limits(memory, index);
         Some(index)
     }
 
@@ -620,5 +628,35 @@ mod tests {
         assert_eq!(memory.read((moved as u32) << 16, 4), b"kept");
         assert_eq!(heap.size_of(moved), 0x18000);
         assert!(heap.block(a).is_none());
+    }
+
+    /// `gbigsel`: a block of 1 MiB or more has its selectors' limits in
+    /// pages, the granularity bit set; shrunk under 1 MiB, in bytes again.
+    #[test]
+    fn counts_a_megabyte_blocks_limits_in_pages() {
+        let (mut memory, mut descriptors, mut heap) = machine();
+        let at = |index: usize| crate::LDT_BASE + 8 * index as u32;
+        let limit = |memory: &Memory, index: usize| {
+            let flags = memory.read8(at(index) + 6);
+            let limit = u32::from(memory.read16(at(index))) | u32::from(flags & 0x0f) << 16;
+
+            if flags & 0x80 != 0 {
+                (limit << 12 | 0xfff, true)
+            } else {
+                (limit, false)
+            }
+        };
+        let block = heap
+            .allocate(&mut memory, &mut descriptors, 0x0014_e000, 2)
+            .unwrap();
+
+        assert_eq!(limit(&memory, block), (0x0014_dfff, true));
+        assert_eq!(limit(&memory, block + 1), (0x0013_dfff, true));
+        assert_eq!(limit(&memory, block + 20), (0x0000_dfff, true));
+
+        heap.resize(&mut memory, &mut descriptors, block, 0x0008_0000)
+            .unwrap();
+        assert_eq!(limit(&memory, block), (0x0007_ffff, false));
+        assert_eq!(limit(&memory, block + 7), (0x0000_ffff, false));
     }
 }
