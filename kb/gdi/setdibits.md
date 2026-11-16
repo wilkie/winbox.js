@@ -6,7 +6,7 @@ ordinal: 440
 summary: Sets some or all of a bitmap's scan lines from a device-independent bitmap, counted from its bottom row, and answers how many it set.
 versions:
   '3.1': exact
-probes: [gdidraw, deskdeep, prblt2]
+probes: [gdidraw, deskdeep, prblt2, dib16]
 source: crates/winbox-win16/src/gdi/printer_stretch.rs
 topics: [palettes, printer-drivers]
 ---
@@ -26,6 +26,8 @@ winbox.js agrees with all of these records. Both were stubs.
 
 - 24 bits answer 8, each pixel matched on its own: green (100, 200, 50) is bright green on the VGA, by its driver's rule, and olive on the 256-colour display, the nearest of the static colours with no palette selected.
 - 16 and 32 bits answer nought and set nothing. [[read out]] The display driver takes 1, 4, 8 and 24 bits and one plane, and answers nought for anything else (VGA.DRV seg9 `0059`-`0080`, SVGA256.DRV seg9 `0197`-`01be`); GDI hands the bits to its `DeviceBitmapBits` (`GDI.EXE` seg11 `091e`).
+
+[[probe:dib16]] gives DIBs 4 by 4 of 16, 32 and 24 bits a pixel to `CreateDIBitmap` with `CBM_INIT`, to `SetDIBits` and to `SetDIBitsToDevice`, on the VGA, in both modes. [[measured]] With 16 or 32 bits `CreateDIBitmap` answers nought, though without `CBM_INIT` it makes a bitmap of the header's size, and the other two answer nought; with 24 bits each succeeds, 4 scan lines. A program that loads a picture of 16 bits a pixel fails on Windows 3.1 as in winbox.js: Friday of the catalog, a Visual Basic program, says "Out of memory" and ends.
 
 ## A compressed DIB
 
