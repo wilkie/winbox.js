@@ -98,6 +98,8 @@ impl System {
             // mode has no pager.
             self.enforce_pages();
 
+            self.cpu.time_stamp = Some(self.clock.time_stamp(self.instructions));
+
             let (ran, exit) = self.cpu.run(slice);
 
             self.instructions += ran;

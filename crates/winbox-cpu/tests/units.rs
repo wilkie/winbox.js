@@ -805,3 +805,147 @@ mod protected_mode {
         }
     }
 }
+
+mod the_oracles_486 {
+    //! The instructions after the 386's under `Model::Mixed`, DOSBox
+    //! 0.74-3's `cputype=auto`, as the `cpu486` probe recorded them in both
+    //! modes (`i486.rs`): the cases here are its records'.
+
+    use super::*;
+    use winbox_cpu::{DX, Model};
+
+    const ARITH: u16 = 0x08d5;
+
+    fn mixed(code: &[u8]) -> Cpu<VecBus> {
+        let mut cpu = real(code);
+
+        cpu.model = Model::Mixed;
+        cpu
+    }
+
+    #[test]
+    fn bswap_reverses_a_double_word_and_clears_a_word() {
+        let mut cpu = mixed(&[0x66, 0x0f, 0xc8, 0x0f, 0xca]);
+
+        set_reg32(&mut cpu, AX, 0x1234_5678);
+        set_reg32(&mut cpu, DX, 0x89ab_cdef);
+        cpu.flags |= ARITH;
+        step(&mut cpu);
+        step(&mut cpu);
+        assert_eq!(reg32(&cpu, AX), 0x7856_3412);
+        assert_eq!(reg32(&cpu, DX), 0x89ab_0000);
+        assert_eq!(cpu.flags & ARITH, ARITH);
+    }
+
+    #[test]
+    fn xadd_leaves_the_flags() {
+        // xadd al, cl; xadd [bx], ecx
+        let mut cpu = mixed(&[0x0f, 0xc0, 0xc8, 0x66, 0x0f, 0xc1, 0x0f]);
+
+        set_reg32(&mut cpu, AX, 0x1234_5680);
+        set_reg32(&mut cpu, CX, 0xabcd_ef80);
+        step(&mut cpu);
+        assert_eq!(
+            (reg32(&cpu, AX), reg32(&cpu, CX)),
+            (0x1234_5600, 0xabcd_ef80)
+        );
+        assert_eq!(cpu.flags & ARITH, 0);
+
+        cpu.regs[BX] = 0x100;
+        cpu.bus.0[0x10100..0x10104].copy_from_slice(&0x8000_0000u32.to_le_bytes());
+        set_reg32(&mut cpu, CX, 0x8000_0000);
+        cpu.flags |= ARITH;
+        step(&mut cpu);
+        assert_eq!(cpu.bus.0[0x10100..0x10104], [0, 0, 0, 0]);
+        assert_eq!(reg32(&cpu, CX), 0x8000_0000);
+        assert_eq!(cpu.flags & ARITH, ARITH);
+    }
+
+    #[test]
+    fn cmpxchg_sets_zf_alone() {
+        // cmpxchg cx, dx; cmpxchg [bx], edx
+        let mut cpu = mixed(&[0x0f, 0xb1, 0xd1, 0x66, 0x0f, 0xb1, 0x17]);
+
+        set_reg32(&mut cpu, AX, 0x1122_1000);
+        set_reg32(&mut cpu, CX, 0x5566_2000);
+        set_reg32(&mut cpu, DX, 0x99aa_bbcc);
+        cpu.flags |= ARITH;
+        step(&mut cpu);
+        assert_eq!(reg32(&cpu, AX), 0x1122_2000);
+        assert_eq!(cpu.flags & ARITH, ARITH & !ZF);
+
+        cpu.regs[BX] = 0x100;
+        cpu.bus.0[0x10100..0x10104].copy_from_slice(&0x1122_3344u32.to_le_bytes());
+        set_reg32(&mut cpu, AX, 0x1122_3344);
+        cpu.flags &= !ARITH;
+        step(&mut cpu);
+        assert_eq!(cpu.bus.0[0x10100..0x10104], 0x99aa_bbccu32.to_le_bytes());
+        assert_eq!(cpu.flags & ARITH, ZF);
+    }
+
+    #[test]
+    fn cpuid_answers_as_a_486dx() {
+        let mut cpu = mixed(&[0x0f, 0xa2, 0x0f, 0xa2]);
+
+        set_reg32(&mut cpu, AX, 0);
+        step(&mut cpu);
+        assert_eq!(
+            [
+                reg32(&cpu, AX),
+                reg32(&cpu, BX),
+                reg32(&cpu, CX),
+                reg32(&cpu, DX)
+            ],
+            [1, 0x756e_6547, 0x6c65_746e, 0x4965_6e69]
+        );
+        set_reg32(&mut cpu, AX, 1);
+        step(&mut cpu);
+        assert_eq!(
+            [
+                reg32(&cpu, AX),
+                reg32(&cpu, BX),
+                reg32(&cpu, CX),
+                reg32(&cpu, DX)
+            ],
+            [0x402, 0, 0, 1]
+        );
+    }
+
+    #[test]
+    fn rdtsc_counts_on_from_the_hosts_count() {
+        let mut cpu = mixed(&[0x0f, 0x31, 0x90, 0x0f, 0x31]);
+
+        assert_eq!(cpu.run(1), (0, Exit::Unimplemented(0x0f)));
+        cpu.time_stamp = Some(0x1_0000_0000);
+        assert_eq!(cpu.run(3), (3, Exit::Budget));
+        assert_eq!((reg32(&cpu, DX), reg32(&cpu, AX)), (1, 2));
+    }
+
+    #[test]
+    fn ac_and_id_are_kept_and_a_word_popped_clears_id() {
+        // push dword 00240000h; popfd; pushf; popf; pushfd; pop eax
+        let code = [
+            0x66, 0x68, 0x00, 0x00, 0x24, 0x00, 0x66, 0x9d, 0x9c, 0x9d, 0x66, 0x9c, 0x66, 0x58,
+        ];
+        let mut cpu = mixed(&code);
+
+        for _ in 0..6 {
+            step(&mut cpu);
+        }
+        assert_eq!(reg32(&cpu, AX) >> 16, 0x0004);
+
+        let mut cpu = real(&code);
+
+        for _ in 0..6 {
+            step(&mut cpu);
+        }
+        assert_eq!(reg32(&cpu, AX) >> 16, 0, "the 386 keeps neither");
+    }
+
+    #[test]
+    fn the_386_has_none_of_them() {
+        let mut cpu = real(&[0x0f, 0xc8]);
+
+        assert_eq!(cpu.run(1), (0, Exit::Unimplemented(0x0f)));
+    }
+}

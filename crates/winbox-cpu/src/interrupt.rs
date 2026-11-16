@@ -136,7 +136,7 @@ impl<B: Bus> Cpu<B> {
         };
         let ip = read(self, 0)?;
         let selector = read(self, 1)? as u16;
-        let flags = read(self, 2)? as u16;
+        let flags = read(self, 2)?;
 
         let segment = self.descriptor(CS, selector, false)?;
 
@@ -147,7 +147,20 @@ impl<B: Bus> Cpu<B> {
         self.set_stack_top(self.stack_step(top, 3 * step));
         self.ip = ip;
         self.set_segment(CS, segment);
-        self.load_flags(flags);
+        self.load_flags(flags as u16);
+
+        // The bits above: `IRETD` loads AC and ID; `IRET` of a word, which
+        // DOSBox loads under EFLAGS' whole mask in protected mode and its low
+        // word's in real mode, clears ID, and AC too in protected mode
+        // (`cpu/cpu.cpp` 760-771, 869-919, 968).
+        if wide {
+            self.load_flags_high(flags);
+        } else if self.protected {
+            self.flags_high = 0;
+        } else {
+            self.flags_high &= !crate::ID_HIGH;
+        }
+
         Ok(())
     }
 

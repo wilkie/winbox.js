@@ -79,6 +79,18 @@ impl Decoded {
     fn moves_special_register(&self) -> bool {
         self.opcode == 0x0f && matches!(self.second, Some(0x20..=0x24 | 0x26))
     }
+
+    /// Whether the instruction is `INVD`, `WBINVD` or `INVLPG` (`0F 08h`,
+    /// `09h`, `01h /7`, its ModR/M byte `modrm`), which the core faults at a
+    /// program's privilege (`winbox-cpu`'s `i486.rs`).
+    fn flushes(&self, modrm: Option<u8>) -> bool {
+        self.opcode == 0x0f
+            && match self.second {
+                Some(0x08 | 0x09) => true,
+                Some(0x01) => modrm.is_some_and(|modrm| (modrm >> 3) & 7 == 7),
+                _ => false,
+            }
+    }
 }
 
 impl System {
@@ -152,6 +164,13 @@ impl System {
         // `MOV` to or from a special register at the program's privilege:
         // `#GP(0)`, as the core raises it.
         if exit == Exit::Fault(13) && decoded.moves_special_register() {
+            return Some((13, 0));
+        }
+
+        // `INVD`, `WBINVD` and `INVLPG` likewise: `#GP(0)`, the program's
+        // handler called with code nought (**recorded** by `cpu486`, in
+        // both modes, for the first two).
+        if exit == Exit::Fault(13) && decoded.flushes(self.code(decoded.at)) {
             return Some((13, 0));
         }
 

@@ -37,6 +37,7 @@ pub enum Exit {
 
 mod decimal;
 mod divide;
+mod i486;
 mod interrupt;
 mod quick;
 mod wide;
@@ -44,6 +45,29 @@ mod x87;
 
 pub use quick::{Function, LOGGED, Logged, Quick, QuickClock, THUNKS, Thunk};
 pub use x87::{X87, from_extended, round_even, to_extended};
+
+/// Which processor the core is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Model {
+    /// The 80386 its hardware vectors were captured from
+    /// (`tests/conformance.rs`): the 486's and the Pentium's instructions
+    /// stop the run ([`Exit::Unimplemented`]), and EFLAGS has no bits above
+    /// 15.
+    #[default]
+    I386,
+    /// The oracle's: DOSBox 0.74-3 at its `cputype=auto`, which the recorder
+    /// leaves it at, `CPU_ARCHTYPE_MIXED` (`cpu/cpu.cpp` 2352-2355): the
+    /// 486's instructions, CPUID as a 486DX answers it, RDTSC as a
+    /// Pentium's, and EFLAGS' AC and ID bits (`i486.rs`, **recorded** by
+    /// `cpu486` in both modes).
+    Mixed,
+}
+
+/// EFLAGS' alignment-check flag, bit 18, in [`Cpu::flags_high`].
+const AC_HIGH: u16 = 0x0004;
+/// EFLAGS' identification flag, bit 21, in [`Cpu::flags_high`]: the bit a
+/// program toggles to learn whether CPUID is there.
+const ID_HIGH: u16 = 0x0020;
 
 /// How many selectors [`Cpu::loads`] keeps; a run stops when it is all but
 /// full, an instruction loading two at most.
@@ -284,6 +308,15 @@ pub struct Cpu<B: Bus> {
     /// one, the low word alone, wrapping or faulting past `FFFFh` as IP does.
     pub ip: u32,
     pub flags: u16,
+    /// EFLAGS' bits 16 to 31 the core keeps: under [`Model::Mixed`], AC
+    /// and ID; else none.
+    pub flags_high: u16,
+    /// Which processor the core is.
+    pub model: Model,
+    /// The time-stamp counter as this run starts, where the host keeps one
+    /// (`RDTSC`, [`Model::Mixed`]): it counts on by an instruction an
+    /// instruction. `None` stops the run at `RDTSC`.
+    pub time_stamp: Option<u64>,
     pub segments: [Segment; 6],
     /// Whether segment loads read descriptors (CR0's PE bit).
     pub protected: bool,
@@ -394,6 +427,9 @@ impl<B: Bus> Cpu<B> {
             high: [0; 8],
             ip: 0,
             flags: 0x0002,
+            flags_high: 0,
+            model: Model::I386,
+            time_stamp: None,
             segments: [Segment::default(); 6],
             protected: false,
             gdt_base: 0,
@@ -1927,6 +1963,7 @@ impl<B: Bus> Cpu<B> {
                 match (reg, self.msw) {
                     (0 | 1, _) => self.set16(place, 0)?,
                     (4, Some(msw)) => self.set16(place, msw)?,
+                    (7, _) if self.model == Model::Mixed => return self.invalidate_page(place),
                     _ => return Err(Exit::Unimplemented(0x0f)),
                 }
             }
@@ -1945,6 +1982,12 @@ impl<B: Bus> Cpu<B> {
             // LSS, LFS and LGS: a far pointer, from memory only, the segment
             // loaded unchecked; a register
             // operand is an undefined opcode.
+            // The 486's and the Pentium's, of words (`i486.rs`).
+            0x08 | 0x09 | 0x31 | 0xa2 | 0xb0 | 0xb1 | 0xc0 | 0xc1 | 0xc8..=0xcf
+                if self.model == Model::Mixed =>
+            {
+                return self.later(opcode);
+            }
             0xb2 | 0xb4 | 0xb5 => {
                 let (reg, place) = self.modrm()?;
                 let Place::Memory(through, offset) = place else {
@@ -2266,7 +2309,7 @@ impl<B: Bus> Cpu<B> {
                 let modrm = byte(1)?;
 
                 match second {
-                    0xab | 0xb3 | 0xbb => memory(modrm),
+                    0xab | 0xb3 | 0xbb | 0xb0 | 0xb1 | 0xc0 | 0xc1 => memory(modrm),
                     0xba => memory(modrm) && reg(modrm) >= 5,
                     _ => false,
                 }
@@ -2849,6 +2892,10 @@ impl<B: Bus> Cpu<B> {
                 let value = self.pop()?;
 
                 self.load_flags(value);
+                // A word popped leaves AC and clears ID, as DOSBox's
+                // `CPU_SetFlags` loads the ID bit whatever the size
+                // (`cpu/cpu.cpp` 172-176, 211-213; `cpu486`).
+                self.flags_high &= !ID_HIGH;
             }
             0x8f => self.pop_to_memory(2)?,
             // LEAVE: ESP from EBP on a 32-bit stack, SP from BP on a 16-bit.

@@ -206,11 +206,18 @@ impl<B: Bus> Cpu<B> {
                 self.call_far32(selector, offset)?;
             }
             // PUSHFD and POPFD: FLAGS' word, in a double word.
-            0x9c => self.push32(u32::from(self.flags_word()))?,
+            // Above them, the bits kept of the high word: AC and ID under
+            // [`crate::Model::Mixed`], as DOSBox's `CPU_PUSHF` pushes
+            // EFLAGS less VM and RF and `CPU_POPF` loads them (`cpu/cpu.cpp`
+            // 202-227; `cpu486`).
+            0x9c => {
+                self.push32(u32::from(self.flags_word()) | u32::from(self.flags_high) << 16)?;
+            }
             0x9d => {
                 let value = self.pop32()?;
 
                 self.load_flags(value as u16);
+                self.load_flags_high(value);
             }
             0xa1 => {
                 let offset = self.moffs()?;
@@ -591,11 +598,21 @@ impl<B: Bus> Cpu<B> {
             // the host's, its tables being; SGDT, SIDT and the rest the
             // JavaScript core's 32-bit table passes over, doing nothing.
             0x01 => {
-                let (reg, _) = self.modrm()?;
+                let (reg, place) = self.modrm()?;
 
                 if matches!(reg, 2 | 3) {
                     return Err(Exit::Unimplemented(0x0f));
                 }
+
+                if reg == 7 && self.model == crate::Model::Mixed {
+                    return self.invalidate_page(place);
+                }
+            }
+            // The 486's and the Pentium's, of double words (`i486.rs`).
+            0x08 | 0x09 | 0x31 | 0xa2 | 0xb0 | 0xb1 | 0xc0 | 0xc1 | 0xc8..=0xcf
+                if self.model == crate::Model::Mixed =>
+            {
+                return self.later(second);
             }
             // `MOV` to or from a special register: the prefix changes
             // nothing, its operand always 32 bits.
