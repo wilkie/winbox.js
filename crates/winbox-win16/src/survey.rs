@@ -62,6 +62,10 @@ pub struct Survey {
     /// at a fixed 80,000 instructions a millisecond with each call charged
     /// as recorded.
     pub clock: String,
+    /// The compatibility catalog's hand at a setup: a look every so many
+    /// milliseconds, Enter pressed at each, or a rule's step where Enter
+    /// has done nothing twice (`pass_rules.rs`).
+    pub pass: Option<f64>,
 }
 
 impl Default for Survey {
@@ -79,6 +83,7 @@ impl Default for Survey {
             counts: false,
             screens: false,
             clock: "survey".to_string(),
+            pass: None,
         }
     }
 }
@@ -238,6 +243,17 @@ impl Survey {
             let from = marks.back().map_or(2000.0, |mark| mark.time + 1500.0);
 
             marks.extend(scripted_input(seed, from, self.seconds, size));
+        }
+
+        // The catalog's hand: its looks among the report's marks, by time.
+        if let Some(every) = self.pass {
+            let marks = &mut system.call_marks.marks;
+            let mut all: Vec<CallMark> = marks.drain(..).collect();
+
+            all.extend(crate::pass_rules::looks(every, self.seconds));
+            all.sort_by(|a, b| a.time.total_cmp(&b.time));
+            marks.extend(all);
+            system.call_marks.rules = Some(crate::pass_rules::PassRules::default());
         }
 
         Prepared {

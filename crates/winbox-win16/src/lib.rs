@@ -106,6 +106,7 @@ pub mod olesvr;
 mod own_modules;
 pub mod paint;
 pub mod painter;
+pub mod pass_rules;
 mod pit;
 mod pointers;
 mod ports;

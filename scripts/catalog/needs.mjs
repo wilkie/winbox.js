@@ -18,6 +18,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { expand } from '../oracle/szdd.mjs';
 import { runtimeBytes, runtimesFor } from './runtimes.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -189,6 +190,13 @@ export function headerOf(bytes) {
   const signature = at + 2 <= bytes.length ? bytes.toString('latin1', at, at + 2) : '';
 
   return ['NE', 'PE', 'LE', 'LX'].includes(signature) ? signature : 'DOS';
+}
+
+/** A file `COMPRESS.EXE` made (`SZDD`), expanded; null for another. */
+function expandedOf(file) {
+  const bytes = readFileSync(file);
+
+  return bytes.toString('latin1', 0, 4) === 'SZDD' ? Buffer.from(expand(bytes)) : null;
 }
 
 /**
@@ -463,10 +471,44 @@ export function needsOf(item, folder, images = []) {
     }
   }
 
+  /*
+   * A setup's payload, as Microsoft's `COMPRESS.EXE` leaves a file
+   * (`SZDD`, the extension's last letter `_`): its programs and libraries
+   * are what the setup installs and starts, and their imports are needed
+   * as the setup runs (a Visual Basic setup kit's bootstrap starts the
+   * `SETUP1.EXE` it expands, which imports `VBRUN300`); a module so
+   * compressed is one the download brings.
+   */
+  const payload = [];
+
+  if (program && SETUP.test(basename(program))) {
+    for (const file of files) {
+      if (/\.(ex|dl|dr|vb)_$/i.test(file) && statSync(file).size < 64 * 2 ** 20) {
+        const expanded = expandedOf(file);
+
+        if (!expanded) {
+          continue;
+        }
+
+        const module = basename(file)
+          .toUpperCase()
+          .replace(/\.[^.]+$/, '');
+
+        if (!byModule.has(module)) {
+          byModule.set(module, file);
+        }
+
+        if (/\.ex_$/i.test(file)) {
+          payload.push(expanded);
+        }
+      }
+    }
+  }
+
   const imports = new Set();
   const functions = new Set();
   const read = new Set();
-  const pending = bytes && needs.header === 'NE' ? [bytes] : [];
+  const pending = [...(bytes && needs.header === 'NE' ? [bytes] : []), ...payload];
 
   while (pending.length) {
     const found = neImports(pending.shift());
@@ -476,7 +518,7 @@ export function needsOf(item, folder, images = []) {
 
       if (!read.has(module) && byModule.has(module)) {
         read.add(module);
-        pending.push(readFileSync(byModule.get(module)));
+        pending.push(expandedOf(byModule.get(module)) ?? readFileSync(byModule.get(module)));
       }
     }
 

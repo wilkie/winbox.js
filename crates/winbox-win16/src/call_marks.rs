@@ -23,6 +23,9 @@ pub enum MarkAction {
     Shot,
     /// The mouse moved, pressed or let go (`raster_input.rs`).
     Pointer(crate::raster_input::Pointer),
+    /// The compatibility catalog's hand looks, and presses Enter or does
+    /// what its rules say (`pass_rules.rs`).
+    Look,
 }
 
 /// A thing to do once the program has run `instructions`, before it runs
@@ -47,6 +50,9 @@ pub struct CallMarks {
     /// The accessibility tree at each `Shot`, as JSON (`accessible_tree.rs`),
     /// to set beside the one a report holds for the same place.
     pub trees: Vec<String>,
+    /// The compatibility catalog's hand at a setup, where it is given one
+    /// (`pass_rules.rs`).
+    pub rules: Option<crate::pass_rules::PassRules>,
 }
 
 impl System {
@@ -76,6 +82,7 @@ impl System {
                     self.message_time = None;
                 }
                 MarkAction::Pointer(pointer) => self.pointer_event(pointer),
+                MarkAction::Look => self.pass_look(mark.time),
                 MarkAction::Shot => {
                     let indices = self.screen_bitmap().indices.borrow().clone();
 

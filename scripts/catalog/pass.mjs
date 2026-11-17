@@ -78,9 +78,16 @@ const RATE = 3000;
 let STAGES = [20, 40, 80, 120];
 /** Virtual seconds a setup is run alone first, to find where it first waits. */
 const FIRST_WAIT = 30;
-/** Virtual seconds a setup is given. */
+/** Virtual seconds a setup is given; twice as many where it is still at work then. */
 const INSTALL_SECONDS = 180;
-/** Enter pressed every so many milliseconds of a setup's run, from the first. */
+/**
+ * The hand at a setup looks every so many milliseconds of its run, from the
+ * first, and presses Enter; where Enter has done nothing for two presses, it
+ * clicks the first button shown captioned "Continue", "Install", "Next",
+ * "OK", "Yes" or "Complete", or where the click too did nothing, presses
+ * Alt and the letter its caption underlines (`trace --pass`,
+ * `winbox_win16::pass_rules`).
+ */
 const ENTER = 4000;
 /** Runs at once. */
 const PARALLEL = Number(process.env.PASS_PARALLEL ?? 12);
@@ -120,22 +127,19 @@ function dosPath(path) {
   return path.split(/[\\/]/).join('\\').toUpperCase();
 }
 
-/** The marks that press Enter every `ENTER` milliseconds of a setup's run. */
-function enterMarks() {
-  const file = join(CACHE, 'enter-marks.json');
-  const stepMarks = [];
+/**
+ * What the hand did at a setup (`trace --pass`): its steps as a report's
+ * marks (`stepMarks`), which `trace --marks` does again, and the rules'
+ * steps alone (a click on a button, Alt and a letter).
+ */
+function stepsOf(out) {
+  const line = out.split('\n').find((each) => each.startsWith('steps: '));
 
-  for (let time = ENTER; time < INSTALL_SECONDS * 1000; time += ENTER) {
-    for (const [kind, at] of [
-      ['down', time],
-      ['up', time + 50],
-    ]) {
-      stepMarks.push({ calls: 0, instructions: 0, time: at, kind, key: '\r', code: 'Enter' });
-    }
+  try {
+    return line ? JSON.parse(line.slice(7)) : null;
+  } catch {
+    return null;
   }
-
-  writeFileSync(file, JSON.stringify({ stepMarks }));
-  return file;
 }
 
 /** The calls of a program that polls its input instead of waiting for a message. */
@@ -533,9 +537,22 @@ const NOT_THE_PROGRAM =
  * where it stopped.
  */
 async function install(item, folder, needs, mounts) {
-  const setupPath = needs.setup
-    ? `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.setup)}`
-    : needs.onImage;
+  /*
+   * A setup was run from its own disk: a floppy's root, a disc's. The
+   * item's folder is mounted so, as a drive of its own after those its
+   * images are (D: where there is none), read and never written; it stays
+   * mounted for the program's run, as a disk left in its drive. Setups
+   * that take their disk's root for the source (an InstallShield script's
+   * `C:\WinDir`, a group's `C:\SWITCH.EXE`) find their files there.
+   */
+  if (needs.setup && !mounts.some(([, image]) => image === folder)) {
+    const letter = ['D', 'E', 'F', 'G'].find((each) => !mounts.some(([taken]) => taken === each));
+
+    mounts.push([letter, folder]);
+  }
+
+  const own = mounts.find(([, image]) => image === folder)?.[0];
+  const setupPath = needs.setup ? `${own}:\\${dosPath(needs.setup)}` : needs.onImage;
 
   /*
    * First the setup alone for `FIRST_WAIT` seconds, nothing pressed: where
@@ -546,7 +563,7 @@ async function install(item, folder, needs, mounts) {
   const probe = outcome(
     await trace(
       runArgs({
-        exe: needs.setup ? join(probeDrive, 'CORPUS', shortOf(item.id), needs.setup) : null,
+        exe: null,
         path: setupPath,
         drive: probeDrive,
         mounts,
@@ -571,23 +588,48 @@ async function install(item, folder, needs, mounts) {
   const first = probe.box
     ? `${probe.box.title}: ${probe.box.text}`
     : (ownWindows(probe.windows).slice(-1)[0] ?? `${probe.status} ${probe.signature}`.trim());
-  const drive = driveFor(item, folder, join(INSTALLS, item.id), needs);
-  const run = await trace(
-    runArgs({
-      exe: needs.setup ? join(folder, needs.setup) : null,
-      path: setupPath,
-      drive,
-      mounts,
-      mode: needs.mode,
-      display: needs.display ?? 'vga',
-      sound: wantsSound(needs),
-      seconds: INSTALL_SECONDS,
-      screen: join(CACHE, 'screens', `${item.id}.setup.png`),
-      extra: ['--shell', '--marks', enterMarks()],
-    }),
-    15 * 60_000
-  );
-  const result = outcome(run);
+  /*
+   * A setup still at work as its seconds end (copying, expanding) is run
+   * again from the start, on a fresh drive, for twice as long: the clock
+   * is instructions, so it is the same run, gone on.
+   */
+  let drive;
+  let run;
+  let result;
+
+  for (const seconds of [INSTALL_SECONDS, 2 * INSTALL_SECONDS]) {
+    drive = driveFor(item, folder, join(INSTALLS, item.id), needs);
+    run = await trace(
+      runArgs({
+        exe: null,
+        path: setupPath,
+        drive,
+        mounts,
+        mode: needs.mode,
+        display: needs.display ?? 'vga',
+        sound: wantsSound(needs),
+        seconds,
+        screen: join(CACHE, 'screens', `${item.id}.setup.png`),
+        extra: ['--shell', '--pass', String(ENTER)],
+      }),
+      (seconds / INSTALL_SECONDS) * 15 * 60_000
+    );
+    result = outcome(run);
+
+    if (result.status !== 'running') {
+      break;
+    }
+  }
+  const steps = stepsOf(run.out);
+
+  /* The hand's marks kept beside the trace, for `trace --marks` to do the run again. */
+  if (steps) {
+    writeFileSync(
+      join(CACHE, 'traces', `${item.id}.setup-marks.json`),
+      JSON.stringify({ stepMarks: steps.stepMarks })
+    );
+  }
+
   const windows = join(drive, 'WINDOWS');
   const groups = (existsSync(windows) ? readdirSync(windows) : [])
     .filter((name) => /\.grp$/i.test(name))
@@ -604,6 +646,8 @@ async function install(item, folder, needs, mounts) {
     box: result.box,
     first,
     firstBox: Boolean(probe.box),
+    /* The rules' steps: when, which rule, which button. */
+    rules: steps?.rules ?? [],
     /*
      * The DOS functions not answered while the setup ran alone: once Enter
      * has taken it through, Program Manager's and File Manager's own ask
@@ -642,6 +686,17 @@ async function install(item, folder, needs, mounts) {
           return { ...record, drive, program: { path: path.toUpperCase(), file, from: 'group' } };
         }
       } else if (mounts.some(([letter]) => path.toUpperCase().startsWith(`${letter}:`))) {
+        /* On the item's own folder, mounted: a New Executable, as on C:. */
+        const [, image] = mounts.find(([letter]) => path.toUpperCase().startsWith(`${letter}:`));
+
+        if (statSync(image).isDirectory()) {
+          const file = onDrive(image, path);
+
+          if (!file || headerOf(readFileSync(file)) !== 'NE') {
+            continue;
+          }
+        }
+
         return {
           ...record,
           drive,
@@ -959,6 +1014,7 @@ async function pass(item, commit) {
               from: program.from,
               status: installed.status,
               ms: installed.ms,
+              ...(installed.rules?.length ? { rules: installed.rules } : {}),
             },
           }
         : {}),
@@ -1080,6 +1136,7 @@ export function resultOf(item) {
             ...(state.result.install.groups
               ? { groups: state.result.install.groups.map((group) => group.group) }
               : {}),
+            ...(state.result.install.rules?.length ? { rules: state.result.install.rules } : {}),
           },
         }
       : {}),

@@ -28,12 +28,18 @@
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty. `--captions` prints, after the calls,
 //! the windows at the top as the run left them, with their captions, and
-//! a message box's or a window's text (its statics). `--sound` installs WinBox's own sound card on the
+//! a message box's or a window's text (its statics), and its push buttons,
+//! each with its identifier and caption (`buttons`). `--pass MS` is the
+//! compatibility catalog's hand at a setup: a look every MS milliseconds,
+//! Enter pressed at each, or where Enter has done nothing twice a click on a
+//! button or Alt and a letter (`winbox_win16::pass_rules`); what it did is
+//! printed last, as a report's marks (`steps: `), for `--marks` to do again. `--sound` installs WinBox's own sound card on the
 //! run's drive, as winbox-native's `--sound` does.
 //! `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
 //! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
-//! FAT image. A program whose `--path` is on such a drive is read from it,
+//! FAT image; a host folder, a fixed drive of its files, read and never
+//! written. A program whose `--path` is on such a drive is read from it,
 //! and its file is not given: `trace --mount D:GAME.ISO --path D:\SETUP.EXE`.
 //!
 //! `--clock` names the clock the run keeps: the survey's 3,000
@@ -175,6 +181,38 @@ fn print_captions(system: &winbox_win16::System) {
 
         if message_box || !text.is_empty() {
             line["text"] = serde_json::Value::String(text.join("\n"));
+        }
+
+        // Its push buttons, at any depth, in the order of their slots: each
+        // its identifier, caption and class, and whether it is shown and
+        // enabled with its parents.
+        let shown: Vec<usize> = system
+            .push_buttons(true)
+            .iter()
+            .map(|button| button.slot)
+            .collect();
+        let buttons: Vec<serde_json::Value> = system
+            .push_buttons(false)
+            .into_iter()
+            .filter(|button| {
+                system
+                    .windows
+                    .get(button.slot)
+                    .and_then(|w| w.as_ref())
+                    .is_some_and(|w| beneath(w.parent))
+            })
+            .map(|button| {
+                serde_json::json!({
+                    "id": button.id,
+                    "caption": button.caption,
+                    "class": button.class,
+                    "shown": shown.contains(&button.slot),
+                })
+            })
+            .collect();
+
+        if !buttons.is_empty() {
+            line["buttons"] = serde_json::Value::Array(buttons);
         }
 
         println!("window: {line}");
@@ -320,6 +358,7 @@ fn options() -> Options {
                 }
             }
             "--input" => survey.input = arguments.next().and_then(|n| n.parse().ok()),
+            "--pass" => survey.pass = arguments.next().and_then(|n| n.parse().ok()),
             "--summary" => survey.summary = true,
             "--boxes" => {
                 survey.boxes = arguments
@@ -482,6 +521,22 @@ fn main() {
     }
 
     for (letter, image) in &mounts {
+        // A folder of the host's: a fixed drive of its files, read and
+        // never written, what is written kept in a folder made for the
+        // run and removed after it.
+        if image.is_dir() {
+            let written =
+                std::env::temp_dir().join(format!("winbox-trace-{}-{letter}", std::process::id()));
+
+            std::fs::create_dir_all(&written).expect("a drive's folder");
+            made.push(written.clone());
+            system.files.mount(
+                *letter,
+                HostDrive::over(written, std::fs::canonicalize(image).expect("the folder")),
+            );
+            continue;
+        }
+
         system.files.mount_boxed(*letter, image_volume(image));
     }
 
@@ -523,6 +578,15 @@ fn main() {
 
     if captions {
         print_captions(&surveyed.system);
+    }
+
+    // The catalog's hand: what it did, as a report's marks, and its rules'
+    // steps alone.
+    if let Some(rules) = &surveyed.system.call_marks.rules {
+        println!(
+            "steps: {}",
+            serde_json::json!({ "stepMarks": rules.steps, "rules": rules.rules })
+        );
     }
 
     for folder in made {
