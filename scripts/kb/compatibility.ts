@@ -375,6 +375,7 @@ export const STATUS_LABEL: Record<string, string> = {
   installer: 'installer',
   fetch: 'fetch failed',
   'not-windows': 'not Windows',
+  windows: 'Windows itself',
 };
 
 /** The kb page that explains a status where the status alone names one. */

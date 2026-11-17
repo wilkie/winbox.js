@@ -2213,6 +2213,16 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone",
     ),
     ("gdtlow:gdt", "WinBox's global table ends below 78h"),
+    // `stdcur`: the standard cursors USER keeps are its blocks, as Windows
+    // makes them; the standard icons are blocks of WinBox's own layout.
+    (
+        "stdcur:icon",
+        "a standard icon's block is laid out from WinBox's picture of it, not by USER's DIB conversion: its bits differ; IDI_APPLICATION is found discarded under Windows",
+    ),
+    (
+        "stdcur:flags",
+        "IDI_APPLICATION is a discarded resource under Windows (4100h), a block of WinBox's own here",
+    ),
 ];
 
 /// JSON as `JSON.stringify(value, null, indent)` writes it, for a file the

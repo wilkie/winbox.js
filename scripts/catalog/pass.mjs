@@ -56,7 +56,7 @@ import { fileURLToPath } from 'node:url';
 
 import { withoutExcluded } from './excluded.mjs';
 import { PROGRAMS, catalogItems, downloadPath, keep, stateOf } from './fetch.mjs';
-import { filesOf, headerOf, needsOf } from './needs.mjs';
+import { filesOf, headerOf, installationIn, needsOf } from './needs.mjs';
 import { runtimeBytes } from './runtimes.mjs';
 import { classify } from './sample.mjs';
 import { applyRun, clean, decode, foundOf, readFolder } from './titles.mjs';
@@ -387,8 +387,67 @@ function askedFor(result) {
 
   return {
     enhanced: /enhanced mode|386 enhanced|386-enhanced/i.test(said),
-    colours: /256[- ]colou?r|256 colou?r|more colou?rs|colou?r palette|SVGA|super ?vga/i.test(said),
+    /*
+     * "in 16 colors will decrease game performance" (Lode Runner) and "display
+     * driver palette too small" (Living Books' player) ask for more colours too.
+     */
+    colours:
+      /256[- ]colou?r|256 colou?r|more colou?rs|colou?r palette|SVGA|super ?vga|\b16 colou?rs\b|palette too small/i.test(
+        said
+      ),
   };
+}
+
+/**
+ * A box of a program's own that says it is not installed, or not as it
+ * should be: "Cannot Find MUGE.INI ... Start installation program?",
+ * "not properly installed", "Please reinstall ... from your original disks".
+ */
+const INSTALL_BOX = /\b(re)?install/i;
+
+/** The run's last calls, `GetWinFlags` among the three before its `MessageBox`. */
+function checksMode(out) {
+  const calls = out.split('\n').filter((line) => CALL.test(line));
+  const box = calls.findLastIndex((line) => line.startsWith('USER.MessageBox'));
+
+  return (
+    box >= 0 &&
+    calls.slice(Math.max(0, box - 3), box).some((line) => line.startsWith('KERNEL.GetWinFlags'))
+  );
+}
+
+/**
+ * A box a working program puts up as it starts, which a person answers and
+ * goes on: a copyright or shareware notice, a welcome, a note on the
+ * display, a country check that says it will not ask again. The pass
+ * answers it with Enter, the box's default button, and runs on
+ * (`answered`).
+ */
+const NOTICE =
+  /copyright|©|shareware|unregistered|please register|welcome|written by|country|will not appear again|^note:/i;
+
+/** Boxes answered at most, one after another. */
+const NOTICES = 3;
+
+function isNotice(box) {
+  return Boolean(box) && (NOTICE.test(box.text) || NOTICE.test(box.title));
+}
+
+/**
+ * The marks that press Enter at each of `steps`' times, the box of each
+ * up then (`isNotice`), written for `trace --marks`.
+ */
+function stepMarksOf(id, steps) {
+  const file = join(CACHE, 'drives', `${id}.steps.json`);
+  const stepMarks = steps.flatMap((step) =>
+    [
+      ['down', step.at],
+      ['up', step.at + 50],
+    ].map(([kind, time]) => ({ calls: 0, instructions: 0, time, kind, key: '\r', code: 'Enter' }))
+  );
+
+  writeFileSync(file, JSON.stringify({ stepMarks }));
+  return file;
 }
 
 /**
@@ -401,9 +460,22 @@ function wantsSound(needs) {
 }
 
 /** The arguments of a run of a program. */
-function runArgs({ exe, path, drive, mounts, mode, display, sound, seconds, screen, extra = [] }) {
+function runArgs({
+  exe,
+  path,
+  drive,
+  mounts,
+  mode,
+  display,
+  sound,
+  seconds,
+  screen,
+  command,
+  extra = [],
+}) {
   return [
     ...(exe ? [exe] : []),
+    ...(command ? ['--args', command] : []),
     '--path',
     path,
     '--drive',
@@ -486,9 +558,176 @@ function placeRuntimes(drive, needs) {
 function driveFor(item, folder, at, needs) {
   rmSync(at, { recursive: true, force: true });
   mkdirSync(join(at, 'CORPUS'), { recursive: true });
-  cpSync(folder, join(at, 'CORPUS', shortOf(item.id)), { recursive: true });
+
+  if (needs?.root) {
+    rootDrive(folder, at, needs.display ?? 'vga');
+  } else {
+    cpSync(folder, join(at, 'CORPUS', shortOf(item.id)), { recursive: true });
+  }
+
   placeRuntimes(at, needs);
   return at;
+}
+
+/** A program's path as DOS names it on its run's drive (`driveFor`). */
+function programPath(item, needs) {
+  return needs.root
+    ? `C:\\${dosPath(needs.program)}`
+    : `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.program)}`;
+}
+
+/** Windows' own `.INI` files, which the installation beneath the drive keeps. */
+const WINDOWS_INI = /^(win|system|progman|control|winfile|protocol)\.ini$/i;
+
+/** A file in a folder by its name in any case, if there. */
+function namedIn(folder, name) {
+  return existsSync(folder)
+    ? (readdirSync(folder).find((each) => each.toUpperCase() === name.toUpperCase()) ?? null)
+    : null;
+}
+
+/**
+ * The sections of Windows' `.INI` files whose drivers a program's runtime
+ * brings: `SYSTEM.INI`'s media control interface devices and installable
+ * drivers (Video for Windows' `AVIVideo=mciavi.drv`, its codecs'
+ * `VIDC.IV32=ir32.dll`), and `WIN.INI`'s extensions of MCI's devices
+ * (`avi=AVIVideo`).
+ */
+const DRIVER_SECTIONS = {
+  'SYSTEM.INI': ['mci', 'drivers'],
+  'WIN.INI': ['mci extensions'],
+};
+
+/** An `.INI` file's sections, each its lines, by its name in lower case. */
+function sectionsOf(text) {
+  const sections = new Map();
+  let lines = null;
+
+  for (const line of text.split(/\r?\n/)) {
+    const head = /^\s*\[([^\]]+)\]/.exec(line);
+
+    if (head) {
+      lines = [];
+      sections.set(head[1].trim().toLowerCase(), lines);
+    } else if (lines && line.trim()) {
+      lines.push(line);
+    }
+  }
+
+  return sections;
+}
+
+/**
+ * Windows' own `.INI` text with the keys of `sections` that another's has
+ * and it lacks added, each after its section's head (or the section added
+ * at the end).
+ */
+export function mergedIni(text, other, sections) {
+  const theirs = sectionsOf(other);
+  const ours = sectionsOf(text);
+  const keyOf = (line) => line.split('=')[0].trim().toLowerCase();
+  let merged = text;
+
+  for (const section of sections) {
+    const have = new Set((ours.get(section) ?? []).map(keyOf));
+    const added = (theirs.get(section) ?? []).filter(
+      (line) => line.includes('=') && !have.has(keyOf(line))
+    );
+
+    if (!added.length) {
+      continue;
+    }
+
+    const head = new RegExp(`^\\s*\\[${section}\\][^\\r\\n]*\\r?\\n`, 'im');
+
+    merged = head.test(merged)
+      ? merged.replace(head, (found) => `${found}${added.join('\r\n')}\r\n`)
+      : `${merged.replace(/\s*$/, '')}\r\n\r\n[${section}]\r\n${added.join('\r\n')}\r\n`;
+  }
+
+  return merged;
+}
+
+/**
+ * The folder of a download that stands for Windows' own: a whole
+ * installation's (`installationIn`), else a top-level `WINDOWS` holding
+ * files for it, as archive.org's DOSBox copies one over its installation
+ * (`copy C:\WINDOWS\*.* D:\WINDOWS`: a runtime's libraries and drivers,
+ * the `.INI` files that name them). Null for none.
+ */
+export function windowsFolderOf(folder) {
+  const installation = installationIn(filesOf(folder));
+  const top = namedIn(folder, 'WINDOWS');
+
+  return (
+    installation ?? (top && statSync(join(folder, top)).isDirectory() ? join(folder, top) : null)
+  );
+}
+
+/**
+ * A download that is a drive's root, as archive.org's DOSBox mounts it:
+ * its folders at `C:\` but its Windows folder (`windowsFolderOf`), the
+ * installation beneath taking its place. What that folder has that
+ * Windows' does not -- a program's libraries and drivers in `SYSTEM`, its
+ * own `.INI` files -- is put in the drive's `WINDOWS` and `SYSTEM`, and
+ * the keys of its `SYSTEM.INI` and `WIN.INI` of `DRIVER_SECTIONS` that
+ * Windows' lack added to copies of Windows' own.
+ */
+function rootDrive(folder, at, display) {
+  const own = windowsFolderOf(folder);
+  const beneath = join(windowsFor(display), 'WINDOWS');
+
+  for (const name of readdirSync(folder)) {
+    if (own && join(folder, name) === own) {
+      continue;
+    }
+
+    cpSync(join(folder, name), join(at, name), { recursive: true });
+  }
+
+  if (!own) {
+    return;
+  }
+
+  for (const [from, to] of [
+    [own, beneath],
+    [join(own, namedIn(own, 'SYSTEM') ?? 'SYSTEM'), join(beneath, 'SYSTEM')],
+  ]) {
+    const into = join(at, 'WINDOWS', ...(to === beneath ? [] : ['SYSTEM']));
+
+    for (const name of existsSync(from) ? readdirSync(from) : []) {
+      const file = join(from, name);
+
+      if (
+        !statSync(file).isFile() ||
+        namedIn(to, name) ||
+        WINDOWS_INI.test(name) ||
+        /\.(grp|swp|tmp|bak)$/i.test(name)
+      ) {
+        continue;
+      }
+
+      mkdirSync(into, { recursive: true });
+      cpSync(file, join(into, name.toUpperCase()));
+    }
+  }
+
+  for (const [ini, sections] of Object.entries(DRIVER_SECTIONS)) {
+    const theirs = namedIn(own, ini);
+    const ours = namedIn(beneath, ini);
+
+    if (!theirs || !ours) {
+      continue;
+    }
+
+    const text = readFileSync(join(beneath, ours), 'latin1');
+    const merged = mergedIni(text, readFileSync(join(own, theirs), 'latin1'), sections);
+
+    if (merged !== text) {
+      mkdirSync(join(at, 'WINDOWS'), { recursive: true });
+      writeFileSync(join(at, 'WINDOWS', ini), merged, 'latin1');
+    }
+  }
 }
 
 /** A file on a drive by its DOS path, its names matched in any case. */
@@ -654,7 +893,12 @@ async function install(item, folder, needs, mounts) {
 
   /* The items that are not a setup's, a help's or a text's first; then a program named as a setup. */
   const commands = groups.flatMap((group) =>
-    group.items.map((each) => ({ ...each, command: each.command.trim().split(/\s+/)[0] }))
+    group.items.map((each) => {
+      /* The item's command line after its program: a screen saver's name for its runner. */
+      const [command, ...args] = each.command.trim().split(/\s+/);
+
+      return { ...each, command, args: args.join(' ') };
+    })
   );
   const ordered = [
     ...commands.filter(
@@ -664,7 +908,7 @@ async function install(item, folder, needs, mounts) {
   ];
 
   for (const group of [{ items: ordered }]) {
-    for (const { command } of group.items) {
+    for (const { command, args } of group.items) {
       if (!command) {
         continue;
       }
@@ -675,13 +919,17 @@ async function install(item, folder, needs, mounts) {
         const file = onDrive(drive, path);
 
         if (file && headerOf(readFileSync(file)) === 'NE') {
-          return { ...record, drive, program: { path: path.toUpperCase(), file, from: 'group' } };
+          return {
+            ...record,
+            drive,
+            program: { path: path.toUpperCase(), file, from: 'group', args },
+          };
         }
       } else if (mounts.some(([letter]) => path.toUpperCase().startsWith(`${letter}:`))) {
         return {
           ...record,
           drive,
-          program: { path: path.toUpperCase(), file: null, from: 'group' },
+          program: { path: path.toUpperCase(), file: null, from: 'group', args },
         };
       }
     }
@@ -728,7 +976,7 @@ function refined(result, needs) {
 }
 
 /** An item's needs and its run, classified; its state kept. */
-async function pass(item, commit) {
+async function pass(item, commit, forced = null) {
   const state = stateOf(item.id);
   const folder = join(PROGRAMS, item.id);
   const date = new Date().toLocaleDateString('sv');
@@ -740,7 +988,8 @@ async function pass(item, commit) {
       needs: state.needs ?? null,
     });
 
-  if (item.emulator && item.emulator !== 'dosbox') {
+  /* archive.org's DOSBox under any of its names (`dosbox-sync`, `dosbox; dosbox`). */
+  if (item.emulator && !item.emulator.split(/;\s*/).every((each) => /^dosbox\b/.test(each))) {
     return done({ status: 'not-windows', signature: `archive.org runs it in ${item.emulator}` });
   }
 
@@ -754,6 +1003,12 @@ async function pass(item, commit) {
     needs = needsOf(item, folder, []);
   } catch (error) {
     needs = { error: `reading it: ${error.message}` };
+  }
+
+  /* A setup run because the program's box said it was not installed (`INSTALL_BOX`). */
+  if (forced?.setup) {
+    needs.setup = forced.setup;
+    needs.setupFor = forced.because;
   }
 
   /* A program not in the download: on an image, a floppy's among them. */
@@ -790,6 +1045,11 @@ async function pass(item, commit) {
       .replace(/^[A-Za-z]:\\?/, '');
 
     onImage = `${mounts[0][0]}:\\${dosPath(name)}`;
+  }
+
+  /* A copy of Windows itself, not a program (`windowsProgramOf`): not run. */
+  if (needs.windows) {
+    return done({ status: 'windows', signature: needs.windows });
   }
 
   if (needs.error && !onImage) {
@@ -848,6 +1108,10 @@ async function pass(item, commit) {
 
     drive = installed.drive;
     program = installed.program;
+
+    if (program.args) {
+      needs.args = program.args;
+    }
   } else if (onImage) {
     drive = join(DRIVES, item.id);
     rmSync(drive, { recursive: true, force: true });
@@ -857,7 +1121,7 @@ async function pass(item, commit) {
   } else {
     drive = driveFor(item, folder, join(DRIVES, item.id), needs);
     program = {
-      path: `C:\\CORPUS\\${shortOf(item.id)}\\${dosPath(needs.program)}`,
+      path: programPath(item, needs),
       file: join(folder, needs.program),
     };
   }
@@ -873,6 +1137,7 @@ async function pass(item, commit) {
       runArgs({
         exe: program.file,
         path: program.path,
+        command: needs.args,
         drive,
         mounts,
         mode,
@@ -893,6 +1158,13 @@ async function pass(item, commit) {
 
     const asked = askedFor(result);
 
+    /*
+     * A box of its own straight after `GetWinFlags`, the program's own
+     * check of the mode Windows runs in (Triazzle's wants `WF_ENHANCED`,
+     * `TRIAZZLE.EXE` seg6 `0026`-`0060`): run again in enhanced mode.
+     */
+    asked.enhanced ||= result.status === 'box' && checksMode(run.out);
+
     if (asked.enhanced && mode === 'standard' && result.status !== 'idle') {
       mode = 'enhanced';
     } else if (asked.colours && display === 'vga' && result.status !== 'idle') {
@@ -911,14 +1183,82 @@ async function pass(item, commit) {
   let seconds = SECONDS;
   let ms = result.ms;
   const stages = [];
+  /* The boxes answered (`isNotice`): where Enter was pressed, and the box it answered. */
+  const steps = [];
+  const marks = () => (steps.length ? ['--marks', stepMarksOf(item.id, steps)] : []);
+
+  /*
+   * A start-up notice up at the end of the run: Enter pressed there, as
+   * the box came up by then (the clock is instructions, so the same run),
+   * and the run made again ten seconds past it, until the program is past
+   * its notices or `NOTICES` have been answered.
+   */
+  while (result.status === 'box' && isNotice(result.box) && steps.length < NOTICES) {
+    steps.push({
+      at: seconds * 1000 + 100,
+      key: 'Enter',
+      box: `${result.box.title}: ${result.box.text}`.slice(0, 240),
+    });
+    seconds += SECONDS;
+
+    const run = await trace(
+      runArgs({
+        exe: program.file,
+        path: program.path,
+        command: needs.args,
+        drive,
+        mounts,
+        mode,
+        display,
+        sound: wantsSound(needs),
+        seconds,
+        screen: join(CACHE, 'screens', `${item.id}.png`),
+        extra: marks(),
+      }),
+      3 * 60_000 + seconds * 5000
+    );
+
+    result = outcome(run, seconds);
+    ms += run.ms;
+    writeFileSync(
+      join(CACHE, 'traces', `${item.id}.txt`),
+      run.out.split('\n').slice(-300).join('\n')
+    );
+  }
+
+  /*
+   * A box that says the program is not installed (`INSTALL_BOX`), its
+   * download bringing a setup: the setup run as a person would run it,
+   * and the program it leaves run, once.
+   */
+  /* Its setups that are Windows programs, the shallowest first: a DOS one is not run. */
+  const setups = (needs.setups ?? [])
+    .filter((each) => headerOf(readFileSync(join(folder, each))) === 'NE')
+    .sort((a, b) => a.split(/[\\/]/).length - b.split(/[\\/]/).length);
+
+  if (
+    !forced &&
+    !installed &&
+    result.status === 'box' &&
+    INSTALL_BOX.test(`${result.box.title} ${result.box.text}`) &&
+    setups.length
+  ) {
+    rmSync(drive, { recursive: true, force: true });
+
+    return pass(item, commit, {
+      setup: setups[0],
+      because: `${result.box.title}: ${result.box.text}`.slice(0, 240),
+    });
+  }
 
   /* A run the host had to stop is not run longer: its ten seconds were not reached. */
   if (result.status === 'running' && result.signature !== 'the host stopped it') {
-    for (const length of STAGES) {
+    for (const length of STAGES.filter((each) => each > seconds)) {
       const run = await trace(
         runArgs({
           exe: program.file,
           path: program.path,
+          command: needs.args,
           drive,
           mounts,
           mode,
@@ -926,6 +1266,7 @@ async function pass(item, commit) {
           sound: wantsSound(needs),
           seconds: length,
           screen: join(CACHE, 'screens', `${item.id}.png`),
+          extra: marks(),
         }),
         3 * 60_000 + length * 5000
       );
@@ -984,6 +1325,8 @@ async function pass(item, commit) {
       instructions: result.instructions,
       ms,
       ...(seconds !== SECONDS ? { seconds, stages } : {}),
+      ...(steps.length ? { steps } : {}),
+      ...(needs.setupFor ? { installedFor: needs.setupFor } : {}),
       ...(result.box ? { box: result.box } : {}),
       ...(result.dos ? { dos: result.dos } : {}),
       ...(tries.length > 1 ? { tries } : {}),
@@ -1036,6 +1379,7 @@ export function groupsOf(result) {
   switch (status) {
     case 'idle':
     case 'playing':
+    case 'windows':
       return [];
     case 'missing':
       return [`missing ${signature}`];
@@ -1086,6 +1430,10 @@ export function resultOf(item) {
     status: state.result.status,
     signature: state.result.signature ?? '',
     ...(state.result.seconds ? { seconds: state.result.seconds } : {}),
+    /* The start-up notices the pass answered with Enter, and when (`isNotice`). */
+    ...(state.result.steps ? { steps: state.result.steps } : {}),
+    /* The box that said the program was not installed, for which its setup was run. */
+    ...(state.result.installedFor ? { installedFor: state.result.installedFor } : {}),
     ...(state.result.runtimes ? { runtimes: state.result.runtimes } : {}),
     ...(state.result.box ? { box: state.result.box } : {}),
     ...((state.result.dos ?? state.result.install?.dos)
@@ -1104,6 +1452,10 @@ export function resultOf(item) {
           setup: needs.setup ?? null,
           installer: needs.installer ?? null,
           images: needs.images ?? [],
+          /* Where the run's program was not the one `run` names: how it was found, its command line. */
+          ...(needs.chosen ? { chosen: needs.chosen } : {}),
+          ...(needs.args ? { args: needs.args } : {}),
+          ...(needs.root ? { root: true } : {}),
         }
       : null,
     ...(state.result.install
