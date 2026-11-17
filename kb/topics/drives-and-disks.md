@@ -103,6 +103,14 @@ The Visual Basic setup kit's `SETUP1.EXE` asks 59h after a folder call fails, an
 
 - WinBox keeps DOS's last error in `dos_error`, set by each DOS function that fails, and answers 59h from it as DOSBox does (`dos_function` in `crates/winbox-win16/src/dos.rs`). KERNEL's `_lopen`, `_lcreat` and `OpenFile`, which WinBox answers without DOS, set it as DOS's 3Dh and 3Ch would (`files_kernel.rs`, `kernel.rs`). 3Dh of a name in a folder not there on a folder's drive now answers 3, as DOSBox's `PathExists` makes it on any drive (`dos_files.cpp` 563-564); WinBox answered 2 there before.
 
+### Windows 95's long names, 71h
+
+Windows 95's DOS has functions for long file names under AH 71h; the DOS beneath Windows 3.1 has none. A program written for both calls the long-name function first and takes AX 7100h with the carry set for "not here", then calls DOS's own: WinZip's self-extractor opens itself with 716Ch, and asks 7160h for a path's true name. WinBox left 71h unanswered, the registers as they were, so the extractor took AX 716Ch for a handle and said "WinZip Self-Extractor header corrupt. Possible cause: bad disk or file transfer error" (`win3_GPOKER`, [[guide:compatibility]]).
+
+- [[read out]] DOSBox's DOS answers every 71h with AX 7100h and the carry set, the other registers as they were ("Windows long file name support call", `dos.cpp`).
+- [[measured]] [[probe:lfn71]], in both modes alike, calls fourteen of them (7139h to 71A6h) with BX 1234h, CX nought and DS:DX a path: each answers AX 7100h, BX, CX and DX as they were, and the carry set. KERNEL passes them to DOS as they come.
+- WinBox answers 71h so (`dos_function` in `crates/winbox-win16/src/dos.rs`).
+
 ## MSCDEX
 
 [[measured]] [[probe:mscdex]] makes MSCDEX's register calls through `INT 2Fh` with no disc mounted, BX 0B0Bh, CX 0C0Ch and DX 0D0Dh before; [[probe:imgcd]] makes them with a CD-ROM image as D:.

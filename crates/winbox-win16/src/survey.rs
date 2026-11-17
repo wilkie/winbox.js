@@ -174,10 +174,25 @@ pub struct Prepared {
 ///
 /// Where the program's registers cannot be set.
 pub fn start(system: &mut System, executable: Executable, path: &str) -> Result<(), Exit> {
+    start_with(system, executable, path, "")
+}
+
+/// A program started as `start` starts one, with a command line after its
+/// name, as a Program Manager item's or a batch file's gives it.
+///
+/// # Errors
+///
+/// Where the program's registers cannot be set.
+pub fn start_with(
+    system: &mut System,
+    executable: Executable,
+    path: &str,
+    command: &str,
+) -> Result<(), Exit> {
     let (program, libraries) = system.load(executable, path);
 
     system.link(program);
-    system.start(program, libraries, "")?;
+    system.start(program, libraries, command)?;
 
     if let Some((folder, _)) = path.rsplit_once('\\')
         && folder.len() > 2

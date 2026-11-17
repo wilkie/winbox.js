@@ -24,7 +24,7 @@
 
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PROGRAMS, catalogItems, stateOf } from './fetch.mjs';
@@ -100,6 +100,46 @@ export const SOURCES = [
     member: 'BWCC.DLL',
   },
 ];
+
+/**
+ * The runtimes that are a set of files and drivers an installer of their
+ * own puts in place -- libraries and MCI drivers in `SYSTEM`, the keys
+ * that name them in `SYSTEM.INI` and `WIN.INI` -- rather than one library
+ * the pass can place: each publisher's installer, in the archive.org item
+ * named, to be run inside WinBox (`kb/guides/compatibility.md`,
+ * "Runtimes"). `flag` is the need (`needs.mjs`) of the programs that want
+ * it, `module` the library whose presence in a download says it brings
+ * its own.
+ */
+export const PACKAGES = [
+  {
+    name: 'QTW',
+    title: 'QuickTime for Windows 2.0.2',
+    publisher: 'Apple',
+    item: 'qt-2_20240901',
+    path: 'QT2.zip',
+    setup: 'QT2/SETUP.EXE',
+    flag: 'quicktime',
+    module: 'QTIM',
+  },
+  {
+    name: 'VFW',
+    title: 'Video for Windows 1.1e runtime',
+    publisher: 'Microsoft',
+    item: 'VFW11E',
+    path: 'VFW11E.zip',
+    setup: 'VFW11E/SETUP.EXE',
+    flag: 'vfw',
+    module: 'MSVIDEO',
+  },
+];
+
+/** A package's archive in the cache. */
+export function packagePath(name) {
+  const source = PACKAGES.find((each) => each.name === name);
+
+  return source ? join(RUNTIMES, name, source.path) : null;
+}
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const sha = (kind, bytes) => createHash(kind).update(bytes).digest('hex');
@@ -335,6 +375,30 @@ async function fetchAll() {
   }
 }
 
+/** Each package's archive fetched into its own folder of the cache, held to archive.org's SHA-1. */
+async function fetchPackages() {
+  for (const source of PACKAGES) {
+    const file = packagePath(source.name);
+
+    if (existsSync(file)) {
+      console.log(`${source.name}\talready fetched`);
+      continue;
+    }
+
+    const bytes = await get(urlOf(source));
+    const expected = await archiveSha1(source);
+
+    if (expected && sha('sha1', bytes) !== expected) {
+      throw new Error(`${source.path}: SHA-1 ${sha('sha1', bytes)}, archive.org says ${expected}`);
+    }
+
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(`${file}.part`, bytes);
+    renameSync(`${file}.part`, file);
+    console.log(`${source.name}\t${bytes.length} bytes\t${sha('sha1', bytes)}`);
+  }
+}
+
 /**
  * The ordinals of a module that programs import, each with how many of
  * them import it: from every New Executable of each program's folder that
@@ -419,6 +483,40 @@ function write() {
     };
   });
 
+  /* The packages: each archive's hashes, and the programs that want it and do not bring it. */
+  const packages = PACKAGES.map((source) => {
+    const file = packagePath(source.name);
+
+    if (!existsSync(file)) {
+      throw new Error(`${source.name} is not fetched: --fetch first`);
+    }
+
+    const bytes = readFileSync(file);
+    const wanting = items
+      .filter((item) => stateOf(item.id).needs?.flags?.includes(source.flag))
+      .filter(
+        (item) =>
+          !filesOf(join(PROGRAMS, item.id)).some(
+            (each) => basename(each).toUpperCase() === `${source.module}.DLL`
+          )
+      )
+      .map((item) => item.id);
+
+    return {
+      name: source.name,
+      title: source.title,
+      publisher: source.publisher,
+      archiveOrg: { item: source.item, file: source.path, url: urlOf(source) },
+      size: bytes.length,
+      sha1: sha('sha1', bytes),
+      sha256: sha('sha256', bytes),
+      setup: source.setup,
+      flag: source.flag,
+      module: source.module,
+      programs: wanting.sort(),
+    };
+  });
+
   writeFileSync(
     MANIFEST,
     `${JSON.stringify(
@@ -426,14 +524,17 @@ function write() {
         about:
           'The runtimes the compatibility catalog\'s first pass places in a run\'s WINDOWS\\SYSTEM for programs that import them and do not bring them: where each is published on archive.org, its hashes, size and version, and the programs that need it (kb/guides/compatibility.md, "Runtimes"). The files are third-party binaries, never committed: scripts/catalog/runtimes.mjs --fetch fetches them into the gitignored corpus/cache/catalog/runtimes/. Made by scripts/catalog/runtimes.mjs --write.',
         runtimes,
+        packages,
       },
       null,
       1
     )}\n`
   );
 
-  for (const each of runtimes) {
-    console.log(`${each.module}\t${each.version}\t${each.sha1}\t${each.programs.length} programs`);
+  for (const each of [...runtimes, ...packages]) {
+    console.log(
+      `${each.module ?? each.name}\t${each.version ?? each.title}\t${each.sha1}\t${each.programs.length} programs`
+    );
   }
 }
 
@@ -442,6 +543,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
   if (args.includes('--fetch')) {
     await fetchAll();
+    await fetchPackages();
   }
 
   if (args.includes('--write')) {
