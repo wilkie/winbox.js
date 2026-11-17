@@ -938,5 +938,82 @@
     "win3_WINYOTZ"
    ]
   }
+ ],
+ "packages": [
+  {
+   "name": "QTW",
+   "title": "QuickTime for Windows 2.0.2",
+   "publisher": "Apple",
+   "archiveOrg": {
+    "item": "qt-2_20240901",
+    "file": "QT2.zip",
+    "url": "https://archive.org/download/qt-2_20240901/QT2.zip"
+   },
+   "size": 2423781,
+   "sha1": "dc5fbf9648666064ef29834f3aceba21ce554170",
+   "sha256": "29beea57939947d967ae8c2ae37cc407ce27bfaa3f43feffff4ff12d56a97323",
+   "setup": "QT2/SETUP.EXE",
+   "flag": "quicktime",
+   "module": "QTIM",
+   "programs": [
+    "AFHV_WIN",
+    "AQUAMAN_WIN",
+    "BABYNAMES_WIN",
+    "CYBSTONE_WIN",
+    "GETSET_WIN",
+    "GUS_WIN",
+    "JSKID_WIN",
+    "LIONS_WIN",
+    "MUNCHERS_WIN",
+    "MY_CRITTER",
+    "TOOKEY",
+    "alphabet-pals-why-do-we-have-to",
+    "art-brain",
+    "dock_20240113",
+    "horse-whisperer-pk",
+    "isis_20240110",
+    "mcs_exploring_canada_electoral",
+    "netdisc-9",
+    "next_20250713",
+    "planit-3",
+    "win3_SeyButt",
+    "win3_cybergrannies"
+   ]
+  },
+  {
+   "name": "VFW",
+   "title": "Video for Windows 1.1e runtime",
+   "publisher": "Microsoft",
+   "archiveOrg": {
+    "item": "VFW11E",
+    "file": "VFW11E.zip",
+    "url": "https://archive.org/download/VFW11E/VFW11E.zip"
+   },
+   "size": 1398778,
+   "sha1": "9c839caacdd0adce77dcd1ef08d55e38d5a54b44",
+   "sha256": "b7df19fac79b2bd849e37f838456f8bb9f6c061fa27758851e9166bdb6414ef6",
+   "setup": "VFW11E/SETUP.EXE",
+   "flag": "vfw",
+   "module": "MSVIDEO",
+   "programs": [
+    "CHRISTMASCR",
+    "IRIS_WIN",
+    "KNOWHOW_WIN",
+    "LIONS_WIN",
+    "MED_WIN",
+    "MSBEARTH_WIN",
+    "ROCKYBULLWINKLE",
+    "SCHOOLHOUSE_WIN",
+    "TRAINS_WIN",
+    "alphax1",
+    "arthurca_202106",
+    "bootDisc16",
+    "cgw-1997-06",
+    "future_media_cd_magazine1",
+    "kid-pix-sd-win31",
+    "next_20250713",
+    "win3_ZWARS"
+   ]
+  }
  ]
 }

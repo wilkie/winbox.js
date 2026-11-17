@@ -108,6 +108,14 @@ The Visual Basic setup kit's `SETUP1.EXE` asks 59h after a folder call fails, an
 - [[measured]] [[probe:truenam]], in both modes: function 60h, asked by a Windows program with a name at DS:SI and a buffer at ES:DI, answers the carry and AX 2, file not found, for every name -- `C:\`, `f.txt`, `c:/windows/win.ini`, a name with a folder not there, a drive not there, an empty one -- and leaves the buffer as it was. [[read out]] KERNEL looks at the name's drive letter, for a drive it takes as another's name (`KRNL386.EXE` seg1 `152c`-`1535`, `169f`), and passes the call on to DOS (`1bc7`). DOSBox's own answer is the name made whole by `DOS_MakeName` (`DOS_Canonicalize`, `dos_files.cpp` 658-668; `dos.cpp` 905-914), which a name as given here would be. [[inferred]] The name does not reach it: Windows' DOS extender does not translate DS:SI for 60h, and DOS reads a name of nought where the selector's value, taken as a segment, points.
 - WinBox answers it so (`dos_function`). It did not answer 60h at all, the registers left as they were: TZ-Minigolf's setup asks it of each file before it copies it, and took the carry clear and AX 6000h for "File or directory access denied" (`win3_TZ-Minig`, [[guide:compatibility]]).
 
+### Windows 95's long names, 71h
+
+Windows 95's DOS has functions for long file names under AH 71h; the DOS beneath Windows 3.1 has none. A program written for both calls the long-name function first and takes AX 7100h with the carry set for "not here", then calls DOS's own: WinZip's self-extractor opens itself with 716Ch, and asks 7160h for a path's true name. WinBox left 71h unanswered, the registers as they were, so the extractor took AX 716Ch for a handle and said "WinZip Self-Extractor header corrupt. Possible cause: bad disk or file transfer error" (`win3_GPOKER`, [[guide:compatibility]]).
+
+- [[read out]] DOSBox's DOS answers every 71h with AX 7100h and the carry set, the other registers as they were ("Windows long file name support call", `dos.cpp`).
+- [[measured]] [[probe:lfn71]], in both modes alike, calls fourteen of them (7139h to 71A6h) with BX 1234h, CX nought and DS:DX a path: each answers AX 7100h, BX, CX and DX as they were, and the carry set. KERNEL passes them to DOS as they come.
+- WinBox answers 71h so (`dos_function` in `crates/winbox-win16/src/dos.rs`).
+
 ## MSCDEX
 
 [[measured]] [[probe:mscdex]] makes MSCDEX's register calls through `INT 2Fh` with no disc mounted, BX 0B0Bh, CX 0C0Ch and DX 0D0Dh before; [[probe:imgcd]] makes them with a CD-ROM image as D:.

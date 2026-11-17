@@ -161,6 +161,34 @@ fn dib(system: &mut System, bytes: &[u8], size: usize, icon: bool) -> Option<Con
     )
 }
 
+/// A cursor resource of the display driver's made USER's block, as
+/// `LoadDIBCursorHandler` makes a module's: a block of the resource's
+/// size, the resource in it, converted in place. Nought where it could not
+/// be made.
+pub(crate) fn cursor_block_of(system: &mut System, resource: &[u8]) -> u16 {
+    let Some(index) = system.global.allocate(
+        &mut system.cpu.bus,
+        &mut system.descriptors,
+        resource.len() as u32,
+        0x02,
+    ) else {
+        return 0;
+    };
+    let handle = winbox_machine::handle_for(index);
+    let far = system.global_pointer(handle);
+
+    system.write_far(far, resource);
+
+    if convert_block(system, handle, |system, bytes| {
+        dib(system, bytes, resource.len(), false)
+    }) {
+        handle
+    } else {
+        let _ = crate::memory::global_free(system, &mut Args::repeat(handle));
+        0
+    }
+}
+
 /// `LoadDIBIconHandler` and `LoadDIBCursorHandler` (seg12 `100d`, `0ff1`,
 /// both `10ce`).
 fn dib_handler(system: &mut System, icon: bool, block: u16, resource: u16) -> u16 {

@@ -35,7 +35,9 @@
 //! button or Alt and a letter (`winbox_win16::pass_rules`); what it did is
 //! printed last, as a report's marks (`steps: `), for `--marks` to do again. `--sound` installs WinBox's own sound card on the
 //! run's drive, as winbox-native's `--sound` does.
-//! `--mount D:IMAGE` mounts an image of the
+//! `--args TEXT` gives the program that command line after its name, as
+//! Program Manager's item or a batch file gives one (a book for `ToolBook`'s
+//! runtime). `--mount D:IMAGE` mounts an image of the
 //! host's as that drive, as the recorder's `imgmount` does for a program
 //! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
 //! FAT image; a host folder, a fixed drive of its files, read and never
@@ -273,6 +275,8 @@ struct Options {
     sound: bool,
     mode: winbox_win16::Mode,
     survey: Survey,
+    /// The program's command line after its name (`--args`).
+    command: String,
 }
 
 /// An image of the host's as a drive (`--mount`): a disc by its name's
@@ -325,6 +329,7 @@ fn options() -> Options {
         sound: false,
         mode: winbox_win16::Mode::Standard,
         survey: Survey::default(),
+        command: String::new(),
     };
     let survey = &mut options.survey;
 
@@ -338,6 +343,7 @@ fn options() -> Options {
             "--shell" => options.shell = true,
             "--captions" => options.captions = true,
             "--sound" => options.sound = true,
+            "--args" => options.command = arguments.next().unwrap_or_default(),
             "--mode" => {
                 options.mode = arguments
                     .next()
@@ -413,6 +419,7 @@ fn main() {
         sound,
         mode,
         mut survey,
+        command,
     } = options();
     // A program on a drive of images is read from there, with no file of
     // the host's.
@@ -564,7 +571,7 @@ fn main() {
         // once the shell is left alone: the shell is a task as any other here.
         system.shell_task = None;
     } else {
-        winbox_win16::survey::start(&mut system, executable, &path)
+        winbox_win16::survey::start_with(&mut system, executable, &path, &command)
             .expect("the program's registers");
     }
 

@@ -17632,6 +17632,113 @@
   },
   "gaps": {}
  },
+ "lfn71": {
+  "probe": "lfn71",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 14,
+  "functions": {
+   "7139": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "713a": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "713b": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "7141": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "7143": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "7147": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "714e": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "714f": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "7156": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "7160": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "716c": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "71a0": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "71a1": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "71a6": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "lheapseg": {
   "probe": "lheapseg",
   "display": "vga",
@@ -33400,6 +33507,46 @@
    }
   },
   "gaps": {}
+ },
+ "stdcur": {
+  "probe": "stdcur",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 22,
+  "functions": {
+   "cursor": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "flags": {
+    "total": 2,
+    "agreed": 1,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "icon": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "metrics": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "icon": "a standard icon's block is laid out from WinBox's picture of it, not by USER's DIB conversion: its bits differ; IDI_APPLICATION is found discarded under Windows",
+   "flags": "IDI_APPLICATION is a discarded resource under Windows (4100h), a block of WinBox's own here"
+  }
  },
  "stemedge-ega": {
   "probe": "stemedge",

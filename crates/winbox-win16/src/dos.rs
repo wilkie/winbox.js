@@ -568,6 +568,19 @@ impl System {
                 None
             }
             0x6c => Some(self.extended_open()),
+            // Windows 95's long-file-name functions, which the DOS under
+            // Windows 3.1 has not: every AL answered AX 7100h with the
+            // carry set, the other registers as they were, as DOSBox's DOS
+            // answers 71h (`dos.cpp`, "Windows long file name support
+            // call"). **Recorded** by `lfn71`, both modes, for fourteen of
+            // them. A program written for both (WinZip's self-extractor
+            // opening itself with 716Ch) takes that for "not here" and
+            // calls DOS's own function.
+            0x71 => {
+                self.cpu.regs[AX] = 0x7100;
+                self.cpu.flags |= CARRY;
+                None
+            }
             _ => match ax {
                 0x3305 => {
                     // The boot drive: C:.

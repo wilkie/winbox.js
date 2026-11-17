@@ -1,0 +1,125 @@
+{
+  "probe": "stdcur",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cursor",
+      "args": "IDC_ARROW",
+      "result": "288 000000002000200004000101 16a2 same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_IBEAM",
+      "result": "288 0f0010002000200004000101 bd14 same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_WAIT",
+      "result": "288 100010002000200004000101 6f78 same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_CROSS",
+      "result": "0 not locked same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_UPARROW",
+      "result": "288 070000002000200004000101 65ed same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_SIZE",
+      "result": "0 not locked same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_ICON",
+      "result": "288 080008002000200004000101 f9bb same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_SIZENWSE",
+      "result": "288 070006002000200004000101 1196 same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_SIZENESW",
+      "result": "288 180006002000200004000101 b53b same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_SIZEWE",
+      "result": "288 110008002000200004000101 cb6f same"
+    },
+    {
+      "function": "cursor",
+      "args": "IDC_SIZENS",
+      "result": "288 0e000a002000200004000101 22c2 same"
+    },
+    {
+      "function": "icon",
+      "args": "IDI_APPLICATION",
+      "result": "0 not locked same"
+    },
+    {
+      "function": "icon",
+      "args": "IDI_HAND",
+      "result": "672 100010002000200004000401 0d40 same"
+    },
+    {
+      "function": "icon",
+      "args": "IDI_QUESTION",
+      "result": "672 100010002000200004000401 5582 same"
+    },
+    {
+      "function": "icon",
+      "args": "IDI_EXCLAMATION",
+      "result": "672 100010002000200004000401 cfe2 same"
+    },
+    {
+      "function": "icon",
+      "args": "IDI_ASTERISK",
+      "result": "672 100010002000200004000401 0032 same"
+    },
+    {
+      "function": "flags",
+      "args": "IDC_ARROW",
+      "result": "0000"
+    },
+    {
+      "function": "flags",
+      "args": "IDI_APPLICATION",
+      "result": "4100"
+    },
+    {
+      "function": "metrics",
+      "args": "SM_CXCURSOR",
+      "result": "32"
+    },
+    {
+      "function": "metrics",
+      "args": "SM_CYCURSOR",
+      "result": "32"
+    },
+    {
+      "function": "metrics",
+      "args": "SM_CXICON",
+      "result": "32"
+    },
+    {
+      "function": "metrics",
+      "args": "SM_CYICON",
+      "result": "32"
+    }
+  ]
+}
