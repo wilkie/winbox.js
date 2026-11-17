@@ -1,0 +1,270 @@
+{
+  "probe": "vgaregs",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mono",
+      "args": "3ba first",
+      "result": "ff"
+    },
+    {
+      "function": "mono",
+      "args": "3ba bits over 1000 reads",
+      "result": "set=ff clear=00"
+    },
+    {
+      "function": "attr",
+      "args": "00",
+      "result": "00 (3c0 20)"
+    },
+    {
+      "function": "attr",
+      "args": "01",
+      "result": "0c (3c0 21)"
+    },
+    {
+      "function": "attr",
+      "args": "02",
+      "result": "0a (3c0 22)"
+    },
+    {
+      "function": "attr",
+      "args": "03",
+      "result": "0e (3c0 23)"
+    },
+    {
+      "function": "attr",
+      "args": "04",
+      "result": "01 (3c0 24)"
+    },
+    {
+      "function": "attr",
+      "args": "05",
+      "result": "15 (3c0 25)"
+    },
+    {
+      "function": "attr",
+      "args": "06",
+      "result": "23 (3c0 26)"
+    },
+    {
+      "function": "attr",
+      "args": "07",
+      "result": "07 (3c0 27)"
+    },
+    {
+      "function": "attr",
+      "args": "08",
+      "result": "0f (3c0 28)"
+    },
+    {
+      "function": "attr",
+      "args": "09",
+      "result": "24 (3c0 29)"
+    },
+    {
+      "function": "attr",
+      "args": "0a",
+      "result": "12 (3c0 2a)"
+    },
+    {
+      "function": "attr",
+      "args": "0b",
+      "result": "36 (3c0 2b)"
+    },
+    {
+      "function": "attr",
+      "args": "0c",
+      "result": "09 (3c0 2c)"
+    },
+    {
+      "function": "attr",
+      "args": "0d",
+      "result": "2d (3c0 2d)"
+    },
+    {
+      "function": "attr",
+      "args": "0e",
+      "result": "1b (3c0 2e)"
+    },
+    {
+      "function": "attr",
+      "args": "0f",
+      "result": "3f (3c0 2f)"
+    },
+    {
+      "function": "attr",
+      "args": "10",
+      "result": "01 (3c0 30)"
+    },
+    {
+      "function": "attr",
+      "args": "11",
+      "result": "00 (3c0 31)"
+    },
+    {
+      "function": "attr",
+      "args": "12",
+      "result": "0f (3c0 32)"
+    },
+    {
+      "function": "attr",
+      "args": "13",
+      "result": "00 (3c0 33)"
+    },
+    {
+      "function": "attr",
+      "args": "14",
+      "result": "00 (3c0 34)"
+    },
+    {
+      "function": "attr-write",
+      "args": "01 bit 5 clear",
+      "result": "held=0c after=0c"
+    },
+    {
+      "function": "attr-write",
+      "args": "01 bit 5 set",
+      "result": "held=0c after=0c"
+    },
+    {
+      "function": "dac",
+      "args": "as Windows left it",
+      "result": "state=03 write=00 mask=ff"
+    },
+    {
+      "function": "dac",
+      "args": "00",
+      "result": "00 00 00"
+    },
+    {
+      "function": "dac",
+      "args": "01",
+      "result": "00 00 2a"
+    },
+    {
+      "function": "dac",
+      "args": "02",
+      "result": "00 2a 00"
+    },
+    {
+      "function": "dac",
+      "args": "03",
+      "result": "00 2a 2a"
+    },
+    {
+      "function": "dac",
+      "args": "04",
+      "result": "2a 00 00"
+    },
+    {
+      "function": "dac",
+      "args": "05",
+      "result": "2a 00 2a"
+    },
+    {
+      "function": "dac",
+      "args": "06",
+      "result": "2a 2a 00"
+    },
+    {
+      "function": "dac",
+      "args": "07",
+      "result": "21 22 23"
+    },
+    {
+      "function": "dac",
+      "args": "08",
+      "result": "00 00 15"
+    },
+    {
+      "function": "dac",
+      "args": "09",
+      "result": "00 00 3f"
+    },
+    {
+      "function": "dac",
+      "args": "0a",
+      "result": "00 2a 15"
+    },
+    {
+      "function": "dac",
+      "args": "0b",
+      "result": "00 2a 3f"
+    },
+    {
+      "function": "dac",
+      "args": "0c",
+      "result": "2a 00 15"
+    },
+    {
+      "function": "dac",
+      "args": "0d",
+      "result": "2a 00 3f"
+    },
+    {
+      "function": "dac",
+      "args": "0e",
+      "result": "2a 2a 15"
+    },
+    {
+      "function": "dac",
+      "args": "0f",
+      "result": "30 31 32"
+    },
+    {
+      "function": "dac",
+      "args": "3f",
+      "result": "3f 3f 3f"
+    },
+    {
+      "function": "dac",
+      "args": "40",
+      "result": "00 00 00"
+    },
+    {
+      "function": "dac",
+      "args": "ff",
+      "result": "00 00 00"
+    },
+    {
+      "function": "dac",
+      "args": "sum of 768",
+      "result": "6024"
+    },
+    {
+      "function": "dac",
+      "args": "after reading all 256",
+      "result": "state=03 write=01 mask=ff"
+    },
+    {
+      "function": "dac-step",
+      "args": "05, two bytes, 3c8, the third",
+      "result": "2a 00 3c8=06 2a"
+    },
+    {
+      "function": "dac-step",
+      "args": "07, six bytes",
+      "result": "21 22 23 00 00 15"
+    },
+    {
+      "function": "dac-write",
+      "args": "07 written back",
+      "result": "held=21 22 23 3c8=08 after=21 22 23"
+    },
+    {
+      "function": "dac",
+      "args": "after the write",
+      "result": "state=03 write=08 mask=ff"
+    }
+  ]
+}

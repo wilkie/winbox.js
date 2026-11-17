@@ -668,7 +668,8 @@ impl Engine {
 /// command line (`tasks2`): an environment's segment, a far pointer to the
 /// command's tail -- its length in a byte, then its characters -- and a far
 /// pointer to two words, 2 and the way to show the window. A block of -1
-/// loads a library instead. An environment of the block's own is given as
+/// loads a library instead, and so does a library's file whatever the
+/// block (`ldmod`). An environment of the block's own is given as
 /// its strings alone, then a count of nought and no path; with none, the
 /// parent's is given whole (`loadenv`).
 pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
@@ -758,6 +759,32 @@ pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
 
             (name, command_line, show, strings)
         };
+
+        // A library's file loaded as `LoadLibrary` loads one, whatever the
+        // block: its instance, no task made, its entry point run on the
+        // caller's stack. **Recorded** by `ldmod`, both modes: Math
+        // Blaster loads its own libraries so (`MB4.EXE` at `177:1512`).
+        let library = {
+            let mut system = engine.system();
+
+            crate::shell::programs::locate(&mut system, &path, "")
+                .ok()
+                .filter(|found| {
+                    found.rsplit_once('\\').is_some_and(|(folder, file)| {
+                        system
+                            .files
+                            .read_from(folder, file)
+                            .and_then(|(_, bytes)| winbox_ne::Executable::parse(bytes).ok())
+                            .is_some_and(|executable| executable.header.library())
+                    })
+                })
+        };
+
+        if let Some(found) = library {
+            return Ok(Answer::Word(
+                crate::modules_kernel::load_library_named(engine, &found).await?,
+            ));
+        }
 
         Ok(Answer::Dword(
             engine

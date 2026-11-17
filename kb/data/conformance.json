@@ -641,6 +641,36 @@
   },
   "gaps": {}
  },
+ "arplsel": {
+  "probe": "arplsel",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "arpl": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "arpl-memory": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cpl": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "associco": {
   "probe": "associco",
   "display": "vga",
@@ -8135,6 +8165,36 @@
    "big": "a read's buffer holds the DOS extender's leftovers under Windows; left as it was here"
   }
  },
+ "enhanced/arplsel": {
+  "probe": "arplsel",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "arpl": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "arpl-memory": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cpl": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enhanced/biosequ": {
   "probe": "biosequ",
   "display": "vga",
@@ -9790,6 +9850,57 @@
    "write": "FFFFF000h is WinBox's own local table, present, where WIN386 has no page: the write does not fault (kb/guides/paging.md)",
    "rom": "DOSBox's dynamic core leaves a ROM page writable once it has run code there (core_dynrec/cache.h 143-147); WinBox follows the hardware and drops every write to C0000h-C7FFFh and F0000h-FFFFFh, as the owner decided on 2026-11-13 (kb/guides/paging.md): FFFF0h, in DOSBox's page of BIOS code, keeps the write"
   }
+ },
+ "enhanced/vgaregs": {
+  "probe": "vgaregs",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 51,
+  "functions": {
+   "attr": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "attr-write": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dac": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dac-step": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dac-write": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "enhanced/w386box": {
   "probe": "w386box",
@@ -13875,6 +13986,40 @@
   },
   "gaps": {}
  },
+ "gdtlow": {
+  "probe": "gdtlow",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 31,
+  "functions": {
+   "gdt": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rpl3": {
+    "total": 15,
+    "agreed": 6,
+    "disagreed": 9,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sel": {
+    "total": 15,
+    "agreed": 4,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "gdt": "WinBox's global table ends below 78h",
+   "sel": "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone",
+   "rpl3": "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone"
+  }
+ },
  "getdcex": {
   "probe": "getdcex",
   "display": "vga",
@@ -17725,6 +17870,43 @@
    "pixels": {
     "total": 404,
     "agreed": 404,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "ldmod": {
+  "probe": "ldmod",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 7,
+  "functions": {
+   "before": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "libmain": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "loadmodule": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "usage": {
+    "total": 4,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -36970,6 +37152,57 @@
    "left": {
     "total": 26,
     "agreed": 26,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "vgaregs": {
+  "probe": "vgaregs",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 51,
+  "functions": {
+   "attr": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "attr-write": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dac": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dac-step": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dac-write": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 2,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

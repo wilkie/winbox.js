@@ -1238,7 +1238,7 @@ pub const REPORTED_ENHANCED: &[&str] = &[
     "w386lib", "w386box", "w386eip", "diskser", "pgtouch", "pgbox", "pgwrite", "pgcreg", "pgbig",
     "pglock", "pgheap", "pgw386", "mcibang", "pgfree", "pghost", "pgrom", "diskmed", "drvdpb",
     "ioctlall", "biosequ", "biosequa", "biosequ2", "biosequd", "hostattr", "imgroot", "abssect",
-    "mscdbuf", "cpu486", "irqtick", "biosint", "biosintm", "ioports",
+    "mscdbuf", "cpu486", "irqtick", "biosint", "biosintm", "ioports", "vgaregs", "arplsel",
 ];
 
 /// Functions a module declares but answers with a stub: their records are
@@ -2191,6 +2191,21 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
         "irqtick:realmode",
         "a program's real-mode code is never run: its real-mode vector is never called",
     ),
+    // `gdtlow` loads the global table's selectors below 80h as a program
+    // that takes them for real-mode segments does (Lucky's Investments,
+    // 50h). They are DOSX's own in standard mode (08h-30h, 40h-58h load)
+    // and WIN386's in enhanced mode (38h-50h, 68h); WinBox's table has 40h
+    // alone, its access byte accessed, its limit FFFFh, and the BIOS's
+    // equipment word at its 10h not laid out.
+    (
+        "gdtlow:sel",
+        "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone",
+    ),
+    (
+        "gdtlow:rpl3",
+        "the global table's selectors are DOSX's and WIN386's own; WinBox's has 40h alone",
+    ),
+    ("gdtlow:gdt", "WinBox's global table ends below 78h"),
     // `stdcur`: the standard cursors USER keeps are its blocks, as Windows
     // makes them; the standard icons are blocks of WinBox's own layout.
     (

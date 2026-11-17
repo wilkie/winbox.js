@@ -5,8 +5,9 @@
 //! oracle's DOSBox decodes them. So a program, or a driver of its own, that
 //! writes the chip is heard, and one that looks for the card by its timers
 //! finds it. And the CMOS's (`cmos.rs`): a register chosen at 70h, read and
-//! written at 71h. DMA channel 0's address and count, the game port and the
-//! VGA's input status (3DAh) are read as DOSBox answers them. A write to
+//! written at 71h. DMA channel 0's address and count, the game port, the
+//! VGA's input status (3DAh), the monochrome status (3BAh), and the VGA's
+//! attribute controller and DAC are read as DOSBox answers them. A write to
 //! any other port is passed over, as the processor passed every `OUT` over
 //! before; a read of any other stops the run, as every `IN` did.
 //!
@@ -48,6 +49,23 @@ const GAME_PORT: u16 = 0x201;
 
 /// The VGA's input status register 1, in its colour place.
 const VGA_STATUS: u16 = 0x3da;
+
+/// Its monochrome place, which a Hercules card's status has: on DOSBox's
+/// VGA in a colour mode no device answers it (`write_p3c2`,
+/// `vga_misc.cpp` 59-73, the misc output's bit 0 set), and a read is `FFh`
+/// (`IO_ReadDefault`, `iohandler.cpp` 39-44). **Recorded** by `vgaregs`,
+/// both modes: `FFh`, a thousand times.
+const MONO_STATUS: u16 = 0x3ba;
+
+/// The attribute controller's index and register (3C0h, written and read)
+/// and its register read (3C1h); the DAC's mask (3C6h), read index and
+/// state (3C7h), write index (3C8h) and data (3C9h) (`bios.rs`).
+const ATTRIBUTE: u16 = 0x3c0;
+const ATTRIBUTE_READ: u16 = 0x3c1;
+const PEL_MASK: u16 = 0x3c6;
+const DAC_READ: u16 = 0x3c7;
+const DAC_WRITE: u16 = 0x3c8;
+const DAC_DATA: u16 = 0x3c9;
 
 /// The VGA's timing in mode 12h, which `VGA.DRV` sets with `INT 10h` (seg4
 /// `00d0`), as the oracle's DOSBox (`machine=svga_s3`) works it out
@@ -128,8 +146,10 @@ impl System {
             // answers every bit set (`hardware/joystick.cpp` 54-87).
             // **Recorded** by `ioports`, both modes.
             Some(0xff)
-        } else if port == VGA_STATUS && self.display.driver_file == "VGA.DRV" {
-            Some(vga_status(self.clock.precise(self.instructions)))
+        } else if self.display.driver_file == "VGA.DRV"
+            && let Some(byte) = self.vga_port_read(port)
+        {
+            Some(byte)
         } else if port == SYSTEM_CONTROL {
             // DOSBox's read turns the refresh bit (4) and the timer's
             // second output (5) over each time, and answers the byte last
@@ -139,6 +159,52 @@ impl System {
         } else {
             None
         }
+    }
+
+    /// A VGA register's byte, on the VGA's driver: the input status (its
+    /// read putting the attribute controller's flip-flop at the index), the
+    /// monochrome status no device answers, the attribute controller's and
+    /// the DAC's (`bios.rs`). **Recorded** by `ioports` and `vgaregs`.
+    fn vga_port_read(&mut self, port: u16) -> Option<u8> {
+        let enhanced = self.dpmi_enhanced();
+        let video = &mut self.video_bios;
+
+        Some(match port {
+            VGA_STATUS => {
+                video.attr_reset();
+                vga_status(self.clock.precise(self.instructions))
+            }
+            MONO_STATUS => 0xff,
+            ATTRIBUTE => video.attr_index_read(),
+            ATTRIBUTE_READ => video.attr_read(),
+            PEL_MASK => video.pel_mask_read(),
+            DAC_READ => video.dac_state_read(enhanced),
+            DAC_WRITE => video.dac_write_index(enhanced),
+            DAC_DATA => video.dac_data_read(enhanced),
+            _ => return None,
+        })
+    }
+
+    /// A byte written to a VGA register the video BIOS's state keeps, on
+    /// the VGA's driver; false for any other port.
+    fn vga_port_write(&mut self, port: u16, byte: u8) -> bool {
+        if self.display.driver_file != "VGA.DRV" {
+            return false;
+        }
+
+        let enhanced = self.dpmi_enhanced();
+        let video = &mut self.video_bios;
+
+        match port {
+            ATTRIBUTE => video.attr_write(byte),
+            PEL_MASK => video.pel_mask_write(byte),
+            DAC_READ => video.dac_read_address(enhanced, byte),
+            DAC_WRITE => video.dac_write_address(enhanced, byte),
+            DAC_DATA => video.dac_data_write(enhanced, byte),
+            _ => return false,
+        }
+
+        true
     }
 
     /// The `IN` or `OUT` at CS:IP run, `opcode` its own byte; false where
@@ -216,6 +282,8 @@ impl System {
                     self.pit.control((value >> (8 * at)) as u8, now);
                 } else if each == PIC_COMMAND {
                     self.interrupt_controller_write((value >> (8 * at)) as u8);
+                } else {
+                    self.vga_port_write(each, (value >> (8 * at)) as u8);
                 }
             }
         } else {
