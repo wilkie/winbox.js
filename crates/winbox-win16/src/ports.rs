@@ -52,9 +52,9 @@ const VGA_STATUS: u16 = 0x3da;
 
 /// Its monochrome place, which a Hercules card's status has: on DOSBox's
 /// VGA in a colour mode no device answers it (`write_p3c2`,
-/// `vga_misc.cpp` 59-73, the misc output's bit 0 set), and a read is FFh
+/// `vga_misc.cpp` 59-73, the misc output's bit 0 set), and a read is `FFh`
 /// (`IO_ReadDefault`, `iohandler.cpp` 39-44). **Recorded** by `vgaregs`,
-/// both modes: FFh, a thousand times.
+/// both modes: `FFh`, a thousand times.
 const MONO_STATUS: u16 = 0x3ba;
 
 /// The attribute controller's index and register (3C0h, written and read)

@@ -104,8 +104,8 @@ pub struct VideoBios {
     attr_index: u8,
     attr_data_next: bool,
     attr_open: bool,
-    /// The DAC's mask, 3C6h, FFh as DOSBox starts it (`VGA_SetupDAC`,
-    /// `vga_dac.cpp` 198-205); **recorded** FFh.
+    /// The DAC's mask, 3C6h, `FFh` as DOSBox starts it (`VGA_SetupDAC`,
+    /// `vga_dac.cpp` 198-205); **recorded** `FFh`.
     pel_mask: u8,
     /// The DAC's indices, as Windows left them until the first use.
     dac_ports: Option<DacPorts>,
@@ -128,7 +128,7 @@ impl DacPorts {
     /// `VGA.DRV`'s `Enable` left it with its last `INT 10h` 1010h, of
     /// register 0Fh (seg4 `0106`-`0112`; DOSBox's BIOS writes 3C8h and three
     /// bytes, `int10_pal.cpp` 154-159); in 386 enhanced mode reading, its
-    /// write index nought, as 3C7h written FFh leaves it (`write_p3c7`,
+    /// write index nought, as 3C7h written `FFh` leaves it (`write_p3c7`,
     /// `vga_dac.cpp` 83-88): WIN386's own, not read out. The read index and
     /// the byte 3C9h is at are not measured: nought.
     fn as_windows_left(enhanced: bool) -> Self {
