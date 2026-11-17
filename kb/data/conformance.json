@@ -35676,6 +35676,22 @@
   },
   "gaps": {}
  },
+ "truenam": {
+  "probe": "truenam",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 14,
+  "functions": {
+   "truename": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "ttqmap": {
   "probe": "ttqmap",
   "display": "vga",

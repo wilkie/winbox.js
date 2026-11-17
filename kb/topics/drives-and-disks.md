@@ -2,7 +2,7 @@
 kind: topic
 name: Drives and disks
 summary: What Windows 3.1 and DOS say about the drives there are — GetDriveType as SYSTEM.DRV works it out, the network calls with no network, disk space, the drive IOCTL calls, MSCDEX and absolute disk reads — how DOSBox's C: lists a folder, stamps it and renames in it, and what DOSBox makes of a floppy, hard disk or CD-ROM image -- and how the engine, the native build and the page mount, swap and save such images as drives -- measured where Windows and DOSBox answer and documented where DOS does.
-probes: [drivetyp, netcaps, diskfree, dirorder, drvioctl, mscdex, imgflop, imgcd, imghdd, imgwrite, imgswap, imgbin, imgcue, imgcue2, imgtrk, drvdpb, ioctlall, biosequ, biosequa, biosequ2, biosequd, hostattr, imgroot, abssect, mscdbuf, emptya, rootstmp]
+probes: [drivetyp, netcaps, diskfree, dirorder, drvioctl, mscdex, imgflop, imgcd, imghdd, imgwrite, imgswap, imgbin, imgcue, imgcue2, imgtrk, drvdpb, ioctlall, biosequ, biosequa, biosequ2, biosequd, hostattr, imgroot, abssect, mscdbuf, emptya, rootstmp, truenam]
 ---
 
 File Manager asks each drive letter whether it exists, what kind it is, whether it is on a network, and how much room it has.
@@ -102,6 +102,11 @@ The Visual Basic setup kit's `SETUP1.EXE` asks 59h after a folder call fails, an
   DX stays DDDDh and the carry as it was. KERNEL's own calls set DOS's error as a program's do, each after a 3Eh that left 6: `_lopen` of a file not there 2, of one in a folder not there 3; `_lcreat` in a folder not there 3; `OpenFile` of a file not there 2 (with `OF_EXIST` too, and searching the path for a bare name), of one in a folder not there 3, and with `OF_CREATE` there 3, its `nErrCode` the same each time. `_lopen` of a file there leaves 6.
 
 - WinBox keeps DOS's last error in `dos_error`, set by each DOS function that fails, and answers 59h from it as DOSBox does (`dos_function` in `crates/winbox-win16/src/dos.rs`). KERNEL's `_lopen`, `_lcreat` and `OpenFile`, which WinBox answers without DOS, set it as DOS's 3Dh and 3Ch would (`files_kernel.rs`, `kernel.rs`). 3Dh of a name in a folder not there on a folder's drive now answers 3, as DOSBox's `PathExists` makes it on any drive (`dos_files.cpp` 563-564); WinBox answered 2 there before.
+
+### A name made whole, 60h
+
+- [[measured]] [[probe:truenam]], in both modes: function 60h, asked by a Windows program with a name at DS:SI and a buffer at ES:DI, answers the carry and AX 2, file not found, for every name -- `C:\`, `f.txt`, `c:/windows/win.ini`, a name with a folder not there, a drive not there, an empty one -- and leaves the buffer as it was. [[read out]] KERNEL looks at the name's drive letter, for a drive it takes as another's name (`KRNL386.EXE` seg1 `152c`-`1535`, `169f`), and passes the call on to DOS (`1bc7`). DOSBox's own answer is the name made whole by `DOS_MakeName` (`DOS_Canonicalize`, `dos_files.cpp` 658-668; `dos.cpp` 905-914), which a name as given here would be. [[inferred]] The name does not reach it: Windows' DOS extender does not translate DS:SI for 60h, and DOS reads a name of nought where the selector's value, taken as a segment, points.
+- WinBox answers it so (`dos_function`). It did not answer 60h at all, the registers left as they were: TZ-Minigolf's setup asks it of each file before it copies it, and took the carry clear and AX 6000h for "File or directory access denied" (`win3_TZ-Minig`, [[guide:compatibility]]).
 
 ## MSCDEX
 

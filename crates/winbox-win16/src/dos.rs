@@ -532,6 +532,14 @@ impl System {
                 return Err(Stop::Ended);
             }
             0x4e => Some(self.find_first()),
+            // A name made whole ("truename"): KERNEL passes 60h on to DOS
+            // once it has looked at the name's drive letter (`KRNL386.EXE`
+            // seg1 `152c`-`1535`, then `1bc7`), and a Windows program is
+            // answered file not found, whatever the name, in both modes,
+            // DS:SI's name not reaching DOSBox's `DOS_Canonicalize`
+            // (**recorded** by `truenam`: "C:\\" as "" or "f.txt", the
+            // buffer at ES:DI as it was).
+            0x60 => Some(Err(ERROR_FILE_NOT_FOUND)),
             0x4f => Some(self.find_next()),
             0x56 => Some(self.rename_file()),
             0x57 => match self.low(AX) {
@@ -2032,6 +2040,21 @@ mod tests {
         assert_eq!(system.cpu.regs[DX], 0x0919);
         assert_eq!(system.cpu.regs[AX] & 0xff, 5);
         assert_eq!(system.date(), [2026, 9, 25, 12, 0, 0, 5]);
+    }
+
+    /// INT 21h function 60h, a name made whole, answers file not found to
+    /// a Windows program whatever the name, the buffer untouched
+    /// (`truenam`).
+    #[test]
+    fn a_name_is_not_made_whole() {
+        let mut system = System::new();
+
+        system.cpu.flags &= !super::CARRY;
+        system.cpu.regs[AX] = 0x6000;
+        system.dos_call().unwrap();
+
+        assert_eq!(system.cpu.flags & super::CARRY, super::CARRY);
+        assert_eq!(system.cpu.regs[AX], 2);
     }
 
     /// INT 21h function 69h, a disk's serial number got or set, sets the
