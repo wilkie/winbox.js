@@ -330,10 +330,19 @@ pub(crate) fn create_dc_call(system: &mut System, args: &mut Args) -> Result<Ans
 }
 
 /// A device context given back. Any handle that stands for something is let
-/// go.
+/// go, but one of USER's (`dc_entries.rs`), which GDI keeps and answers TRUE
+/// for: once the hook has answered (USER's answers 1), a context whose
+/// object header's word 2 has 2000h set answers 1 and nothing of it is
+/// deleted (`GDI.EXE` seg1 `0877`-`0898`). **Recorded** by `delcache`: a context `GetDC` lent,
+/// deleted, measures text after, is given back by `ReleaseDC` and lent
+/// again by the next `GetDC`.
 pub fn delete_dc(system: &mut System, hdc: u16) -> bool {
     if system.handles.resolve(hdc).is_none() {
         return false;
+    }
+
+    if system.dc_entries.list.iter().any(|entry| entry.hdc == hdc) {
+        return true;
     }
 
     system.handles.free(hdc);
@@ -988,6 +997,20 @@ mod tests {
         let index = dc_of(system, hdc).unwrap();
 
         system.gdi.dcs[index].state.stretch_mode = Some(mode);
+    }
+
+    /// A context USER lent is answered TRUE and kept; one the program
+    /// made is deleted (`delcache`).
+    #[test]
+    fn a_context_user_lent_is_not_deleted() {
+        let mut system = System::new();
+        let lent = system.get_dc(0);
+        let made = create_compatible_dc(&mut system, 0);
+
+        assert!(delete_dc(&mut system, lent));
+        assert!(dc_of(&system, lent).is_some());
+        assert!(delete_dc(&mut system, made));
+        assert!(dc_of(&system, made).is_none());
     }
 
     fn summary(system: &System, hdc: u16) -> (u32, u32, u16) {

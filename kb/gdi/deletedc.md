@@ -6,7 +6,7 @@ ordinal: 68
 summary: Deletes a device context; the last on a printer's device has the driver's Disable called, the last on a driver lets the library go, and then the device's PDEVICE and what was realized for it are freed.
 versions:
   '3.1': partial
-probes: [pric, prdlg, prdrv, dchkdel]
+probes: [pric, prdlg, prdrv, dchkdel, delcache]
 source: crates/winbox-win16/src/gdi/printer_driver.rs
 topics: [printer-drivers]
 ---
@@ -18,11 +18,15 @@ topics: [printer-drivers]
 
 - [[measured]] [[probe:dchkdel]]: a context with a hook of the program's has the hook called with `DCHC_DELETEDC` (2), its data and nought, whether or not the hook's flag is set, and once only; answering nought, `DeleteDC` answers nought and the context still answers `GetClipBox`; answering 1, it is deleted. A context with no hook calls nothing.
 
+- [[measured]] [[probe:delcache]]: a context `GetDC` lent from USER's cache answers 1 and is not deleted. Text is measured in it after, [[fn:USER.ReleaseDC]] gives it back (1), and the next `GetDC` of the window lends the same handle again. A context made with [[fn:GDI.CreateCompatibleDC]] answers 1 and is deleted. A shareware setup deletes the context it was lent (`win3_SoliXl3x`, [[guide:compatibility]]); WinBox let the handle go, and File Manager, lent it next, stopped at `GetTextExtent`.
+
 ## Inside Windows
 
 [[read out]] `GDI.EXE` seg1 `0844`-`0866`: where the context has a hook (the far address at C4h), it is called with `DCHC_DELETEDC` first, and an answer of nought ends the call with nought. USER's own hook answers 1 to it, as to anything but `DCHC_INVALIDVISRGN` (`USER.EXE` seg1 `8a0a`-`8a10`).
 
 [[read out]] `GDI.EXE` seg1 `082e`: the device's count of contexts taken down, and at nought the driver's `Disable` given the `PDEVICE` (`0906`), and the device taken from the driver's list; the driver's count taken down, and at nought `FreeLibrary` (`0947`). Then, where the device went, its `PDEVICE` is freed (`09dd`), and what was realized for it: its pens and brushes (`09ea`, seg1 `4460`) and its fonts (`09ef`, seg6 `0387`), each `FONTINFO` given to `EngineDeleteFont` and freed, the driver not called. See [[topic:printer-drivers]].
+
+[[read out]] `GDI.EXE` seg1 `0877`-`0898`: past the hook, a context whose object header's word 2 has 2000h set answers 1 and nothing more is done. [[inferred]] USER's cache contexts are so marked; how USER marks them is not read out.
 
 ## Implementation
 
