@@ -98,6 +98,25 @@ const DEFAULT_VERSION: u16 = 0x0201;
 const LEAST_STACK: u16 = 0x1400;
 const LEAST_HEAP: u16 = 0x64;
 
+/// A module's stack's and local heap's sizes as KERNEL keeps them in its
+/// database, which the data segment is sized by (`KRNL386.EXE` seg1
+/// `7690`-`7697`) and the task is started with, BX the stack's and CX the
+/// heap's (seg2 `2579`-`257e`): a program's stack 1400h at least, a heap
+/// that is not nought 64h at least (seg2 `123d`-`1264`); a library's as
+/// its file has them.
+pub(crate) fn stack_and_heap(header: &winbox_ne::Header) -> (u16, u16) {
+    let (stack, heap) = (header.initial_stack_size, header.initial_heap_size);
+
+    if header.library() {
+        return (stack, heap);
+    }
+
+    (
+        stack.max(LEAST_STACK),
+        if heap == 0 { 0 } else { heap.max(LEAST_HEAP) },
+    )
+}
+
 /// A bundle's header: its first ordinal less one, its last, and the next's
 /// offset.
 const BUNDLE_HEADER: usize = 6;
@@ -415,4 +434,34 @@ fn mark_preloaded(out: &mut [u8], library: bool) {
 /// A segment's entry's offset in a database's bytes, by its number from 1.
 pub fn segment_entry(database: &[u8], number: u16) -> usize {
     usize::from(word(database, SEGMENT_TABLE)) + usize::from(number - 1) * SEGMENT_ENTRY
+}
+
+#[cfg(test)]
+mod stack_tests {
+    use super::stack_and_heap;
+    use winbox_ne::Header;
+
+    fn header(flags: u16, stack: u16, heap: u16) -> Header {
+        Header {
+            flags,
+            initial_stack_size: stack,
+            initial_heap_size: heap,
+            ..Header::default()
+        }
+    }
+
+    /// A program's stack 1400h at least and a heap not nought 64h at least
+    /// (`KRNL386.EXE` seg2 `123d`-`1264`; `stack400`'s 400h made 1400h).
+    #[test]
+    fn a_programs_stack_and_heap_are_raised_to_kernels_least() {
+        assert_eq!(stack_and_heap(&header(2, 0x400, 0)), (0x1400, 0));
+        assert_eq!(stack_and_heap(&header(2, 0x400, 0x10)), (0x1400, 0x64));
+        assert_eq!(stack_and_heap(&header(2, 0x2000, 0x400)), (0x2000, 0x400));
+    }
+
+    /// A library's are as its file has them.
+    #[test]
+    fn a_librarys_stack_and_heap_are_its_files() {
+        assert_eq!(stack_and_heap(&header(0x8001, 0, 0x10)), (0, 0x10));
+    }
 }

@@ -830,8 +830,26 @@ export function needsOf(item, folder, images = []) {
   };
   const { imports, functions } = walk(bytes && needs.header === 'NE' ? [bytes] : []);
 
-  const ownFolder = program ? new Set(moduleNames(dirname(program))) : new Set();
-  const everywhere = new Set(byModule.keys());
+  /*
+   * What KERNEL would find for an import: a file of the module's name and
+   * `.DLL`, which it adds to the name (`KRNL386.EXE` seg2 `197d`-`1988`).
+   * A `VBRUN100.EXE` beside a program, a self-extracting archive of the
+   * runtime, is not `VBRUN100`.
+   */
+  const libraryNames = (list) =>
+    list
+      .filter((file) => /\.dll$/i.test(file))
+      .map((file) => basename(file).toUpperCase().replace(/\.DLL$/, ''));
+  const ownFolder = program
+    ? new Set(
+        libraryNames(
+          existsSync(dirname(program))
+            ? readdirSync(dirname(program)).map((name) => join(dirname(program), name))
+            : []
+        )
+      )
+    : new Set();
+  const everywhere = new Set(libraryNames(files));
   const lacks = (modules) =>
     [...modules].filter(
       (module) => !installation().has(module) && !ownFolder.has(module) && !everywhere.has(module)

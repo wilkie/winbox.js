@@ -1,0 +1,35 @@
+{
+  "probe": "stack400",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "header",
+      "args": "stack",
+      "result": "0c06 1f70 1f70"
+    },
+    {
+      "function": "header",
+      "args": "bottom less top",
+      "result": "136a"
+    },
+    {
+      "function": "local",
+      "args": "winmain",
+      "result": "1f58"
+    },
+    {
+      "function": "sizes",
+      "args": "data",
+      "result": "2380"
+    }
+  ]
+}

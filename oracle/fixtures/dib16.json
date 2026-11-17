@@ -1,0 +1,74 @@
+{
+  "probe": "dib16",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "create",
+      "args": "16",
+      "result": "0"
+    },
+    {
+      "function": "uninit",
+      "args": "16",
+      "result": "bitmap"
+    },
+    {
+      "function": "setbits",
+      "args": "16",
+      "result": "0"
+    },
+    {
+      "function": "todevice",
+      "args": "16",
+      "result": "0"
+    },
+    {
+      "function": "create",
+      "args": "32",
+      "result": "0"
+    },
+    {
+      "function": "uninit",
+      "args": "32",
+      "result": "bitmap"
+    },
+    {
+      "function": "setbits",
+      "args": "32",
+      "result": "0"
+    },
+    {
+      "function": "todevice",
+      "args": "32",
+      "result": "0"
+    },
+    {
+      "function": "create",
+      "args": "24",
+      "result": "bitmap"
+    },
+    {
+      "function": "uninit",
+      "args": "24",
+      "result": "bitmap"
+    },
+    {
+      "function": "setbits",
+      "args": "24",
+      "result": "4"
+    },
+    {
+      "function": "todevice",
+      "args": "24",
+      "result": "4"
+    }
+  ]
+}

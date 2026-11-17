@@ -28,8 +28,10 @@
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
 //! were and only the last twenty. `--captions` prints, after the calls,
 //! the windows at the top as the run left them, with their captions, and
-//! a message box's or a window's text (its statics), and its push buttons,
-//! each with its identifier and caption (`buttons`). `--pass MS` is the
+//! a message box's or a window's text (its statics), each of USER's
+//! system error boxes brought up, its caption and text (`answered:`), and
+//! its push buttons, each with its identifier and caption (`buttons`).
+//! `--pass MS` is the
 //! compatibility catalog's hand at a setup: a look every MS milliseconds,
 //! Enter pressed at each, or where Enter has done nothing twice a click on a
 //! button or Alt and a letter (`winbox_win16::pass_rules`); what it did is
@@ -218,6 +220,22 @@ fn print_captions(system: &winbox_win16::System) {
         }
 
         println!("window: {line}");
+    }
+
+    // Each of USER's system error boxes brought up, answered or not: its
+    // caption and text, a character a byte.
+    let chars = |bytes: &[u8]| {
+        bytes
+            .iter()
+            .map(|&byte| char::from(byte))
+            .collect::<String>()
+    };
+
+    for (caption, text) in &system.sys_error_boxes {
+        println!(
+            "answered: {}",
+            serde_json::json!({ "title": chars(caption), "text": chars(text) })
+        );
     }
 }
 

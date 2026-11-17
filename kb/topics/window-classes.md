@@ -2,7 +2,7 @@
 kind: topic
 name: Window classes
 summary: What GetClassInfo answers for a program's class and for USER's own, what RegisterClass answers, and whose a window made with no instance is — as three probes recorded them.
-probes: [classinf, nullinst, unregcls]
+probes: [classinf, nullinst, unregcls, regcls31]
 ---
 
 A window class is registered by an instance and found by its name. [[probe:classinf]] registers one of its own and asks [[fn:USER.GetClassInfo]] about it, about USER's own classes, and about names that are no class.
@@ -33,7 +33,9 @@ A window class is registered by an instance and found by its name. [[probe:class
 
 ## What RegisterClass answers
 
-- [[measured]] [[fn:USER.RegisterClass]] answered 1 for the probe, a program made for Windows 3.0, not the class's atom that `GetClassInfo` answers. Windows 3.1 is documented to answer the atom; whether a program made for 3.1 gets it is not measured.
+- [[measured]] [[fn:USER.RegisterClass]] answered 1 for [[probe:classinf]], a program made for Windows 3.0, not the class's atom that `GetClassInfo` answers. [[probe:regcls31]], the same made for 3.10 (its header's word 3Eh 30Ah, which `GetExpWinVer` answers), is answered a string atom, at C000h or above: the one `GetClassInfo` answers, another for a second class, and the same again for the class registered after `UnregisterClass` let it go.
+- [[read out]] USER asks `GetExpWinVer` of the `WNDCLASS`'s instance (`USER.EXE` seg8 `0152`-`015b`) and, once the class is made, answers 1 where that is 300h or less, else the class's atom (seg8 `0280`-`028f`).
+- [[measured]] A program written in Turbo Pascal for Windows, made for 3.00, takes the answer for a `Boolean`, and its range check stops it where the answer is neither 0 nor 1: Glider 4.0 of the catalog ended at "Runtime error 201" when WinBox answered it the atom.
 
 ## A window with no instance
 
@@ -51,4 +53,8 @@ A window class is registered by an instance and found by its name. [[probe:class
 
 ## In winbox.js
 
-`crates/winbox-win16/src/classes.rs` has the call; it writes the ten fields itself, since USER's procedures are functions here and a menu's name is kept as a string. `RegisterClass` answers the class's handle, which is the known gap in [[probe:classinf]]'s conformance. USER's classes other than the controls and dialogs are not answered.
+`crates/winbox-win16/src/classes.rs` has the call; it writes the ten fields itself, since USER's procedures are functions here and a menu's name is kept as a string. `RegisterClass` answers the atom `GetClassInfo` answers for the class, or 1 for a module made for 3.00 or before, as USER does. `CreateWindow` given a class's atom in place of its name does not find the class yet. USER's classes other than the controls and dialogs are not answered.
+
+## Not yet done
+
+- `CreateWindow` given a class by its atom (a number at C000h or above in the name's place), as a program made for 3.10 may pass what `RegisterClass` answered.

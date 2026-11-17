@@ -1,0 +1,54 @@
+{
+  "probe": "aliasdl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "exec",
+      "args": "C:\\ALIASDLC.EXE",
+      "result": "inst"
+    },
+    {
+      "function": "call",
+      "args": "",
+      "result": "1234"
+    },
+    {
+      "function": "handle ALIASDLD",
+      "args": "",
+      "result": "0"
+    },
+    {
+      "function": "handle ALIASDLX",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "file",
+      "args": "",
+      "result": "C:\\ALIASDLD.DLL"
+    },
+    {
+      "function": "usage",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "loadlib",
+      "args": "",
+      "result": "same"
+    },
+    {
+      "function": "usage after",
+      "args": "",
+      "result": "2"
+    }
+  ]
+}

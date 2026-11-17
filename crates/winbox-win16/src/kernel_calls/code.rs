@@ -135,10 +135,12 @@ pub fn get_code_info(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         header.page_shift
     };
     let own = loaded.data() == Some(block.index);
+    // The heap and stack as the database keeps them, a program's stack
+    // 1400h at least (`module_database::stack_and_heap`).
     let extra = if own {
-        header
-            .initial_heap_size
-            .wrapping_add(header.initial_stack_size)
+        let (stack, heap) = crate::module_database::stack_and_heap(header);
+
+        heap.wrapping_add(stack)
     } else {
         0
     };

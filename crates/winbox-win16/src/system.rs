@@ -213,6 +213,9 @@ pub struct System {
     pub host_page_fault: std::cell::Cell<Option<(u32, bool, usize)>>,
     /// The host's hand at USER's system error box, where it has one.
     pub box_hand: Option<crate::sys_error_box::BoxHand>,
+    /// Each system error box brought up, its caption and text, for the
+    /// host to report (the trace's `answered:` lines).
+    pub sys_error_boxes: Vec<(Vec<u8>, Vec<u8>)>,
     /// While USER's system error box is up, the host's mouse and keyboard
     /// as messages for it -- each its message, `wParam` and point on the
     /// screen -- in place of the windows'.
@@ -642,6 +645,7 @@ impl System {
             application_faults: Vec::new(),
             host_page_fault: std::cell::Cell::new(None),
             box_hand: None,
+            sys_error_boxes: Vec::new(),
             modal_input: None,
             depth: 0,
             handles: Handles::new(),

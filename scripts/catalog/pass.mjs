@@ -56,7 +56,7 @@ import { fileURLToPath } from 'node:url';
 
 import { withoutExcluded } from './excluded.mjs';
 import { PROGRAMS, catalogItems, downloadPath, keep, stateOf } from './fetch.mjs';
-import { filesOf, headerOf, installationIn, needsOf } from './needs.mjs';
+import { filesOf, findFile, headerOf, installationIn, needsOf } from './needs.mjs';
 import { runtimeBytes } from './runtimes.mjs';
 import { classify } from './sample.mjs';
 import { applyRun, clean, decode, foundOf, readFolder } from './titles.mjs';
@@ -336,6 +336,7 @@ function outcome(run, seconds = SECONDS) {
     ...result,
     box,
     windows,
+    answered: answeredOf(run.out),
     calls,
     instructions,
     ms: run.ms,
@@ -343,12 +344,36 @@ function outcome(run, seconds = SECONDS) {
   };
 }
 
-/** What a run's box or windows say it needs: enhanced mode, or more colours. */
+/**
+ * USER's system error boxes a run brought up, answered or not (`trace`'s
+ * `answered:` lines): a box a program shows and then ends after.
+ */
+function answeredOf(out) {
+  return out
+    .split('\n')
+    .filter((line) => line.startsWith('answered: '))
+    .map((line) => {
+      try {
+        const box = JSON.parse(line.slice(10));
+
+        return {
+          title: clean(decode(Buffer.from(box.title ?? '', 'latin1'))),
+          text: clean(decode(Buffer.from(box.text ?? '', 'latin1'))),
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+/** What a run's boxes or windows say it needs: enhanced mode, or more colours. */
 function askedFor(result) {
   const said = [
     result.box?.text,
     result.box?.title,
     ...result.windows.flatMap((w) => [w.title, w.text]),
+    ...(result.answered ?? []).flatMap((box) => [box.title, box.text]),
   ]
     .filter(Boolean)
     .join(' \n ');
@@ -520,8 +545,61 @@ function placeRuntimes(drive, needs) {
 }
 
 /**
+ * The files an item's batch file copies into Windows' folders, placed in
+ * the drive's: archive.org's DOSBox mounts the item as C:, the current
+ * drive, and Windows as D:, and a batch puts the libraries and settings a
+ * setup would have installed where Windows finds them before it starts
+ * the program (`COPY WAVEMIX\WAVMIX16.DLL D:\WINDOWS\SYSTEM`,
+ * `copy C:\WINDOWS\SYSTEM\*.* D:\WINDOWS\SYSTEM`). Only a copy from the
+ * item (C: or no drive) into a `\WINDOWS` or `\WINDOWS\SYSTEM` folder, of a
+ * name or `*.*`; the batch is read as data.
+ */
+function placeBatchCopies(drive, folder, needs) {
+  const batch = needs?.batch && findFile(filesOf(folder), basename(needs.batch));
+
+  if (!batch) {
+    return;
+  }
+
+  for (const line of readFileSync(batch, 'latin1').split(/\r?\n/)) {
+    const [command, from, to] = line.trim().split(/\s+/);
+
+    if (!/^copy$/i.test(command ?? '') || !from || !to || /^[a-bd-z]:/i.test(from)) {
+      continue;
+    }
+
+    const place = /^[a-z]:\\windows(\\system)?\\?$/i.exec(to);
+
+    if (!place) {
+      continue;
+    }
+
+    const target = join(drive, 'WINDOWS', ...(place[1] ? ['SYSTEM'] : []));
+    const parts = from.replace(/^c:/i, '').split('\\').filter(Boolean);
+    const name = parts.pop();
+    const source = parts.length ? onDrive(folder, parts.join('\\')) : folder;
+
+    if (!name || !source || !statSync(source).isDirectory()) {
+      continue;
+    }
+
+    mkdirSync(target, { recursive: true });
+
+    for (const each of readdirSync(source)) {
+      const file = join(source, each);
+      const wanted = name === '*.*' || each.toUpperCase() === name.toUpperCase();
+
+      if (wanted && statSync(file).isFile()) {
+        cpSync(file, join(target, each.toUpperCase()));
+      }
+    }
+  }
+}
+
+/**
  * A drive made for a run: the item's folder copied as `C:\CORPUS\<ID>\`,
- * and the runtimes it needs in `WINDOWS\SYSTEM`.
+ * the runtimes it needs in `WINDOWS\SYSTEM`, and what its batch file copies
+ * into Windows' folders.
  */
 function driveFor(item, folder, at, needs) {
   rmSync(at, { recursive: true, force: true });
@@ -534,6 +612,7 @@ function driveFor(item, folder, at, needs) {
   }
 
   placeRuntimes(at, needs);
+  placeBatchCopies(at, folder, needs);
   return at;
 }
 

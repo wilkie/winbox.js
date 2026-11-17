@@ -104,8 +104,8 @@ impl System {
         }
     }
 
-    fn apply(&mut self, module: usize, at: usize, relocation: &Relocation) {
-        let module = &self.modules[module];
+    fn apply(&mut self, importer: usize, at: usize, relocation: &Relocation) {
+        let module = &self.modules[importer];
         let value = match &relocation.target {
             Target::OsFixup(kind) => {
                 if let Some((low, high)) = os_fixup(*kind, self.coprocessor) {
@@ -120,7 +120,7 @@ impl System {
             }
             Target::ImportOrdinal { module: from, .. }
             | Target::ImportName { module: from, .. } => {
-                self.imported(&from.clone(), &relocation.target)
+                self.imported(importer, &from.clone(), &relocation.target)
             }
             Target::Internal { segment, offset } => {
                 // The executable numbers its segments from one; where each
@@ -171,12 +171,16 @@ impl System {
     /// stub, or KERNEL's number; else KERNEL's `UndefDynlink`, as KERNEL's
     /// loader binds an import whose module, name or ordinal it cannot find
     /// (`KRNL386.EXE` seg1 `73b9`-`73f8`): the program runs, and is ended
-    /// only if it makes the call (`undefdl`).
-    fn imported(&mut self, from: &str, target: &Target) -> Value {
-        match self.bound(from, target) {
-            Some(value) => value,
-            None => self.undef_dynlink(),
-        }
+    /// only if it makes the call (`undefdl`). The module is the one loaded
+    /// for the importer's reference, KERNEL's handle for it in the
+    /// importer's database (seg1 `73af`-`73c6`), whatever its own name.
+    fn imported(&mut self, importer: usize, from: &str, target: &Target) -> Value {
+        let found = match self.imported_by(importer, from) {
+            Some(library) => self.bound_in(library, target),
+            None => self.bound(from, target),
+        };
+
+        found.unwrap_or_else(|| self.undef_dynlink())
     }
 
     /// Where a module exports an import: `None` for a module not there,
@@ -184,26 +188,7 @@ impl System {
     /// with no entry in its table, as `GetProcAddress` finds).
     fn bound(&mut self, from: &str, target: &Target) -> Option<Value> {
         if let Some(index) = self.module_named(from) {
-            let library = &self.modules[index];
-            let ordinal = match target {
-                Target::ImportOrdinal { ordinal, .. } => *ordinal,
-                Target::ImportName { procedure, .. } => library.executable.ordinal_of(procedure),
-                _ => 0,
-            };
-
-            if ordinal == 0 {
-                return None;
-            }
-
-            // An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox
-            // answers: its stub, not the file's entry (`own_modules.rs`).
-            if let Some((segment, offset)) = crate::own_modules::redirect(self, index, ordinal) {
-                return Some(Value::Place(segment, offset));
-            }
-
-            let (segment, offset) = self.modules[index].lookup(ordinal)?;
-
-            return Some(Value::Place(segment, offset));
+            return self.bound_in(index, target);
         }
 
         let kept = self.kept_named(from)?;
@@ -232,6 +217,30 @@ impl System {
         let stubs = self.stubs(kept);
 
         Some(Value::Place(stubs, STEP * (ordinal + 1)))
+    }
+
+    /// Where a module loaded from its file exports an import.
+    fn bound_in(&mut self, index: usize, target: &Target) -> Option<Value> {
+        let library = &self.modules[index];
+        let ordinal = match target {
+            Target::ImportOrdinal { ordinal, .. } => *ordinal,
+            Target::ImportName { procedure, .. } => library.executable.ordinal_of(procedure),
+            _ => 0,
+        };
+
+        if ordinal == 0 {
+            return None;
+        }
+
+        // An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox
+        // answers: its stub, not the file's entry (`own_modules.rs`).
+        if let Some((segment, offset)) = crate::own_modules::redirect(self, index, ordinal) {
+            return Some(Value::Place(segment, offset));
+        }
+
+        let (segment, offset) = self.modules[index].lookup(ordinal)?;
+
+        Some(Value::Place(segment, offset))
     }
 
     /// Where a module's entry is as the linker links an import of it by

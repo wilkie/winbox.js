@@ -432,6 +432,18 @@ async function build(name) {
     await writeFile(executable, data);
   }
 
+  /* A probe that defines `PROBE_STACK_400` asks for a stack of 400h bytes:
+   * its header's word at 12h, which no option of the linker's here makes
+   * that small. KERNEL makes a program's stack 1400h at least (`KRNL386.EXE`
+   * seg2 `123d`-`124f`). */
+  if (text.includes('#define PROBE_STACK_400')) {
+    const data = await readFile(executable);
+    const header = data.readUInt16LE(0x3c);
+
+    data.writeUInt16LE(0x0400, header + 0x12);
+    await writeFile(executable, data);
+  }
+
   /* A probe that defines `PROBE_SELF_LOADING` is a self-loading program:
    * its header's flags (at 0Ch) given 0800h, which no option of the
    * linker's sets. KERNEL then loads its first segment alone and calls the

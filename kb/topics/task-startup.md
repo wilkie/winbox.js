@@ -2,7 +2,7 @@
 kind: topic
 name: Starting and ending a program
 summary: What a Windows 3.1 task is handed when it starts — its DOS environment and the path inside it, which the C runtime reads before WinMain — what a program asks USER for before it opens a window, and how it ends, as Notepad and Clock needed them.
-probes: [environ, regmsg, quitord, quitin, minis, misc, instds, stackpos]
+probes: [environ, regmsg, quitord, quitin, minis, misc, instds, stackpos, stack400]
 ---
 
 Before a program's `WinMain` runs, its C runtime's start-up code has run: it calls [[fn:KERNEL.InitTask]], saves and replaces interrupt vector 0 for divide errors, and builds `argv` and `envp` from the DOS environment. Notepad stopped at exactly this point in winbox.js. It never got to its first call after `InitTask`, because what it read there was not what Windows gives.
@@ -44,6 +44,9 @@ A program ends in three steps. Its window is destroyed, which is where it asks f
 
 - [[measured]] A program's stack is in its data segment, after all the data the segment asks for, including the uninitialised data the file does not hold. [[probe:stackpos]]'s file holds 172h bytes of the 1730h its data segment asks for, and its stack is 2000h. The stack's bottom, where the stack pointer starts, is 3730h. Its 3000-byte uninitialised array is at 172h, below the stack.
 - [[measured]] [[fn:KERNEL.InitTask]] writes three words into the data segment's header: at 0Eh the stack's bottom, at 0Ch the lowest it has reached (the same to begin with), and at 0Ah its limit, 17C6h. `KRNL386.EXE` seg2 `268d` computes these from the stack pointer as it was before the call, and the stack's size, which KERNEL gives the task in BX as it starts. The limit is the bottom less the size, and 96h more, and `InitTask` answers it in CX.
+- [[read out]] A program's stack is 1400h bytes at least. As KERNEL lays the module's database out it raises a program's stack size below 1400h to 1400h, and a heap that is not nought below 64h to 64h; a library's are left as the file has them (`KRNL386.EXE` seg2 `123d`-`1264`). The data segment is sized by the database's (seg1 `7690`-`7697`), and the task is started with them in BX and CX (seg2 `2579`-`257e`).
+- [[measured]] [[probe:stack400]]'s file asks for a stack of 400h. Its bottom less its limit is 136Ah, 1400h less 96h, and its data segment is 2380h bytes; the same in both modes.
+- [[measured]] A program written in Turbo Pascal for Windows checks its stack on entry to each procedure: the stack pointer less the procedure's locals and 200h more must stay above the limit at 0Ah. FTaskman of the catalog asks for a stack of 400h; with that alone it stopped at "Runtime error 202" in its dialog's first messages, and with 1400h it runs.
 - [[measured]] winbox.js started the stack right after the file's data. The stack then covered the program's uninitialised statics, and a deep enough call wrote over them. [[probe:defer]]'s window handles were overwritten this way while `EndDeferWindowPos` sent its messages: the probe keeps them just past the file's data, and its 4400-byte record buffer is on the stack. winbox.js also wrote nothing to the header, and answered the end of the data in CX.
 
 ## Small calls on the way up

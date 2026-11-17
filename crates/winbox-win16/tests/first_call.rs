@@ -95,14 +95,16 @@ fn runs_a_program_to_its_first_call() {
     assert!(code > 1 && data > code);
     assert_eq!(cpu.segments[DS].selector, segment_selector(data));
     assert_eq!(cpu.segments[SS].selector, segment_selector(data));
-    // The stack above the data's 16 bytes, the return address on it.
-    assert_eq!(cpu.regs[SP], 0x410 - 4);
-    assert_eq!(cpu.bus.read16(((data as u32) << 16) + 0x40c), 5);
+    // The stack above the data's 16 bytes, the return address on it: the
+    // file's 400h made 1400h, a program's least (`KRNL386.EXE` seg2
+    // `123d`-`124f`; `stack400`).
+    assert_eq!(cpu.regs[SP], 0x1410 - 4);
+    assert_eq!(cpu.bus.read16(((data as u32) << 16) + 0x140c), 5);
     assert_eq!(
-        cpu.bus.read16(((data as u32) << 16) + 0x40e),
+        cpu.bus.read16(((data as u32) << 16) + 0x140e),
         segment_selector(code)
     );
-    assert_eq!((cpu.regs[BX], cpu.regs[CX]), (0x400, 0x100));
+    assert_eq!((cpu.regs[BX], cpu.regs[CX]), (0x1400, 0x100));
     // No local heap yet: `InitTask` makes it, of the size in CX
     // (`KRNL386.EXE` seg2 `26b2`).
     assert!(!system.heaps.contains_key(&data));
