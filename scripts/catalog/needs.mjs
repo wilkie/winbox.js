@@ -505,33 +505,43 @@ export function needsOf(item, folder, images = []) {
     }
   }
 
-  const imports = new Set();
-  const functions = new Set();
-  const read = new Set();
-  const pending = [...(bytes && needs.header === 'NE' ? [bytes] : []), ...payload];
+  /* The modules some executables import, and those their libraries in the download import, in turn. */
+  const walk = (start) => {
+    const imports = new Set();
+    const functions = new Set();
+    const read = new Set();
+    const pending = [...start];
 
-  while (pending.length) {
-    const found = neImports(pending.shift());
+    while (pending.length) {
+      const found = neImports(pending.shift());
 
-    for (const module of found?.modules ?? []) {
-      imports.add(module);
+      for (const module of found?.modules ?? []) {
+        imports.add(module);
 
-      if (!read.has(module) && byModule.has(module)) {
-        read.add(module);
-        pending.push(expandedOf(byModule.get(module)) ?? readFileSync(byModule.get(module)));
+        if (!read.has(module) && byModule.has(module)) {
+          read.add(module);
+          pending.push(expandedOf(byModule.get(module)) ?? readFileSync(byModule.get(module)));
+        }
+      }
+
+      for (const each of found?.functions ?? []) {
+        functions.add(each);
       }
     }
 
-    for (const each of found?.functions ?? []) {
-      functions.add(each);
-    }
-  }
+    return { imports, functions };
+  };
+  const { imports, functions } = walk(bytes && needs.header === 'NE' ? [bytes] : []);
 
   const ownFolder = program ? new Set(moduleNames(dirname(program))) : new Set();
   const everywhere = new Set(byModule.keys());
-  const lacking = [...imports].filter(
-    (module) => !installation().has(module) && !ownFolder.has(module) && !everywhere.has(module)
-  );
+  const lacks = (modules) =>
+    [...modules].filter(
+      (module) => !installation().has(module) && !ownFolder.has(module) && !everywhere.has(module)
+    );
+  const lacking = lacks(imports);
+  /* What the setup's payload lacks: only a runtime the pass has is placed for it. */
+  const payloadLacking = lacks(walk(payload).imports).filter((module) => !lacking.includes(module));
 
   /*
    * The runtimes the pass places for what it lacks (`runtimes.mjs`), as an
@@ -539,6 +549,13 @@ export function needsOf(item, folder, images = []) {
    * functions are the program's as well (`KNPG` imports `MMSYSTEM`).
    */
   const placed = runtimesFor(lacking, new Set([...ownFolder, ...everywhere]));
+  const forPayload = runtimesFor(payloadLacking, new Set([...ownFolder, ...everywhere]));
+
+  for (const module of forPayload.runtimes) {
+    if (!placed.runtimes.includes(module)) {
+      placed.runtimes.push(module);
+    }
+  }
 
   for (const module of placed.runtimes) {
     const found = neImports(runtimeBytes(module));

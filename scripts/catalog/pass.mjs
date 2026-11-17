@@ -529,6 +529,19 @@ const NOT_THE_PROGRAM =
   /setup|install|uninst|remove|read ?me|help|register|order|readme|\.(hlp|txt|wri|doc|bat|pif|ini)\b/i;
 
 /**
+ * The Windows programs a setup put on its drive, outside a setup's own
+ * folders of the moment (Microsoft's toolkit's `~MSSTFQF.T`) and its own
+ * files (`_MSTEST.EXE`).
+ */
+function madeOf(drive) {
+  return filesOf(drive)
+    .filter((file) => !/^(CORPUS|WINDOWS|TEMP|TMP)[\\/]/i.test(relative(drive, file)))
+    .filter((file) => !/(^|[\\/])[~_]/.test(relative(drive, file)))
+    .filter((file) => /\.exe$/i.test(file) && !NOT_THE_PROGRAM.test(basename(file)))
+    .filter((file) => headerOf(readFileSync(file)) === 'NE');
+}
+
+/**
  * A setup run as Program Manager starts it, Enter pressed every few
  * seconds, on a drive kept for the program it leaves. The program is the
  * first item of the groups it made that is not a setup, a help or a text;
@@ -589,9 +602,11 @@ async function install(item, folder, needs, mounts) {
     ? `${probe.box.title}: ${probe.box.text}`
     : (ownWindows(probe.windows).slice(-1)[0] ?? `${probe.status} ${probe.signature}`.trim());
   /*
-   * A setup still at work as its seconds end (copying, expanding) is run
-   * again from the start, on a fresh drive, for twice as long: the clock
-   * is instructions, so it is the same run, gone on.
+   * A setup still at work as its seconds end (copying, expanding: `running`,
+   * its windows changing at each of the hand's last three looks, or its
+   * window still up over a program it has begun to write) is run
+   * again from the start, on a fresh drive, for twice as long: the clock is
+   * instructions, so it is the same run, gone on.
    */
   let drive;
   let run;
@@ -616,7 +631,21 @@ async function install(item, folder, needs, mounts) {
     );
     result = outcome(run);
 
-    if (result.status !== 'running') {
+    /*
+     * At work: the windows changed at each of its last three looks, so the
+     * hand pressed nothing there (a copy's dialog names each file as it
+     * goes), whatever the calls say: a copy waits for its messages too.
+     */
+    const pressed = (stepsOf(run.out)?.stepMarks ?? []).map((mark) => mark.time);
+    const atWork =
+      result.status === 'idle' && !pressed.some((time) => time > seconds * 1000 - 3 * ENTER);
+    /* Or its window still up over a program it has begun to write (TZ-Minigolf's, expanding). */
+    const copying =
+      result.windows.some(
+        (window) => window.visible && !window.box && !WINDOWS_OWN.test(window.title)
+      ) && madeOf(drive).length > 0;
+
+    if (result.status !== 'running' && !atWork && !copying) {
       break;
     }
   }
@@ -679,6 +708,11 @@ async function install(item, folder, needs, mounts) {
 
       const path = /^[A-Za-z]:/.test(command) ? command : `C:\\${command}`;
 
+      /* The setup itself, which a group may name again: not its program. */
+      if (setupPath && path.toUpperCase() === setupPath.toUpperCase()) {
+        continue;
+      }
+
       if (/^[Cc]:/.test(path)) {
         const file = onDrive(drive, path);
 
@@ -711,11 +745,7 @@ async function install(item, folder, needs, mounts) {
    * setup's own folders of the moment (Microsoft's toolkit's `~MSSTFQF.T`)
    * and its own files (`_MSTEST.EXE`).
    */
-  const made = filesOf(drive)
-    .filter((file) => !/^(CORPUS|WINDOWS|TEMP|TMP)[\\/]/i.test(relative(drive, file)))
-    .filter((file) => !/(^|[\\/])[~_]/.test(relative(drive, file)))
-    .filter((file) => /\.exe$/i.test(file) && !NOT_THE_PROGRAM.test(basename(file)))
-    .filter((file) => headerOf(readFileSync(file)) === 'NE');
+  const made = madeOf(drive);
 
   if (made.length === 1) {
     return {
